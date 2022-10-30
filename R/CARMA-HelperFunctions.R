@@ -111,7 +111,12 @@ CARMA_Define_Args <- function(TimeUnit = NULL,
   if(is.null(BootStrapType)) {
     if(TaskType == 'GPU') BootStrapType <- 'Bayesian' else BootStrapType <- 'MVS'
   } else {
-    if(TaskType == 'GPU' && BootStrapType == 'MVS') BootStrapType <- 'Bayesian'
+    if(is.list(BootStrapType)) {
+      if(TaskType == 'GPU' && BootStrapType$classifier == 'MVS') BootStrapType$classifier <- 'Bayesian'
+      if(TaskType == 'GPU' && BootStrapType$regression == 'MVS') BootStrapType$regression <- 'Bayesian'
+    } else {
+      if(TaskType == 'GPU' && BootStrapType == 'MVS') BootStrapType <- 'Bayesian'
+    }
   }
 
   # Return args

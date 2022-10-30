@@ -379,7 +379,7 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
 
   # IDcols to Names ----
   if(!is.null(IDcols)) if(is.numeric(IDcols) || is.integer(IDcols)) IDcols <- names(data)[IDcols]
-  IDcols <- c(IDcols, TargetColumnName)
+  IDcols <- unique(c(IDcols, TargetColumnName))
 
   # Primary Date Column ----
   if(is.numeric(PrimaryDateColumn) || is.integer(PrimaryDateColumn)) PrimaryDateColumn <- names(data)[PrimaryDateColumn]
@@ -684,7 +684,7 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
 
     # Change name for classification----
     if(DebugMode) print('Change name for classification----')
-    if(tolower(TargetType) == 'Classification') {
+    if(TargetType == 'Classification') {
       if(!is.null(TestData)) {
         data.table::setnames(TestData, 'Predictions', 'Predictions_C1')
         TestData[, Predictions_C0 := 1 - Predictions_C1]
@@ -725,6 +725,7 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
   # Begin regression model building----
   if(DebugMode) print('Begin regression model building----')
   # bucket = looper[1]
+  # bucket = looper[2]
   for(bucket in looper) {
 
     # Define data sets ----
@@ -864,6 +865,47 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
           subsample = Regressionsubsample,
           colsample_bytree = Regressioncolsample_bytree)
 
+        # QA Args
+        # OutputSelection = c("Importances", "EvalPlots", "EvalMetrics")
+        # PrimaryDateColumn = PrimaryDateColumn
+        # WeightsColumnName = WeightsColumnName
+        # DebugMode = DebugMode
+        # SaveInfoToPDF = FALSE
+        # TreeMethod = TreeMethod
+        # NThreads = NThreads
+        # model_path = Paths
+        # metadata_path = MetaDataPaths
+        # ModelID = ModelIDD
+        # ReturnFactorLevels = TRUE
+        # ReturnModelObjects = ReturnModelObjects
+        # SaveModelObjects = SaveModelObjects
+        # Verbose = 1L
+        # EncodingMethod = EncodingMethod
+        # data = data.table::copy(trainBucket)
+        # TrainOnFull = TrainOnFull
+        # ValidationData = data.table::copy(validBucket)
+        # TestData = data.table::copy(testBucket)
+        # TargetColumnName = TargetColumnName
+        # FeatureColNames = FeatureNames
+        # IDcols = IDcolsModified
+        # TransformNumericColumns = TransformNumericColumns
+        # Methods = Methods
+        # eval_metric = "rmse"
+        # grid_eval_metric = "mse"
+        # NumOfParDepPlots = NumOfParDepPlots
+        # PassInGrid = PassInGrid
+        # GridTune = GridTune
+        # MaxModelsInGrid = MaxModelsInGrid
+        # BaselineComparison = "default"
+        # MaxRunsWithoutNewWinner = 20L
+        # MaxRunMinutes = 60*60
+        # Trees = RegressionTrees
+        # eta = Regressioneta
+        # max_depth = Regressionmax_depth
+        # min_child_weight = Regressionmin_child_weight
+        # subsample = Regressionsubsample
+        # colsample_bytree = Regressioncolsample_bytree
+
         # Store Model----
         RegressionModel <- RegModel$Model
         if(ReturnModelObjects || SaveModelObjects) ModelList[[ModelIDD]] <- RegressionModel
@@ -887,6 +929,13 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
           print(ValidationData)
         }
         if(!is.null(TestData) || !is.null(ValidationData)) {
+
+
+          # First iteration: good
+          # Second iteration:
+          # ...
+          # IDcols has only "Date" does it also need Weekly_Sales'?
+
           TestData <- AutoXGBoostScoring(
             TargetType = "regression",
             ScoringData = if(!is.null(TestData)) TestData else ValidationData,
@@ -911,6 +960,32 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
             MDP_MissFactor = "0",
             MDP_MissNum = -1)
 
+          # QA Args :: AutoXGBoostHurdleCARMA 17
+          # # # Predictions showing up in model$feature_names
+          # TargetType = "regression"
+          # ScoringData = if(!is.null(TestData)) TestData else ValidationData
+          # FeatureColumnNames = FeatureNames
+          # IDcols = IDcolsModified
+          # FactorLevelsList = ArgsList[[paste0(ModelIDD, "_FactorLevelsList")]]
+          # EncodingMethod = EncodingMethod
+          # OneHot = FALSE
+          # ModelObject = RegressionModel
+          # ModelPath = Paths
+          # ModelID = ModelIDD
+          # ReturnFeatures = TRUE
+          # TransformNumeric = if(is.null(ArgsList[[paste0("TransformationResults_", ModelIDD)]])) FALSE else TRUE
+          # BackTransNumeric = if(is.null(ArgsList[[paste0("TransformationResults_", ModelIDD)]])) FALSE else TRUE
+          # TargetColumnName = eval(TargetColumnName)
+          # TransformationObject = ArgsList[[paste0("TransformationResults_", ModelIDD)]]
+          # TransID = NULL
+          # TransPath = NULL
+          # MDP_Impute = TRUE
+          # MDP_CharToFactor = TRUE
+          # MDP_RemoveDates = FALSE
+          # MDP_MissFactor = "0"
+          # MDP_MissNum = -1
+
+
           # Clear TestModel From Memory----
           rm(RegModel)
           gc()
@@ -918,18 +993,10 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
           # Change prediction name to prevent duplicates----
           if(DebugMode) print('Change prediction name to prevent duplicates----')
           if(bucket == max(looper)) Val <- paste0('Predictions_', bucket - 1L, '+') else Val <- paste0('Predictions_', bucket)
-          if(ValTrue) {
-            if('Predictions' %in% names(TestData)) {
-              data.table::setnames(ValidationData, 'Predictions', Val)
-            } else {
-              data.table::setnames(ValidationData, 'Predict', Val)
-            }
+          if('Predictions' %in% names(TestData)) {
+            data.table::setnames(TestData, 'Predictions', Val)
           } else {
-            if('Predictions' %in% names(TestData)) {
-              data.table::setnames(TestData, 'Predictions', Val)
-            } else {
-              data.table::setnames(TestData, 'Predict', Val)
-            }
+            data.table::setnames(TestData, 'Predict', Val)
           }
 
         } else {
@@ -1008,7 +1075,7 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
   if(!TrainOnFull || !is.null(ValidationData)) {
 
     # Change object names
-    if(exists("ValTrue") && ValTrue) {
+    if(exists("ValTrue") && ValTrue && is.null(TestData)) {
       TestData <- ValidationData
       ValidationData <- NULL
     }
@@ -1028,10 +1095,14 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
         }
       }
     } else {
-      if(Buckets[1L] != 0) {
+      if(Buckets[1L] != 0L) {
         TestData[, UpdatedPrediction := TestData[[1L]] * TestData[[3L]] + TestData[[2L]] * TestData[[4L]]]
       } else {
-        TestData[, UpdatedPrediction := TestData[[1L]] * TestData[[3L]]]
+        if(is.numeric(TestData[[1L]]) && is.numeric(TestData[[3L]])) {
+          TestData[, UpdatedPrediction := TestData[[1L]] * TestData[[3L]]]
+        } else if(is.numeric(TestData[[1L]]) && is.numeric(TestData[[2L]])) {
+          TestData[, UpdatedPrediction := TestData[[1L]] * TestData[[2L]]]
+        }
       }
     }
 
@@ -1202,3 +1273,4 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
       ClassifierModel = if(exists("ClassifierModel")) ClassifierModel else NULL))
   }
 }
+

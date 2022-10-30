@@ -332,6 +332,11 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
       }
     }
 
+
+
+
+
+
     # Dummify dataTrain Categorical Features ----
     if(DebugMode.) print("Dummify dataTrain Categorical Features")
     if(length(CatFeatures) != 0L) {
@@ -343,17 +348,27 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
       FactorLevelsList <- Output$MetaData; rm(Output)
 
       y <- setdiff(names(data.), x)
+      y <- y[!y %like% 'Predictions_']
+      # y <- y[!y %like% 'GroupVar_']
       if(length(y) == 0L) y <- NULL
       FeatureColNames. <- FeatureColNames.[!FeatureColNames. %in% CatFeatures]
       FeatureColNames. <- c(FeatureColNames., y)
     }
+
+
+
+
+
+
 
     # Regression data. Subset Columns Needed
     if(DebugMode.) print("Regression data. Subset Columns Needed")
     if(!is.null(ValidationData.)) {
       if(ncol(data.) == ncol(ValidationData.)) {
         if(length(CatFeatures) != 0L) {
-          TrainMerge <- data.table::rbindlist(list(data.[, .SD, .SDcols = c(names(data.)[!names(data.) %in% y])],ValidationData.[, .SD, .SDcols = c(names(ValidationData.)[!names(ValidationData.) %in% y])]), use.names = TRUE, fill = TRUE)
+          TrainMerge <- data.table::rbindlist(list(
+            data.[, .SD, .SDcols = c(names(data.)[!names(data.) %in% y])],
+            ValidationData.[, .SD, .SDcols = c(names(ValidationData.)[!names(ValidationData.) %in% y])]), use.names = TRUE, fill = TRUE)
         } else {
           TrainMerge <- data.table::rbindlist(list(data.,ValidationData.), use.names = TRUE, fill = TRUE)
         }

@@ -239,7 +239,7 @@ AutoCatBoostHurdleModelScoring <- function(TestData = NULL,
       # ::::::::::::::::::::::::::::: START HERE  :::::::::::::::::::::::::::::
 
       # Encode for Group Variables
-      if(length(ArgsList[['FactorLevelsList']][['regression']][[paste0('FLL_', bucket)]][['EncodingMethod']]) != 0) {
+      if(length(ArgsList[['FactorLevelsList']][['regression']][[paste0('FLL_', bucket)]][['EncodingMethod']]) != 0L) {
         x <- ArgsList[['FactorLevelsList']][['regression']][[paste0('FLL_', bucket)]][['EncodingMethod']]
         x <- paste0(toupper(substr(x = x, start = 1, stop = 1)), substr(x = x, start = 2, stop = nchar(x)))
         y <- names(TestData)[which(names(TestData) %like% paste0('_', x))]
@@ -299,12 +299,16 @@ AutoCatBoostHurdleModelScoring <- function(TestData = NULL,
 
       # Change prediction name to prevent duplicates ----
       if(bucket == max(looper)) Val <- paste0('Predictions_', bucket - 1L, '+') else Val <- paste0('Predictions_', bucket)
-      if(length(which(names(TestData) == "Predictions")) > 1) {
+      if(length(which(names(TestData) == "Predictions")) > 1L) {
         zzz <- names(TestData)
         zzz[max(which(names(TestData) == "Predictions"))] <- Val
         colnames(TestData) <- zzz
       } else {
-        data.table::setnames(TestData, "Predictions", Val)
+        if('Predictions' %in% names(TestData)) {
+          data.table::setnames(TestData, "Predictions", Val)
+        } else {
+          data.table::setnames(TestData, "Predict", Val)
+        }
       }
 
     } else {

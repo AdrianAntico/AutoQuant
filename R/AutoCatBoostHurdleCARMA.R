@@ -707,6 +707,14 @@ AutoCatBoostHurdleCARMA <- function(data,
           Threshold = Threshold,
           CARMA = TRUE)
 
+        # TestData = data.table::copy(Step1SCore)
+        # Path = NULL
+        # ModelID = 'ModelTest'
+        # ModelList = TestModel$ModelList
+        # ArgsList = TestModel$ArgsList
+        # Threshold = Threshold
+        # CARMA = TRUE
+
         # Modify data to match AutoCatBoostCARMA output ----
         Preds[, (names(Preds)[2L:5L]) := NULL]
         data.table::set(Preds, j = eval(DateColumnName), value = NULL)
@@ -775,16 +783,17 @@ AutoCatBoostHurdleCARMA <- function(data,
     } else {
       if(!is.null(GroupVariables)) {
 
-        # Modify target reference ----
-        if(Difference) IDcols = 'ModTarget' else IDcols <- eval(TargetColumnName)
+        # Modify target reference
+        if(Difference) IDcols <- 'ModTarget' else IDcols <- eval(TargetColumnName)
 
-        # GroupVar or Hierarchical ----
+        # GroupVar or Hierarchical
         if(!is.null(HierarchGroups)) {
-          temp <- data.table::copy(UpdateData[, ID := 1:.N, by = c(eval(GroupVariables))])
+          temp <- data.table::copy(UpdateData[, ID := seq_len(.N), by = c(eval(GroupVariables))])
           temp <- temp[ID == N][, ID := NULL]
         } else {
-          temp <- data.table::copy(UpdateData[, ID := 1:.N, by = 'GroupVar'])
-          temp <- temp[ID == N][, ID := NULL]
+          temp <- data.table::copy(UpdateData[, ID := seq_len(.N), by = 'GroupVar'])
+          temp <- temp[, ID2 := max(ID), by = 'GroupVar']
+          temp <- temp[ID == ID2][, ID := NULL][, ID2 := NULL]
         }
 
         # Remove any encoded columns

@@ -1719,7 +1719,7 @@ AutoLightGBMHurdleModel <- function(TrainOnFull = FALSE,
 
   # IDcols to Names ----
   if(!is.null(IDcols)) if(is.numeric(IDcols) || is.integer(IDcols)) IDcols <- names(data)[IDcols]
-  IDcols <- c(IDcols, TargetColumnName)
+  IDcols <- unique(c(IDcols, TargetColumnName))
 
   # Primary Date Column ----
   if(is.numeric(PrimaryDateColumn) || is.integer(PrimaryDateColumn)) PrimaryDateColumn <- names(data)[PrimaryDateColumn]
@@ -2099,7 +2099,7 @@ AutoLightGBMHurdleModel <- function(TrainOnFull = FALSE,
     TargetLevels <- NULL
     ArgsList[["TargetLevels"]] <- NULL
   }
-  FactorLevelsListOutput <- ClassifierModel$FactorLevels
+  FactorLevelsListOutput <- ClassifierModel$FactorLevelsList
   if(!is.null(FactorLevelsListOutput)) FactorLevelsList <- FactorLevelsListOutput else FactorLevelsList <- NULL
   ArgsList[["Class_FactorLevelsList"]] <- FactorLevelsList
   rm(ClassifierModel)
@@ -2119,6 +2119,7 @@ AutoLightGBMHurdleModel <- function(TrainOnFull = FALSE,
   }
   if(!TrainOnFull || !is.null(ValidationData)) {
     if(is.null(TestData)) ValTrue <<- TRUE else ValTrue <<- FALSE
+    if(length(ValidationData) > 0L && "Weights" %in% names(ValidationData)) IDcols <- unique(c(IDcols, "Weights"))
     temp <- AutoLightGBMScoring(
       ReturnShapValues = FALSE,
       EncodingMethod = EncodingMethod,
@@ -2187,7 +2188,7 @@ AutoLightGBMHurdleModel <- function(TrainOnFull = FALSE,
 
     # Change name for classification----
     if(DebugMode) print('Change name for classification----')
-    if(tolower(TargetType) == 'Classification') {
+    if(tolower(TargetType) == 'classification') {
       if(!is.null(TestData)) {
         data.table::setnames(TestData, 'Predictions', 'Predictions_C1')
         TestData[, Predictions_C0 := 1 - Predictions_C1]
@@ -2227,7 +2228,8 @@ AutoLightGBMHurdleModel <- function(TrainOnFull = FALSE,
 
   # Begin regression model building ----
   if(DebugMode) print('Begin regression model building----')
-  # bucket = 3
+  # bucket = looper[1]
+  # bucket = looper[2]
   for(bucket in looper) {
 
     # Define data sets ----
@@ -2490,6 +2492,31 @@ AutoLightGBMHurdleModel <- function(TrainOnFull = FALSE,
             MDP_MissFactor = "0",
             MDP_MissNum = -1)
 
+          # QA Args
+          # TargetType = "regression"
+          # ScoringData = if(!is.null(TestData)) TestData else ValidationData
+          # FeatureColumnNames = FeatureNames
+          # IDcols = IDcolsModified
+          # FactorLevelsList = ArgsList[[paste0(ModelIDD, "_FactorLevelsList")]]
+          # EncodingMethod = EncodingMethod
+          # OneHot = FALSE
+          # ModelObject = RegressionModel
+          # ModelPath = Paths
+          # ModelID = ModelIDD
+          # ReturnFeatures = TRUE
+          # TransformNumeric = if(is.null(ArgsList[[paste0("TransformationResults_", ModelIDD)]])) FALSE else TRUE
+          # BackTransNumeric = if(is.null(ArgsList[[paste0("TransformationResults_", ModelIDD)]])) FALSE else TRUE
+          # TargetColumnName = eval(TargetColumnName)
+          # TransformationObject = ArgsList[[paste0("TransformationResults_", ModelIDD)]]
+          # TransID = NULL
+          # TransPath = NULL
+          # MDP_Impute = TRUE
+          # MDP_CharToFactor = TRUE
+          # MDP_RemoveDates = FALSE
+          # MDP_MissFactor = "0"
+          # MDP_MissNum = -1
+          # ReturnShapValues = FALSE
+
           # Clear TestModel From Memory ----
           rm(RegModel)
           gc()
@@ -2497,22 +2524,12 @@ AutoLightGBMHurdleModel <- function(TrainOnFull = FALSE,
           # Change prediction name to prevent duplicates ----
           if(DebugMode) print('Change prediction name to prevent duplicates----')
           if(bucket == max(looper)) Val <- paste0('Predictions_', bucket - 1L, '+') else Val <- paste0('Predictions_', bucket)
-          if(ValTrue) {
-            x <- unique(which(names(ValidationData) %in% 'Predictions'))
-            if(length(x) > 1L) data.table::set(ValidationData, j = x[length(x)], value = NULL)
-            if('Predictions' %in% names(ValidationData)) {
-              data.table::setnames(ValidationData, 'Predictions', Val)
-            } else {
-              data.table::setnames(ValidationData, 'Predict', Val)
-            }
+          x <- unique(which(names(TestData) %in% 'Predictions'))
+          if(length(x) > 1L) data.table::set(TestData, j = x[length(x)], value = NULL)
+          if('Predictions' %in% names(TestData)) {
+            data.table::setnames(TestData, 'Predictions', Val)
           } else {
-            x <- unique(which(names(TestData) %in% 'Predictions'))
-            if(length(x) > 1L) data.table::set(TestData, j = x[length(x)], value = NULL)
-            if('Predictions' %in% names(TestData)) {
-              data.table::setnames(TestData, 'Predictions', Val)
-            } else {
-              data.table::setnames(TestData, 'Predict', Val)
-            }
+            data.table::setnames(TestData, 'Predict', Val)
           }
 
         } else {
@@ -2596,7 +2613,7 @@ AutoLightGBMHurdleModel <- function(TrainOnFull = FALSE,
   if(!TrainOnFull || !is.null(ValidationData)) {
 
     # Change object names
-    if(exists("ValTrue") && ValTrue) {
+    if(exists("ValTrue") && ValTrue && is.null(TestData)) {
       TestData <- ValidationData
       ValidationData <- NULL
     }
@@ -2790,3 +2807,4 @@ AutoLightGBMHurdleModel <- function(TrainOnFull = FALSE,
       ClassifierModel = if(exists("ClassifierModel")) ClassifierModel else NULL))
   }
 }
+

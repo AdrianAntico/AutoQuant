@@ -9,7 +9,7 @@ QA_Results <- data.table::CJ(
 QA_Results[, TimeWeights := data.table::fifelse(runif(.N) < 0.5, 0.9999, 1)]
 QA_Results[, Success := "Failure"]
 
-#run = 1
+# run = 17
 for(run in  seq_len(QA_Results[,.N])) {
 
   # Data
@@ -27,7 +27,7 @@ for(run in  seq_len(QA_Results[,.N])) {
   if(QA_Results[run, xregs] == 0L) {
     xregs <- NULL
   } else if(QA_Results[run, xregs] == 1L) {
-  if(QA_Results[run, Group] == 0L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("nogroupfcwalmartxreg1.csv"))[['data']]
+    if(QA_Results[run, Group] == 0L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("nogroupfcwalmartxreg1.csv"))[['data']]
     if(QA_Results[run, Group] == 1L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("onegroupfcwalmartxreg1.csv"))[['data']]
     if(QA_Results[run, Group] == 2L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("twogroupfcwalmartxreg1.csv"))[['data']]
     if(QA_Results[run, Group] == 3L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("threegroupfcwalmartxreg1.csv"))[['data']]
@@ -172,7 +172,10 @@ for(run in  seq_len(QA_Results[,.N])) {
 # library(data.table)
 # library(lubridate)
 #
+# source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/AutoXGBoostRegression.R"))
+# source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/XGBoostHelpers.R"))
 # source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_CalendarTypes.R"))
+# source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_CharacterTypes.R"))
 # source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_CrossRowOperations.R"))
 # source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/CARMA-HelperFunctions.R"))
 # source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ReinforcementLearningFunctions.R"))
@@ -181,40 +184,51 @@ for(run in  seq_len(QA_Results[,.N])) {
 # source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/CatBoostHelpers.R"))
 # source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelMetrics.R"))
 #
-# run = 19
+# # Collection data.table
+# QA_Results <- data.table::CJ(
+#   Group = c(0,1,2,3),
+#   xregs = c(0,1,2,3),
+#   TOF = c(TRUE, FALSE),
+#   Trans = c(TRUE, FALSE))
+#
+# # Other tests
+# QA_Results[, TimeWeights := data.table::fifelse(runif(.N) < 0.5, 0.9999, 1)]
+# QA_Results[, Success := "Failure"]
+#
+# run = 1
 #
 # # Data
 # if(QA_Results[run, Group] == 0L) {
-#   data <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/QA_DataSets/NoGroup-Eval-Walmart.csv")
+#   data <- RemixAutoML:::Post_Query_Helper('"nogroupevalwalmart.csv"')[['data']]
 # } else if(QA_Results[run, Group] == 1L) {
-#   data <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/QA_DataSets/OneGroup-Eval-Walmart.csv")
+#   data <- RemixAutoML:::Post_Query_Helper('"onegroupevalwalmart.csv"')[['data']]
 # } else if(QA_Results[run, Group] == 2L) {
-#   data <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/QA_DataSets/TwoGroup-Eval-Walmart.csv")
+#   data <- RemixAutoML:::Post_Query_Helper('"twogroupevalwalmart.csv"')[['data']]
 # } else if(QA_Results[run, Group] == 3L) {
-#   data <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/QA_DataSets/ThreeGroup-Eval-Walmart.csv")
+#   data <- RemixAutoML:::Post_Query_Helper('"threegroupevalwalmart.csv"')[['data']]
 # }
 #
 # # xregs
 # if(QA_Results[run, xregs] == 0L) {
 #   xregs <- NULL
 # } else if(QA_Results[run, xregs] == 1L) {
-#   if(QA_Results[run, Group] == 0L) xregs <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/QA_DataSets/NoGroup-FC-Walmart-XREG1.csv")
-#   if(QA_Results[run, Group] == 1L) xregs <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/QA_DataSets/OneGroup-FC-Walmart-XREG1.csv")
-#   if(QA_Results[run, Group] == 2L) xregs <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/QA_DataSets/TwoGroup-FC-Walmart-XREG1.csv")
-#   if(QA_Results[run, Group] == 3L) xregs <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/QA_DataSets/ThreeGroup-FC-Walmart-XREG1.csv")
+#   if(QA_Results[run, Group] == 0L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("nogroupfcwalmartxreg1.csv"))[['data']]
+#   if(QA_Results[run, Group] == 1L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("onegroupfcwalmartxreg1.csv"))[['data']]
+#   if(QA_Results[run, Group] == 2L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("twogroupfcwalmartxreg1.csv"))[['data']]
+#   if(QA_Results[run, Group] == 3L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("threegroupfcwalmartxreg1.csv"))[['data']]
 # } else if(QA_Results[run, xregs] == 2L) {
-#   if(QA_Results[run, Group] == 0L) xregs <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/QA_DataSets/NoGroup-FC-Walmart-XREG2.csv")
-#   if(QA_Results[run, Group] == 1L) xregs <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/QA_DataSets/OneGroup-FC-Walmart-XREG2.csv")
-#   if(QA_Results[run, Group] == 2L) xregs <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/QA_DataSets/TwoGroup-FC-Walmart-XREG2.csv")
-#   if(QA_Results[run, Group] == 3L) xregs <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/QA_DataSets/ThreeGroup-FC-Walmart-XREG2.csv")
+#   if(QA_Results[run, Group] == 0L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("nogroupfcwalmartxreg2.csv"))[['data']]
+#   if(QA_Results[run, Group] == 1L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("onegroupfcwalmartxreg2.csv"))[['data']]
+#   if(QA_Results[run, Group] == 2L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("twogroupfcwalmartxreg2.csv"))[['data']]
+#   if(QA_Results[run, Group] == 3L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("threegroupfcwalmartxreg2.csv"))[['data']]
 # } else if(QA_Results[run, xregs] == 3L) {
-#   if(QA_Results[run, Group] == 0L) xregs <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/QA_DataSets/NoGroup-FC-Walmart-XREG3.csv")
-#   if(QA_Results[run, Group] == 1L) xregs <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/QA_DataSets/OneGroup-FC-Walmart-XREG3.csv")
-#   if(QA_Results[run, Group] == 2L) xregs <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/QA_DataSets/TwoGroup-FC-Walmart-XREG3.csv")
-#   if(QA_Results[run, Group] == 3L) xregs <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/QA_DataSets/ThreeGroup-FC-Walmart-XREG3.csv")
+#   if(QA_Results[run, Group] == 0L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("nogroupfcwalmartxreg3.csv"))[['data']]
+#   if(QA_Results[run, Group] == 1L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("onegroupfcwalmartxreg3.csv"))[['data']]
+#   if(QA_Results[run, Group] == 2L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("twogroupfcwalmartxreg3.csv"))[['data']]
+#   if(QA_Results[run, Group] == 3L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("threegroupfcwalmartxreg3.csv"))[['data']]
 # }
 #
-# # Testing params
+# # Testing params)
 # TOF <- QA_Results[run, TOF]
 # Trans <- QA_Results[run, Trans]
 # weights <- QA_Results[run, TimeWeights]
@@ -258,6 +272,8 @@ for(run in  seq_len(QA_Results[,.N])) {
 # data1 <- data.table::copy(data)
 # if(QA_Results[run, xregs] != 0L) xregs1 <- data.table::copy(xregs) else xregs1 <- NULL
 #
+#
+# # data args
 # data = data1
 # XREGS = xregs1
 # TargetColumnName = "Weekly_Sales"
@@ -268,36 +284,36 @@ for(run in  seq_len(QA_Results[,.N])) {
 # TimeWeights = weights
 # TimeUnit = "weeks"
 # TimeGroups = c("weeks","months")
-# TrainOnFull = TRUE
+# TrainOnFull = TOF
 # SplitRatios = c(1 - 10 / 110, 10 / 110)
 # PartitionType = "random"
 # FC_Periods = 4
 # Timer = TRUE
 # DebugMode = TRUE
-# TargetTransformation = TRUE
-# Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit")
+# TargetTransformation = Trans
+# Methods = c("Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit")
 # Difference = FALSE
 # NonNegativePred = FALSE
 # Threshold = NULL
 # RoundPreds = FALSE
 # CalendarVariables = c("week", "wom", "month", "quarter")
 # HolidayVariable = c("USPublicHolidays", "EasterGroup", "ChristmasGroup","OtherEcclesticalFeasts")
-# HolidayLookback = 7
+# HolidayLookback = NULL
 # HolidayLags = 1
 # HolidayMovingAverages = 1:2
-# Lags = list("weeks" = seq(2L, 10L, 2L), "months" = c(1:3))
-# MA_Periods = list("weeks" = seq(2L, 10L, 2L), "months" = c(2,3))
+# Lags = list("weeks" = c(1:5), "months" = c(1:3))
+# MA_Periods = list("weeks" = c(2:5), "months" = c(2,3))
 # SD_Periods = NULL
 # Skew_Periods = NULL
 # Kurt_Periods = NULL
 # Quantile_Periods = NULL
-# Quantiles_Selected = c("q5","q95")
+# Quantiles_Selected = NULL
 # AnomalyDetection = NULL
 # FourierTerms = 0
 # TimeTrendVariable = TRUE
 # ZeroPadSeries = NULL
 # DataTruncate = FALSE
-# NumOfParDepPlots = 100L
+# NumOfParDepPlots = 3L
 # EvalMetric = "RMSE"
 # GridTune = FALSE
 # PassInGrid = NULL
@@ -311,10 +327,10 @@ for(run in  seq_len(QA_Results[,.N])) {
 # min_child_weight = list("classifier" = 1.0, "regression" = 1.0)
 # subsample = list("classifier" = 0.55, "regression" = 0.55)
 # colsample_bytree = list("classifier" = 0.55, "regression" = 0.55)
-
-# Hurdle Model ----
-# ModelID = "ModelTest"
-# NThreads = parallel::detectCores() - 2
+#
+# # Hurdle Model ----
+# NThreads = 6
+# ModelID = 'ModelTest'
 # SaveModelObjects = FALSE
 # ReturnModelObjects = TRUE
 # data = data.table::copy(train)
@@ -328,7 +344,8 @@ for(run in  seq_len(QA_Results[,.N])) {
 # WeightsColumnName = if('Weights' %chin% names(train)) 'Weights' else NULL
 # IDcols = IDcols
 # EncodingMethod = EncodingMethod
-# Paths = normalizePath("./")
+# DebugMode = DebugMode
+# Paths = getwd()
 # MetaDataPaths = NULL
 # TransformNumericColumns = NULL
 # Methods = NULL
@@ -337,17 +354,36 @@ for(run in  seq_len(QA_Results[,.N])) {
 # NumOfParDepPlots = NumOfParDepPlots
 # PassInGrid = PassInGrid
 # GridTune = GridTune
-# BaselineComparison = "default"
+# BaselineComparison = 'default'
 # MaxModelsInGrid = 500L
 # MaxRunsWithoutNewWinner = 100L
 # MaxRunMinutes = 60*60
-# TreeMethod = TreeMethod
 # Trees = Trees
 # eta = eta
 # max_depth = max_depth
 # min_child_weight = min_child_weight
 # subsample = subsample
 # colsample_bytree = colsample_bytree
+
+# XGBoostRegression DataPrep
+# Algo='xgboost'
+# ModelType='regression'
+# data.=data
+# ValidationData.=ValidationData
+# TestData.=TestData
+# TargetColumnName.=TargetColumnName
+# FeatureColNames.=FeatureColNames
+# WeightsColumnName.=WeightsColumnName
+# IDcols.=IDcols
+# TransformNumericColumns.=TransformNumericColumns
+# Methods.=Methods
+# ModelID.=ModelID
+# model_path.=model_path
+# TrainOnFull.=TrainOnFull
+# SaveModelObjects.=SaveModelObjects
+# ReturnFactorLevels.=ReturnFactorLevels
+# EncodingMethod.=EncodingMethod
+# DebugMode.=DebugMode
 
 # Hurdle regression ----
 # task_type = task_type

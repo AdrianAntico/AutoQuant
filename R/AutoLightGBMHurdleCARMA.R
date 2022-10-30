@@ -1024,16 +1024,17 @@ AutoLightGBMHurdleCARMA <- function(data,
     } else {
       if(!is.null(GroupVariables)) {
 
-        # Modify target reference ----
-        if(Difference) IDcols = 'ModTarget' else IDcols <- eval(TargetColumnName)
+        # Modify target reference
+        if(Difference) IDcols <- 'ModTarget' else IDcols <- eval(TargetColumnName)
 
-        # GroupVar or Hierarchical----
+        # GroupVar or Hierarchical
         if(!is.null(HierarchGroups)) {
           temp <- data.table::copy(UpdateData[, ID := seq_len(.N), by = c(eval(GroupVariables))])
           temp <- temp[ID == N][, ID := NULL]
         } else {
           temp <- data.table::copy(UpdateData[, ID := seq_len(.N), by = 'GroupVar'])
-          temp <- temp[ID == N][, ID := NULL]
+          temp <- temp[, ID2 := max(ID), by = 'GroupVar']
+          temp <- temp[ID == ID2][, ID := NULL][, ID2 := NULL]
         }
 
         # Remove 'Prediction' column

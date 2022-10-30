@@ -11,7 +11,7 @@ QA_Results[, Success := "Failure"]
 QA_Results[, RunTime := 123.456]
 QA_Results[, DateTime := Sys.time()]
 
-# run = 1
+# run = 16
 for(run in seq_len(QA_Results[,.N])) {
 
   # Data
@@ -249,44 +249,59 @@ for(run in seq_len(QA_Results[,.N])) {
 #
 # source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_CalendarTypes.R"))
 # source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_CrossRowOperations.R"))
+# source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_CharacterTypes.R"))
 # source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/CARMA-HelperFunctions.R"))
 # source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ReinforcementLearningFunctions.R"))
 # source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/MiscFunctions.R"))
 # source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelEvaluationPlots.R"))
-# source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/CatBoostHelpers.R"))
+# source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/LightGBMHelpers.R"))
+# source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/XGBoostHelpers.R"))
 # source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelMetrics.R"))
 #
-# run = 1
+# # Collection data.table
+# QA_Results <- data.table::CJ(
+#   Group = c(0,1,2,3),
+#   xregs = c(0,1,2,3),
+#   TOF = c(TRUE, FALSE),
+#   Trans = c(TRUE, FALSE))
+#
+# # Other tests
+# QA_Results[, TimeWeights := data.table::fifelse(runif(.N) < 0.5, 0.9999, 1)]
+# QA_Results[, Success := "Failure"]
+# QA_Results[, RunTime := 123.456]
+# QA_Results[, DateTime := Sys.time()]
+#
+# run = 17
 #
 # # Data
 # if(QA_Results[run, Group] == 0L) {
-#   data <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/QA_DataSets/NoGroup-Eval-Walmart.csv")
+#   data <- RemixAutoML:::Post_Query_Helper('"nogroupevalwalmart.csv"')[['data']]
 # } else if(QA_Results[run, Group] == 1L) {
-#   data <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/QA_DataSets/OneGroup-Eval-Walmart.csv")
+#   data <- RemixAutoML:::Post_Query_Helper('"onegroupevalwalmart.csv"')[['data']]
 # } else if(QA_Results[run, Group] == 2L) {
-#   data <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/QA_DataSets/TwoGroup-Eval-Walmart.csv")
+#   data <- RemixAutoML:::Post_Query_Helper('"twogroupevalwalmart.csv"')[['data']]
 # } else if(QA_Results[run, Group] == 3L) {
-#   data <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/QA_DataSets/ThreeGroup-Eval-Walmart.csv")
+#   data <- RemixAutoML:::Post_Query_Helper('"threegroupevalwalmart.csv"')[['data']]
 # }
 #
 # # xregs
 # if(QA_Results[run, xregs] == 0L) {
 #   xregs <- NULL
 # } else if(QA_Results[run, xregs] == 1L) {
-#   if(QA_Results[run, Group] == 0L) xregs <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/QA_DataSets/NoGroup-FC-Walmart-XREG1.csv")
-#   if(QA_Results[run, Group] == 1L) xregs <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/QA_DataSets/OneGroup-FC-Walmart-XREG1.csv")
-#   if(QA_Results[run, Group] == 2L) xregs <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/QA_DataSets/TwoGroup-FC-Walmart-XREG1.csv")
-#   if(QA_Results[run, Group] == 3L) xregs <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/QA_DataSets/ThreeGroup-FC-Walmart-XREG1.csv")
+#   if(QA_Results[run, Group] == 0L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("nogroupfcwalmartxreg1.csv"))[['data']]
+#   if(QA_Results[run, Group] == 1L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("onegroupfcwalmartxreg1.csv"))[['data']]
+#   if(QA_Results[run, Group] == 2L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("twogroupfcwalmartxreg1.csv"))[['data']]
+#   if(QA_Results[run, Group] == 3L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("threegroupfcwalmartxreg1.csv"))[['data']]
 # } else if(QA_Results[run, xregs] == 2L) {
-#   if(QA_Results[run, Group] == 0L) xregs <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/QA_DataSets/NoGroup-FC-Walmart-XREG2.csv")
-#   if(QA_Results[run, Group] == 1L) xregs <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/QA_DataSets/OneGroup-FC-Walmart-XREG2.csv")
-#   if(QA_Results[run, Group] == 2L) xregs <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/QA_DataSets/TwoGroup-FC-Walmart-XREG2.csv")
-#   if(QA_Results[run, Group] == 3L) xregs <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/QA_DataSets/ThreeGroup-FC-Walmart-XREG2.csv")
+#   if(QA_Results[run, Group] == 0L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("nogroupfcwalmartxreg2.csv"))[['data']]
+#   if(QA_Results[run, Group] == 1L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("onegroupfcwalmartxreg2.csv"))[['data']]
+#   if(QA_Results[run, Group] == 2L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("twogroupfcwalmartxreg2.csv"))[['data']]
+#   if(QA_Results[run, Group] == 3L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("threegroupfcwalmartxreg2.csv"))[['data']]
 # } else if(QA_Results[run, xregs] == 3L) {
-#   if(QA_Results[run, Group] == 0L) xregs <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/QA_DataSets/NoGroup-FC-Walmart-XREG3.csv")
-#   if(QA_Results[run, Group] == 1L) xregs <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/QA_DataSets/OneGroup-FC-Walmart-XREG3.csv")
-#   if(QA_Results[run, Group] == 2L) xregs <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/QA_DataSets/TwoGroup-FC-Walmart-XREG3.csv")
-#   if(QA_Results[run, Group] == 3L) xregs <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/QA_DataSets/ThreeGroup-FC-Walmart-XREG3.csv")
+#   if(QA_Results[run, Group] == 0L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("nogroupfcwalmartxreg3.csv"))[['data']]
+#   if(QA_Results[run, Group] == 1L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("onegroupfcwalmartxreg3.csv"))[['data']]
+#   if(QA_Results[run, Group] == 2L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("twogroupfcwalmartxreg3.csv"))[['data']]
+#   if(QA_Results[run, Group] == 3L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("threegroupfcwalmartxreg3.csv"))[['data']]
 # }
 #
 # # Testing params
@@ -333,6 +348,10 @@ for(run in seq_len(QA_Results[,.N])) {
 # data1 <- data.table::copy(data)
 # if(QA_Results[run, xregs] != 0L) xregs1 <- data.table::copy(xregs) else xregs1 <- NULL
 #
+# # Start Timer
+# Start <- Sys.time()
+#
+# # data args
 # data = data1
 # XREGS = xregs1
 # TargetColumnName = "Weekly_Sales"
@@ -343,36 +362,36 @@ for(run in seq_len(QA_Results[,.N])) {
 # TimeWeights = weights
 # TimeUnit = "weeks"
 # TimeGroups = c("weeks","months")
-# TrainOnFull = TRUE
+# TrainOnFull = TOF
 # SplitRatios = c(1 - 10 / 110, 10 / 110)
 # PartitionType = "random"
 # FC_Periods = 4
 # Timer = TRUE
 # DebugMode = TRUE
-# TargetTransformation = TRUE
-# Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit")
+# TargetTransformation = Trans
+# Methods = c("Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit")
 # Difference = FALSE
 # NonNegativePred = FALSE
 # Threshold = NULL
 # RoundPreds = FALSE
 # CalendarVariables = c("week", "wom", "month", "quarter")
 # HolidayVariable = c("USPublicHolidays", "EasterGroup", "ChristmasGroup","OtherEcclesticalFeasts")
-# HolidayLookback = 7
+# HolidayLookback = NULL
 # HolidayLags = 1
 # HolidayMovingAverages = 1:2
-# Lags = list("weeks" = seq(2L, 10L, 2L), "months" = c(1:3))
-# MA_Periods = list("weeks" = seq(2L, 10L, 2L), "months" = c(2,3))
+# Lags = list("weeks" = c(1:5), "months" = c(1:3))
+# MA_Periods = list("weeks" = c(2:5), "months" = c(2,3))
 # SD_Periods = NULL
 # Skew_Periods = NULL
 # Kurt_Periods = NULL
 # Quantile_Periods = NULL
-# Quantiles_Selected = c("q5","q95")
+# Quantiles_Selected = NULL
 # AnomalyDetection = NULL
 # FourierTerms = 0
 # TimeTrendVariable = TRUE
 # ZeroPadSeries = NULL
 # DataTruncate = FALSE
-# NumOfParDepPlots = 100L
+# NumOfParDepPlots = 3L
 # EvalMetric = "RMSE"
 # GridTune = FALSE
 # PassInGrid = NULL
@@ -441,8 +460,7 @@ for(run in seq_len(QA_Results[,.N])) {
 # num_gpu = list('classifier' = 1, 'regression' = 1)
 
 # Hurdle Model ----
-# ModelID = "ModelTest"
-# NThreads = parallel::detectCores() - 2
+# ModelID = 'ModelTest'
 # SaveModelObjects = FALSE
 # ReturnModelObjects = TRUE
 # data = data.table::copy(train)
@@ -456,7 +474,8 @@ for(run in seq_len(QA_Results[,.N])) {
 # WeightsColumnName = if('Weights' %chin% names(train)) 'Weights' else NULL
 # IDcols = IDcols
 # EncodingMethod = EncodingMethod
-# Paths = normalizePath("./")
+# DebugMode = DebugMode
+# Paths = getwd()
 # MetaDataPaths = NULL
 # TransformNumericColumns = NULL
 # Methods = NULL
@@ -465,181 +484,289 @@ for(run in seq_len(QA_Results[,.N])) {
 # NumOfParDepPlots = NumOfParDepPlots
 # PassInGrid = PassInGrid
 # GridTune = GridTune
-# BaselineComparison = "default"
+# BaselineComparison = 'default'
 # MaxModelsInGrid = 500L
 # MaxRunsWithoutNewWinner = 100L
 # MaxRunMinutes = 60*60
-# TreeMethod = TreeMethod
+# input_model = input_model
+# task = task
+# device_type = device_type
+# objective = objective
+# metric = metric
+# boosting = boosting
+# LinearTree = LinearTree
 # Trees = Trees
 # eta = eta
+# num_leaves = num_leaves
+# deterministic = deterministic
+# force_col_wise = force_col_wise
+# force_row_wise = force_row_wise
 # max_depth = max_depth
-# min_child_weight = min_child_weight
-# subsample = subsample
-# colsample_bytree = colsample_bytree
+# min_data_in_leaf = min_data_in_leaf
+# min_sum_hessian_in_leaf = min_sum_hessian_in_leaf
+# bagging_freq = bagging_freq
+# bagging_fraction = bagging_fraction
+# feature_fraction = feature_fraction
+# feature_fraction_bynode = feature_fraction_bynode
+# extra_trees = extra_trees
+# early_stopping_round = early_stopping_round
+# first_metric_only = first_metric_only
+# max_delta_step = max_delta_step
+# lambda_l1 = lambda_l1
+# lambda_l2 = lambda_l2
+# linear_lambda = linear_lambda
+# min_gain_to_split = min_gain_to_split
+# drop_rate_dart = drop_rate_dart
+# max_drop_dart = max_drop_dart
+# skip_drop_dart = skip_drop_dart
+# uniform_drop_dart = uniform_drop_dart
+# top_rate_goss = top_rate_goss
+# other_rate_goss = other_rate_goss
+# monotone_constraints = monotone_constraints
+# monotone_constraints_method = monotone_constraints_method
+# monotone_penalty = monotone_penalty
+# forcedsplits_filename = forcedsplits_filename
+# refit_decay_rate = refit_decay_rate
+# path_smooth = path_smooth
+# max_bin = max_bin
+# min_data_in_bin = min_data_in_bin
+# data_random_seed = data_random_seed
+# is_enable_sparse = is_enable_sparse
+# enable_bundle = enable_bundle
+# use_missing = use_missing
+# zero_as_missing = zero_as_missing
+# two_round = two_round
+# convert_model = convert_model
+# convert_model_language = convert_model_language
+# boost_from_average = boost_from_average
+# is_unbalance = is_unbalance
+# scale_pos_weight = scale_pos_weight
+# is_provide_training_metric = is_provide_training_metric
+# eval_at = eval_at
+# num_machines = num_machines
+# gpu_platform_id = gpu_platform_id
+# gpu_device_id = gpu_device_id
+# gpu_use_dp = gpu_use_dp
+# num_gpu = num_gpu
+# NThreads = 6
 
-# Hurdle regression ----
-# task_type = task_type
-# NumGPUs = 1
+
+# Hurdle Regression
+# OutputSelection = c("Importances","EvalMetrics")
+# PrimaryDateColumn = PrimaryDateColumn
+# WeightsColumnName = WeightsColumnName
 # DebugMode = DebugMode
-# OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "PDFs", "Score_TrainData")
-# # Metadata argument
-# ModelID = ModelIDD
+# SaveInfoToPDF = FALSE
+# NThreads = NThreads
 # model_path = Paths
 # metadata_path = MetaDataPaths
-# SaveModelObjects = SaveModelObjects
+# ModelID = ModelIDD
+# ReturnFactorLevels = TRUE
 # ReturnModelObjects = ReturnModelObjects
-# # Data argument
+# SaveModelObjects = SaveModelObjects
+# Verbose = 1L
+# EncodingMethod = EncodingMethod
 # data = data.table::copy(trainBucket)
 # TrainOnFull = TrainOnFull
 # ValidationData = data.table::copy(validBucket)
 # TestData = data.table::copy(testBucket)
 # TargetColumnName = TargetColumnName
 # FeatureColNames = FeatureNames
-# PrimaryDateColumn = PrimaryDateColumn
-# WeightsColumnName = TimeWeights
 # IDcols = IDcolsModified
 # TransformNumericColumns = TransformNumericColumns
 # Methods = Methods
-# # Model evaluatio
-# eval_metric = "RMSE"
-# loss_function = "RMSE"
-# MetricPeriods = MetricPeriods
+# grid_eval_metric = "mse"
 # NumOfParDepPlots = NumOfParDepPlots
-# # Grid tuning arguments - PassInGrid is the best otrics
 # PassInGrid = PassInGrid
 # GridTune = GridTune
 # MaxModelsInGrid = MaxModelsInGrid
-# MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner
-# MaxRunMinutes = MaxRunMinutes
-# BaselineComparison = BaselineComparison
+# BaselineComparison = "default"
+# MaxRunsWithoutNewWinner = 20L
+# MaxRunMinutes = 60*60
+# input_model = Classifierinput_model
+# task = Regressiontask
+# device_type = Regressiondevice_type
+# objective = Regressionobjective
+# metric = Regressionmetric
+# boosting = Regressionboosting
+# LinearTree = RegressionLinearTree
+# Trees = RegressionTrees
+# eta = Regressioneta
+# num_leaves = Regressionnum_leaves
+# deterministic = Regressiondeterministic
+# force_col_wise = Regressionforce_col_wise
+# force_row_wise = Regressionforce_row_wise
+# max_depth = Regressionmax_depth
+# min_data_in_leaf = Regressionmin_data_in_leaf
+# min_sum_hessian_in_leaf = Regressionmin_sum_hessian_in_leaf
+# bagging_freq = Regressionbagging_freq
+# bagging_fraction = Regressionbagging_fraction
+# feature_fraction = Regressionfeature_fraction
+# feature_fraction_bynode = Regressionfeature_fraction_bynode
+# lambda_l1 = Regressionlambda_l1
+# lambda_l2 = Regressionlambda_l2
+# extra_trees = Regressionextra_trees
+# early_stopping_round = Regressionearly_stopping_round
+# first_metric_only = Regressionfirst_metric_only
+# max_delta_step = Regressionmax_delta_step
+# linear_lambda = Regressionlinear_lambda
+# min_gain_to_split = Regressionmin_gain_to_split
+# drop_rate_dart = Regressiondrop_rate_dart
+# max_drop_dart = Regressionmax_drop_dart
+# skip_drop_dart = Regressionskip_drop_dart
+# uniform_drop_dart = Regressionuniform_drop_dart
+# top_rate_goss = Regressiontop_rate_goss
+# other_rate_goss = Regressionother_rate_goss
+# monotone_constraints = Regressionmonotone_constraints
+# monotone_constraints_method = Regressionmonotone_constraints_method
+# monotone_penalty = Regressionmonotone_penalty
+# forcedsplits_filename = Regressionforcedsplits_filename
+# refit_decay_rate = Regressionrefit_decay_rate
+# path_smooth = Regressionpath_smooth
+# max_bin = Regressionmax_bin
+# min_data_in_bin = Regressionmin_data_in_bin
+# data_random_seed = Regressiondata_random_seed
+# is_enable_sparse = Regressionis_enable_sparse
+# enable_bundle = Regressionenable_bundle
+# use_missing = Regressionuse_missing
+# zero_as_missing = Regressionzero_as_missing
+# two_round = Regressiontwo_round
+# convert_model = Regressionconvert_model
+# convert_model_language = Regressionconvert_model_language
+# boost_from_average = Regressionboost_from_average
+# alpha = NULL
+# fair_c = NULL
+# poisson_max_delta_step = NULL
+# tweedie_variance_power = NULL
+# lambdarank_truncation_level = NULL
+# is_provide_training_metric = Regressionis_provide_training_metric
+# eval_at = Regressioneval_at
+# num_machines = Regressionnum_machines
+# gpu_platform_id = Regressiongpu_platform_id
+# gpu_device_id = Regressiongpu_device_id
+# gpu_use_dp = Regressiongpu_use_dp
+# num_gpu = Regressionnum_gpu
 
-# CatBoost data prep ----
-# ModelType="regression"
+
+# Regression DataPrep inside AutoLightGBMRegression()
+# Algo='lightgbm'
+# ModelType='regression'
 # data.=data
 # ValidationData.=ValidationData
 # TestData.=TestData
 # TargetColumnName.=TargetColumnName
 # FeatureColNames.=FeatureColNames
-# PrimaryDateColumn.=PrimaryDateColumn
+# WeightsColumnName.=WeightsColumnName
 # IDcols.=IDcols
-# TrainOnFull.=TrainOnFull
-# SaveModelObjects.=SaveModelObjects
 # TransformNumericColumns.=TransformNumericColumns
 # Methods.=Methods
-# model_path.=model_path
 # ModelID.=ModelID
-# DummifyCols.=DummifyCols
-# LossFunction.=LossFunction
-# EvalMetric.=EvalMetric
+# model_path.=model_path
+# TrainOnFull.=TrainOnFull
+# SaveModelObjects.=SaveModelObjects
+# ReturnFactorLevels.=ReturnFactorLevels
+# EncodingMethod.=EncodingMethod
+# DebugMode. = TRUE
 
-# Classifier ----
-# # GPU or CPU
-# task_type = task_type
-# NumGPUs = 1
-#
-# # Metadata arguments
-# ModelID = ModelID
+
+# Regression Model first pass
+# OutputSelection = c("Importances","EvalMetrics")
+# PrimaryDateColumn = PrimaryDateColumn
+# WeightsColumnName = WeightsColumnName
+# DebugMode = DebugMode
+# SaveInfoToPDF = FALSE
+# NThreads = NThreads
 # model_path = Paths
 # metadata_path = MetaDataPaths
-# SaveModelObjects = SaveModelObjects
+# ModelID = ModelIDD
+# ReturnFactorLevels = TRUE
 # ReturnModelObjects = ReturnModelObjects
-#
-# # Data arguments
-# data = data.table::copy(data)
-# TrainOnFull = FALSE
-# ValidationData = data.table::copy(ValidationData)
-# TestData = data.table::copy(TestData)
-# TargetColumnName = "Target_Buckets"
+# SaveModelObjects = SaveModelObjects
+# Verbose = 1L
+# EncodingMethod = EncodingMethod
+# data = data.table::copy(trainBucket)
+# TrainOnFull = TrainOnFull
+# ValidationData = data.table::copy(validBucket)
+# TestData = data.table::copy(testBucket)
+# TargetColumnName = TargetColumnName
 # FeatureColNames = FeatureNames
-# PrimaryDateColumn = PrimaryDateColumn
-# ClassWeights = ClassWeights
-# IDcols = IDcols
-#
-# # Model evaluation
-# EvalMetric = "MCC"
-# LossFunction = "Logloss"
-# MetricPeriods = MetricPeriods
+# IDcols = IDcolsModified
+# TransformNumericColumns = TransformNumericColumns
+# Methods = Methods
+# grid_eval_metric = "mse"
 # NumOfParDepPlots = NumOfParDepPlots
-#
-# # Grid tuning arguments - PassInGrid is the best of GridMetrics
 # PassInGrid = PassInGrid
 # GridTune = GridTune
 # MaxModelsInGrid = MaxModelsInGrid
-# MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner
-# MaxRunMinutes = MaxRunMinutes
-# BaselineComparison = BaselineComparison
-#
-# # Trees, Depth, and LearningRate used in the bandit grid tuning
-# Trees = ClassifierTrees
-# Depth = ClassifierDepth
-# LearningRate = ClassifierLearningRate
-# RandomStrength = ClassifierRandomStrength
-# BorderCount = ClassifierBorderCount
-# L2_Leaf_Reg = ClassifierL2_Leaf_Reg
-# RSM = ClassifierRSM
-# BootStrapType = ClassifierBootStrapType
-# GrowPolicy = ClassifierGrowPolicy
-# langevin = FALSE
-# diffusion_temperature = 10000
-# model_size_reg = 0.5
-# feature_border_type = "GreedyLogSum"
-# sampling_unit = "Object"
-# subsample = NULL
-# score_function = "Cosine"
-# min_data_in_leaf = 1
+# BaselineComparison = "default"
+# MaxRunsWithoutNewWinner = 20L
+# MaxRunMinutes = 60*60
+# input_model = Classifierinput_model
+# task = Regressiontask
+# device_type = Regressiondevice_type
+# objective = Regressionobjective
+# metric = Regressionmetric
+# boosting = Regressionboosting
+# LinearTree = RegressionLinearTree
+# Trees = RegressionTrees
+# eta = Regressioneta
+# num_leaves = Regressionnum_leaves
+# deterministic = Regressiondeterministic
+# force_col_wise = Regressionforce_col_wise
+# force_row_wise = Regressionforce_row_wise
+# max_depth = Regressionmax_depth
+# min_data_in_leaf = Regressionmin_data_in_leaf
+# min_sum_hessian_in_leaf = Regressionmin_sum_hessian_in_leaf
+# bagging_freq = Regressionbagging_freq
+# bagging_fraction = Regressionbagging_fraction
+# feature_fraction = Regressionfeature_fraction
+# feature_fraction_bynode = Regressionfeature_fraction_bynode
+# lambda_l1 = Regressionlambda_l1
+# lambda_l2 = Regressionlambda_l2
+# extra_trees = Regressionextra_trees
+# early_stopping_round = Regressionearly_stopping_round
+# first_metric_only = Regressionfirst_metric_only
+# max_delta_step = Regressionmax_delta_step
+# linear_lambda = Regressionlinear_lambda
+# min_gain_to_split = Regressionmin_gain_to_split
+# drop_rate_dart = Regressiondrop_rate_dart
+# max_drop_dart = Regressionmax_drop_dart
+# skip_drop_dart = Regressionskip_drop_dart
+# uniform_drop_dart = Regressionuniform_drop_dart
+# top_rate_goss = Regressiontop_rate_goss
+# other_rate_goss = Regressionother_rate_goss
+# monotone_constraints = Regressionmonotone_constraints
+# monotone_constraints_method = Regressionmonotone_constraints_method
+# monotone_penalty = Regressionmonotone_penalty
+# forcedsplits_filename = Regressionforcedsplits_filename
+# refit_decay_rate = Regressionrefit_decay_rate
+# path_smooth = Regressionpath_smooth
+# max_bin = Regressionmax_bin
+# min_data_in_bin = Regressionmin_data_in_bin
+# data_random_seed = Regressiondata_random_seed
+# is_enable_sparse = Regressionis_enable_sparse
+# enable_bundle = Regressionenable_bundle
+# use_missing = Regressionuse_missing
+# zero_as_missing = Regressionzero_as_missing
+# two_round = Regressiontwo_round
+# convert_model = Regressionconvert_model
+# convert_model_language = Regressionconvert_model_language
+# boost_from_average = Regressionboost_from_average
+# alpha = NULL
+# fair_c = NULL
+# poisson_max_delta_step = NULL
+# tweedie_variance_power = NULL
+# lambdarank_truncation_level = NULL
+# is_provide_training_metric = Regressionis_provide_training_metric
+# eval_at = Regressioneval_at
+# num_machines = Regressionnum_machines
+# gpu_platform_id = Regressiongpu_platform_id
+# gpu_device_id = Regressiongpu_device_id
+# gpu_use_dp = Regressiongpu_use_dp
+# num_gpu = Regressionnum_gpu
 
-# CatboostImportances ----
-# ModelType="classification"
-# TargetColumnName.=TargetColumnName
-# BestGrid.=BestGrid
-# TrainOnFull.=TrainOnFull
-# TrainPool.=TrainPool
-# TestPool.=TestPool
-# FinalTestPool.=FinalTestPool
-# TestDataCheck=!is.null(TestData)
-# ValidationData.=ValidationData
-# FeatureColNames.=FeatureColNames
-# GridTune.=GridTune
-# task_type.=task_type
-# SaveModelObjects.=SaveModelObjects
-# model.=model
-# ModelID.=ModelID
-# model_path.=model_path
-# metadata_path.=metadata_path
-# GrowPolicy.=GrowPolicy
 
-# Carma Scoring ----
-# TestData = data.table::copy(Step1SCore)
-# Path = NULL
-# ModelID = "ModelTest"
-# ModelClass = "catboost"
-# ModelList = TestModel$ModelList
-# ArgList = TestModel$ArgsList
-# Threshold = Threshold
-# CARMA = TRUE
 
-# Catboost scoring ----
-# RemoveModel = TRUE
-# TargetType = TargetType
-# ScoringData = if(!is.null(TestData)) TestData else if(!is.null(ValidationData)) ValidationData else data
-# FeatureColumnNames = FeatureNames
-# IDcols = IDcols
-# ModelObject = ClassModel
-# ModelPath = Paths
-# ModelID = ModelID
-# ReturnFeatures = TRUE
-# MultiClassTargetLevels = TargetLevels
-# TransformNumeric = FALSE
-# BackTransNumeric = FALSE
-# TargetColumnName = NULL
-# TransformationObject = NULL
-# TransID = NULL
-# TransPath = Paths
-# MDP_Impute = FALSE
-# MDP_CharToFactor = TRUE
-# MDP_RemoveDates = FALSE
-# MDP_MissFactor = "0"
-# MDP_MissNum = -1
 
 # ----
 

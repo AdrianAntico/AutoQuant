@@ -212,6 +212,33 @@ AutoXGBoostScoring <- function(TargetType = NULL,
   a <- which(!names(ScoringData) %in% model$feature_names)
   if(!identical(a, integer(0))) data.table::set(ScoringData, j = c(names(ScoringData)[which(!names(ScoringData) %in% model$feature_names)]), value = NULL)
 
+  # AutoXGBoostHurdleCARMA 17
+  # names(ScoringData)
+  # "Date_week"
+  # "Date_wom"
+  # "Date_month"
+  # "Date_quarter"
+  # "HolidayCounts"
+  # "weeks_LAG_1_Weekly_Sales"
+  # "weeks_LAG_2_Weekly_Sales"
+  # "weeks_LAG_3_Weekly_Sales"
+  # "weeks_LAG_4_Weekly_Sales"
+  # "weeks_LAG_5_Weekly_Sales"
+  # "Mean_2_weeks_LAG_1_Weekly_Sales"
+  # "Mean_3_weeks_LAG_1_Weekly_Sales"
+  # "Mean_4_weeks_LAG_1_Weekly_Sales"
+  # "Mean_5_weeks_LAG_1_Weekly_Sales"
+  # "months_LAG_1_Weekly_Sales"
+  # "months_LAG_2_Weekly_Sales"
+  # "months_LAG_3_Weekly_Sales"
+  # "Mean_2_months_LAG_1_Weekly_Sales"
+  # "Mean_3_months_LAG_1_Weekly_Sales"
+  # "weeks_LAG_1_HolidayCounts"
+  # "Mean_2_weeks_LAG_1_HolidayCounts"
+  # "TimeTrend"
+  # "GroupVar_Credibility"
+
+
   # Initialize XGBoost Data Conversion ----
   ScoringMatrix <- xgboost::xgb.DMatrix(as.matrix(ScoringData))
 
