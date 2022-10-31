@@ -89,9 +89,7 @@ CARMA_Define_Args <- function(TimeUnit = NULL,
 
   # FC Periods
   if(FC_Periods <= 1L) {
-    FC_Periods <- 2L
-  } else {
-    FC_Periods <- FC_Periods + 1L
+    FC_Periods <- 1L
   }
 
   # Check arguments

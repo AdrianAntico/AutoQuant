@@ -597,11 +597,11 @@ AutoCatBoostCARMA <- function(data,
 
   # Feature Engineering: Target Transformation ----
   if(DebugMode) print('Feature Engineering: Add Target Transformation ----')
-  if(TargetTransformation && Methods != 'Standardize') {
+  if(TargetTransformation) {
     TransformResults <- AutoTransformationCreate(data, ColumnNames=TargetColumnName, Methods=Methods, Path=NULL, TransID='Trans', SaveOutput=FALSE)
     data <- TransformResults$Data; TransformResults$Data <- NULL
     TransformObject <- TransformResults$FinalResults; rm(TransformResults)
-  } else if(TargetTransformation && Methods != 'Standardize') {
+  } else if(TargetTransformation) {
     if(length(GroupVariables) > 0L) x <- 'GroupVar' else x <- NULL
     TransformResults <- RemixAutoML::Standardize(data, ColNames = TargetColumnName, GroupVars = x, Center = TRUE, Scale = TRUE, ScoreTable = FALSE)
     data <- TransformResults$data
