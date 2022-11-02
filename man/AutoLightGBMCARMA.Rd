@@ -18,7 +18,6 @@ AutoLightGBMCARMA(
   FC_Periods = 5,
   NThreads = max(1, parallel::detectCores() - 2L),
   SaveDataPath = NULL,
-  PDFOutputPath = NULL,
   TimeUnit = "week",
   TimeGroups = c("weeks", "months"),
   TargetTransformation = FALSE,
@@ -50,6 +49,7 @@ AutoLightGBMCARMA(
   SaveModel = FALSE,
   ArgsList = NULL,
   DebugMode = FALSE,
+  ModelID = "FC001",
   GridTune = FALSE,
   GridEvalMetric = "mae",
   ModelCount = 30L,
@@ -147,8 +147,6 @@ AutoLightGBMCARMA(
 
 \item{SaveDataPath}{Path to save modeling data}
 
-\item{PDFOutputPath}{Supply a path to save model insights to PDF}
-
 \item{TimeUnit}{List the time unit your data is aggregated by. E.g. '1min', '5min', '10min', '15min', '30min', 'hour', 'day', 'week', 'month', 'quarter', 'year'}
 
 \item{TimeGroups}{Select time aggregations for adding various time aggregated GDL features.}
@@ -203,11 +201,13 @@ AutoLightGBMCARMA(
 
 \item{SaveModel}{Logical. If TRUE, output ArgsList will have a named element 'Model' with the CatBoost model object}
 
-\item{ArgsList}{ArgsList is for scoring. Must contain named element 'Model' with a catboost model object
-
-# ML Args begin}
+\item{ArgsList}{ArgsList is for scoring. Must contain named element 'Model' with a catboost model object}
 
 \item{DebugMode}{Setting to TRUE generates printout of all header code comments during run time of function}
+
+\item{ModelID}{Something to name your model if you want it saved
+
+# ML Args begin}
 
 \item{GridTune}{Set to TRUE to run a grid tune}
 
@@ -432,7 +432,6 @@ Results <- AutoLightGBMCARMA(
   Timer = TRUE,
   DebugMode = FALSE,
   SaveDataPath = NULL,
-  PDFOutputPath = NULL,
   SaveModel = FALSE,
   ArgsList = NULL,
 

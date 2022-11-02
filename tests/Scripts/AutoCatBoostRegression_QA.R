@@ -62,7 +62,7 @@ CatBoost_QA_Results_Regression[, RunNumber := seq_len(.N)]
 # 40:  TRUE           TRUE    FALSE         RMSE      GPU Failure               FALSE
 
 # AutoCatBoostRegression
-# run = 2
+# run = 5
 for(run in seq_len(CatBoost_QA_Results_Regression[,.N])) {
 
   # Iteration number
@@ -144,7 +144,7 @@ for(run in seq_len(CatBoost_QA_Results_Regression[,.N])) {
     NumGPUs = 1,
 
     # Metadata arguments
-    OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "PDFs", "Score_TrainData"),
+    OutputSelection = NULL, # c("Importances", "EvalPlots", "EvalMetrics", "PDFs", "Score_TrainData"),
     ModelID = "Test_Model_1",
     model_path = normalizePath("./"),
     metadata_path = NULL,

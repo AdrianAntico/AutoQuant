@@ -17,7 +17,6 @@
 #' @param TimeGroups Select time aggregations for adding various time aggregated GDL features.
 #' @param TimeWeights Supply a value that will be multiplied by he time trend value
 #' @param FC_Periods Set the number of periods you want to have forecasts for. E.g. 52 for weekly data to forecast a year ahead
-#' @param PDFOutputPath Supply a path to save model insights to PDF
 #' @param SaveDataPath Path to save modeling data
 #' @param TargetTransformation Run AutoTransformationCreate() to find best transformation for the target variable. Tests YeoJohnson, BoxCox, and Asigh (also Asin and Logit for proportion target variables).
 #' @param Methods Choose from 'YeoJohnson', 'BoxCox', 'Asinh', 'Log', 'LogPlus1', 'Sqrt', 'Asin', or 'Logit'. If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.
@@ -56,6 +55,7 @@
 #' @param MaxRunMinutes Default 24L*60L
 #' @param SaveModel Logical. If TRUE, output ArgsList will have a named element 'Model' with the CatBoost model object
 #' @param ArgsList ArgsList is for scoring. Must contain named element 'Model' with a catboost model object
+#' @param ModelID Something to name your model if you want it saved
 #'
 #' # ML Args begin
 #' @param Device_Type = 'CPU'
@@ -200,7 +200,6 @@
 #'   Timer = TRUE,
 #'   DebugMode = FALSE,
 #'   SaveDataPath = NULL,
-#'   PDFOutputPath = NULL,
 #'   SaveModel = FALSE,
 #'   ArgsList = NULL,
 #'
@@ -351,7 +350,6 @@ AutoLightGBMCARMA <- function(data = NULL,
                               FC_Periods = 5,
                               NThreads = max(1, parallel::detectCores()-2L),
                               SaveDataPath = NULL,
-                              PDFOutputPath = NULL,
                               TimeUnit = 'week',
                               TimeGroups = c('weeks','months'),
                               TargetTransformation = FALSE,
@@ -381,6 +379,7 @@ AutoLightGBMCARMA <- function(data = NULL,
                               SaveModel = FALSE,
                               ArgsList = NULL,
                               DebugMode = FALSE,
+                              ModelID = 'FC001',
 
                               # Grid tuning args
                               GridTune = FALSE,
@@ -509,6 +508,7 @@ AutoLightGBMCARMA <- function(data = NULL,
   }
 
   # Purified args: see CARMA HELPER FUNCTIONS ----
+  if(length(ModelID) == 0) ModelID <- 'FC001'
   Args <- CARMA_Define_Args(TimeUnit=TimeUnit,TimeGroups=TimeGroups,HierarchGroups=HierarchGroups,GroupVariables=GroupVariables,FC_Periods=FC_Periods,PartitionType=PartitionType,TrainOnFull=TrainOnFull,SplitRatios=SplitRatios)
   IndepentVariablesPass <- Args$IndepentVariablesPass
   HoldOutPeriods <- Args$HoldOutPeriods
@@ -754,15 +754,15 @@ AutoLightGBMCARMA <- function(data = NULL,
       NThreads = parallel::detectCores(),
 
       # Metadata args
-      OutputSelection = c('Importances','EvalPlots','EvalMetrics','Score_TrainData'),
+      OutputSelection = if(TrainOnFull) NULL else c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData'),
       model_path = getwd(),
-      metadata_path = if(!is.null(PDFOutputPath)) PDFOutputPath else getwd(),
+      metadata_path = getwd(),
       ModelID = 'LightGBM',
       NumOfParDepPlots = 3L,
       ReturnFactorLevels = TRUE,
       ReturnModelObjects = TRUE,
       SaveModelObjects = FALSE,
-      SaveInfoToPDF = if(!is.null(PDFOutputPath)) TRUE else FALSE,
+      SaveInfoToPDF = FALSE,
       DebugMode = DebugMode,
 
       # Data args
@@ -986,6 +986,15 @@ AutoLightGBMCARMA <- function(data = NULL,
   Output <- CarmaReturnDataPrep(UpdateData.=UpdateData, FutureDateData.=FutureDateData, dataStart.=dataStart, DateColumnName.=DateColumnName, TargetColumnName.=TargetColumnName, GroupVariables.=GroupVariables, Difference.=Difference, TargetTransformation.=TargetTransformation, TransformObject.=TransformObject, NonNegativePred.=NonNegativePred, MergeGroupVariablesBack.=MergeGroupVariablesBack, Debug = DebugMode)
   UpdateData <- Output$UpdateData; Output$UpdateData <- NULL
   TransformObject <- Output$TransformObject; rm(Output)
+
+  # Save model
+  if(SaveModel) {
+    ArgsList[['Model']] <- Model
+    if(length(SaveDataPath) > 0L) Path <- file.path(SaveDataPath, paste0(ModelID,'.rds')) else Path <- NULL
+    if(length(Path) > 0L && dir.exists(SaveDataPath)) {
+      saveRDS(object = ArgsList, file = Path)
+    }
+  }
 
   # Return ----
   return(list(

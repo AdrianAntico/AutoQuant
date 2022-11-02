@@ -17,7 +17,6 @@ AutoCatBoostCARMA(
   FC_Periods = 5,
   TimeUnit = NULL,
   TimeGroups = NULL,
-  PDFOutputPath = NULL,
   SaveDataPath = NULL,
   NumOfParDepPlots = 10L,
   EncodingMethod = "target_encoding",
@@ -77,8 +76,7 @@ AutoCatBoostCARMA(
   ReturnShap = FALSE,
   SaveModel = FALSE,
   ArgsList = NULL,
-  ModelID = "FC001",
-  ExpandEncoding = FALSE
+  ModelID = "FC001"
 )
 }
 \arguments{
@@ -105,8 +103,6 @@ AutoCatBoostCARMA(
 \item{TimeUnit}{List the time unit your data is aggregated by. E.g. '1min', '5min', '10min', '15min', '30min', 'hour', 'day', 'week', 'month', 'quarter', 'year'.}
 
 \item{TimeGroups}{Select time aggregations for adding various time aggregated GDL features.}
-
-\item{PDFOutputPath}{NULL or a path file to output PDFs to a specified folder}
 
 \item{SaveDataPath}{NULL Or supply a path. Data saved will be called 'ModelID'_data.csv}
 
@@ -390,7 +386,6 @@ for(Run in seq_len(TotalRuns)) {
     MaxRunMinutes = 60*60,
 
     # ML evaluation output
-    PDFOutputPath = NULL,
     SaveDataPath = NULL,
     NumOfParDepPlots = 0L,
 

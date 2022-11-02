@@ -17,7 +17,6 @@
 #' @param TimeUnit List the time unit your data is aggregated by. E.g. '1min', '5min', '10min', '15min', '30min', 'hour', 'day', 'week', 'month', 'quarter', 'year'.
 #' @param TimeGroups Select time aggregations for adding various time aggregated GDL features.
 #' @param FC_Periods Set the number of periods you want to have forecasts for. E.g. 52 for weekly data to forecast a year ahead
-#' @param PDFOutputPath NULL or a path file to output PDFs to a specified folder
 #' @param SaveDataPath NULL Or supply a path. Data saved will be called 'ModelID'_data.csv
 #' @param EncodingMethod 'binary', 'credibility', 'woe', 'target_encoding', 'poly_encode', 'backward_difference', 'helmert'
 #' @param TargetTransformation TRUE or FALSE. If TRUE, select the methods in the Methods arg you want tested. The best one will be applied.
@@ -234,7 +233,6 @@
 #'     MaxRunMinutes = 60*60,
 #'
 #'     # ML evaluation output
-#'     PDFOutputPath = NULL,
 #'     SaveDataPath = NULL,
 #'     NumOfParDepPlots = 0L,
 #'
@@ -329,7 +327,6 @@ AutoCatBoostCARMA <- function(data,
                               FC_Periods = 5,
                               TimeUnit = NULL,
                               TimeGroups = NULL,
-                              PDFOutputPath = NULL,
                               SaveDataPath = NULL,
                               NumOfParDepPlots = 10L,
                               EncodingMethod = 'target_encoding',
@@ -389,8 +386,7 @@ AutoCatBoostCARMA <- function(data,
                               ReturnShap = FALSE,
                               SaveModel = FALSE,
                               ArgsList = NULL,
-                              ModelID = 'FC001',
-                              ExpandEncoding = FALSE) {
+                              ModelID = 'FC001') {
 
   if(DebugMode) print(data)
 
@@ -487,11 +483,7 @@ AutoCatBoostCARMA <- function(data,
 
   # Merge data and XREG for Training ----
   if(DebugMode) print('xregs management')
-  if(length(XREGS) == 0L && 'Rappture' %in% installed.packages() && ExpandEncoding) {
-    Output <- Rappture:::FC.XREGS(data,TargetColumnName, DateColumnName,FC_Periods,TimeUnit,gv = GroupVariables, xrs = XREGS, em = 'MEOW', wd = SaveDataPath, db = DebugMode)
-    data <- Output$data; Output$data <- NULL
-    XREGS <- Output$XREGS; rm(Output)
-  } else if(!is.null(XREGS)) {
+  if(!is.null(XREGS)) {
     Output <- CarmaMergeXREGS(data.=data, XREGS.=XREGS, TargetColumnName.=TargetColumnName, GroupVariables.=GroupVariables, DateColumnName.=DateColumnName)
     data <- Output$data; Output$data <- NULL
     XREGS <- Output$XREGS; rm(Output)
@@ -696,16 +688,16 @@ AutoCatBoostCARMA <- function(data,
       # GPU or CPU and the number of available GPUs
       task_type = TaskType,
       NumGPUs = NumGPU,
-      OutputSelection = c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData'),
+      OutputSelection = if(TrainOnFull) NULL else c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData'),
       ReturnShap = ReturnShap,
 
       # Metadata arguments
       ModelID = 'CatBoost',
       model_path = getwd(),
-      metadata_path = if(!is.null(PDFOutputPath)) PDFOutputPath else getwd(),
+      metadata_path = getwd(),
       SaveModelObjects = FALSE,
       ReturnModelObjects = TRUE,
-      SaveInfoToPDF = if(!is.null(PDFOutputPath)) TRUE else FALSE,
+      SaveInfoToPDF = FALSE,
 
       # Data arguments
       data = train,

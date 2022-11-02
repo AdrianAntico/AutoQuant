@@ -16,7 +16,6 @@ AutoXGBoostCARMA(
   GroupVariables = NULL,
   FC_Periods = 5,
   SaveDataPath = NULL,
-  PDFOutputPath = NULL,
   TimeUnit = "week",
   TimeGroups = c("weeks", "months"),
   TargetTransformation = FALSE,
@@ -64,7 +63,8 @@ AutoXGBoostCARMA(
   alpha = 0,
   lambda = 1,
   SaveModel = FALSE,
-  ArgsList = NULL
+  ArgsList = NULL,
+  ModelID = "FC001"
 )
 }
 \arguments{
@@ -89,8 +89,6 @@ AutoXGBoostCARMA(
 \item{FC_Periods}{Set the number of periods you want to have forecasts for. E.g. 52 for weekly data to forecast a year ahead}
 
 \item{SaveDataPath}{Path to save modeling data}
-
-\item{PDFOutputPath}{Supply a path to save model insights to PDF}
 
 \item{TimeUnit}{List the time unit your data is aggregated by. E.g. '1min', '5min', '10min', '15min', '30min', 'hour', 'day', 'week', 'month', 'quarter', 'year'}
 
@@ -183,6 +181,8 @@ AutoXGBoostCARMA(
 \item{SaveModel}{Logical. If TRUE, output ArgsList will have a named element 'Model' with the CatBoost model object}
 
 \item{ArgsList}{ArgsList is for scoring. Must contain named element 'Model' with a catboost model object}
+
+\item{ModelID}{Something to name your model if you want it saved}
 }
 \value{
 See examples
@@ -248,7 +248,6 @@ XGBoostResults <- AutoXGBoostCARMA(
   Timer = TRUE,
   DebugMode = FALSE,
   SaveDataPath = NULL,
-  PDFOutputPath = NULL,
 
   # Target Transformations
   TargetTransformation = TRUE,

@@ -16,7 +16,6 @@
 #' @param TimeUnit List the time unit your data is aggregated by. E.g. '1min', '5min', '10min', '15min', '30min', 'hour', 'day', 'week', 'month', 'quarter', 'year'
 #' @param TimeGroups Select time aggregations for adding various time aggregated GDL features.
 #' @param FC_Periods Set the number of periods you want to have forecasts for. E.g. 52 for weekly data to forecast a year ahead
-#' @param PDFOutputPath Supply a path to save model insights to PDF
 #' @param SaveDataPath Path to save modeling data
 #' @param TargetTransformation Run AutoTransformationCreate() to find best transformation for the target variable. Tests YeoJohnson, BoxCox, and Asigh (also Asin and Logit for proportion target variables).
 #' @param Methods Choose from 'YeoJohnson', 'BoxCox', 'Asinh', 'Log', 'LogPlus1', 'Sqrt', 'Asin', or 'Logit'. If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.
@@ -63,6 +62,7 @@
 #' @param lambda 1. L2 Reg.
 #' @param SaveModel Logical. If TRUE, output ArgsList will have a named element 'Model' with the CatBoost model object
 #' @param ArgsList ArgsList is for scoring. Must contain named element 'Model' with a catboost model object
+#' @param ModelID Something to name your model if you want it saved
 #' @examples
 #' \dontrun{
 #'
@@ -121,7 +121,6 @@
 #'   Timer = TRUE,
 #'   DebugMode = FALSE,
 #'   SaveDataPath = NULL,
-#'   PDFOutputPath = NULL,
 #'
 #'   # Target Transformations
 #'   TargetTransformation = TRUE,
@@ -190,7 +189,6 @@ AutoXGBoostCARMA <- function(data = NULL,
                              GroupVariables = NULL,
                              FC_Periods = 5,
                              SaveDataPath = NULL,
-                             PDFOutputPath = NULL,
                              TimeUnit = 'week',
                              TimeGroups = c('weeks','months'),
                              TargetTransformation = FALSE,
@@ -236,7 +234,8 @@ AutoXGBoostCARMA <- function(data = NULL,
                              alpha = 0,
                              lambda = 1,
                              SaveModel = FALSE,
-                             ArgsList = NULL) {
+                             ArgsList = NULL,
+                             ModelID = 'FC001') {
 
   # Prepare environment for using existing model
   # if(): length(ArgsList) > 0L
@@ -273,6 +272,7 @@ AutoXGBoostCARMA <- function(data = NULL,
   }
 
   # Purified args ----
+  if(length(ModelID) == 0) ModelID <- 'FC001'
   Args <- CARMA_Define_Args(TimeUnit=TimeUnit,TimeGroups=TimeGroups,HierarchGroups=HierarchGroups,GroupVariables=GroupVariables,FC_Periods=FC_Periods,PartitionType=PartitionType,TrainOnFull=TrainOnFull,SplitRatios=SplitRatios)
   IndepentVariablesPass <- Args$IndepentVariablesPass
   HoldOutPeriods <- Args$HoldOutPeriods
@@ -503,7 +503,6 @@ AutoXGBoostCARMA <- function(data = NULL,
 
   # Machine Learning: Build Model ----
   if(DebugMode) {
-    options(warn = 0)
     print('Machine Learning: Build Model')
     print(!(length(ArgsList) > 0L && length(ArgsList$Model) > 0L))
     print(length(ArgsList) > 0L)
@@ -514,18 +513,19 @@ AutoXGBoostCARMA <- function(data = NULL,
     TestModel <- AutoXGBoostRegression(
 
       # GPU or CPU
+      OutputSelection = if(TrainOnFull) NULL else c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData'),
       TreeMethod = TreeMethod,
       NThreads = NThreads,
       DebugMode = DebugMode,
 
       # Metadata arguments
       model_path = getwd(),
-      metadata_path = if(!is.null(PDFOutputPath)) PDFOutputPath else getwd(),
+      metadata_path = getwd(),
       ModelID = 'XGBoost',
       ReturnFactorLevels = TRUE,
       ReturnModelObjects = TRUE,
       SaveModelObjects = FALSE,
-      SaveInfoToPDF = if(!is.null(PDFOutputPath)) TRUE else FALSE,
+      SaveInfoToPDF = FALSE,
 
       # Data arguments
       data = train,
@@ -679,6 +679,15 @@ AutoXGBoostCARMA <- function(data = NULL,
   Output <- CarmaReturnDataPrep(UpdateData.=UpdateData, FutureDateData.=FutureDateData, dataStart.=dataStart, DateColumnName.=DateColumnName, TargetColumnName.=TargetColumnName, GroupVariables.=GroupVariables, Difference.=Difference, TargetTransformation.=TargetTransformation, TransformObject.=TransformObject, NonNegativePred.=NonNegativePred, MergeGroupVariablesBack.=MergeGroupVariablesBack, Debug = DebugMode)
   UpdateData <- Output$UpdateData; Output$UpdateData <- NULL
   TransformObject <- Output$TransformObject; rm(Output)
+
+  # Save model
+  if(SaveModel) {
+    ArgsList[['Model']] <- Model
+    if(length(SaveDataPath) > 0L) Path <- file.path(SaveDataPath, paste0(ModelID,'.rds')) else Path <- NULL
+    if(length(Path) > 0L && dir.exists(SaveDataPath)) {
+      saveRDS(object = ArgsList, file = Path)
+    }
+  }
 
   # Return ----
   return(list(
