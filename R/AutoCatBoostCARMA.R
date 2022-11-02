@@ -399,8 +399,6 @@ AutoCatBoostCARMA <- function(data,
   #    update the args based on the model configuration but then
   #    train the model anyways
   if(length(ArgsList) > 0L) {
-    if(DebugMode) for(i in 1:10) print('ArgsList > 0')
-    if(DebugMode) for(i in 1:10) print(rep(length(ArgsList$Model) > 0L, 10L))
     if(length(ArgsList$Model) > 0L) {
       if(DebugMode) for(i in 1:10) print('ArgsList$Model > 0')
       skip_cols <- c('TrainOnFull','data','FC_Periods','SaveModel','ArgsList','ModelID')
@@ -412,19 +410,7 @@ AutoCatBoostCARMA <- function(data,
     default_args <- formals(fun = RemixAutoML::AutoCatBoostCARMA)
     for(sc in skip_cols) default_args[[sc]] <- NULL
     nar <- names(ArgsList)
-
-    if(Debug) {
-      for(i in 1:10) print("  ")
-      print(names(default_args))
-      for(i in 1:10) print("  ")
-      print(TrainOnFull)
-      print(FC_Periods)
-      print(ModelID)
-    }
-
     for(arg in names(default_args)) if(length(arg) > 0L && arg %in% nar && length(ArgsList[[arg]]) > 0L) assign(x = arg, value = ArgsList[[arg]])
-  } else {
-    if(DebugMode) print(rep('length(ArgsList) == 0'), 10)
   }
 
   # Args checking ----
