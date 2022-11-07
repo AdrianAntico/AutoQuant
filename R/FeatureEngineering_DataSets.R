@@ -124,6 +124,20 @@ AutoDataPartition <- function(data,
       }
     }
 
+    TVT <- list()
+    rll <- length(RowList)
+    if(rll >= 3L) {
+      TVT$Train <- setdiff(seq_len(nrow(data)), c(RowList[[2L]],RowList[[3L]]))
+      TVT$Valid <- RowList[[2L]]
+      TVT$Test <- RowList[[3L]]
+    } else if(rll == 2L) {
+      TVT$Train <- setdiff(seq_len(nrow(data)), c(RowList[[2L]]))
+      TVT$Valid <- RowList[[2L]]
+    } else {
+      TVT$Train <- seq_len(nrow(data))
+    }
+    DataCollect[['TVT']] <- TVT
+
     # Partition Data ----
     for(i in rev(seq_len(NumDataSets))) {
       if(i == 1L) {
@@ -185,6 +199,8 @@ AutoDataPartition <- function(data,
       for(g in seq_along(DataCollect)) if("rank" %chin% names(DataCollect[[g]])) DataCollect[[g]][, rank := NULL]
     }
   }
+
+  # DataCollect$TVT <- RowList
   return(DataCollect)
 }
 

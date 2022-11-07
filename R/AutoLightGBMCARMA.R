@@ -56,6 +56,7 @@
 #' @param SaveModel Logical. If TRUE, output ArgsList will have a named element 'Model' with the CatBoost model object
 #' @param ArgsList ArgsList is for scoring. Must contain named element 'Model' with a catboost model object
 #' @param ModelID Something to name your model if you want it saved
+#' @param TVT Passthrough
 #'
 #' # ML Args begin
 #' @param Device_Type = 'CPU'
@@ -471,7 +472,8 @@ AutoLightGBMCARMA <- function(data = NULL,
                               Gpu_Platform_Id = -1,
                               Gpu_Device_Id = -1,
                               Gpu_Use_Dp = TRUE,
-                              Num_Gpu = 1) {
+                              Num_Gpu = 1,
+                              TVT = NULL) {
 
   # Prepare environment for using existing model
   # if(): length(ArgsList) > 0L
@@ -705,11 +707,11 @@ AutoLightGBMCARMA <- function(data = NULL,
   # Data Wrangling: Partition data with AutoDataPartition ----
   if(DebugMode) print('Data Wrangling: Partition data with AutoDataPartition()----')
   if(tolower(PartitionType) == 'timeseries' && is.null(GroupVariables)) PartitionType <- 'time'
-  Output <- CarmaPartition(data.=data, SplitRatios.=SplitRatios, TrainOnFull.=TrainOnFull, NumSets.=NumSets, PartitionType.=PartitionType, GroupVariables.=GroupVariables, DateColumnName.=DateColumnName)
+  Output <- CarmaPartition(data.=data, SplitRatios.=SplitRatios, TrainOnFull.=TrainOnFull, NumSets.=NumSets, PartitionType.=PartitionType, GroupVariables.=GroupVariables, DateColumnName.=DateColumnName, TVT.=TVT)
   train <- Output$train; Output$train <- NULL
   valid <- Output$valid; Output$valid <- NULL
   data <- Output$data; Output$data <- NULL
-  test <- Output$test; rm(Output)
+  test <- Output$test; ArgsList[['TVT']] <- Output$TVT; rm(Output)
 
   # Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train----
   if(DebugMode) print('Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train----')
@@ -728,10 +730,8 @@ AutoLightGBMCARMA <- function(data = NULL,
   TargetVariable <- Output$TargetVariable; rm(Output)
 
   # Machine Learning: Build Model ----
-  if(DebugMode) options(warn = 0)
   if(DebugMode) print('Machine Learning: Build Model')
   if(!(length(ArgsList) > 0L && length(ArgsList[['Model']]) > 0L)) {
-
     TestModel <- AutoLightGBMRegression(
 
       # GPU or CPU
@@ -897,9 +897,6 @@ AutoLightGBMCARMA <- function(data = NULL,
     TestModel <- list()
     TestModel$FactorLevelsList <- ArgsList$FactorLevelsList
   }
-
-  # Turn warnings into errors back on ----
-  if(DebugMode) options(warn = 2)
 
   # Variable for interation counts: max number of rows in Step1SCore data.table across all group ----
   if(DebugMode) print('Variable for interation counts: max number of rows in Step1SCore data.table across all group ----')

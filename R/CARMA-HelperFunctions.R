@@ -143,13 +143,13 @@ CARMA_Define_Args <- function(TimeUnit = NULL,
 #' @param DateColumnName. Passthrough
 #'
 #' @noRd
-CarmaFCHorizon <- function(data. = data,
-                           XREGS. = XREGS,
-                           TrainOnFull. = TrainOnFull,
-                           Difference. = Difference,
-                           FC_Periods. = FC_Periods,
-                           HoldOutPeriods. = HoldOutPeriods,
-                           DateColumnName. = DateColumnName) {
+CarmaFCHorizon <- function(data. = NULL,
+                           XREGS. = NULL,
+                           TrainOnFull. = NULL,
+                           Difference. = NULL,
+                           FC_Periods. = NULL,
+                           HoldOutPeriods. = NULL,
+                           DateColumnName. = NULL) {
   if(!is.null(XREGS.) && TrainOnFull.) {
     if(Difference.) {
       FC_Periods. <- min(-1L + length(unique(XREGS.[[eval(DateColumnName.)]])) - length(unique(data.[[eval(DateColumnName.)]])), FC_Periods.)
@@ -171,11 +171,11 @@ CarmaFCHorizon <- function(data. = data,
 #' @param TargetColumnName. Passthrough
 #'
 #' @noRd
-CarmaMergeXREGS <- function(data. = data,
-                            XREGS. = XREGS,
-                            TargetColumnName. = TargetColumnName,
-                            GroupVariables. = GroupVariables,
-                            DateColumnName. = DateColumnName) {
+CarmaMergeXREGS <- function(data. = NULL,
+                            XREGS. = NULL,
+                            TargetColumnName. = NULL,
+                            GroupVariables. = NULL,
+                            DateColumnName. = NULL) {
 
   if(length(GroupVariables.) > 0L) {
     if(!'GroupVar' %chin% names(XREGS.)) XREGS.[, GroupVar := do.call(paste, c(.SD, sep = ' ')), .SDcols = GroupVariables.]
@@ -207,11 +207,11 @@ CarmaMergeXREGS <- function(data. = data,
 #' @param TargetColumnName. Passthrough
 #'
 #' @noRd
-CarmaSubsetColumns <- function(data. = data,
-                               XREGS. = XREGS,
-                               GroupVariables. = GroupVariables,
-                               DateColumnName. = DateColumnName,
-                               TargetColumnName. = TargetColumnName) {
+CarmaSubsetColumns <- function(data. = NULL,
+                               XREGS. = NULL,
+                               GroupVariables. = NULL,
+                               DateColumnName. = NULL,
+                               TargetColumnName. = NULL) {
   if(!is.null(XREGS.)) {
     if(!is.null(GroupVariables.)) {
       xx <- unique(c(TargetColumnName.,DateColumnName.,GroupVariables., names(XREGS.)))
@@ -241,14 +241,14 @@ CarmaSubsetColumns <- function(data. = data,
 #' @param HierarchGroups. Passthrough
 #'
 #' @noRd
-CarmaFourier <- function(data. = data,
-                         XREGS. = XREGS,
-                         FourierTerms. = FourierTerms,
-                         TimeUnit. = TimeUnit,
-                         TargetColumnName. = TargetColumnName,
-                         GroupVariables. = GroupVariables,
-                         DateColumnName. = DateColumnName,
-                         HierarchGroups. = HierarchGroups) {
+CarmaFourier <- function(data. = NULL,
+                         XREGS. = NULL,
+                         FourierTerms. = NULL,
+                         TimeUnit. = NULL,
+                         TargetColumnName. = NULL,
+                         GroupVariables. = NULL,
+                         DateColumnName. = NULL,
+                         HierarchGroups. = NULL) {
   if(FourierTerms. > 0L) {
 
     # Split GroupVar and Define HierarchyGroups and IndependentGroups
@@ -320,11 +320,11 @@ CarmaFourier <- function(data. = data,
 #' @param FC_Periods. Passthrough
 #'
 #' @noRd
-CarmaDifferencing <- function(GroupVariables. = GroupVariables,
-                              Difference. = Difference,
-                              data. = data,
-                              TargetColumnName. = TargetColumnName,
-                              FC_Periods. = FC_Periods) {
+CarmaDifferencing <- function(GroupVariables. = NULL,
+                              Difference. = NULL,
+                              data. = NULL,
+                              TargetColumnName. = NULL,
+                              FC_Periods. = NULL) {
 
   if(!is.null(GroupVariables.) && Difference.) {
     data.[, TargetDiffMidStep := data.table::shift(x = get(TargetColumnName.), n = 1, fill = NA, type = 'lag'), by = c('GroupVar')][, ModTarget := get(TargetColumnName.) - TargetDiffMidStep]
@@ -362,10 +362,10 @@ CarmaDifferencing <- function(GroupVariables. = GroupVariables,
 #' @param TimeUnit. Passthrough
 #'
 #' @noRd
-CarmaDateStandardize <- function(data. = data,
+CarmaDateStandardize <- function(data. = NULL,
                                  XREGS. = NULL,
-                                 DateColumnName. = DateColumnName,
-                                 TimeUnit. = TimeUnit) {
+                                 DateColumnName. = NULL,
+                                 TimeUnit. = NULL) {
   if(is.character(data.[[eval(DateColumnName.)]])) {
     if(!(tolower(TimeUnit.) %chin% c('1min','5min','10min','15min','30min','hour'))) {
       x <- data.[1L, get(DateColumnName.)]
@@ -393,10 +393,10 @@ CarmaDateStandardize <- function(data. = data,
 #' @param DateColumnName. Passthrough
 #'
 #' @noRd
-CarmaTimeWeights <- function(train. = train,
-                             TimeWeights. = TimeWeights,
-                             GroupVariables. = GroupVariables,
-                             DateColumnName. = DateColumnName) {
+CarmaTimeWeights <- function(train. = NULL,
+                             TimeWeights. = NULL,
+                             GroupVariables. = NULL,
+                             DateColumnName. = NULL) {
   if(!is.null(TimeWeights.)) {
     if(!is.null(GroupVariables.)) {
       data.table::setorderv(x = train., cols = c('GroupVar', DateColumnName.), order = c(1,-1))
@@ -422,9 +422,9 @@ CarmaTimeWeights <- function(train. = train,
 #' @param TimeUnit. Passthrough
 #'
 #' @noRd
-CarmaTruncateData <- function(data. = data,
-                              DateColumnName. = DateColumnName,
-                              TimeUnit. = TimeUnit) {
+CarmaTruncateData <- function(data. = NULL,
+                              DateColumnName. = NULL,
+                              TimeUnit. = NULL) {
   mindate <- data.[, min(get(DateColumnName.))]
   if(tolower(TimeUnit.) %chin% c('hour','hours')) {
     newdate <- mindate + lubridate::hours(val + 1)
@@ -487,18 +487,20 @@ CARMA_Get_IndepentVariablesPass <- function(HierarchGroups) {
 #' @param PartitionType. Passthrough
 #' @param GroupVariables. Passthrough
 #' @param DateColumnName. Passthrough
+#' @param TVT. Passthrough
 #'
 #' @noRd
 CarmaPartition <- function(data. = data,
-                           SplitRatios. = SplitRatios,
-                           TrainOnFull. = TrainOnFull,
-                           NumSets. = NumSets,
-                           PartitionType. = PartitionType,
-                           GroupVariables. = GroupVariables,
-                           DateColumnName. = DateColumnName) {
+                           SplitRatios. = NULL,
+                           TrainOnFull. = NULL,
+                           NumSets. = NULL,
+                           PartitionType. = NULL,
+                           GroupVariables. = NULL,
+                           DateColumnName. = NULL,
+                           TVT. = NULL) {
 
   # Data Wrangling: Partition data with AutoDataPartition
-  if(!is.null(SplitRatios.) || !TrainOnFull.) {
+  if((!is.null(SplitRatios.) || !TrainOnFull.) && length(TVT.) == 0L) {
     DataSets <- AutoDataPartition(
       data = data.,
       NumDataSets = NumSets.,
@@ -509,17 +511,24 @@ CarmaPartition <- function(data. = data,
 
     # Remove ID Column
     if('ID' %chin% names(data.)) data.table::set(data., j = 'ID', value = NULL)
+    TVT. <- DataSets$TVT
     train <- DataSets$TrainData
     valid <- DataSets$ValidationData
     if(NumSets. == 2L) test  <- NULL else test <- DataSets$TestData
-    return(list(train = train, valid = valid, test = test, data = data.))
+
+
+  } else if(length(TVT.) > 0L) {
+    train <- data.[eval(TVT.$Train)]
+    if(length(TVT.$Valid) > 0L) valid <- data.[eval(TVT.$Valid)] else valid <- NULL
+    if(length(TVT.$Test) > 0L) test  <- data.[eval(TVT.$Test)] else test <- NULL
 
   } else {
     train <- data.
     valid <- NULL
     test  <- NULL
-    return(list(train = train, valid = valid, test = test, data = data.))
+    TVT. <- NULL
   }
+  return(list(train = train, valid = valid, test = test, data = data., TVT = TVT.))
 }
 
 #' @param data. Passthrough
@@ -531,13 +540,13 @@ CarmaPartition <- function(data. = data,
 #' @param GroupVariables. Passthrough
 #'
 #' @noRd
-CarmaFeatures <- function(data. = data,
-                          train. = train,
-                          XREGS. = XREGS,
-                          Difference. = Difference,
-                          TargetColumnName. = TargetColumnName,
-                          DateColumnName. = DateColumnName,
-                          GroupVariables. = GroupVariables) {
+CarmaFeatures <- function(data. = NULL,
+                          train. = NULL,
+                          XREGS. = NULL,
+                          Difference. = NULL,
+                          TargetColumnName. = NULL,
+                          DateColumnName. = NULL,
+                          GroupVariables. = NULL) {
   if(!Difference. || is.null(GroupVariables.)) {
     if(!is.null(XREGS.)) ModelFeatures <- setdiff(names(data.), c(eval(TargetColumnName.), eval(DateColumnName.))) else ModelFeatures <- setdiff(names(train.), c(eval(TargetColumnName.), eval(DateColumnName.)))
     TargetVariable <- eval(TargetColumnName.)
@@ -575,18 +584,18 @@ CarmaFeatures <- function(data. = data,
 CarmaScore <- function(Type = 'catboost',
                        i. = i,
                        N. = N,
-                       GroupVariables. = GroupVariables,
-                       HierarchGroups. = HierarchGroups,
-                       DateColumnName. = DateColumnName,
-                       ModelFeatures. = ModelFeatures,
-                       Difference. = Difference,
-                       TargetColumnName. = TargetColumnName,
-                       Step1SCore. = Step1SCore,
-                       Model. = Model,
-                       FutureDateData. = FutureDateData,
-                       NonNegativePred. = NonNegativePred,
-                       RoundPreds. = RoundPreds,
-                       UpdateData. = UpdateData,
+                       GroupVariables. = NULL,
+                       HierarchGroups. = NULL,
+                       DateColumnName. = NULL,
+                       ModelFeatures. = NULL,
+                       Difference. = NULL,
+                       TargetColumnName. = NULL,
+                       Step1SCore. = NULL,
+                       Model. = NULL,
+                       FutureDateData. = NULL,
+                       NonNegativePred. = NULL,
+                       RoundPreds. = NULL,
+                       UpdateData. = NULL,
                        FactorList. = NULL,
                        EncodingMethod. = NULL,
                        dt = NULL) {
@@ -1165,9 +1174,9 @@ CarmaScore <- function(Type = 'catboost',
 #' @param DateColumnName. Passthrough
 #'
 #' @noRd
-NextTimePeriod <- function(UpdateData. = UpdateData,
-                           TimeUnit. = TimeUnit,
-                           DateColumnName. = DateColumnName) {
+NextTimePeriod <- function(UpdateData. = NULL,
+                           TimeUnit. = NULL,
+                           DateColumnName. = NULL) {
   d <- max(UpdateData.[[DateColumnName.]])
   if(tolower(TimeUnit.) %chin% c('hour','hours')) {
     CalendarFeatures <- data.table::as.data.table(d + lubridate::hours(1))
@@ -1201,9 +1210,9 @@ NextTimePeriod <- function(UpdateData. = UpdateData,
 #' @param GroupVariables. Passthrough
 #'
 #' @noRd
-FutureTimePeriods <- function(UpdateData. = UpdateData,
-                              TimeUnit. = TimeUnit,
-                              DateColumnName. = DateColumnName,
+FutureTimePeriods <- function(UpdateData. = NULL,
+                              TimeUnit. = NULL,
+                              DateColumnName. = NULL,
                               FC_Periods = 5,
                               GroupVariables. = NULL,
                               SkipPeriods = NULL) {
@@ -1708,8 +1717,24 @@ CarmaTimeSeriesFeatures <- function(data. = data,
                                     HolidayMovingAverages. = NULL,
                                     DebugMode. = NULL) {
 
+  Lags. <- Lags.[!Lags. %in% 0]
+  HolidayVariable. <- HolidayVariable.[!HolidayVariable. %in% 0]
+  MA_Periods. <- MA_Periods.[!MA_Periods. %in% 0]
+  SD_Periods. <- SD_Periods.[!SD_Periods. %in% 0]
+  Skew_Periods. <- Skew_Periods.[!Skew_Periods. %in% 0]
+  Kurt_Periods. <- Kurt_Periods.[!Kurt_Periods. %in% 0]
+  Quantile_Periods. <- Quantile_Periods.[!Quantile_Periods. %in% 0]
+  if(length(Lags.) == 0L) Lags. <- NULL
+  if(length(HolidayVariable.) == 0L) HolidayVariable. <- NULL
+  if(length(MA_Periods.) == 0L) MA_Periods. <- NULL
+  if(length(SD_Periods.) == 0L) SD_Periods. <- NULL
+  if(length(Skew_Periods.) == 0L) Skew_Periods. <- NULL
+  if(length(Kurt_Periods.) == 0L) Kurt_Periods. <- NULL
+  if(length(Quantile_Periods.) == 0L) Quantile_Periods. <- NULL
+
+
   # Feature Engineering: Add GDL Features based on the TargetColumnName
-  if(!is.null(Lags.)) {
+  if(length(Lags.) > 0L) {
 
     # Group and No Differencing
     if(!is.null(GroupVariables.) && !Difference.) {
@@ -1862,7 +1887,7 @@ CarmaTimeSeriesFeatures <- function(data. = data,
       data. <- DT_GDL_Feature_Engineering(
         data            = data.,
         lags            = HolidayLags.,
-        periods         = HolidayMovingAverages.[!HolidayMovingAverages. %in% 1],
+        periods         = HolidayMovingAverages.[HolidayMovingAverages. > 0],
         SDperiods       = 0,
         Skewperiods     = 0,
         Kurtperiods     = 0,
@@ -1882,7 +1907,7 @@ CarmaTimeSeriesFeatures <- function(data. = data,
       data. <- DT_GDL_Feature_Engineering(
         data            = data.,
         lags            = HolidayLags.,
-        periods         = HolidayMovingAverages.[!HolidayMovingAverages. %in% 1],
+        periods         = HolidayMovingAverages.[HolidayMovingAverages. > 0],
         SDperiods       = 0,
         Skewperiods     = 0,
         Kurtperiods     = 0,
@@ -2343,16 +2368,16 @@ CarmaRollingStatsUpdate <- function(ModelType = 'catboost',
 #' @param Debug = FALSE
 #'
 #' @noRd
-CarmaReturnDataPrep <- function(UpdateData. = UpdateData,
-                                FutureDateData. = FutureDateData,
-                                dataStart. = dataStart,
-                                DateColumnName. = DateColumnName,
-                                TargetColumnName. = TargetColumnName,
-                                GroupVariables. = GroupVariables,
-                                Difference. = Difference,
-                                TargetTransformation. = TargetTransformation,
-                                TransformObject. = TransformObject,
-                                NonNegativePred. = NonNegativePred,
+CarmaReturnDataPrep <- function(UpdateData. = NULL,
+                                FutureDateData. = NULL,
+                                dataStart. = NULL,
+                                DateColumnName. = NULL,
+                                TargetColumnName. = NULL,
+                                GroupVariables. = NULL,
+                                Difference. = NULL,
+                                TargetTransformation. = NULL,
+                                TransformObject. = NULL,
+                                NonNegativePred. = NULL,
                                 DiffTrainOutput. = NULL,
                                 MergeGroupVariablesBack. = NULL,
                                 Debug = FALSE) {
@@ -2496,6 +2521,9 @@ CarmaReturnDataPrep <- function(UpdateData. = UpdateData,
 
   if(Debug) print("CarmaReturnDataPrep 4.9")
 
+  print(TransformObject.)
+  print(UpdateData.[1])
+
   # Return data
   return(list(UpdateData = UpdateData., TransformObject = TransformObject.))
 }
@@ -2505,9 +2533,9 @@ CarmaReturnDataPrep <- function(UpdateData. = UpdateData,
 #' @param Step1SCore. Passthrough
 #'
 #' @noRd
-CarmaRecordCount <- function(GroupVariables. = GroupVariables,
-                             Difference. = Difference,
-                             Step1SCore. = Step1SCore) {
+CarmaRecordCount <- function(GroupVariables. = NULL,
+                             Difference. = NULL,
+                             Step1SCore. = NULL) {
   if(!is.null(GroupVariables.)) {
     if(Difference.) {
       if(!'GroupVar' %chin% names(Step1SCore.)) N. <- as.integer(Step1SCore.[, .N, by = c(eval(GroupVariables.))][, max(N)]) else N. <- as.integer(Step1SCore.[, .N, by = 'GroupVar'][, max(N)])
@@ -2536,7 +2564,7 @@ CarmaRecordCount <- function(GroupVariables. = GroupVariables,
 #'
 #' @noRd
 DifferenceData <- function(data,
-                           ColumnsToDiff = c(names(data)[2:ncol(data)]),
+                           ColumnsToDiff = NULL,
                            CARMA = FALSE,
                            TargetVariable = NULL,
                            GroupingVariable = NULL) {
@@ -2593,11 +2621,11 @@ DifferenceData <- function(data,
 #'
 #' @noRd
 DifferenceDataReverse <- function(data,
-                                  ScoreData = Forecasts$Predictions,
-                                  LastRow = DiffTrainOutput$LastRow$Weekly_Sales,
+                                  ScoreData = NULL,
+                                  LastRow = NULL,
                                   CARMA = FALSE,
-                                  TargetCol = TargetColumnName,
-                                  FirstRow = DiffTrainOutput$FirstRow,
+                                  TargetCol = NULL,
+                                  FirstRow = NULL,
                                   GroupingVariables = NULL) {
 
   ModifiedData <- data.table::copy(data)
@@ -2628,7 +2656,7 @@ DifferenceDataReverse <- function(data,
 #' @param BottomsUp TRUE or FALSE. TRUE starts with the most comlex interaction to the main effects
 #'
 #' @noRd
-FullFactorialCatFeatures <- function(GroupVars = GroupVariables,
+FullFactorialCatFeatures <- function(GroupVars = NULL,
                                      MaxCombin = NULL,
                                      BottomsUp = TRUE) {
 
@@ -2717,9 +2745,9 @@ FullFactorialCatFeatures <- function(GroupVars = GroupVariables,
 #' @param Group_Variables Takes GroupVariables from caram function
 #' @param HierarchyGroups Vector of group variables
 #' @noRd
-CARMA_GroupHierarchyCheck <- function(data = data,
-                                      Group_Variables = GroupVariables,
-                                      HierarchyGroups = HierarchGroups) {
+CARMA_GroupHierarchyCheck <- function(data = NULL,
+                                      Group_Variables = NULL,
+                                      HierarchyGroups = NULL) {
 
   # Simple organization of option sets
   if(length(Group_Variables) > 1 && !is.null(HierarchyGroups)) {

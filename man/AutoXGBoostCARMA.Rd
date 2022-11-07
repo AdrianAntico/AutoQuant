@@ -16,8 +16,8 @@ AutoXGBoostCARMA(
   GroupVariables = NULL,
   FC_Periods = 5,
   SaveDataPath = NULL,
-  TimeUnit = "week",
-  TimeGroups = c("weeks", "months"),
+  TimeUnit = NULL,
+  TimeGroups = NULL,
   TargetTransformation = FALSE,
   Methods = c("Asinh", "Log", "LogPlus1", "Sqrt"),
   EncodingMethod = "binary",
@@ -31,20 +31,18 @@ AutoXGBoostCARMA(
   Quantiles_Selected = NULL,
   Difference = TRUE,
   FourierTerms = 0,
-  CalendarVariables = c("second", "minute", "hour", "wday", "mday", "yday", "week",
-    "wom", "isoweek", "month", "quarter", "year"),
-  HolidayVariable = c("USPublicHolidays", "EasterGroup", "ChristmasGroup",
-    "OtherEcclesticalFeasts"),
+  CalendarVariables = NULL,
+  HolidayVariable = NULL,
   HolidayLookback = NULL,
   HolidayLags = 1L,
   HolidayMovingAverages = 3L,
   TimeTrendVariable = FALSE,
   DataTruncate = FALSE,
-  ZeroPadSeries = "maxmax",
-  SplitRatios = c(1 - 10/100, 10/100),
+  ZeroPadSeries = NULL,
+  SplitRatios = c(0.95, 0.05),
+  PartitionType = "random",
   TreeMethod = "hist",
   NThreads = max(1, parallel::detectCores() - 2L),
-  PartitionType = "random",
   Timer = TRUE,
   DebugMode = FALSE,
   EvalMetric = "MAE",
@@ -64,7 +62,8 @@ AutoXGBoostCARMA(
   lambda = 1,
   SaveModel = FALSE,
   ArgsList = NULL,
-  ModelID = "FC001"
+  ModelID = "FC001",
+  TVT = NULL
 )
 }
 \arguments{
@@ -138,11 +137,11 @@ AutoXGBoostCARMA(
 
 \item{SplitRatios}{E.g c(0.7,0.2,0.1) for train, validation, and test sets}
 
+\item{PartitionType}{Select 'random' for random data partitioning 'time' for partitioning by time frames}
+
 \item{TreeMethod}{Choose from 'hist', 'gpu_hist'}
 
 \item{NThreads}{Set the maximum number of threads you'd like to dedicate to the model run. E.g. 8}
-
-\item{PartitionType}{Select 'random' for random data partitioning 'time' for partitioning by time frames}
 
 \item{Timer}{Setting to TRUE prints out the forecast number while it is building}
 
@@ -183,6 +182,8 @@ AutoXGBoostCARMA(
 \item{ArgsList}{ArgsList is for scoring. Must contain named element 'Model' with a catboost model object}
 
 \item{ModelID}{Something to name your model if you want it saved}
+
+\item{TVT}{Passthrough}
 }
 \value{
 See examples

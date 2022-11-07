@@ -41,7 +41,7 @@ AutoCatBoostCARMA(
   TimeTrendVariable = FALSE,
   ZeroPadSeries = "maxmax",
   DataTruncate = FALSE,
-  SplitRatios = c(0.7, 0.2, 0.1),
+  SplitRatios = c(0.8, 0.1, 0.1),
   PartitionType = "random",
   TaskType = "CPU",
   NumGPU = 1,
@@ -76,7 +76,8 @@ AutoCatBoostCARMA(
   ReturnShap = FALSE,
   SaveModel = FALSE,
   ArgsList = NULL,
-  ModelID = "FC001"
+  ModelID = "FC001",
+  TVT = NULL
 )
 }
 \arguments{
@@ -221,6 +222,8 @@ AutoCatBoostCARMA(
 \item{ArgsList}{ArgsList is for scoring. Must contain named element 'Model' with a catboost model object}
 
 \item{ModelID}{Something to name your model if you want it saved}
+
+\item{TVT}{Passthrough}
 
 \item{ExpandEncoding}{= FALSE}
 }

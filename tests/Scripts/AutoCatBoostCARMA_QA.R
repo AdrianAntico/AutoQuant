@@ -166,8 +166,8 @@ for(run in seq_len(QA_Results[,.N])) {
     HolidayMovingAverages = NULL, #c(2,3),
 
     # Lags, moving averages, and other rolling stats
-    Lags = 1, # list("weeks" = c(1:5), "months" = c(1:3)),
-    MA_Periods = 7,  #list("weeks" = c(2:5), "months" = c(2,3)),
+    Lags = NULL, #1, # list("weeks" = c(1:5), "months" = c(1:3)),
+    MA_Periods = NULL, #7,  #list("weeks" = c(2:5), "months" = c(2,3)),
     SD_Periods = NULL,
     Skew_Periods = NULL,
     Kurt_Periods = NULL,
@@ -190,7 +190,6 @@ for(run in seq_len(QA_Results[,.N])) {
     MaxRunMinutes = 60*60,
 
     # ML evaluation output
-    PDFOutputPath = NULL,
     SaveDataPath = NULL,
     NumOfParDepPlots = 0L,
 
@@ -263,7 +262,7 @@ QA_Results[, RunTime := 123.456]
 QA_Results[, DateTime := Sys.time()]
 QA_Results[, Mixed := data.table::fifelse(runif(.N) < 0.5, TRUE, FALSE)]
 
-run = 5
+run = 103
 
 
 # Data ----
@@ -389,7 +388,7 @@ TargetColumnName = "Weekly_Sales"
 DateColumnName = "Date"
 HierarchGroups = NULL
 GroupVariables = groupvariables
-EncodingMethod = 'MEOW' #'target_encoding' #'credibility'
+EncodingMethod = 'target_encoding' #'credibility' 'MEOW' #
 TimeUnit = "weeks"
 TimeGroups = "weeks"
 TrainOnFull = TOF
@@ -401,17 +400,17 @@ NumGPU = 1
 Timer = TRUE
 DebugMode = TRUE
 TargetTransformation = Trans
-Methods = "Asinh"
+Methods = "LogPlus1"
 Difference = Diff
 NonNegativePred = TRUE
 RoundPreds = FALSE
-CalendarVariables = c("week","wom","month","quarter")
-HolidayVariable = c("USPublicHolidays")
-HolidayLookback = 7
+CalendarVariables = NULL #c("week","wom","month","quarter")
+HolidayVariable = NULL #c("USPublicHolidays")
+HolidayLookback = NULL #7
 HolidayLags = NULL # c(1,2,3)
 HolidayMovingAverages = NULL #c(2,3)
-Lags = 1 # list("weeks" = c(1:5), "months" = c(1:3))
-MA_Periods = 7 # list("weeks" = c(2:5), "months" = c(2,3))
+Lags = NULL #1 # list("weeks" = c(1:5), "months" = c(1:3))
+MA_Periods = NULL #7 # list("weeks" = c(2:5), "months" = c(2,3))
 SD_Periods = NULL
 Skew_Periods = NULL
 Kurt_Periods = NULL
@@ -452,10 +451,18 @@ SubSample = NULL
 ScoreFunction = "Cosine"
 MinDataInLeaf = 1
 ReturnShap = FALSE
+ModelID = 'FC001'
+TVT = NULL
 
-
-
-
+# Carma Partition
+data.=data
+SplitRatios.=SplitRatios
+TrainOnFull.=TrainOnFull
+NumSets.=NumSets
+PartitionType.=PartitionType
+GroupVariables.=GroupVariables
+DateColumnName.=DateColumnName
+TVT.=TVT
 
 # GroupVarVector.=GroupVarVector
 # UpdateData.=UpdateData

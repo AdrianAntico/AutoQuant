@@ -63,6 +63,7 @@
 #' @param SaveModel Logical. If TRUE, output ArgsList will have a named element 'Model' with the CatBoost model object
 #' @param ArgsList ArgsList is for scoring. Must contain named element 'Model' with a catboost model object
 #' @param ModelID Something to name your model if you want it saved
+#' @param TVT Passthrough
 #' @examples
 #' \dontrun{
 #'
@@ -189,8 +190,8 @@ AutoXGBoostCARMA <- function(data = NULL,
                              GroupVariables = NULL,
                              FC_Periods = 5,
                              SaveDataPath = NULL,
-                             TimeUnit = 'week',
-                             TimeGroups = c('weeks','months'),
+                             TimeUnit = NULL,
+                             TimeGroups = NULL,
                              TargetTransformation = FALSE,
                              Methods = c('Asinh', 'Log', 'LogPlus1', 'Sqrt'),
                              EncodingMethod = 'binary',
@@ -204,18 +205,18 @@ AutoXGBoostCARMA <- function(data = NULL,
                              Quantiles_Selected = NULL,
                              Difference = TRUE,
                              FourierTerms = 0,
-                             CalendarVariables = c('second', 'minute', 'hour', 'wday', 'mday', 'yday', 'week', 'wom', 'isoweek', 'month', 'quarter', 'year'),
-                             HolidayVariable = c('USPublicHolidays','EasterGroup','ChristmasGroup','OtherEcclesticalFeasts'),
+                             CalendarVariables = NULL,
+                             HolidayVariable = NULL,
                              HolidayLookback = NULL,
                              HolidayLags = 1L,
                              HolidayMovingAverages = 3L,
                              TimeTrendVariable = FALSE,
                              DataTruncate = FALSE,
-                             ZeroPadSeries = 'maxmax',
-                             SplitRatios = c(1 - 10/100, 10/100),
+                             ZeroPadSeries = NULL,
+                             SplitRatios = c(0.95,0.05),
+                             PartitionType = 'random',
                              TreeMethod = 'hist',
                              NThreads = max(1, parallel::detectCores()-2L),
-                             PartitionType = 'random',
                              Timer = TRUE,
                              DebugMode = FALSE,
                              EvalMetric = 'MAE',
@@ -235,7 +236,8 @@ AutoXGBoostCARMA <- function(data = NULL,
                              lambda = 1,
                              SaveModel = FALSE,
                              ArgsList = NULL,
-                             ModelID = 'FC001') {
+                             ModelID = 'FC001',
+                             TVT = NULL) {
 
   # Prepare environment for using existing model
   # if(): length(ArgsList) > 0L
@@ -465,11 +467,11 @@ AutoXGBoostCARMA <- function(data = NULL,
   # Data Wrangling: Partition data with AutoDataPartition ----
   if(DebugMode) print('Data Wrangling: Partition data with AutoDataPartition()----')
   if(tolower(PartitionType) == 'timeseries' && is.null(GroupVariables)) PartitionType <- 'time'
-  Output <- CarmaPartition(data.=data, SplitRatios.=SplitRatios, TrainOnFull.=TrainOnFull, NumSets.=NumSets, PartitionType.=PartitionType, GroupVariables.=GroupVariables, DateColumnName.=DateColumnName)
+  Output <- CarmaPartition(data.=data, SplitRatios.=SplitRatios, TrainOnFull.=TrainOnFull, NumSets.=NumSets, PartitionType.=PartitionType, GroupVariables.=GroupVariables, DateColumnName.=DateColumnName, TVT.=TVT)
   train <- Output$train; Output$train <- NULL
   valid <- Output$valid; Output$valid <- NULL
   data <- Output$data; Output$data <- NULL
-  test <- Output$test; rm(Output)
+  test <- Output$test; ArgsList[['TVT']] <- Output$TVT; rm(Output)
 
   # Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train----
   if(DebugMode) print('Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train----')
@@ -589,9 +591,6 @@ AutoXGBoostCARMA <- function(data = NULL,
     TestModel <- list()
     TestModel$FactorLevelsList <- ArgsList$FactorLevelsList
   }
-
-  # Turn warnings into errors back on ----
-  if(DebugMode) options(warn = 2)
 
   # Variable for interation counts: max number of rows in Step1SCore data.table across all group ----
   if(DebugMode) print('Variable for interation counts: max number of rows in Step1SCore data.table across all group ----')

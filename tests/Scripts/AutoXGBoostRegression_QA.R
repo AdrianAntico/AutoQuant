@@ -27,7 +27,7 @@ XGBoost_QA_Results_Regression[, RunNumber := seq_len(.N)]
 # AutoXGBoostRegression
 # run = 9 # train on full fail
 # run = 10 # train on full fail
-# run = 1
+# run = 6
 for(run in seq_len(XGBoost_QA_Results_Regression[,.N])) {
 
   # Refresh data
@@ -156,7 +156,7 @@ source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelMetrics.R")
 source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelEvaluationPlots.R"))
 source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_CharacterTypes.R"))
 
-run = 2
+run = 6
 
 # Testing
 XGBoost_QA_Results_Regression <- data.table::CJ(
@@ -273,6 +273,8 @@ MaxRunsWithoutNewWinner = 20L
 MaxRunMinutes = 24L*60L
 Verbose = 1L
 SaveInfoToPDF = TRUE
+alpha = 0
+lambda = 0
 Trees = if(!gridtune) 50L else c(50,51,52,53,54,55)
 eta = if(!gridtune) 0.05 else c(0.05,0.06,0.07,0.08,0.09)
 max_depth = if(!gridtune) 4L else c(4,5,6,7,8,9,10)

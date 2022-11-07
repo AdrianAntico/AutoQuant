@@ -69,6 +69,8 @@ CreateCalendarVariables <- function(data,
                                     CachePath = NULL,
                                     Debug = FALSE) {
 
+  if(length(TimeUnits) == 0L || length(DateCols) == 0L) return(data)
+
   if(Debug) print('CreateHolidayVariables 1')
 
   # Load data from file if CachePath is not NULL

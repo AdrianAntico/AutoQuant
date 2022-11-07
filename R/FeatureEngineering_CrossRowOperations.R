@@ -1319,7 +1319,7 @@ AutoLagRollStatsScoring <- function(data,
         }
 
         # Build GDL Features ----
-        tempData <- Partial_DT_GDL_Feature_Engineering(
+        tempData <- Partial_DT_GDL_Feature_Engineering2(
           tempData,
           lags            = if(is.list(Lags))                 Lags[[timeaggs]]                 else Lags,
           periods         = if(is.list(MA_RollWindows))       MA_RollWindows[[timeaggs]]       else MA_RollWindows,
@@ -1344,7 +1344,7 @@ AutoLagRollStatsScoring <- function(data,
       } else {
 
         # Build GDL Features----
-        KeepData <- Partial_DT_GDL_Feature_Engineering(
+        KeepData <- Partial_DT_GDL_Feature_Engineering2(
           data,
           lags            = if(is.list(Lags))                 Lags[[timeaggs]]                 else Lags,
           periods         = if(is.list(MA_RollWindows))       MA_RollWindows[[timeaggs]]       else MA_RollWindows,
@@ -1423,7 +1423,7 @@ AutoLagRollStatsScoring <- function(data,
           }
 
           # Build features----
-          tempData <- Partial_DT_GDL_Feature_Engineering(
+          tempData <- Partial_DT_GDL_Feature_Engineering2(
             data            = tempData,
             lags            = if(is.list(Lags))                 Lags[[timeaggs]]                 else Lags,
             periods         = if(is.list(MA_RollWindows))       MA_RollWindows[[timeaggs]]       else MA_RollWindows,
@@ -1443,13 +1443,12 @@ AutoLagRollStatsScoring <- function(data,
             SimpleImpute    = SimpleImpute,
             AscRowByGroup   = RowNumsID,
             RecordsKeep     = RowNumsKeep,
-            ShortName       = ShortName,
             AscRowRemove    = TRUE)
 
         } else {
 
           # Build features----
-          KeepData <- Partial_DT_GDL_Feature_Engineering(
+          KeepData <- Partial_DT_GDL_Feature_Engineering2(
             data            = tempData,
             lags            = if(is.list(Lags))                 Lags[[timeaggs]]                 else Lags,
             periods         = if(is.list(MA_RollWindows))       MA_RollWindows[[timeaggs]]       else MA_RollWindows,
@@ -1466,7 +1465,6 @@ AutoLagRollStatsScoring <- function(data,
             WindowingLag    = RollOnLag1,
             Type            = Type,
             Timer           = FALSE,
-            ShortName       = ShortName,
             SimpleImpute    = SimpleImpute,
             AscRowByGroup   = RowNumsID,
             RecordsKeep     = RowNumsKeep,
@@ -1535,7 +1533,7 @@ AutoLagRollStatsScoring <- function(data,
           data.table::setnames(tempData, c("V1"), c(RowNumsID))
 
           # Build features ----
-          data.table::setkeyv(tempData <- Partial_DT_GDL_Feature_Engineering(
+          data.table::setkeyv(tempData <- Partial_DT_GDL_Feature_Engineering2(
             data            = tempData,
             lags            = if(is.list(Lags)) Lags[[timeaggs]] else Lags,
             periods         = if(is.list(MA_RollWindows)) MA_RollWindows[[timeaggs]] else MA_RollWindows,
@@ -1555,13 +1553,12 @@ AutoLagRollStatsScoring <- function(data,
             SimpleImpute    = SimpleImpute,
             AscRowByGroup   = RowNumsID,
             RecordsKeep     = RowNumsKeep,
-            ShortName       = ShortName,
             AscRowRemove    = TRUE), c(Fact, "TEMPDATE"))
 
         } else {
 
           # Build features----
-          KeepData <- Partial_DT_GDL_Feature_Engineering(
+          KeepData <- Partial_DT_GDL_Feature_Engineering2(
             data            = data,
             lags            = if(is.list(Lags)) Lags[[timeaggs]] else Lags,
             periods         = if(is.list(MA_RollWindows)) MA_RollWindows[[timeaggs]] else MA_RollWindows,
@@ -1581,7 +1578,6 @@ AutoLagRollStatsScoring <- function(data,
             SimpleImpute    = SimpleImpute,
             AscRowByGroup   = RowNumsID,
             RecordsKeep     = RowNumsKeep,
-            ShortName       = ShortName,
             AscRowRemove    = TRUE)
         }
 
@@ -2285,10 +2281,11 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
       periods <- periods[periods > 1L]
       incre <- 0L
       TargetN <- 0L
-      for(t in TargetS) {
+      for(t in TargetS) { # t <- "days_LAG_1_Target"
         TargetN <- TargetN + 1L
-        for(j in periods) {
+        for(j in periods) { # j = 10
           data[, paste0("Mean_", j, "_", t) := fBasics::rowAvgs(.SD), .SDcols = LagColss[[TargetN]][seq_len(j)]]
+          #data[, paste0("Mean_", j, "_", t) := mean(.SD), .SDcols = LagColss[[TargetN]][seq_len(j)], by = .I]
           PeriodKeep <- c(PeriodKeep, paste0("Mean_", j, "_", t))
         }
       }
@@ -2664,6 +2661,9 @@ Partial_DT_GDL_Feature_Engineering2 <- function(data,
     # Build features ----
     data[, paste0(LAG_Names) := data.table::shift(.SD, n = lags, type = "lag"), .SDcols = c(TargetS)]
 
+    # Define targets ----
+    if(WindowingLag != 0) TargetS <- c(paste0(timeAggss, "_LAG_", WindowingLag, "_", TargetS))
+
     # Define TargetS ----
     if(WindowingLag != 0L) {
       Targets <- TargetS
@@ -2715,11 +2715,8 @@ Partial_DT_GDL_Feature_Engineering2 <- function(data,
       }
     }
 
-    # Only keep requested columns----
-    # Subset data
-    FinalData <- FinalData[get(AscRowByGroup) %in% RecordsKeep][, temp := NULL]
-    keep <- c(ColKeep, unlist(LagKeeps), PeriodKeep)
-    data <- data[, ..keep]
+    # Only keep requested columns ----
+    data <- data[get(AscRowByGroup) %in% RecordsKeep][, temp := NULL]
 
     # Impute missing values ----
     if(SimpleImpute) {
@@ -2731,9 +2728,6 @@ Partial_DT_GDL_Feature_Engineering2 <- function(data,
         }
       }
     }
-
-    # Subset data
-    data <- data[get(AscRowByGroup) %in% RecordsKeep][, temp := NULL]
 
     # Done!! ----
     return(data)

@@ -117,7 +117,8 @@ AutoLightGBMCARMA(
   Gpu_Platform_Id = -1,
   Gpu_Device_Id = -1,
   Gpu_Use_Dp = TRUE,
-  Num_Gpu = 1
+  Num_Gpu = 1,
+  TVT = NULL
 )
 }
 \arguments{
@@ -205,9 +206,7 @@ AutoLightGBMCARMA(
 
 \item{DebugMode}{Setting to TRUE generates printout of all header code comments during run time of function}
 
-\item{ModelID}{Something to name your model if you want it saved
-
-# ML Args begin}
+\item{ModelID}{Something to name your model if you want it saved}
 
 \item{GridTune}{Set to TRUE to run a grid tune}
 
@@ -363,6 +362,10 @@ AutoLightGBMCARMA(
 \item{Gpu_Use_Dp}{= TRUE}
 
 \item{Num_Gpu}{= 1}
+
+\item{TVT}{Passthrough
+
+# ML Args begin}
 
 \item{TreeMethod}{Choose from 'hist', 'gpu_hist'}
 

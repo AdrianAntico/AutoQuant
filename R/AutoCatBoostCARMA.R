@@ -77,6 +77,7 @@
 #' @param ArgsList ArgsList is for scoring. Must contain named element 'Model' with a catboost model object
 #' @param ExpandEncoding = FALSE
 #' @param ModelID Something to name your model if you want it saved
+#' @param TVT Passthrough
 #' @examples
 #' \dontrun{
 #'
@@ -351,7 +352,7 @@ AutoCatBoostCARMA <- function(data,
                               TimeTrendVariable = FALSE,
                               ZeroPadSeries = 'maxmax',
                               DataTruncate = FALSE,
-                              SplitRatios = c(0.7, 0.2, 0.1),
+                              SplitRatios = c(0.8, 0.1, 0.1),
                               PartitionType = 'random',
                               TaskType = 'CPU',
                               NumGPU = 1,
@@ -386,7 +387,8 @@ AutoCatBoostCARMA <- function(data,
                               ReturnShap = FALSE,
                               SaveModel = FALSE,
                               ArgsList = NULL,
-                              ModelID = 'FC001') {
+                              ModelID = 'FC001',
+                              TVT = NULL) {
 
   if(DebugMode) print(data)
 
@@ -546,7 +548,9 @@ AutoCatBoostCARMA <- function(data,
   # Feature Engineering: Create Calendar Variables ----
   if(DebugMode) print('Feature Engineering: Add Create Calendar Variables ----')
   if(DebugMode) print(data)
-  if(!is.null(CalendarVariables)) data <- CreateCalendarVariables(data=data, DateCols=eval(DateColumnName), AsFactor=FALSE, TimeUnits=CalendarVariables)
+  if(!is.null(CalendarVariables)) {
+    data <- CreateCalendarVariables(data=data, DateCols=eval(DateColumnName), AsFactor=FALSE, TimeUnits=CalendarVariables)
+  }
 
   # Feature Engineering: Create Holiday Variables ----
   if(DebugMode) print('Feature Engineering: Add Create Holiday Variables ----')
@@ -647,11 +651,13 @@ AutoCatBoostCARMA <- function(data,
   # Data Wrangling: Partition data ----
   if(DebugMode) print('Data Wrangling: Partition data with AutoDataPartition()----')
   if(tolower(PartitionType) == 'timeseries' && is.null(GroupVariables)) PartitionType <- 'time'
-  Output <- CarmaPartition(data.=data, SplitRatios.=SplitRatios, TrainOnFull.=TrainOnFull, NumSets.=NumSets, PartitionType.=PartitionType, GroupVariables.=GroupVariables, DateColumnName.=DateColumnName)
-  train <- Output$train; Output$train <- NULL
-  valid <- Output$valid; Output$valid <- NULL
-  data <- Output$data; Output$data <- NULL
-  test <- Output$test; rm(Output)
+  Output <- CarmaPartition(data.=data, SplitRatios.=SplitRatios, TrainOnFull.=TrainOnFull, NumSets.=NumSets, PartitionType.=PartitionType, GroupVariables.=GroupVariables, DateColumnName.=DateColumnName, TVT.=TVT)
+  train <- Output$train
+  valid <- Output$valid
+  data <- Output$data
+  test <- Output$test
+  ArgsList[['TVT']] <- Output$TVT
+  rm(Output)
 
   # Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train ----
   if(DebugMode) print('Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train ----')
@@ -776,9 +782,6 @@ AutoCatBoostCARMA <- function(data,
     TestModel$FactorLevelsList <- ArgsList$FactorLevelsList
   }
 
-  # Turn warnings into errors back on ----
-  if(DebugMode) options(warn = 2)
-
   # Variable for interation counts: max number of rows in Step1SCore data.table across all group ----
   if(DebugMode) print('Variable for interation counts: max number of rows in Step1SCore data.table across all group ----')
   N <- CarmaRecordCount(GroupVariables.=GroupVariables,Difference.=Difference, Step1SCore.=Step1SCore)
@@ -840,9 +843,6 @@ AutoCatBoostCARMA <- function(data,
     UpdateData <- UpdateFeatures(RollingVars. = FALSE, UpdateData.=Step1SCore, GroupVariables.=GroupVariables, CalendarFeatures.=UpdateData, CalendarVariables.=CalendarVariables, GroupVarVector.=GroupVarVector, DateColumnName.=DateColumnName, XREGS.=XREGS, FourierTerms.=FourierTerms, FourierFC.=FourierFC, TimeGroups.=TimeGroups, TimeTrendVariable.=TimeTrendVariable, N.=N, TargetColumnName.=TargetColumnName, HolidayVariable.=HolidayVariable, HolidayLookback.=HolidayLookback, TimeUnit.=TimeUnit, AnomalyDetection.=AnomalyDetection, i.=1, Debug = DebugMode)
     UpdateData <- CarmaScore(Type = 'catboost', i. = 0L, N.=N, GroupVariables.=GroupVariables, ModelFeatures.=ModelFeatures, HierarchGroups.=HierarchGroups, DateColumnName.=DateColumnName, Difference.=Difference, TargetColumnName.=TargetColumnName, Step1SCore.=Step1SCore, Model.=Model, FutureDateData.=FutureDateData, NonNegativePred.=NonNegativePred, RoundPreds.=RoundPreds, UpdateData.=UpdateData, FactorList.=TestModel$FactorLevelsList, EncodingMethod.=EncodingMethod, dt = data)
     if(DebugMode) print(UpdateData)
-
-    # Update data for next prediction ----
-    if(DebugMode) print('Update data for next prediction ----')
   }
 
   # Memory support ----
