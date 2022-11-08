@@ -522,7 +522,7 @@ AutoXGBoostCARMA <- function(data = NULL,
 
       # Data arguments
       data = train,
-      TrainOnFull = TrainOnFull,
+      TrainOnFull = if(length(valid) == 0) TrainOnFull else FALSE,
       ValidationData = valid,
       TestData = test,
       TargetColumnName = TargetVariable,

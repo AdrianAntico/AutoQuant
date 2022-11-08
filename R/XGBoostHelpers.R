@@ -990,14 +990,22 @@ XGBoostValidationData <- function(model.=model,
         ValidationData <- data.table::as.data.table(cbind(TestMerge., Predict = predict.))
         data.table::setnames(ValidationData, 'Target', TargetColumnName., skip_absent = TRUE)
         if(!any(class(model.) %chin% c('lgb.Booster', 'R6'))) {
-          ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(TestData.), model = model., features = names(TestData.))$shap_contrib)
+          if(length(names(TestData.)) > 1L) {
+            ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(TestData.), model = model., features = names(TestData.))$shap_contrib)
+          } else {
+            ShapValues <- NULL
+          }
         } else {
           ShapValues <- NULL
         }
       } else {
         ValidationData <- data.table::as.data.table(cbind(Target = TestTarget., dataTest., Predict = predict.))
         if(!any(class(model.) %chin% c('lgb.Booster', 'R6'))) {
-          ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(dataTest.), model = model., features = names(dataTest.))$shap_contrib)
+          if(length(names(dataTest.)) > 1L) {
+            ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(dataTest.), model = model., features = names(dataTest.))$shap_contrib)
+          } else {
+            ShapValues <- NULL
+          }
         } else {
           ShapValues <- NULL
         }
@@ -1010,17 +1018,25 @@ XGBoostValidationData <- function(model.=model,
     } else if(!is.null(TrainMerge.)) {
       ValidationData <- data.table::as.data.table(cbind(TrainMerge., predict.))
       if(!any(class(model.) %chin% c('lgb.Booster', 'R6'))) {
-        ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(data.), model = model., features = names(data.))$shap_contrib)
-        Shap_test <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(dataTest.), model = model., features = names(dataTest.))$shap_contrib)
-        ShapValues <- data.table::rbindlist(list(ShapValues, Shap_test), use.names = TRUE, fill = TRUE)
-        rm(Shap_test)
+        if(length(names(data.)) > 1L) {
+          ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(data.), model = model., features = names(data.))$shap_contrib)
+          Shap_test <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(dataTest.), model = model., features = names(dataTest.))$shap_contrib)
+          ShapValues <- data.table::rbindlist(list(ShapValues, Shap_test), use.names = TRUE, fill = TRUE)
+          rm(Shap_test)
+        } else {
+          ShapValues <- NULL
+        }
       } else {
         ShapValues <- NULL
       }
     } else {
       ValidationData <- data.table::as.data.table(cbind(Target = TrainTarget., data., Predict = predict.))
       if(!any(class(model.) %chin% c('lgb.Booster', 'R6'))) {
-        ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(data.), model = model., features = names(data.))$shap_contrib)
+        if(length(names(data.)) > 1L) {
+          ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(data.), model = model., features = names(data.))$shap_contrib)
+        } else {
+          ShapValues <- NULL
+        }
       } else {
         ShapValues <- NULL
       }
