@@ -46,6 +46,7 @@
 #' @param NThreads Set the maximum number of threads you'd like to dedicate to the model run. E.g. 8
 #' @param GridTune Set to TRUE to run a grid tune
 #' @param GridEvalMetric This is the metric used to find the threshold 'poisson', 'mae', 'mape', 'mse', 'msle', 'kl', 'cs', 'r2'
+#' @param TimeWeights = NULL
 #' @param ModelCount Set the number of models to try in the grid tune
 #' @param MaxRunsWithoutNewWinner Number of consecutive runs without a new winner in order to terminate procedure
 #' @param MaxRunMinutes Default 24L*60L
@@ -181,6 +182,7 @@
 #' @export
 AutoXGBoostCARMA <- function(data = NULL,
                              XREGS = NULL,
+                             TimeWeights = NULL,
                              NonNegativePred = FALSE,
                              RoundPreds = FALSE,
                              TrainOnFull = FALSE,
@@ -188,28 +190,28 @@ AutoXGBoostCARMA <- function(data = NULL,
                              DateColumnName = NULL,
                              HierarchGroups = NULL,
                              GroupVariables = NULL,
-                             FC_Periods = 5,
+                             FC_Periods = 1,
                              SaveDataPath = NULL,
                              TimeUnit = NULL,
                              TimeGroups = NULL,
                              TargetTransformation = FALSE,
                              Methods = c('Asinh', 'Log', 'LogPlus1', 'Sqrt'),
-                             EncodingMethod = 'binary',
+                             EncodingMethod = 'target_encoding',
                              AnomalyDetection = NULL,
-                             Lags = c(1:5),
-                             MA_Periods = c(1:5),
+                             Lags = NULL,
+                             MA_Periods = NULL,
                              SD_Periods = NULL,
                              Skew_Periods = NULL,
                              Kurt_Periods = NULL,
                              Quantile_Periods = NULL,
-                             Quantiles_Selected = NULL,
-                             Difference = TRUE,
+                             Quantiles_Selected = c('q5','q95'),
+                             Difference = FALSE,
                              FourierTerms = 0,
                              CalendarVariables = NULL,
                              HolidayVariable = NULL,
                              HolidayLookback = NULL,
-                             HolidayLags = 1L,
-                             HolidayMovingAverages = 3L,
+                             HolidayLags = NULL,
+                             HolidayMovingAverages = NULL,
                              TimeTrendVariable = FALSE,
                              DataTruncate = FALSE,
                              ZeroPadSeries = NULL,
@@ -226,14 +228,14 @@ AutoXGBoostCARMA <- function(data = NULL,
                              ModelCount = 30L,
                              MaxRunsWithoutNewWinner = 20L,
                              MaxRunMinutes = 24L*60L,
-                             NTrees = 1000L,
-                             LearningRate = 0.3,
-                             MaxDepth = 9L,
+                             NTrees = 500L,
+                             LearningRate = 0.50,
+                             MaxDepth = 6L,
                              MinChildWeight = 1.0,
-                             SubSample = 1.0,
+                             SubSample = 0.70,
                              ColSampleByTree = 1.0,
-                             alpha = 0,
-                             lambda = 1,
+                             alpha = 0.10,
+                             lambda = 0.90,
                              SaveModel = FALSE,
                              ArgsList = NULL,
                              ModelID = 'FC001',
@@ -261,11 +263,12 @@ AutoXGBoostCARMA <- function(data = NULL,
 
   # Purified args ----
   if(length(ModelID) == 0) ModelID <- 'FC001'
-  Args <- CARMA_Define_Args(TimeUnit=TimeUnit,TimeGroups=TimeGroups,HierarchGroups=HierarchGroups,GroupVariables=GroupVariables,FC_Periods=FC_Periods,PartitionType=PartitionType,TrainOnFull=TrainOnFull,SplitRatios=SplitRatios)
+  Args <- CARMA_Define_Args(TimeUnit=TimeUnit,TimeGroups=TimeGroups,HierarchGroups=HierarchGroups,GroupVariables=GroupVariables,FC_Periods=FC_Periods,PartitionType=PartitionType,TrainOnFull=TrainOnFull,SplitRatios=SplitRatios, TimeWeights=TimeWeights)
   IndepentVariablesPass <- Args$IndepentVariablesPass
   HoldOutPeriods <- Args$HoldOutPeriods
   HierarchGroups <- Args$HierarchGroups
   GroupVariables <- Args$GroupVariables
+  TimeWeights <- Args$TimeWeights
   TimeGroups <- Args$TimeGroups
   FC_Periods <- Args$FC_Periods
   TimeGroup <- Args$TimeGroupPlaceHolder
@@ -359,10 +362,6 @@ AutoXGBoostCARMA <- function(data = NULL,
   # Variables for Program: Store number of data partitions in NumSets ----
   if(DebugMode) print('Variables for Program: Store number of data partitions in NumSets----')
   NumSets <- length(SplitRatios)
-
-  # Variables for Program: Store Maximum Value of TargetColumnName in val ----
-  if(DebugMode) print('Variables for Program: Store Maximum Value of TargetColumnName in val----')
-  if(is.list(Lags) && is.list(MA_Periods)) val <- max(unlist(Lags), unlist(MA_Periods)) else val <- max(Lags, MA_Periods)
 
   # Data Wrangling: Sort data by GroupVar then DateColumnName ----
   if(DebugMode) print('Data Wrangling: Sort data by GroupVar then DateColumnName----')
@@ -459,6 +458,10 @@ AutoXGBoostCARMA <- function(data = NULL,
   if(DebugMode) print('Store Date Info----')
   FutureDateData <- unique(data[, get(DateColumnName)])
 
+  # Create TimeWeights ----
+  if(DebugMode) print('Create TimeWeights ----')
+  train <- CarmaTimeWeights(train.=data, TimeWeights.=TimeWeights, GroupVariables.=GroupVariables, DateColumnName.=DateColumnName)
+
   # Return engineered data before Partitioning ----
   if(!is.null(SaveDataPath)) {
     data.table::fwrite(data, file.path(SaveDataPath, 'ModelData.csv'))
@@ -468,10 +471,12 @@ AutoXGBoostCARMA <- function(data = NULL,
   if(DebugMode) print('Data Wrangling: Partition data with AutoDataPartition()----')
   if(tolower(PartitionType) == 'timeseries' && is.null(GroupVariables)) PartitionType <- 'time'
   Output <- CarmaPartition(data.=data, SplitRatios.=SplitRatios, TrainOnFull.=TrainOnFull, NumSets.=NumSets, PartitionType.=PartitionType, GroupVariables.=GroupVariables, DateColumnName.=DateColumnName, TVT.=TVT)
-  train <- Output$train; Output$train <- NULL
-  valid <- Output$valid; Output$valid <- NULL
-  data <- Output$data; Output$data <- NULL
-  test <- Output$test; ArgsList[['TVT']] <- Output$TVT; rm(Output)
+  train <- Output$train
+  valid <- Output$valid
+  data <- Output$data
+  test <- Output$test
+  ArgsList[['TVT']] <- Output$TVT
+  rm(Output)
 
   # Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train----
   if(DebugMode) print('Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train----')
@@ -501,7 +506,7 @@ AutoXGBoostCARMA <- function(data = NULL,
     TestModel <- AutoXGBoostRegression(
 
       # GPU or CPU
-      OutputSelection = if(TrainOnFull) NULL else c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData'),
+      OutputSelection = if(TrainOnFull) NULL else c('Importances','EvalMetrics'),
       TreeMethod = TreeMethod,
       NThreads = NThreads,
       DebugMode = DebugMode,
@@ -522,6 +527,7 @@ AutoXGBoostCARMA <- function(data = NULL,
       TestData = test,
       TargetColumnName = TargetVariable,
       FeatureColNames = ModelFeatures,
+      WeightsColumnName = if('Weights' %in% names(train)) 'Weights' else NULL,
       IDcols = IDcols,
       TransformNumericColumns = NULL,
       Methods = NULL,
@@ -601,7 +607,7 @@ AutoXGBoostCARMA <- function(data = NULL,
   # i = 1
   # i = 2
   # i = 3
-  if(length(Lags) > 0L) {
+  if(length(Lags) > 0L && all(Lags != 0) || (length(MA_Periods) > 0L && all(MA_Periods != 0))) {
 
     for(i in seq_len(FC_Periods+1L)) {
 
@@ -653,7 +659,27 @@ AutoXGBoostCARMA <- function(data = NULL,
     }
 
     # Score Future
-    UpdateData <- CarmaScore(Type = 'xgboost', i. = 0L, N.=N, GroupVariables.=GroupVariables, ModelFeatures.=ModelFeatures, HierarchGroups.=HierarchGroups, DateColumnName.=DateColumnName, Difference.=Difference, TargetColumnName.=TargetColumnName, Step1SCore.=Step1SCore, Model.=Model, FutureDateData.=FutureDateData, NonNegativePred.=NonNegativePred, RoundPreds.=RoundPreds, UpdateData.=UpdateData, FactorList.=TestModel$FactorLevelsList, EncodingMethod.=EncodingMethod, dt = data)
+    UpdateData <- CarmaScore(Type = 'xgboost', i. = 0L, N.=N, GroupVariables.=GroupVariables, ModelFeatures.=ModelFeatures, HierarchGroups.=HierarchGroups, DateColumnName.=DateColumnName, Difference.=Difference, TargetColumnName.=TargetColumnName, Step1SCore.=Step1SCore, Model.=Model, FutureDateData.=FutureDateData, NonNegativePred.=NonNegativePred, RoundPreds.=RoundPreds, UpdateData.=UpdateData, FactorList.=TestModel$FactorLevelsList, EncodingMethod.=EncodingMethod, dt = data, Debug = DebugMode)
+
+    # Type = 'xgboost'
+    # i. = 0L
+    # N.=N
+    # GroupVariables.=GroupVariables
+    # ModelFeatures.=ModelFeatures
+    # HierarchGroups.=HierarchGroups
+    # DateColumnName.=DateColumnName
+    # Difference.=Difference
+    # TargetColumnName.=TargetColumnName
+    # Step1SCore.=Step1SCore
+    # Model.=Model
+    # FutureDateData.=FutureDateData
+    # NonNegativePred.=NonNegativePred
+    # RoundPreds.=RoundPreds
+    # UpdateData.=UpdateData
+    # FactorList.=TestModel$FactorLevelsList
+    # EncodingMethod.=EncodingMethod
+    # dt = data
+    # Debug = DebugMode
 
     # Update data for next prediction ----
     if(DebugMode) print('Update data for next prediction ----')
@@ -678,5 +704,6 @@ AutoXGBoostCARMA <- function(data = NULL,
   return(list(
     Forecast = UpdateData,
     ModelInformation = TestModel,
-    TransformationDetail = if(exists('TransformObject') && !is.null(TransformObject)) TransformObject else NULL))
+    TransformationDetail = if(exists('TransformObject') && !is.null(TransformObject)) TransformObject else NULL,
+    ArgsList = ArgsList))
 }

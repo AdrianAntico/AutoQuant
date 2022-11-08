@@ -13,7 +13,7 @@ QA_Results[, Mixed := data.table::fifelse(runif(.N) < 0.5, TRUE, FALSE)]
 
 FillNow = FALSE
 
-# run = 110
+# run = 103
 # run = 39
 # run = 101
 # run = 128
@@ -109,10 +109,6 @@ for(run in seq_len(QA_Results[,.N])) {
   # Build forecast ----
   TestModel <- tryCatch({RemixAutoML::AutoXGBoostCARMA(
 
-
-    SaveModel = FALSE,
-    ArgsList = NULL,
-
     # Data Artifacts
     data = data1,
     XREGS = xregs1,
@@ -127,6 +123,7 @@ for(run in seq_len(QA_Results[,.N])) {
 
     # Data Wrangling Features
     ZeroPadSeries = "dynamic:meow",
+    TimeWeights = 0.999,
     EncodingMethod = 'meow',
     DataTruncate = FALSE,
     SplitRatios = c(1 - 10 / 100, 10 / 100),
@@ -140,7 +137,6 @@ for(run in seq_len(QA_Results[,.N])) {
     Timer = TRUE,
     DebugMode = TRUE,
     SaveDataPath = getwd(),
-    PDFOutputPath = getwd(),
 
     # Target Transformations
     TargetTransformation = Trans,
@@ -148,14 +144,14 @@ for(run in seq_len(QA_Results[,.N])) {
     Difference = Diff,
 
     # Features
-    Lags = list('weeks' = c(1:5), 'months' = c(1:3)),
-    MA_Periods = list('weeks' = c(2:5), 'months' = c(2,3)),
+    Lags = NULL,#c(1:5),
+    MA_Periods = NULL,# c(2:5),
     SD_Periods = NULL,
     Skew_Periods = NULL,
     Kurt_Periods = NULL,
     Quantile_Periods = NULL,
     HolidayLags = 1,
-    HolidayMovingAverages = 1:2,
+    HolidayMovingAverages = NULL,#1:2,
     Quantiles_Selected = c('q5','q95'),
     FourierTerms = 0,
     CalendarVariables = c('week','wom','month','quarter'),
@@ -174,6 +170,13 @@ for(run in seq_len(QA_Results[,.N])) {
     GridTune = FALSE,
     ModelCount = 5,
     GridEvalMetric = 'mse',
+
+    alpha = 0,
+    lambda = 1,
+    SaveModel = FALSE,
+    ArgsList = NULL,
+    ModelID = "FC001",
+    TVT = NULL,
 
     # ML args
     NTrees = 50,
@@ -194,186 +197,191 @@ for(run in seq_len(QA_Results[,.N])) {
 
 
 # Collection data.table
-# QA_Results <- data.table::CJ(
-#   Group = c(0,1,2,3),
-#   xregs = c(0,1,2,3),
-#   TOF = c(TRUE, FALSE),
-#   Trans = c(TRUE, FALSE),
-#   Diff = c(TRUE, FALSE))
-#
-# # Other tests
-# QA_Results[, Success := 'Failure']
-# QA_Results[, Encoding := data.table::fifelse(runif(.N) < 0.5, "credibility", "binary")]
-# QA_Results[, Mixed := data.table::fifelse(runif(.N) < 0.5, TRUE, FALSE)]
-#
-#
-# library(RemixAutoML)
-# library(data.table)
-# library(lubridate)
-#
-# source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/MiscFunctions.R'))
-# source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/XGBoostHelpers.R'))
-# source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelMetrics.R'))
-# source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/CARMA-HelperFunctions.R'))
-# source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_CalendarTypes.R'))
-# source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_CharacterTypes.R'))
-# source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_CrossRowOperations.R'))
-# source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_NumericTypes.R'))
-# source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_DataSets.R'))
-# source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_ModelBased.R'))
-# source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelEvaluationPlots.R'))
-#
-# # run = 37
-# # run = 38
-# # run = 39
-# run = 110
-#
-# # Data
-# if(QA_Results[run, Group] == 0L) {
-#   data <- RemixAutoML:::Post_Query_Helper('"nogroupevalwalmart.csv"')[['data']]
-# } else if(QA_Results[run, Group] == 1L) {
-#   data <- RemixAutoML:::Post_Query_Helper('"onegroupevalwalmart.csv"')[['data']]
-# } else if(QA_Results[run, Group] == 2L) {
-#   data <- RemixAutoML:::Post_Query_Helper('"twogroupevalwalmart.csv"')[['data']]
-# } else if(QA_Results[run, Group] == 3L) {
-#   data <- RemixAutoML:::Post_Query_Helper('"threegroupevalwalmart.csv"')[['data']]
-# }
-#
-#
-#   # Unequal Start Dates
-# if(QA_Results[run, Group] > 0L) {
-#   data[Region == 'A' & Date < "2010-05-05", ID := 'REMOVE']
-#   data[is.na(ID), ID := 'KEEP']
-#   data <- data[ID == 'KEEP'][, ID := NULL]
-#
-#   data[Region == 'A' & Date > "2011-11-30", ID := 'REMOVE']
-#   data[is.na(ID), ID := 'KEEP']
-#   data <- data[ID == 'KEEP'][, ID := NULL]
-# }
-#
-# # xregs
-# if(QA_Results[run, xregs] == 0L) {
-#   xregs <- NULL
-# } else if(QA_Results[run, xregs] == 1L) {
-#   if(QA_Results[run, Group] == 0L) xregs <- RemixAutoML:::Post_Query_Helper('"nogroupfcwalmartxreg1.csv"')[['data']]
-#   if(QA_Results[run, Group] == 1L) xregs <- RemixAutoML:::Post_Query_Helper('"onegroupfcwalmartxreg1.csv"')[['data']]
-#   if(QA_Results[run, Group] == 2L) xregs <- RemixAutoML:::Post_Query_Helper('"twogroupfcwalmartxreg1.csv"')[['data']]
-#   if(QA_Results[run, Group] == 3L) xregs <- RemixAutoML:::Post_Query_Helper('"threegroupfcwalmartxreg1.csv"')[['data']]
-# } else if(QA_Results[run, xregs] == 2L) {
-#   if(QA_Results[run, Group] == 0L) xregs <- RemixAutoML:::Post_Query_Helper('"nogroupfcwalmartxreg2.csv"')[['data']]
-#   if(QA_Results[run, Group] == 1L) xregs <- RemixAutoML:::Post_Query_Helper('"onegroupfcwalmartxreg2.csv"')[['data']]
-#   if(QA_Results[run, Group] == 2L) xregs <- RemixAutoML:::Post_Query_Helper('"twogroupfcwalmartxreg2.csv"')[['data']]
-#   if(QA_Results[run, Group] == 3L) xregs <- RemixAutoML:::Post_Query_Helper('"threegroupfcwalmartxreg2.csv"')[['data']]
-# } else if(QA_Results[run, xregs] == 3L) {
-#   if(QA_Results[run, Group] == 0L) xregs <- RemixAutoML:::Post_Query_Helper('"nogroupfcwalmartxreg3.csv"')[['data']]
-#   if(QA_Results[run, Group] == 1L) xregs <- RemixAutoML:::Post_Query_Helper('"onegroupfcwalmartxreg3.csv"')[['data']]
-#   if(QA_Results[run, Group] == 2L) xregs <- RemixAutoML:::Post_Query_Helper('"twogroupfcwalmartxreg3.csv"')[['data']]
-#   if(QA_Results[run, Group] == 3L) xregs <- RemixAutoML:::Post_Query_Helper('"threegroupfcwalmartxreg3.csv"')[['data']]
-# }
-#
-# # Testing params
-# TOF <- QA_Results[run, TOF]
-# Trans <- QA_Results[run, Trans]
-# Diff <- QA_Results[run, Diff]
-# if(QA_Results[run, Group] == 0L) {
-#   groupvariables <- NULL
-# } else if(QA_Results[run, Group] == 1L) {
-#   groupvariables <- 'Dept'
-# } else if(QA_Results[run, Group] == 2L) {
-#   groupvariables <- c('Store','Dept')
-# } else if(QA_Results[run, Group] == 3L) {
-#   groupvariables <- c('Region','Store','Dept')
-# }
-#
-# # Ensure series have no missing dates (also remove series with more than 25% missing values)
-# # data <- RemixAutoML::TimeSeriesFill(
-# #   data,
-# #   DateColumnName = 'Date',
-# #   GroupVariables = groupvariables,
-# #   TimeUnit = 'weeks',
-# #   FillType = 'dynamic:meow',
-# #   MaxMissingPercent = 0.25,
-# #   SimpleImpute = TRUE)
-#
-# # Set negative numbers to 0
-# data <- data[, Weekly_Sales := data.table::fifelse(Weekly_Sales < 0, 0, Weekly_Sales)]
-#
-# # Ensure series have no missing dates (also remove series with more than 25% missing values)
-# # if(QA_Results[run, xregs] != 0L) {
-# #   xregs <- RemixAutoML::TimeSeriesFill(
-# #     xregs,
-# #     DateColumnName = 'Date',
-# #     GroupVariables = groupvariables,
-# #     TimeUnit = 'weeks',
-# #     FillType = 'maxmax',
-# #     MaxMissingPercent = 0.25,
-# #     SimpleImpute = TRUE)
-# # }
-#
-# # Copy data
-# data1 <- data.table::copy(data)
-# if(QA_Results[run, xregs] != 0L) xregs1 <- data.table::copy(xregs) else xregs1 <- NULL
-#
-# # Copy data
-# SaveModel = FALSE
-# ArgsList = NULL
-#
-# data1 <- data1
-# XREGS <- xregs1
-# NonNegativePred = FALSE
-# RoundPreds = FALSE
-# TargetColumnName = 'Weekly_Sales'
-# DateColumnName = 'Date'
-# HierarchGroups = NULL
-# GroupVariables = groupvariables
-# TimeUnit = 'weeks'
-# TimeGroups = c('weeks','months')
-# EncodingMethod = 'meow'
-# ZeroPadSeries = 'dynamic:meow'
-# DataTruncate = FALSE
-# SplitRatios = c(1 - 10 / 110, 10 / 110)
-# PartitionType = 'random'
-# AnomalyDetection = NULL
-# FC_Periods = 4
-# TrainOnFull = TOF
-# NThreads = 8
-# Timer = TRUE
-# DebugMode = TRUE
-# SaveDataPath = getwd()
-# PDFOutputPath = getwd()
-# TargetTransformation = Trans
-# Methods = 'Asinh'
-# Difference = Diff
-# Lags = list('weeks' = c(1:5), 'months' = c(1:3))
-# MA_Periods = list('weeks' = c(2:5), 'months' = c(2,3))
-# SD_Periods = NULL
-# Skew_Periods = NULL
-# Kurt_Periods = NULL
-# Quantile_Periods = NULL
-# HolidayLags = 1
-# HolidayMovingAverages = 1:2
-# Quantiles_Selected = NULL
-# FourierTerms = 0
-# CalendarVariables = c('week', 'wom', 'month', 'quarter')
-# HolidayVariable = c('USPublicHolidays','EasterGroup', 'ChristmasGroup','OtherEcclesticalFeasts')
-# HolidayLookback <- 7
-# TimeTrendVariable = TRUE
-# TreeMethod = 'hist'
-# EvalMetric = 'RMSE'
-# LossFunction = 'reg:squarederror'
-# MaxRunsWithoutNewWinner = 30L
-# MaxRunMinutes = 30
-# GridTune = FALSE
-# ModelCount = 5
-# GridEvalMetric = 'mse'
-# NTrees = 50
-# LearningRate = 0.03
-# MaxDepth = 9L
-# MinChildWeight = 1.0
-# SubSample = 1.0
-# ColSampleByTree = 1.0
+QA_Results <- data.table::CJ(
+  Group = c(0,1,2,3),
+  xregs = c(0,1,2,3),
+  TOF = c(TRUE, FALSE),
+  Trans = c(TRUE, FALSE),
+  Diff = c(TRUE, FALSE))
+
+# Other tests
+QA_Results[, Success := 'Failure']
+QA_Results[, Encoding := data.table::fifelse(runif(.N) < 0.5, "credibility", "binary")]
+QA_Results[, Mixed := data.table::fifelse(runif(.N) < 0.5, TRUE, FALSE)]
 
 
+library(RemixAutoML)
+library(data.table)
+library(lubridate)
+
+source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/MiscFunctions.R'))
+source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/XGBoostHelpers.R'))
+source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelMetrics.R'))
+source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/CARMA-HelperFunctions.R'))
+source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_CalendarTypes.R'))
+source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_CharacterTypes.R'))
+source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_CrossRowOperations.R'))
+source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_NumericTypes.R'))
+source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_DataSets.R'))
+source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_ModelBased.R'))
+source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelEvaluationPlots.R'))
+
+# run = 37
+# run = 38
+# run = 39
+run = 103
+
+# Data
+if(QA_Results[run, Group] == 0L) {
+  data <- RemixAutoML:::Post_Query_Helper('"nogroupevalwalmart.csv"')[['data']]
+} else if(QA_Results[run, Group] == 1L) {
+  data <- RemixAutoML:::Post_Query_Helper('"onegroupevalwalmart.csv"')[['data']]
+} else if(QA_Results[run, Group] == 2L) {
+  data <- RemixAutoML:::Post_Query_Helper('"twogroupevalwalmart.csv"')[['data']]
+} else if(QA_Results[run, Group] == 3L) {
+  data <- RemixAutoML:::Post_Query_Helper('"threegroupevalwalmart.csv"')[['data']]
+}
+
+
+  # Unequal Start Dates
+if(QA_Results[run, Group] > 0L) {
+  data[Region == 'A' & Date < "2010-05-05", ID := 'REMOVE']
+  data[is.na(ID), ID := 'KEEP']
+  data <- data[ID == 'KEEP'][, ID := NULL]
+
+  data[Region == 'A' & Date > "2011-11-30", ID := 'REMOVE']
+  data[is.na(ID), ID := 'KEEP']
+  data <- data[ID == 'KEEP'][, ID := NULL]
+}
+
+# xregs
+if(QA_Results[run, xregs] == 0L) {
+  xregs <- NULL
+} else if(QA_Results[run, xregs] == 1L) {
+  if(QA_Results[run, Group] == 0L) xregs <- RemixAutoML:::Post_Query_Helper('"nogroupfcwalmartxreg1.csv"')[['data']]
+  if(QA_Results[run, Group] == 1L) xregs <- RemixAutoML:::Post_Query_Helper('"onegroupfcwalmartxreg1.csv"')[['data']]
+  if(QA_Results[run, Group] == 2L) xregs <- RemixAutoML:::Post_Query_Helper('"twogroupfcwalmartxreg1.csv"')[['data']]
+  if(QA_Results[run, Group] == 3L) xregs <- RemixAutoML:::Post_Query_Helper('"threegroupfcwalmartxreg1.csv"')[['data']]
+} else if(QA_Results[run, xregs] == 2L) {
+  if(QA_Results[run, Group] == 0L) xregs <- RemixAutoML:::Post_Query_Helper('"nogroupfcwalmartxreg2.csv"')[['data']]
+  if(QA_Results[run, Group] == 1L) xregs <- RemixAutoML:::Post_Query_Helper('"onegroupfcwalmartxreg2.csv"')[['data']]
+  if(QA_Results[run, Group] == 2L) xregs <- RemixAutoML:::Post_Query_Helper('"twogroupfcwalmartxreg2.csv"')[['data']]
+  if(QA_Results[run, Group] == 3L) xregs <- RemixAutoML:::Post_Query_Helper('"threegroupfcwalmartxreg2.csv"')[['data']]
+} else if(QA_Results[run, xregs] == 3L) {
+  if(QA_Results[run, Group] == 0L) xregs <- RemixAutoML:::Post_Query_Helper('"nogroupfcwalmartxreg3.csv"')[['data']]
+  if(QA_Results[run, Group] == 1L) xregs <- RemixAutoML:::Post_Query_Helper('"onegroupfcwalmartxreg3.csv"')[['data']]
+  if(QA_Results[run, Group] == 2L) xregs <- RemixAutoML:::Post_Query_Helper('"twogroupfcwalmartxreg3.csv"')[['data']]
+  if(QA_Results[run, Group] == 3L) xregs <- RemixAutoML:::Post_Query_Helper('"threegroupfcwalmartxreg3.csv"')[['data']]
+}
+
+# Testing params
+TOF <- QA_Results[run, TOF]
+Trans <- QA_Results[run, Trans]
+Diff <- QA_Results[run, Diff]
+if(QA_Results[run, Group] == 0L) {
+  groupvariables <- NULL
+} else if(QA_Results[run, Group] == 1L) {
+  groupvariables <- 'Dept'
+} else if(QA_Results[run, Group] == 2L) {
+  groupvariables <- c('Store','Dept')
+} else if(QA_Results[run, Group] == 3L) {
+  groupvariables <- c('Region','Store','Dept')
+}
+
+# Ensure series have no missing dates (also remove series with more than 25% missing values)
+# data <- RemixAutoML::TimeSeriesFill(
+#   data,
+#   DateColumnName = 'Date',
+#   GroupVariables = groupvariables,
+#   TimeUnit = 'weeks',
+#   FillType = 'dynamic:meow',
+#   MaxMissingPercent = 0.25,
+#   SimpleImpute = TRUE)
+
+# Set negative numbers to 0
+data <- data[, Weekly_Sales := data.table::fifelse(Weekly_Sales < 0, 0, Weekly_Sales)]
+
+# Ensure series have no missing dates (also remove series with more than 25% missing values)
+# if(QA_Results[run, xregs] != 0L) {
+#   xregs <- RemixAutoML::TimeSeriesFill(
+#     xregs,
+#     DateColumnName = 'Date',
+#     GroupVariables = groupvariables,
+#     TimeUnit = 'weeks',
+#     FillType = 'maxmax',
+#     MaxMissingPercent = 0.25,
+#     SimpleImpute = TRUE)
+# }
+
+# Copy data
+data1 <- data.table::copy(data)
+if(QA_Results[run, xregs] != 0L) xregs1 <- data.table::copy(xregs) else xregs1 <- NULL
+
+# Copy data
+SaveModel = FALSE
+ArgsList = NULL
+
+data1 <- data1
+XREGS <- xregs1
+NonNegativePred = FALSE
+RoundPreds = FALSE
+TargetColumnName = 'Weekly_Sales'
+DateColumnName = 'Date'
+HierarchGroups = NULL
+GroupVariables = groupvariables
+TimeUnit = 'weeks'
+TimeGroups = c('weeks','months')
+EncodingMethod = 'target_encoding'
+ZeroPadSeries = 'dynamic:target_encoding'
+DataTruncate = FALSE
+SplitRatios = c(0.95,0.05)
+PartitionType = 'random'
+AnomalyDetection = NULL
+FC_Periods = 1
+TimeWeights = 0.999
+TrainOnFull = TOF
+NThreads = 8
+Timer = TRUE
+DebugMode = TRUE
+SaveDataPath = getwd()
+PDFOutputPath = getwd()
+TargetTransformation = Trans
+Methods = 'Asinh'
+Difference = Diff
+Lags = NULL # 1
+MA_Periods = NULL #list('weeks' = c(2:5), 'months' = c(2,3))
+SD_Periods = NULL
+Skew_Periods = NULL
+Kurt_Periods = NULL
+Quantile_Periods = c('q5','q95')
+HolidayLags = 1
+HolidayMovingAverages = NULL #1:2
+Quantiles_Selected = NULL
+FourierTerms = 0
+CalendarVariables = NULL # c('week', 'wom', 'month', 'quarter')
+HolidayVariable = NULL # c('USPublicHolidays','EasterGroup', 'ChristmasGroup','OtherEcclesticalFeasts')
+HolidayLookback <- 7
+TimeTrendVariable = FALSE # TRUE
+TreeMethod = 'hist'
+EvalMetric = 'RMSE'
+LossFunction = 'reg:squarederror'
+MaxRunsWithoutNewWinner = 30L
+MaxRunMinutes = 30
+GridTune = FALSE
+ModelCount = 5
+GridEvalMetric = 'mse'
+NTrees = 50
+LearningRate = 0.03
+MaxDepth = 9L
+MinChildWeight = 1.0
+SubSample = 1.0
+ColSampleByTree = 1.0
+alpha = 0
+lambda = 1
+SaveModel = FALSE
+ArgsList = NULL
+ModelID = "FC001"
+TVT = NULL
 
 # Differencing ----
 # GroupVariables.=GroupVariables
@@ -497,6 +505,7 @@ NonNegativePred.=NonNegativePred
 RoundPreds.=RoundPreds
 UpdateData.= if(i == 1) NULL else UpdateData
 FactorList.=TestModel$FactorLevelsList
+Debug = TRUE
 
 # XGBoost Scoring ----
 # i == 1

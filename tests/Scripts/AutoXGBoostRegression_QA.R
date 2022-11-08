@@ -25,9 +25,7 @@ XGBoost_QA_Results_Regression[, RunNumber := seq_len(.N)]
 # 10: TRUE           TRUE    FALSE Failure               FALSE
 
 # AutoXGBoostRegression
-# run = 9 # train on full fail
-# run = 10 # train on full fail
-# run = 6
+# run = 1
 for(run in seq_len(XGBoost_QA_Results_Regression[,.N])) {
 
   # Refresh data
@@ -108,7 +106,7 @@ for(run in seq_len(XGBoost_QA_Results_Regression[,.N])) {
     TestData = TTestData,
     TargetColumnName = Tar,
     FeatureColNames = names(TTrainData)[!names(TTrainData) %in% c("IDcol_1", "IDcol_2","DateTime",Tar)],
-    WeightsColumnName = NULL,
+    WeightsColumnName = 'Weights',
     IDcols = NULL,
     TransformNumericColumns = trans,
     Methods = c("Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit"),
@@ -150,13 +148,14 @@ library(RemixAutoML)
 library(data.table)
 source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ReinforcementLearningFunctions.R"))
 source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/GridTuning.R"))
+source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/CARMA-HelperFunctions.R"))
 source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/XGBoostHelpers.R"))
 source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/CatBoostHelpers.R"))
 source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelMetrics.R"))
 source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelEvaluationPlots.R"))
 source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_CharacterTypes.R"))
 
-run = 6
+run = 5
 
 # Testing
 XGBoost_QA_Results_Regression <- data.table::CJ(
@@ -211,8 +210,8 @@ data <- RemixAutoML::FakeDataGenerator(
 if(!tof && !PartitionInFunction) {
   Sets <- RemixAutoML::AutoDataPartition(
     data = data,
-    NumDataSets = 3,
-    Ratios = c(0.7,0.2,0.1),
+    NumDataSets = 2,
+    Ratios = c(0.8,0.2),
     PartitionType = "random",
     StratifyColumnNames = 'Adrian',
     TimeColumnName = NULL)
@@ -250,7 +249,7 @@ ModelID = "Test_Model_1"
 EncodingMethod = "credibility"
 ReturnFactorLevels = TRUE
 ReturnModelObjects = TRUE
-SaveModelObjects = TRUE
+SaveModelObjects = FALSE
 DebugMode = TRUE
 data = TTrainData
 TrainOnFull = tof
@@ -260,6 +259,7 @@ TargetColumnName = Tar
 FeatureColNames = names(TTrainData)[!names(TTrainData) %in% c("IDcol_1", "IDcol_2","DateTime",Tar)] # names(data)[c(2,3,39:ncol(data))]
 WeightsColumnName = "Weights"
 IDcols = c("IDcol_1","IDcol_2","DateTime")
+PrimaryDateColumn = "DateTime"
 TransformNumericColumns = trans
 Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit", "YeoJohnson")
 eval_metric = "rmse"

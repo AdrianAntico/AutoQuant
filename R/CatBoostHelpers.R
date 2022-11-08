@@ -541,7 +541,7 @@ CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
   Names <- data.table::as.data.table(setdiff(names(data.), c(TargetColumnName., PrimaryDateColumn., IDcols.)))
   if(!"V1" %chin% names(Names)) data.table::setnames(Names, "FeatureColNames.", "ColNames", skip_absent = TRUE) else data.table::setnames(Names, "V1", "ColNames", skip_absent = TRUE)
   if(SaveModelObjects.) data.table::fwrite(Names, file.path(model_path., paste0(ModelID., "_ColNames.csv")))
-
+#
   # Subset Target Variables----
   TrainTarget <- data.[, .SD, .SDcols = c(TargetColumnName.)]
   if(ncol(TrainTarget) > 1L) TrainTarget <- as.matrix(TrainTarget) else TrainTarget <- TrainTarget[[1L]]
@@ -663,6 +663,79 @@ CatBoostDataConversion <- function(CatFeatures. = CatFeatures,
 
   # Return
   return(list(TrainPool = TrainPool, TestPool = TestPool, FinalTestPool = FinalTestPool))
+}
+
+
+XGBoostDataConversion <- function(CatFeatures. = CatFeatures,
+                                  dataTrain. = dataTrain,
+                                  dataTest. = dataTest,
+                                  TestData. = TestData,
+                                  TrainTarget. = TrainTarget,
+                                  TestTarget. = TestTarget,
+                                  FinalTestTarget. = FinalTestTarget,
+                                  TrainOnFull. = TrainOnFull,
+                                  Weights. = NULL) {
+
+  if(is.character(Weights.) && Weights. %chin% names(dataTrain.)) {
+    TrainWeightVector <- dataTrain.[[eval(TrainWeights.)]]
+    dataTrain.[, eval(TrainWeights.) := NULL]
+    if(!is.null(dataTest.)) {
+      ValidationWeightVector <- dataTest.[[eval(ValidationWeights.)]]
+      dataTest.[, eval(ValidationWeights.) := NULL]
+    } else {
+      ValidationWeightVector <- NULL
+    }
+    if(!is.null(TestData.)) {
+      TestWeightVector <- TestData.[[eval(TestWeights.)]]
+      TestData.[, eval(TestWeights.) := NULL]
+    }  else {
+      TestWeightVector <- NULL
+    }
+  } else {
+    TrainWeightVector <- NULL
+    ValidationWeightVector <- NULL
+    TestWeightVector <- NULL
+  }
+
+  # Convert data to model object data
+  if(DebugMode.) print("Convert data to model object data")
+  if('GroupVar' %chin% names(dataTrain)) data.table::set(dataTrain, j = 'GroupVar', value = NULL)
+  if('Weights' %chin% names(dataTrain)) data.table::set(dataTrain, j = 'Weights', value = NULL)
+  if(tolower(Algo) == 'xgboost') {
+    datatrain <- xgboost::xgb.DMatrix(as.matrix(dataTrain), label = TrainTarget)
+  } else if(tolower(Algo) == 'lightgbm') {
+    datatrain <- lightgbm::lgb.Dataset(data=as.matrix(dataTrain), label=TrainTarget)
+  }
+  if(!TrainOnFull.) {
+    if(DebugMode.) print("Convert data to model object dataTest")
+    if('GroupVar' %chin% names(dataTest)) data.table::set(dataTest, j = 'GroupVar', value = NULL)
+    if('Weights' %chin% names(dataTest)) data.table::set(dataTest, j = 'Weights', value = NULL)
+    if(tolower(Algo) == 'xgboost') {
+      datavalidate <- xgboost::xgb.DMatrix(as.matrix(dataTest), label = TestTarget)
+    } else if(tolower(Algo) == 'lightgbm') {
+      datavalidate <- lightgbm::lgb.Dataset(data=as.matrix(dataTest), label=TestTarget)
+    }
+    if(!is.null(TestData.)) {
+      if(DebugMode.) print("Convert data to model object TestData.")
+      #if('GroupVar' %chin% names(TestData.)) data.table::set(TestData., j = 'GroupVar', value = NULL)
+      #if('Weights' %chin% names(TestData.)) data.table::set(TestData., j = 'Weights', value = NULL)
+      if(tolower(Algo) == 'xgboost') {
+        datatest <- xgboost::xgb.DMatrix(as.matrix(TestData.), label = FinalTestTarget)
+        EvalSets <- list(train = datavalidate, test = datatest)
+      } else if(tolower(Algo) == 'lightgbm') {
+        datatest <- lightgbm::lgb.Dataset(data=as.matrix(TestData.), label=FinalTestTarget)
+        EvalSets <- list(ValidationData = datavalidate, TestData = datatest)
+      }
+    } else {
+      if(tolower(Algo) == 'xgboost') {
+        EvalSets <- list(train = datatrain, test = datavalidate)
+      } else if(tolower(Algo) == 'lightgbm') {
+        EvalSets <- list(ValidationData = datavalidate)
+      }
+    }
+  } else {
+    EvalSets <- list(train = datatrain)
+  }
 }
 
 #' @title CatBoostFinalParams

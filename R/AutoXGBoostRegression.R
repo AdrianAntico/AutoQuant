@@ -240,7 +240,7 @@ AutoXGBoostRegression <- function(OutputSelection = c('Importances', 'EvalPlots'
       data.table::setnames(predict, names(predict), "Predict")
       rm(predict_validate)
     }
-    Output <- XGBoostValidationData(model.=model, TestData.=NULL, ModelType='regression', TrainOnFull.=TRUE, TestDataCheck=FALSE, FinalTestTarget.=FinalTestTarget, TestTarget.=TestTarget, TrainTarget.=TrainTarget, TrainMerge.=TrainMerge, TestMerge.=TestMerge, dataTest.=dataTest, data.=dataTrain, predict.=predict, TargetColumnName.=TargetColumnName, SaveModelObjects. = SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID, LossFunction.=NULL, TransformNumericColumns.=TransformNumericColumns, GridTune.=GridTune, TransformationResults.=TransformationResults, TargetLevels.=NULL)
+    Output <- tryCatch({XGBoostValidationData(model.=model, TestData.=NULL, ModelType='regression', TrainOnFull.=TRUE, TestDataCheck=FALSE, FinalTestTarget.=FinalTestTarget, TestTarget.=TestTarget, TrainTarget.=TrainTarget, TrainMerge.=TrainMerge, TestMerge.=TestMerge, dataTest.=dataTest, data.=dataTrain, predict.=predict, TargetColumnName.=TargetColumnName, SaveModelObjects. = SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID, LossFunction.=NULL, TransformNumericColumns.=TransformNumericColumns, GridTune.=GridTune, TransformationResults.=TransformationResults, TargetLevels.=NULL)}, error = function(x) NULL)
     TrainData <- Output[['ValidationData']]; rm(Output)
     if(!'Predict' %chin% names(TrainData)) data.table::setnames(TrainData, 'V1', 'Predict')
   } else {
@@ -253,7 +253,7 @@ AutoXGBoostRegression <- function(OutputSelection = c('Importances', 'EvalPlots'
 
   # Validation, Importance, Shap data ----
   if(DebugMode) print("Validation, Importance, Shap data ----")
-  Output <- XGBoostValidationData(ModelType='regression', TestDataCheck=!is.null(TestData), TrainOnFull.=TrainOnFull, model.=model, TargetColumnName.=TargetColumnName, SaveModelObjects.=SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID, TestData.=TestData, TestTarget.=TestTarget, FinalTestTarget.=FinalTestTarget, TestMerge.=TestMerge, dataTest.=dataTest, TrainTarget.=TrainTarget, predict.=predict, TransformNumericColumns.=TransformNumericColumns, TransformationResults.=TransformationResults, GridTune.=GridTune, data.=dataTrain)
+  Output <- tryCatch({XGBoostValidationData(ModelType='regression', TestDataCheck=!is.null(TestData), TrainOnFull.=TrainOnFull, model.=model, TargetColumnName.=TargetColumnName, SaveModelObjects.=SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID, TestData.=TestData, TestTarget.=TestTarget, FinalTestTarget.=FinalTestTarget, TestMerge.=TestMerge, dataTest.=dataTest, TrainTarget.=TrainTarget, predict.=predict, TransformNumericColumns.=TransformNumericColumns, TransformationResults.=TransformationResults, GridTune.=GridTune, data.=dataTrain)}, error = function(x) NULL)
   TransformationResults <- Output[['TransformationResults']]; Output[['TransformationResults']] <- NULL
   VariableImportance <- Output[['VariableImportance']]; Output[['VariableImportance']] <- NULL
   ValidationData <- Output[['ValidationData']]; rm(Output)

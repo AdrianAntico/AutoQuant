@@ -89,19 +89,19 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
                             EncodingMethod. = EncodingMethod,
                             DebugMode. = FALSE) {
 
-  # Ensure data. is a data.table
+  # Ensure data. is a data.table ----
   if(DebugMode.) print("Ensure data. is a data.table")
   if(!data.table::is.data.table(data.)) data.table::setDT(data.)
   if(!is.null(ValidationData.) && !data.table::is.data.table(ValidationData.)) data.table::setDT(ValidationData.)
   if(!is.null(TestData.) && !data.table::is.data.table(TestData.)) data.table::setDT(TestData.)
 
-  # Target Name Storage
+  # Target Name Storage ----
   if(DebugMode.) print("Target Name Storage")
   if(!is.character(TargetColumnName.)) TargetColumnName. <- names(data.)[TargetColumnName.]
   if(!is.character(FeatureColNames.)) FeatureColNames. <- names(data.)[FeatureColNames.]
   if(!is.null(IDcols.) && !is.character(IDcols.)) IDcols. <- names(data.)[IDcols.]
 
-  # Identify column numbers for factor variables
+  # Identify column numbers for factor variables ----
   if(DebugMode.) print("Identify column numbers for factor variables")
   CatFeatures <- sort(c(as.numeric(which(sapply(data., is.factor))), as.numeric(which(sapply(data., is.character)))))
   if(!identical(numeric(0), CatFeatures)) {
@@ -112,8 +112,8 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
     CatFeatures <- NULL
   }
 
-  # Remove WeightsVector
-  if(DebugMode.) print("Remove WeightsVector")
+  # Store WeightsVector ----
+  if(DebugMode.) print("Store WeightsVector")
   if(!is.null(WeightsColumnName.)) {
     if(Algo == 'xgboost') {
       WeightsVector <- data.[[eval(WeightsColumnName.)]]
@@ -126,11 +126,11 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
     }
   }
 
-  # Target var management
+  # Target var management ----
   if(DebugMode.) print("Target var management")
   if(ModelType == 'multiclass' && !is.null(CatFeatures)) CatFeatures <- setdiff(CatFeatures, TargetColumnName.)
 
-  # Classification
+  # Classification ----
   if(ModelType == 'classification') {
 
     # Debug
