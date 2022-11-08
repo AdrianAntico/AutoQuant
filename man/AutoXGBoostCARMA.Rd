@@ -53,6 +53,7 @@ AutoXGBoostCARMA(
   ModelCount = 30L,
   MaxRunsWithoutNewWinner = 20L,
   MaxRunMinutes = 24L * 60L,
+  EarlyStoppingRounds = 100L,
   NTrees = 500L,
   num_parallel_tree = 1,
   LearningRate = 0.5,

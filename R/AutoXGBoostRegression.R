@@ -39,6 +39,7 @@
 #' @param MaxRunsWithoutNewWinner Runs without new winner to end procedure
 #' @param MaxRunMinutes In minutes
 #' @param BaselineComparison Set to either "default" or "best". Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.
+#' @param early_stopping_rounds = 100L
 #' @param Trees Bandit grid partitioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the trees numbers you want to test. For running grid tuning, a NULL value supplied will mean these values are tested seq(1000L, 10000L, 1000L)
 #' @param num_parallel_tree = 1. If setting greater than 1, set colsample_bytree < 1, subsample < 1 and round = 1
 #' @param eta Bandit grid partitioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the LearningRate values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.01,0.02,0.03,0.04)
@@ -152,6 +153,7 @@ AutoXGBoostRegression <- function(OutputSelection = c('Importances', 'EvalPlots'
                                   MaxRunsWithoutNewWinner = 20L,
                                   MaxRunMinutes = 24L*60L,
                                   PassInGrid = NULL,
+                                  early_stopping_rounds = 100L,
                                   Trees = 50L,
                                   num_parallel_tree = 1,
                                   eta = NULL,
@@ -228,9 +230,9 @@ AutoXGBoostRegression <- function(OutputSelection = c('Importances', 'EvalPlots'
   # Build model ----
   if(DebugMode) print("Build model ----")
   if(!is.null(WeightsVector)) {
-    model <- xgboost::xgb.train(params = base_params, data = datatrain, watchlist = EvalSets, nrounds = NTrees, Verbose = Verbose, weight = WeightsVector)
+    model <- xgboost::xgb.train(params = base_params, data = datatrain, watchlist = EvalSets, nrounds = NTrees, verbose = Verbose, weight = WeightsVector, early_stopping_rounds = early_stopping_rounds)
   } else {
-    model <- xgboost::xgb.train(params = base_params, data = datatrain, watchlist = EvalSets, nrounds = NTrees, Verbose = Verbose)
+    model <- xgboost::xgb.train(params = base_params, data = datatrain, watchlist = EvalSets, nrounds = NTrees, verbose = Verbose, early_stopping_rounds = early_stopping_rounds)
   }
 
   # Save Model ----

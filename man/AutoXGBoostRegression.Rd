@@ -39,6 +39,7 @@ AutoXGBoostRegression(
   MaxRunsWithoutNewWinner = 20L,
   MaxRunMinutes = 24L * 60L,
   PassInGrid = NULL,
+  early_stopping_rounds = 100L,
   Trees = 50L,
   num_parallel_tree = 1,
   eta = NULL,
@@ -118,6 +119,8 @@ AutoXGBoostRegression(
 \item{MaxRunMinutes}{In minutes}
 
 \item{PassInGrid}{Default is NULL. Provide a data.table of grid options from a previous run.}
+
+\item{early_stopping_rounds}{= 100L}
 
 \item{Trees}{Bandit grid partitioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the trees numbers you want to test. For running grid tuning, a NULL value supplied will mean these values are tested seq(1000L, 10000L, 1000L)}
 

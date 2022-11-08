@@ -29,6 +29,7 @@
 #' @param LossFunction Use 'multi:sofprob', I set it up to return the class label and the individual probabilities, just like catboost. Doesn't come like that off the shelf
 #' @param eval_metric This is the metric used to identify best grid tuned model. Choose from 'merror' or 'mlogloss'
 #' @param grid_eval_metric "accuracy", "logloss", "microauc"
+#' @param early_stopping_rounds = 10L
 #' @param Trees Bandit grid partitioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the trees numbers you want to test. For running grid tuning, a NULL value supplied will mean these values are tested seq(1000L, 10000L, 1000L)
 #' @param num_parallel_tree = 1. If setting greater than 1, set colsample_bytree < 1, subsample < 1 and round = 1
 #' @param eta Bandit grid partitioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the LearningRate values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.01,0.02,0.03,0.04)
@@ -140,6 +141,7 @@ AutoXGBoostMultiClass <- function(OutputSelection = c("Importances", "EvalPlots"
                                   MaxRunsWithoutNewWinner = 20L,
                                   MaxRunMinutes = 24L*60L,
                                   PassInGrid = NULL,
+                                  early_stopping_rounds = 100L,
                                   Trees = 50L,
                                   num_parallel_tree = 1,
                                   eta = NULL,
@@ -232,7 +234,7 @@ AutoXGBoostMultiClass <- function(OutputSelection = c("Importances", "EvalPlots"
 
   # Train Final Model
   if(DebugMode) print("Train Final Model ----")
-  model <- xgboost::xgb.train(params=base_params, data=datatrain, watchlist=EvalSets, nrounds=NTrees)
+  model <- xgboost::xgb.train(params=base_params, data=datatrain, watchlist=EvalSets, nrounds=NTrees, early_stopping_rounds = early_stopping_rounds)
 
   # Save Model
   if(DebugMode) print("Save Model ----")

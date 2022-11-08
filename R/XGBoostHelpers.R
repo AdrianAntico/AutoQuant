@@ -696,7 +696,7 @@ XGBoostFinalParams <- function(GridTune.=GridTune,
   base_params$eval_metric <- tolower(eval_metric.)
   base_params$nthread <- NThreads.
   base_params$max_bin <- 64L
-  base_params$early_stopping_rounds <- 10L
+  #base_params$early_stopping_rounds <- 10L
   base_params$tree_method <- TreeMethod.
 
   # Grid tuning
@@ -838,7 +838,7 @@ XGBoostGridParams <- function(N. = N,
   base_params$eval_metric <- tolower(EvalMetric.)
   base_params$nthread <- NThreads.
   base_params$max_bin <- 64L
-  base_params$early_stopping_rounds <- 10L
+  # base_params$early_stopping_rounds <- 10L
   base_params$tree_method <- TreeMethod.
 
   # Run-dependent args and updates
