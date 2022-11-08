@@ -399,7 +399,6 @@ AutoLightGBMRegression <- function(# data parameters
   TransformationResults <- Output$TransformationResults; Output$TransformationResults <- NULL
   FactorLevelsList <- Output$FactorLevelsList; Output$FactorLevelsList <- NULL
   FinalTestTarget <- Output$FinalTestTarget; Output$FinalTestTarget <- NULL
-  # WeightsVector <- Output$WeightsVector; Output$WeightsVector <- NULL
   datavalidate <- Output$datavalidate; Output$datavalidate <- NULL
   TargetLevels <- Output$TargetLevels; Output$TargetLevels <- NULL
   TrainTarget <- Output$TrainTarget; Output$TrainTarget <- NULL
