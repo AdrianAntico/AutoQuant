@@ -36,6 +36,7 @@ AutoXGBoostMultiClass(
   MaxRunMinutes = 24L * 60L,
   PassInGrid = NULL,
   Trees = 50L,
+  num_parallel_tree = 1,
   eta = NULL,
   max_depth = NULL,
   min_child_weight = NULL,
@@ -107,6 +108,8 @@ AutoXGBoostMultiClass(
 \item{PassInGrid}{Default is NULL. Provide a data.table of grid options from a previous run.}
 
 \item{Trees}{Bandit grid partitioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the trees numbers you want to test. For running grid tuning, a NULL value supplied will mean these values are tested seq(1000L, 10000L, 1000L)}
+
+\item{num_parallel_tree}{= 1. If setting greater than 1, set colsample_bytree < 1, subsample < 1 and round = 1}
 
 \item{eta}{Bandit grid partitioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the LearningRate values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.01,0.02,0.03,0.04)}
 

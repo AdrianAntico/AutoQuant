@@ -40,6 +40,7 @@
 #' @param MaxRunMinutes In minutes
 #' @param BaselineComparison Set to either "default" or "best". Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.
 #' @param Trees Bandit grid partitioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the trees numbers you want to test. For running grid tuning, a NULL value supplied will mean these values are tested seq(1000L, 10000L, 1000L)
+#' @param num_parallel_tree = 1. If setting greater than 1, set colsample_bytree < 1, subsample < 1 and round = 1
 #' @param eta Bandit grid partitioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the LearningRate values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.01,0.02,0.03,0.04)
 #' @param max_depth Bandit grid partitioned. Number, or vector for depth to test.  For running grid tuning, a NULL value supplied will mean these values are tested seq(4L, 16L, 2L)
 #' @param min_child_weight Number, or vector for min_child_weight to test.  For running grid tuning, a NULL value supplied will mean these values are tested seq(1.0, 10.0, 1.0)
@@ -152,6 +153,7 @@ AutoXGBoostRegression <- function(OutputSelection = c('Importances', 'EvalPlots'
                                   MaxRunMinutes = 24L*60L,
                                   PassInGrid = NULL,
                                   Trees = 50L,
+                                  num_parallel_tree = 1,
                                   eta = NULL,
                                   max_depth = NULL,
                                   min_child_weight = NULL,
@@ -216,7 +218,12 @@ AutoXGBoostRegression <- function(OutputSelection = c('Importances', 'EvalPlots'
   if(DebugMode) print("Final Params ----")
   Output <- XGBoostFinalParams(TrainOnFull.=TrainOnFull, PassInGrid.=PassInGrid, BestGrid.=BestGrid, GridTune.=GridTune, LossFunction.=LossFunction, eval_metric.=eval_metric, NThreads.=NThreads, TreeMethod.=TreeMethod, Trees.=Trees, Alpha.=alpha, Lambda.=lambda)
   base_params <- Output$base_params
-  NTrees <- if(length(Output$NTrees) > 1L) max(Output$NTrees) else Output$NTrees; rm(Output)
+  if(length(Output$NTrees) > 1L) NTrees <- max(Output$NTrees) else NTrees <- Output$NTrees; rm(Output)
+  if(num_parallel_tree > 1) {
+    if(colsample_bytree == 1) colsample_bytree <- 0.50
+    if(length(subsample) == 0L || subsample == 1) subsample <- 0.70
+    base_params$round <- 1
+  }
 
   # Build model ----
   if(DebugMode) print("Build model ----")
