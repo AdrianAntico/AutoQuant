@@ -41,7 +41,7 @@
 #' @param task 'train' or 'refit'
 #' @param device_type 'cpu' or 'gpu'
 #' @param NThreads only list up to number of cores, not threads. parallel::detectCores() / 2
-#' @param objective 'regression'
+#' @param objective 'regression' (or 'mean_squared_error'), 'regression_l1' (or 'mean_absolute_error'), 'mae' (or 'mean_absolute_percentage_error'), 'huber', 'fair', 'poisson', 'quantile', 'gamma', 'tweedie'
 #' @param metric 'rmse', 'l1', 'l2', 'quantile', 'mape', 'huber', 'fair', 'poisson', 'gamma', 'gamma_deviance', 'tweedie', 'ndcg'
 #' @param boosting 'gbdt', 'rf', 'dart', 'goss'
 #' @param LinearTree FALSE

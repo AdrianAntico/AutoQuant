@@ -60,7 +60,7 @@
 #'
 #' # ML Args begin
 #' @param Device_Type = 'CPU'
-#' @param LossFunction = 'regression'
+#' @param LossFunction = 'regression' (or 'mean_squared_error'), 'regression_l1' (or 'mean_absolute_error'), 'mae' (or 'mean_absolute_percentage_error'), 'huber', 'fair', 'poisson', 'quantile', 'gamma', 'tweedie'
 #' @param EvalMetric = 'mae'
 #' @param Input_Model = NULL
 #' @param Task = 'train'

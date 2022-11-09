@@ -218,7 +218,7 @@ AutoLightGBMCARMA(
 
 \item{Device_Type}{= 'CPU'}
 
-\item{LossFunction}{= 'regression'}
+\item{LossFunction}{= 'regression' (or 'mean_squared_error'), 'regression_l1' (or 'mean_absolute_error'), 'mae' (or 'mean_absolute_percentage_error'), 'huber', 'fair', 'poisson', 'quantile', 'gamma', 'tweedie'}
 
 \item{EvalMetric}{= 'mae'}
 
