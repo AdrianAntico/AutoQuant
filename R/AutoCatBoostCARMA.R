@@ -92,6 +92,7 @@
 #'
 #' # Load data
 #' data <- data.table::fread('https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1')
+#' data <- Rappture::DM.pgQuery(Host = 'localhost', DataBase = 'RemixAutoML', SELECT = NULL, FROM = 'WalmartFull', User = 'postgres', Port = 5432, Password = 'Aa1028#@')
 #'
 #' # Ensure series have no missing dates (also remove series with more than 25% missing values)
 #' data <- RemixAutoML::TimeSeriesFill(

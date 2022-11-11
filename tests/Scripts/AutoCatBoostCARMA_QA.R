@@ -262,7 +262,7 @@ QA_Results[, RunTime := 123.456]
 QA_Results[, DateTime := Sys.time()]
 QA_Results[, Mixed := data.table::fifelse(runif(.N) < 0.5, TRUE, FALSE)]
 
-run = 103
+run = 102
 
 
 # Data ----
@@ -409,7 +409,7 @@ HolidayVariable = NULL #c("USPublicHolidays")
 HolidayLookback = NULL #7
 HolidayLags = NULL # c(1,2,3)
 HolidayMovingAverages = NULL #c(2,3)
-Lags = NULL #1 # list("weeks" = c(1:5), "months" = c(1:3))
+Lags = 1 # list("weeks" = c(1:5), "months" = c(1:3))
 MA_Periods = NULL #7 # list("weeks" = c(2:5), "months" = c(2,3))
 SD_Periods = NULL
 Skew_Periods = NULL
@@ -418,7 +418,7 @@ Quantile_Periods = NULL
 Quantiles_Selected = NULL
 AnomalyDetection = NULL
 FourierTerms = 0
-TimeTrendVariable = TRUE
+TimeTrendVariable = FALSE
 ZeroPadSeries = 'dynamic:target_encoding'
 DataTruncate = FALSE
 GridTune = FALSE
@@ -454,15 +454,79 @@ ReturnShap = FALSE
 ModelID = 'FC001'
 TVT = NULL
 
-# Carma Partition
-data.=data
-SplitRatios.=SplitRatios
-TrainOnFull.=TrainOnFull
-NumSets.=NumSets
-PartitionType.=PartitionType
+# Carma Diff
 GroupVariables.=GroupVariables
+Difference.=Difference
+data.=data
+TargetColumnName.=TargetColumnName
+FC_Periods.=FC_Periods
+
+# UpdateFeatures
+RollingVars. = FALSE
+UpdateData.=Step1SCore
+GroupVariables.=GroupVariables
+CalendarFeatures.=UpdateData
+CalendarVariables.=CalendarVariables
+GroupVarVector.=GroupVarVector
 DateColumnName.=DateColumnName
-TVT.=TVT
+XREGS.=XREGS
+FourierTerms.=FourierTerms
+FourierFC.=FourierFC
+TimeGroups.=TimeGroups
+TimeTrendVariable.=TimeTrendVariable
+N.=N
+TargetColumnName.=TargetColumnName
+HolidayVariable.=HolidayVariable
+HolidayLookback.=HolidayLookback
+TimeUnit.=TimeUnit
+AnomalyDetection.=AnomalyDetection
+i.=1
+Debug = DebugMode
+
+
+# Carma score ----
+Type = 'catboost'
+i.=0
+N.=N
+GroupVariables.=GroupVariables
+ModelFeatures.=ModelFeatures
+HierarchGroups.=HierarchGroups
+DateColumnName.=DateColumnName
+Difference.=Difference
+TargetColumnName.=TargetColumnName
+Step1SCore.=Step1SCore
+Model.=Model
+FutureDateData.=FutureDateData
+NonNegativePred.=NonNegativePred
+UpdateData.=UpdateData
+FactorList.= TestModel$FactorLevelsList
+EncodingMethod. = TestModel$FactorLevelsList$EncodingMethod
+dt = data
+RoundPreds. = TRUE
+
+
+# Return data ----
+UpdateData.=UpdateData
+FutureDateData.=FutureDateData
+dataStart.=dataStart
+DateColumnName.=DateColumnName
+TargetColumnName.=TargetColumnName
+GroupVariables.=GroupVariables
+Difference.=Difference
+TargetTransformation.=TargetTransformation
+TransformObject.=TransformObject
+NonNegativePred.=NonNegativePred
+DiffTrainOutput.=DiffTrainOutput
+
+# Carma Partition
+# data.=data
+# SplitRatios.=SplitRatios
+# TrainOnFull.=TrainOnFull
+# NumSets.=NumSets
+# PartitionType.=PartitionType
+# GroupVariables.=GroupVariables
+# DateColumnName.=DateColumnName
+# TVT.=TVT
 
 # GroupVarVector.=GroupVarVector
 # UpdateData.=UpdateData
@@ -498,25 +562,25 @@ TVT.=TVT
 
 
 # CarmaTimeSeriesFeatures ----
-# data.=data
-# TargetColumnName.=TargetColumnName
-# DateColumnName.=DateColumnName
-# GroupVariables.=GroupVariables
-# HierarchGroups.=HierarchGroups
-# Difference.=Difference
-# TimeGroups.=TimeGroups
-# TimeUnit.=TimeUnit
-# Lags.=Lags
-# MA_Periods.=MA_Periods
-# SD_Periods.=SD_Periods
-# Skew_Periods.=Skew_Periods
-# Kurt_Periods.=Kurt_Periods
-# Quantile_Periods.=Quantile_Periods
-# Quantiles_Selected.=Quantiles_Selected
-# HolidayVariable.=HolidayVariable
-# HolidayLags.=HolidayLags
-# HolidayMovingAverages.=HolidayMovingAverages
-# DebugMode.=DebugMode
+data.=data
+TargetColumnName.=TargetColumnName
+DateColumnName.=DateColumnName
+GroupVariables.=GroupVariables
+HierarchGroups.=HierarchGroups
+Difference.=Difference
+TimeGroups.=TimeGroups
+TimeUnit.=TimeUnit
+Lags.=Lags
+MA_Periods.=MA_Periods
+SD_Periods.=SD_Periods
+Skew_Periods.=Skew_Periods
+Kurt_Periods.=Kurt_Periods
+Quantile_Periods.=Quantile_Periods
+Quantiles_Selected.=Quantiles_Selected
+HolidayVariable.=HolidayVariable
+HolidayLags.=HolidayLags
+HolidayMovingAverages.=HolidayMovingAverages
+DebugMode.=DebugMode
 
 
 
@@ -662,25 +726,7 @@ TVT.=TVT
 
 
 
-# Carma score ----
-# Type = 'catboost'
-# i.=2
-# N.=N
-# GroupVariables.=GroupVariables
-# ModelFeatures.=ModelFeatures
-# HierarchGroups.=HierarchGroups
-# DateColumnName.=DateColumnName
-# Difference.=Difference
-# TargetColumnName.=TargetColumnName
-# Step1SCore.=Step1SCore
-# Model.=Model
-# FutureDateData.=FutureDateData
-# NonNegativePred.=NonNegativePred
-# UpdateData.=UpdateData
-# FactorList.= TestModel$FactorLevelsList
-# EncodingMethod. = TestModel$FactorLevelsList$EncodingMethod
-# dt = data
-# RoundPreds. = TRUE
+
 
 
 
@@ -745,18 +791,7 @@ TVT.=TVT
 
 
 
-# Return data ----
-# UpdateData.=UpdateData
-# FutureDateData.=FutureDateData
-# dataStart.=dataStart
-# DateColumnName.=DateColumnName
-# TargetColumnName.=TargetColumnName
-# GroupVariables.=GroupVariables
-# Difference.=Difference
-# TargetTransformation.=TargetTransformation
-# TransformObject.=TransformObject
-# NonNegativePred.=NonNegativePred
-# DiffTrainOutput.=DiffTrainOutput
+
 
 
 

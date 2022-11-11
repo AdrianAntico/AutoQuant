@@ -330,7 +330,7 @@ CarmaDifferencing <- function(GroupVariables. = NULL,
     data.[, TargetDiffMidStep := data.table::shift(x = get(TargetColumnName.), n = 1, fill = NA, type = 'lag'), by = c('GroupVar')][, ModTarget := get(TargetColumnName.) - TargetDiffMidStep]
     dataStart <- data.[is.na(TargetDiffMidStep)]
     data. <- data.[!is.na(TargetDiffMidStep)]
-    FC_Periods. <- FC_Periods. + 1L
+    FC_Periods. <- FC_Periods.+1L
     Train <- NULL
     DiffTrainOutput <- NULL
   } else if(Difference.) {
@@ -341,7 +341,7 @@ CarmaDifferencing <- function(GroupVariables. = NULL,
       TargetVariable = eval(TargetColumnName.),
       GroupingVariable = NULL)
     data. <- DiffTrainOutput$DiffData
-    FC_Periods. <- FC_Periods. + 1L
+    FC_Periods. <- FC_Periods.+1L
     dataStart <- NULL
   } else {
     dataStart <- NULL
@@ -610,7 +610,7 @@ CarmaScore <- function(Type = 'catboost',
     if(Debug) print('CarmaScore 2')
 
     # Modify target reference
-    if(Difference.) IDcols = 'ModTarget' else IDcols <- eval(TargetColumnName.)
+    if(Difference.) IDcols <- 'ModTarget' else IDcols <- eval(TargetColumnName.)
 
     # Score model
     if(Type == 'catboost') {
@@ -1605,19 +1605,16 @@ UpdateFeatures <- function(UpdateData. = NULL,
 
   } else {
 
-    if(Debug) print('UpdateFeatures 1')
-
     # Merge groups vars
+    if(Debug) print('UpdateFeatures 1')
     if(!is.null(GroupVariables.)) CalendarFeatures. <- cbind(unique(GroupVarVector.), CalendarFeatures.)
 
-    if(Debug) print('UpdateFeatures 2')
-
     # Update colname for date
+    if(Debug) print('UpdateFeatures 2')
     data.table::setnames(CalendarFeatures., names(CalendarFeatures.)[ncol(CalendarFeatures.)], eval(DateColumnName.))
 
-    if(Debug) print('UpdateFeatures 3')
-
     # Merge XREGS if not null
+    if(Debug) print('UpdateFeatures 3')
     if(!is.null(XREGS.)) {
       if(!is.null(GroupVariables.)) {
         if(Debug) print('UpdateFeatures 4')
@@ -1629,9 +1626,8 @@ UpdateFeatures <- function(UpdateData. = NULL,
       }
     }
 
-    if(Debug) print('UpdateFeatures 5')
-
     # Add fouier terms
+    if(Debug) print('UpdateFeatures 5')
     if(is.null(GroupVariables.) && FourierTerms. > 0) {
       if(Debug) print('UpdateFeatures 6')
       CalendarFeatures. <- merge(CalendarFeatures., FourierFC., by = DateColumnName., all = FALSE)
@@ -1643,18 +1639,14 @@ UpdateFeatures <- function(UpdateData. = NULL,
       }
     }
 
-    if(Debug) print('UpdateFeatures 7')
-
     # Prepare for more feature engineering
+    if(Debug) print('UpdateFeatures 7')
     if(!tolower(TimeGroups.[1L]) %chin% c('5min','10min','15min','30min','hour')) CalendarFeatures.[, eval(DateColumnName.) := data.table::as.IDate(get(DateColumnName.))]
 
-    if(Debug) print('UpdateFeatures 8')
-
     # Update calendar variables
+    if(Debug) print('UpdateFeatures 8')
     if(!is.null(CalendarVariables.)) {
-
       if(Debug) print('UpdateFeatures 9')
-
       CalendarFeatures. <- CreateCalendarVariables(
         data = CalendarFeatures.,
         DateCols = eval(DateColumnName.),
@@ -1662,14 +1654,18 @@ UpdateFeatures <- function(UpdateData. = NULL,
         TimeUnits = CalendarVariables.)
     }
 
-    if(Debug) print('UpdateFeatures 10')
-
     # Update Time Trend feature
-    if(TimeTrendVariable.) CalendarFeatures.[, TimeTrend := eval(N.) + 1]
-
-    if(Debug) print('UpdateFeatures 11')
+    if(Debug) print('UpdateFeatures 10')
+    if(TimeTrendVariable. && length(GroupVariables.) > 0L) {
+      data.table::setorderv(x = CalendarFeatures., cols = c('GroupVar', DateColumnName.))
+      CalendarFeatures.[, TimeTrend := seq_len(.N), by = 'GroupVar'][, TimeTrend := TimeTrend + eval(N.)]
+    } else {
+      data.table::setorderv(x = CalendarFeatures., cols = c(DateColumnName.))
+      CalendarFeatures.[, TimeTrend := seq_len(.N)][, TimeTrend := TimeTrend + eval(N.)]
+    }
 
     # Prepare data for scoring
+    if(Debug) print('UpdateFeatures 11')
     for(zz in seq_along(TargetColumnName.)) {
       if(Debug) print('UpdateFeatures 12')
       if(zz == 1) temp <- cbind(CalendarFeatures., 1) else temp <- cbind(temp, 1)
@@ -1678,37 +1674,29 @@ UpdateFeatures <- function(UpdateData. = NULL,
     }
 
     if(Debug) print('UpdateFeatures 13')
-
     if(any(class(UpdateData.[[eval(DateColumnName.)]]) %chin% c('POSIXct','POSIXt','IDate'))) UpdateData.[, eval(DateColumnName.) := as.Date(get(DateColumnName.))]
 
     if(Debug) print('UpdateFeatures 14')
-
     if(any(class(temp[[eval(DateColumnName.)]]) %chin% c('POSIXct','POSIXt','IDate'))) temp[, eval(DateColumnName.) := as.Date(get(DateColumnName.))]
 
     if(Debug) print('UpdateFeatures 15')
-
     UpdateData. <- data.table::rbindlist(list(UpdateData., temp), fill = TRUE)
 
-    if(Debug) print('UpdateFeatures 16')
-
     # Update holiday feature
+    if(Debug) print('UpdateFeatures 16')
     if(!is.null(HolidayVariable.) && any(is.na(UpdateData.[['HolidayCounts']]))) {
 
       if(Debug) print('Update Features 17')
-
       if(!is.null(HolidayLookback.)) LBD <- HolidayLookback. else if(!is.null(TimeUnit.)) LBD <- LB(TimeUnit.) else LBD <- 1L
       if(is.null(GroupVariables.)) {
 
         if(Debug) print('UpdateFeatures 18')
-
         temp <- UpdateData.[(.N-LBD):.N]
 
         if(Debug) print('UpdateFeatures 19')
-
         UpdateData. <- UpdateData.[1:(.N-LBD-1)]
 
         if(Debug) print('UpdateFeatures 20')
-
         temp <- CreateHolidayVariables(
           temp,
           DateCols = eval(DateColumnName.),
@@ -1717,10 +1705,7 @@ UpdateFeatures <- function(UpdateData. = NULL,
           Holidays = NULL)
 
         if(Debug) print('UpdateFeatures 21')
-
         UpdateData. <- data.table::rbindlist(list(UpdateData., temp), fill = TRUE)
-
-        if(Debug) print('UpdateFeatures 22')
 
       } else {
         if(Debug) print("Update Features 17.b holiday variables create")
@@ -1733,20 +1718,17 @@ UpdateFeatures <- function(UpdateData. = NULL,
       }
     }
 
-    if(Debug) print('UpdateFeatures 23')
-
     # Update Anomaly Detection
+    if(Debug) print('UpdateFeatures 23')
     if(i. > 1 && !is.null(AnomalyDetection.)) {
       if(Debug) print('UpdateFeatures 24')
       UpdateData.[, data.table::let(AnomHigh = 0, AnomLow = 0)]
     }
 
+    # Return
     if(Debug) print('UpdateFeatures done')
     if(Debug) print(UpdateData.)
-
-    # Return
     return(UpdateData.)
-
   }
 }
 
@@ -1842,7 +1824,6 @@ CarmaTimeSeriesFeatures <- function(data. = data,
   if(length(Skew_Periods.) == 0L) Skew_Periods. <- NULL
   if(length(Kurt_Periods.) == 0L) Kurt_Periods. <- NULL
   if(length(Quantile_Periods.) == 0L) Quantile_Periods. <- NULL
-
 
   # Feature Engineering: Add GDL Features based on the TargetColumnName
   if(length(Lags.) > 0L) {
@@ -2205,11 +2186,7 @@ CarmaRollingStatsUpdate <- function(ModelType = 'catboost',
     }
 
     # Update data for scoring next iteration
-    if(ModelType %chin% c('catboost','h2o')) {
-      UpdateData. <- data.table::rbindlist(list(UpdateData.[ID != 1][, ID := NULL], Temporary), fill = TRUE, use.names = TRUE)
-    } else if(ModelType %chin% c('xgboost')) {
-      UpdateData. <- data.table::rbindlist(list(UpdateData.[ID != 1][, ID := NULL], Temporary), fill = TRUE, use.names = TRUE)
-    }
+    UpdateData. <- data.table::rbindlist(list(UpdateData.[ID != 1][, ID := NULL], Temporary), fill = TRUE, use.names = TRUE)
 
   } else if(!is.null(GroupVariables.) && Difference.) {
 
@@ -2514,7 +2491,8 @@ CarmaReturnDataPrep <- function(UpdateData. = NULL,
     if(any(class(UpdateData.[[eval(DateColumnName.)]]) %chin% c('POSIXct','POSIXt')) && any(class(dataStart.[[eval(DateColumnName.)]]) == 'Date')) UpdateData.[, eval(DateColumnName.) := as.Date(get(DateColumnName.))]
     UpdateData. <- data.table::rbindlist(list(dataStart.,UpdateData.), fill = TRUE)
     UpdateData. <- UpdateData.[, .SD, .SDcols = c(eval(DateColumnName.),eval(TargetColumnName.),'Predictions','GroupVar')]
-    data.table::set(UpdateData., j = 'Predictions', value = UpdateData.[[eval(TargetColumnName.)]])
+    data.table::set(UpdateData., i = which(is.na(UpdateData.[['Predictions']])), j = 'Predictions', value = UpdateData.[which(is.na(UpdateData.[['Predictions']]))][[eval(TargetColumnName.)]])
+    UpdateData.[, Predictionss := cumsum(Predictions), by = 'GroupVar']
     if(NonNegativePred.) UpdateData.[, Predictions := data.table::fifelse(Predictions < 0.5, 0, Predictions)]
   }
 
