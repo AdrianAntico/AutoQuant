@@ -98,8 +98,7 @@ Other Automated Time Series:
 \code{\link{AutoArfima}()},
 \code{\link{AutoBanditSarima}()},
 \code{\link{AutoETS}()},
-\code{\link{AutoTBATS}()},
-\code{\link{AutoTS}()}
+\code{\link{AutoTBATS}()}
 }
 \author{
 Adrian Antico

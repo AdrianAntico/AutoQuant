@@ -110,10 +110,7 @@ Output <- RemixAutoML::AutoH2oGBMHurdleModel(
 }
 \seealso{
 Other Supervised Learning - Hurdle Modeling: 
-\code{\link{AutoCatBoostHurdleModel}()},
-\code{\link{AutoH2oDRFHurdleModel}()},
-\code{\link{AutoLightGBMHurdleModel}()},
-\code{\link{AutoXGBoostHurdleModel}()}
+\code{\link{AutoH2oDRFHurdleModel}()}
 }
 \author{
 Adrian Antico

@@ -313,12 +313,8 @@ XGBoostResults$ModelInformation$EvaluationMetricsByGroup[order(MAPE_Metric)]
 \seealso{
 Other Automated Panel Data Forecasting: 
 \code{\link{AutoCatBoostCARMA}()},
-\code{\link{AutoCatBoostHurdleCARMA}()},
-\code{\link{AutoCatBoostVectorCARMA}()},
 \code{\link{AutoH2OCARMA}()},
-\code{\link{AutoLightGBMCARMA}()},
-\code{\link{AutoLightGBMHurdleCARMA}()},
-\code{\link{AutoXGBoostHurdleCARMA}()}
+\code{\link{AutoLightGBMCARMA}()}
 }
 \author{
 Adrian Antico

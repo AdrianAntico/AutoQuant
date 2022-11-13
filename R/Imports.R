@@ -5,7 +5,6 @@
 #' @importFrom foreach %dopar%
 #' @importFrom stats optimize pchisq
 #' @import doParallel
-#' @importClassesFrom arules transactions
 #' @importFrom stats dbeta pbeta deltat dgeom pnorm qnorm reorder tsp
 #' @importFrom utils installed.packages
 NULL

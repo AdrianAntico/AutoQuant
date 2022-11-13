@@ -111,10 +111,7 @@ Output <- AutoH2oDRFHurdleModel(
 }
 \seealso{
 Other Supervised Learning - Hurdle Modeling: 
-\code{\link{AutoCatBoostHurdleModel}()},
-\code{\link{AutoH2oGBMHurdleModel}()},
-\code{\link{AutoLightGBMHurdleModel}()},
-\code{\link{AutoXGBoostHurdleModel}()}
+\code{\link{AutoH2oGBMHurdleModel}()}
 }
 \author{
 Adrian Antico

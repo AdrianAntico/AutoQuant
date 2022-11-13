@@ -1280,42 +1280,44 @@ AutoCatBoostFunnelCARMAScoring <- function(TrainData,
     if(DebugMode) print("FE: ConversionMeasure OVER CohortDate ----")
     temp <- data.table::copy(TrainData)
     data.table::set(temp, j = ArgsList$CalendarDate, value = as.character(temp[[ArgsList$CalendarDate]]))
-    temp <- RemixAutoML::AutoLagRollStatsScoring(
+    for(g in c(ArgsList$ConversionMeasure, ArgsList$ConversionRateMeasure)) {# g = c(ArgsList$ConversionMeasure, ArgsList$ConversionRateMeasure)[2]
+      temp1 <- RemixAutoML::AutoLagRollStatsScoring(
 
-      # Data
-      data                 = temp,
-      DateColumn           = ArgsList$CohortDate,
-      Targets              = c(ArgsList$ConversionMeasure, ArgsList$ConversionRateMeasure),
-      RowNumsID            = "ScoreRecords",
-      RowNumsKeep          = 1,
-      HierarchyGroups      = NULL,
-      IndependentGroups    = paste0("Temp_", ArgsList$CalendarDate),
-      TimeUnit             = ArgsList$TimeUnit,
-      TimeGroups           = ArgsList$CohortTimeGroups,
-      TimeUnitAgg          = ArgsList$TimeUnit,
+        # Data
+        data                 = data.table::copy(temp),
+        DateColumn           = ArgsList$CohortDate,
+        Targets              = g,
+        RowNumsID            = "ScoreRecords",
+        RowNumsKeep          = 1,
+        HierarchyGroups      = NULL,
+        IndependentGroups    = paste0("Temp_", ArgsList$CalendarDate),
+        TimeUnit             = ArgsList$TimeUnit,
+        TimeGroups           = ArgsList$CohortTimeGroups,
+        TimeUnitAgg          = ArgsList$TimeUnit,
 
-      # Services
-      TimeBetween          = NULL,
-      RollOnLag1           = TRUE,
-      Type                 = "Lag",
-      SimpleImpute         = TRUE,
+        # Services
+        TimeBetween          = NULL,
+        RollOnLag1           = TRUE,
+        Type                 = "Lag",
+        SimpleImpute         = TRUE,
 
-      # Calculated Columns
-      Lags                 = ArgsList$CohortLags,
-      MA_RollWindows       = ArgsList$CohortMovingAverages,
-      SD_RollWindows       = ArgsList$CohortStandardDeviations,
-      Skew_RollWindows     = ArgsList$CohortSkews,
-      Kurt_RollWindows     = ArgsList$Kurts,
-      Quantile_RollWindows = ArgsList$Quantiles,
-      Quantiles_Selected   = ArgsList$CohortQuantilesSelected,
-      Debug                = TRUE)
+        # Calculated Columns
+        Lags                 = ArgsList$CohortLags,
+        MA_RollWindows       = ArgsList$CohortMovingAverages,
+        SD_RollWindows       = ArgsList$CohortStandardDeviations,
+        Skew_RollWindows     = ArgsList$CohortSkews,
+        Kurt_RollWindows     = ArgsList$Kurts,
+        Quantile_RollWindows = ArgsList$Quantiles,
+        Quantiles_Selected   = ArgsList$CohortQuantilesSelected,
+        Debug                = TRUE)
 
-    # Join datasets
-    temp[, eval(ArgsList$CalendarDate) := as.Date(get(ArgsList$CalendarDate))]
-    data.table::setkeyv(temp, c(ArgsList$GroupVariables, ArgsList$CalendarDate))
-    data.table::setkeyv(TrainData, c(ArgsList$GroupVariables, ArgsList$CalendarDate))
-    TrainData[temp, paste0(setdiff(names(temp), names(TrainData))) := mget(paste0("i.", setdiff(names(temp), names(TrainData))))]
-    rm(temp)
+      # Join datasets
+      temp1[, eval(ArgsList$CalendarDate) := as.Date(get(ArgsList$CalendarDate))]
+      data.table::setkeyv(temp1, c(ArgsList$GroupVariables, ArgsList$CalendarDate))
+      data.table::setkeyv(TrainData, c(ArgsList$GroupVariables, ArgsList$CalendarDate))
+      TrainData[temp1, paste0(setdiff(names(temp1), names(TrainData))) := mget(paste0("i.", setdiff(names(temp1), names(TrainData))))]
+      rm(temp1)
+    }
 
     # FE: CohortDateHolidayCounts OVER CohortDate ----
     if(DebugMode) print("FE: CohortDateHolidayCounts OVER CohortDate ----")
@@ -1505,6 +1507,7 @@ AutoCatBoostFunnelCARMAScoring <- function(TrainData,
     # MDP_MissNum = -1
     # ReturnShapValues = FALSE
     # RemoveModel = FALSE
+    # Debug = TRUE
 
     # DE: Update forecast TrainData ----
     if(DebugMode) print("DE: Update forecast TrainData ----")

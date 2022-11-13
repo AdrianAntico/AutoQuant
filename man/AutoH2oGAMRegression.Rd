@@ -245,7 +245,6 @@ Other Automated Supervised Learning - Regression:
 \code{\link{AutoH2oGLMRegression}()},
 \code{\link{AutoH2oMLRegression}()},
 \code{\link{AutoLightGBMRegression}()},
-\code{\link{AutoNLS}()},
 \code{\link{AutoXGBoostRegression}()}
 }
 \author{
