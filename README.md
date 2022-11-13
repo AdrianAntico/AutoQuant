@@ -26,9 +26,6 @@ Documentation + Code Examples
 - [Model Evaluation](#model-evaluation-)
 - [Panel Data Forecasting](#panel-data-forecasting-)
 - [Time Series Forecasting](#time-series-forecasting-)
-- [Database Management](#database-management-)
-- [Utilities EDA and Misc](#utilities-eda-and-misc-)
-
 
 
 ## Background
