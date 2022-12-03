@@ -74,7 +74,7 @@ CausalMediation utilizes models from regmedint package
 \dontrun{
 library(regmedint) # to load vv2015
 data(vv2015)
-Output <- RemixAutoML::CausalMediation(
+Output <- AutoQuant::CausalMediation(
   data = vv2015,
   OutcomeTargetVariable = 'y',            # yvar char length = 0
   TreatmentVariable = "x",                # avar char length = 0 (binary)

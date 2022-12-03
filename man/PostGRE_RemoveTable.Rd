@@ -37,7 +37,7 @@ PostGRE_RemoveTable will DROP the table specified
 }
 \examples{
 \dontrun{
-RemixAutoML::PostGRE_RemoveTable(
+AutoQuant::PostGRE_RemoveTable(
   TableName = 'static_data',
   Connection = NULL,
   CloseConnection = FALSE,

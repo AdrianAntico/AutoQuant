@@ -30,7 +30,7 @@
 #' @param MDP_MissNum If you set MDP_Impute to TRUE, supply a numeric value to replace missing values with
 #' @examples
 #' \dontrun{
-#' Preds <- RemixAutoML::AutoLightGBMScoring(
+#' Preds <- AutoQuant::AutoLightGBMScoring(
 #'   TargetType = 'regression',
 #'   ScoringData = data,
 #'   ReturnShapValues = FALSE,
@@ -156,7 +156,7 @@ AutoLightGBMScoring <- function(TargetType = NULL,
     y <- names(ScoringData)[which(names(ScoringData) %like% paste0('_', x))]
     if(length(y) != 0) data.table::set(ScoringData, j = c(names(ScoringData)[which(names(ScoringData) %like% paste0('_', x))]), value = NULL)
     xx <- names(data.table::copy(ScoringData))
-    Output <- RemixAutoML:::EncodeCharacterVariables(
+    Output <- AutoQuant:::EncodeCharacterVariables(
       RunMode = 'score',
       ModelType = TargetType,
       TrainData = ScoringData,

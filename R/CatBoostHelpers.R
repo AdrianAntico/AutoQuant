@@ -400,7 +400,7 @@ CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
 
     # Encode
     xx <- names(data.table::copy(data.))
-    Output <- RemixAutoML:::EncodeCharacterVariables(
+    Output <- AutoQuant:::EncodeCharacterVariables(
       RunMode = 'train',
       ModelType = ModelType,
       TrainData = data.,

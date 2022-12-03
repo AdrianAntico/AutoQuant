@@ -86,14 +86,14 @@ Build a box plot by simply passing arguments to a single function. It will sampl
 \examples{
 \dontrun{
 # Load packages
-library(RemixAutoML)
+library(AutoQuant)
 library(data.table)
 
 # Load data
 data <- data.table::fread(file = file.path('C:/Users/Bizon/Documents/GitHub/BenchmarkData1.csv'))
 
 # Run function
-RemixAutoML:::BoxPlot(
+AutoQuant:::BoxPlot(
   data = data,
   XVar = 'Region',
   YVar = 'Weekly_Sales',

@@ -83,10 +83,10 @@ Dual plot. One on original scale and one using empirical copula data
 \examples{
 \dontrun{
 # Create data
-data <- RemixAutoML::FakeDataGenerator()
+data <- AutoQuant::FakeDataGenerator()
 
 # Build plot
-RemixAutoML::ScatterCopula(
+AutoQuant::ScatterCopula(
   data = data,
   x_var = 'Independent_Variable1',
   y_var = 'Independent_Variable2',

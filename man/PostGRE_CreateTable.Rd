@@ -46,7 +46,7 @@ PostGRE_CreateTable get data from a database table
 }
 \examples{
 \dontrun{
-RemixAutoML::PostGRE_CreateTable(
+AutoQuant::PostGRE_CreateTable(
   data,
   DBName = 'Testing',
   Schema = NULL,

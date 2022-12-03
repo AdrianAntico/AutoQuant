@@ -25,7 +25,7 @@ data[, Independent_Variable1 := log(
   pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
 data[, Predict := (
   pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
-p1 <- RemixAutoML::ParDepCalPlots(
+p1 <- AutoQuant::ParDepCalPlots(
   data,
   PredictionColName = "Predict",
   TargetColName = "Target",
@@ -34,7 +34,7 @@ p1 <- RemixAutoML::ParDepCalPlots(
   PercentileBucket = 0.20,
   FactLevels = 10,
   Function = function(x) mean(x, na.rm = TRUE))
-p2 <- RemixAutoML::ParDepCalPlots(
+p2 <- AutoQuant::ParDepCalPlots(
   data,
   PredictionColName = "Predict",
   TargetColName = "Target",
@@ -43,7 +43,7 @@ p2 <- RemixAutoML::ParDepCalPlots(
   PercentileBucket = 0.20,
   FactLevels = 10,
   Function = function(x) mean(x, na.rm = TRUE))
-RemixAutoML::multiplot(plotlist = list(p1,p2))
+AutoQuant::multiplot(plotlist = list(p1,p2))
 }
 }
 \seealso{

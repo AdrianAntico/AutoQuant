@@ -50,7 +50,7 @@ H2OIsolationForestScoring for dimensionality reduction and / or anomaly detectio
 \examples{
 \dontrun{
 # Create simulated data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.70,
   N = 50000,
   ID = 2L,
@@ -63,7 +63,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 # Run algo
-data <- RemixAutoML::H2OIsolationForest(
+data <- AutoQuant::H2OIsolationForest(
   data,
   Features = names(data)[2L:ncol(data)],
   IDcols = c("Adrian", "IDcol_1", "IDcol_2"),
@@ -86,7 +86,7 @@ data <- RemixAutoML::H2OIsolationForest(
 data[, eval(names(data)[17:ncol(data)]) := NULL]
 
 # Run algo
-Outliers <- RemixAutoML::H2OIsolationForestScoring(
+Outliers <- AutoQuant::H2OIsolationForestScoring(
   data,
   Features = names(data)[2:ncol(data)],
   IDcols = c("Adrian", "IDcol_1", "IDcol_2"),

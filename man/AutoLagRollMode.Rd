@@ -49,7 +49,7 @@ Create lags and rolling modes for categorical variables.
 # NO GROUPING CASE: Create fake Panel Data----
 Count <- 1L
 for(Level in LETTERS) {
-  datatemp <- RemixAutoML::FakeDataGenerator(
+  datatemp <- AutoQuant::FakeDataGenerator(
     Correlation = 0.75,
     N = 25000L,
     ID = 0L,
@@ -69,7 +69,7 @@ for(Level in LETTERS) {
 }
 
 # NO GROUPING CASE: Create rolling modes for categorical features
-data <- RemixAutoML::AutoLagRollMode(
+data <- AutoQuant::AutoLagRollMode(
   data,
   Lags           = seq(1,5,1),
   ModePeriods    = seq(2,5,1),
@@ -83,7 +83,7 @@ data <- RemixAutoML::AutoLagRollMode(
 # GROUPING CASE: Create fake Panel Data----
 Count <- 1L
 for(Level in LETTERS) {
-  datatemp <- RemixAutoML::FakeDataGenerator(
+  datatemp <- AutoQuant::FakeDataGenerator(
     Correlation = 0.75,
     N = 25000L,
     ID = 0L,
@@ -103,7 +103,7 @@ for(Level in LETTERS) {
 }
 
 # GROUPING CASE: Create rolling modes for categorical features
-data <- RemixAutoML::AutoLagRollMode(
+data <- AutoQuant::AutoLagRollMode(
   data,
   Lags           = seq(1,5,1),
   ModePeriods    = seq(2,5,1),

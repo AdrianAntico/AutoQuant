@@ -59,10 +59,10 @@ AutoArfima is a multi-armed bandit model testing framework for AR and SAR NNets.
 \examples{
 \dontrun{
 # Create fake data
-data <- RemixAutoML::FakeDataGenerator(TimeSeries = TRUE, TimeSeriesTimeAgg = "days")
+data <- AutoQuant::FakeDataGenerator(TimeSeries = TRUE, TimeSeriesTimeAgg = "days")
 
 # Build model
-Output <- RemixAutoML::AutoArfima(
+Output <- AutoQuant::AutoArfima(
   data,
   FilePath = NULL,
   TargetVariableName = "Weekly_Sales",

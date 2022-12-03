@@ -53,10 +53,10 @@ AutoETS is a multi-armed bandit model testing framework for AR and SAR NNets. Ra
 \examples{
 \dontrun{
 # Create fake data
-data <- RemixAutoML::FakeDataGenerator(TimeSeries = TRUE, TimeSeriesTimeAgg = "days")
+data <- AutoQuant::FakeDataGenerator(TimeSeries = TRUE, TimeSeriesTimeAgg = "days")
 
 # Build model
-Output <- RemixAutoML::AutoETS(
+Output <- AutoQuant::AutoETS(
   data,
   FilePath = NULL,
   TargetVariableName = "Weekly_Sales",

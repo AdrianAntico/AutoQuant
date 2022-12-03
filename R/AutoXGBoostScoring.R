@@ -155,7 +155,7 @@ AutoXGBoostScoring <- function(TargetType = NULL,
     y <- names(ScoringData)[which(names(ScoringData) %like% paste0('_', x))]
     if(length(y) != 0) data.table::set(ScoringData, j = c(names(ScoringData)[which(names(ScoringData) %like% paste0('_', x))]), value = NULL)
     xx <- names(data.table::copy(ScoringData))
-    Output <- RemixAutoML:::EncodeCharacterVariables(
+    Output <- AutoQuant:::EncodeCharacterVariables(
       RunMode = 'score',
       ModelType = TargetType,
       TrainData = ScoringData,

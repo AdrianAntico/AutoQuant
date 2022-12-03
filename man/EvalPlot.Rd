@@ -35,12 +35,12 @@ This function automatically builds calibration plots and calibration boxplots fo
 \examples{
 \dontrun{
 # Create fake data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.70, N = 10000000, Classification = TRUE)
 data.table::setnames(data, "IDcol_1", "Predict")
 
 # Run function
-RemixAutoML::EvalPlot(
+AutoQuant::EvalPlot(
   data,
   PredictionColName = "Predict",
   TargetColName = "Adrian",

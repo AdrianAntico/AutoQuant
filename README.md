@@ -3,21 +3,17 @@
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=default)](http://makeapullrequest.com)
-[![GitHub Stars](https://img.shields.io/github/stars/AdrianAntico/RemixAutoML.svg?style=social)](https://github.com/AdrianAntico/RemixAutoML)
+[![GitHub Stars](https://img.shields.io/github/stars/AdrianAntico/AutoQuant.svg?style=social)](https://github.com/AdrianAntico/AutoQuant)
 
-<img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/NewPackageLogo.png" align="center" width="1000" />
+## AutoQuant Reference Manual
 
-
-## RemixAutoML Reference Manual
-
-![RemixAutoML Reference Manual](https://github.com/AdrianAntico/RemixAutoML/tree/master/vignette)
+![AutoQuant Reference Manual](https://github.com/AdrianAntico/AutoQuant/tree/master/vignette)
 
 
 Table of Contents
 - [Background](#background)
 - [Highlights](#highlights)
 - [Installation](#installation)
-- [RemixAutoML Blogs](#remixautoml-blogs)
 
 Documentation + Code Examples
 - [Feature Engineering](#feature-engineering-)
@@ -33,14 +29,14 @@ Documentation + Code Examples
 <details><summary>Expand to view content</summary>
 <p>
 
-> Automated Machine Learning - In my view, AutoML should consist of functions to help make professional model development and operationalization more efficient. The functions in this package are there to help no matter which part of the ML lifecycle you are working on. The functions in this package have been tested across a variety of industries and have consistently outperformed competing methods. RemixAutoML has enabled me to deliver exceptionally high quality solutions in minimal time and as a result I can focus more time on the other aspects of projects that are critical for generating a high ROI and high adoption rate.
+> Automated Machine Learning - In my view, AutoML should consist of functions to help make professional model development and operationalization more efficient. The functions in this package are there to help no matter which part of the ML lifecycle you are working on. The functions in this package have been tested across a variety of industries and have consistently outperformed competing methods. 
 
 ### Package Details
 > Supervised Learning - Currently, I'm utilizing CatBoost, LightGBM, XGBoost, and H2O for all of the automated Machine Learning related functions. GPU's can be utilized with CatBoost, LightGBM, and XGBoost, while those and the H2O models can all utilize 100% of CPU. Multi-armed bandit grid tuning is available for CatBoost, LightGBM, and XGBoost models, which utilize the concept of randomized probability matching, which is detailed in the R pacakge "bandit". My choice of included ML algorithms in the package is based on previous success when compared against other algorithms on real world use cases, the additional utilities these packages offer aside from accurate predictions, their ability to work on big data, and the fact that they're available in both R and Python which makes managing multiple languages a little more seamless in a professional setting.
 
 > Feature Engineering - Some of the feature engineering functions can only be found in this package. I believe feature engineering is your best bet for improving model performance. I have functions that cover all feature types except image data. There are feature engineering functions for numeric data, categorical data, text data, and date data. They are all designed to generate features for training and scoring pipelines and they run extremely fast with low memory utilization. The package takes advantage of data.table for all feature engineering and data wrangling related functions which means I only have to go to big data tools if absolutely necessary.
 
-> Documentation - Each exported function in the package has a help file and can be viewed in your RStudio session, e.g. <code>?RemixAutoML::ModelDataPrep</code>. Many of them come with examples coded up in the help files (at the bottom) that you can run to get a feel for how to set the parameters. There's also a listing of exported functions by category with code examples at the bottom of this readme. You can also jump into the R folder here to dig into the source code. 
+> Documentation - Each exported function in the package has a help file and can be viewed in your RStudio session, e.g. <code>?AutoQuant::ModelDataPrep</code>. Many of them come with examples coded up in the help files (at the bottom) that you can run to get a feel for how to set the parameters. There's also a listing of exported functions by category with code examples at the bottom of this readme. You can also jump into the R folder here to dig into the source code. 
 
 > Overall process: Typically, I go to the warehouse to get all of my base features and then I run through all the relevant feature engineering functions in this package. Personally, I set up templates for features engineering, model training optimization, and model scoring (including feature engineering for scoring). I collect all relevant metdata in a list that is shared across templates and as a result, I never have to touch the model scoring template, which makes operationalize and maintenace a breeze. I can simply list out the columns of interest, which feature engineering functions I want to utilize, and then I simply kick off some command line scripts and everything else is automatically managed.
 
@@ -54,9 +50,9 @@ Documentation + Code Examples
 Automatically generate reports with relevant evaluation metrics, tables, plots, and metadata
 <p>
 
-<img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/Rmarkdown-regression-collapsed.PNG" align="center" width="166" height="200" />
-<img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/Rmarkdown-classification-collapsed.PNG" align="center" width="166" height="200" />
-<img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/Rmarkdown-multiclass-collapsed.PNG" align="center" width="166" height="200" />
+<img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/Rmarkdown-regression-collapsed.PNG" align="center" width="166" height="200" />
+<img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/Rmarkdown-classification-collapsed.PNG" align="center" width="166" height="200" />
+<img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/Rmarkdown-multiclass-collapsed.PNG" align="center" width="166" height="200" />
 
 
 #### Machine Learning and Panel Forecasting Models
@@ -64,18 +60,18 @@ Automatically generate reports with relevant evaluation metrics, tables, plots, 
 AutoML functions by algorithm type and use case type
 <p>
 
-<img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/ML_Models_Menu.PNG" align="center" width="500" />
+<img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/ML_Models_Menu.PNG" align="center" width="500" />
 
 #### Feature Engineering
 
 Feature engineering functions for a variety of data types and data sets
 <p>
 
-<img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/FeatureEngineeringMenu.PNG" align="center" width="500" />
+<img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/FeatureEngineeringMenu.PNG" align="center" width="500" />
 
 ## Installation
 
-The Description File is designed to require only the minimum number of packages to install RemixAutoML. However, in order to utilize most of the functions in the package, you'll have to install additional libraries. I set it up this way on purpose. You don't need to install every single possible dependency if you are only interested in using a few of the functions. For example, if you only want to use CatBoost then install the catboost package and forget about the h2o, xgboost, and lightgbm packages. This is one of the primary benefits of not hosting an R package on cran, as they require dependencies to be part of the Imports section on the Description File, which subsequently requires users to have all dependencies installed in order to install the package.
+The Description File is designed to require only the minimum number of packages to install AutoQuant. However, in order to utilize most of the functions in the package, you'll have to install additional libraries. I set it up this way on purpose. You don't need to install every single possible dependency if you are only interested in using a few of the functions. For example, if you only want to use CatBoost then install the catboost package and forget about the h2o, xgboost, and lightgbm packages. This is one of the primary benefits of not hosting an R package on cran, as they require dependencies to be part of the Imports section on the Description File, which subsequently requires users to have all dependencies installed in order to install the package.
 
 The minimal set of packages that need to be installed are below. The full list can be found by expanding the section (Expand to view content).
 * bit64
@@ -98,8 +94,8 @@ if(!("foreach" %in% rownames(installed.packages()))) install.packages("foreach")
 if(!("lubridate" %in% rownames(installed.packages()))) install.packages("lubridate"); print("lubridate")
 if(!("timeDate" %in% rownames(installed.packages()))) install.packages("timeDate"); print("timeDate")
 
-# RemixAutoML
-devtools::install_github('AdrianAntico/RemixAutoML', upgrade = FALSE, dependencies = FALSE, force = TRUE)
+# AutoQuant
+devtools::install_github('AdrianAntico/AutoQuant', upgrade = FALSE, dependencies = FALSE, force = TRUE)
 ```
 
 <details><summary>Additional Packages to Install</summary>
@@ -156,12 +152,12 @@ install.packages("h2o", type = "source", repos = (c("http://h2o-release.s3.amazo
 devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')
 devtools::install_github('AdrianAntico/prettydoc', upgrade = FALSE, dependencies = FALSE, force = TRUE)
 
-# And lastly, RemixAutoML
-devtools::install_github('AdrianAntico/RemixAutoML', upgrade = FALSE, dependencies = FALSE, force = TRUE)
+# And lastly, AutoQuant
+devtools::install_github('AdrianAntico/AutoQuant', upgrade = FALSE, dependencies = FALSE, force = TRUE)
 ```
 
 #### Installation Troubleshooting 
-The most common issue some users are having when trying to install <code>RemixAutoML</code> is the installation of the <code>catboost</code> package dependency. Since <code>catboost</code> is not on CRAN it can only be installed through GitHub. To install <code>catboost</code> without error (and consequently install <code>RemixAutoML</code> without error), try running this line of code first, then restart your R session, then re-run the 2-step installation process above. (<a href="https://github.com/catboost/catboost/issues/612" target="_blank">Reference</a>):
+The most common issue some users are having when trying to install <code>AutoQuant</code> is the installation of the <code>catboost</code> package dependency. Since <code>catboost</code> is not on CRAN it can only be installed through GitHub. To install <code>catboost</code> without error (and consequently install <code>AutoQuant</code> without error), try running this line of code first, then restart your R session, then re-run the 2-step installation process above. (<a href="https://github.com/catboost/catboost/issues/612" target="_blank">Reference</a>):
 If you're still having trouble submit an issue and I'll work with you to get it installed.
 
 ```r
@@ -174,22 +170,22 @@ install.packages("https://github.com/catboost/catboost/releases/download/<versio
 ## catboost
 install.packages("https://github.com/catboost/catboost/releases/download/<version>/catboost-R-Windows-<version>.tgz", repos = NULL, type = "source", INSTALL_opts = c("--no-multiarch", "--no-test-load"))
 
-## RemixAutoML
-install.packages("https://github.com/AdrianAntico/RemixAutoML/archive/refs/tags/<version>.tar.gz", repos = NULL, type = "source", INSTALL_opts = c("--no-multiarch", "--no-test-load"))
+## AutoQuant
+install.packages("https://github.com/AdrianAntico/AutoQuant/archive/refs/tags/<version>.tar.gz", repos = NULL, type = "source", INSTALL_opts = c("--no-multiarch", "--no-test-load"))
 ```
  
 
 </p>
 </details>
 
-<img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/Documentation.PNG" align="center" width="725" />
+<img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/Documentation.PNG" align="center" width="725" />
 
-## Feature Engineering <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/FeatureEngineeringMenu.PNG" align="right" width="80" />
+## Feature Engineering <img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/FeatureEngineeringMenu.PNG" align="right" width="80" />
 
 <details><summary>Expand to view content</summary>
 <p>
 
-<img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/FeatureEngineeringMenu.PNG" align="center" width="800" />
+<img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/FeatureEngineeringMenu.PNG" align="center" width="800" />
 
 #### **AutoLagRollStats()** and **AutoLagRollStatsScoring()**
 
@@ -200,7 +196,7 @@ install.packages("https://github.com/AdrianAntico/RemixAutoML/archive/refs/tags/
 # Create fake Panel Data----
 Count <- 1L
 for(Level in LETTERS) {
-  datatemp <- RemixAutoML::FakeDataGenerator(
+  datatemp <- AutoQuant::FakeDataGenerator(
     Correlation = 0.75,
     N = 25000L,
     ID = 0L,
@@ -219,7 +215,7 @@ for(Level in LETTERS) {
 }
 
 # Add scoring records
-data <- RemixAutoML::AutoLagRollStats(
+data <- AutoQuant::AutoLagRollStats(
 
   # Data
   data                 = data,
@@ -258,7 +254,7 @@ data <- RemixAutoML::AutoLagRollStats(
 # Create fake Panel Data----
 Count <- 1L
 for(Level in LETTERS) {
-  datatemp <- RemixAutoML::FakeDataGenerator(
+  datatemp <- AutoQuant::FakeDataGenerator(
     Correlation = 0.75,
     N = 25000L,
     ID = 0L,
@@ -281,7 +277,7 @@ data[, ID := .N:1L, by = "Factor1"]
 data.table::set(data, i = which(data[["ID"]] == 2L), j = "ID", value = 1L)
 
 # Score records
-data <- RemixAutoML::AutoLagRollStatsScoring(
+data <- AutoQuant::AutoLagRollStatsScoring(
 
   # Data
   data                 = data,
@@ -336,7 +332,7 @@ data <- RemixAutoML::AutoLagRollStatsScoring(
 # NO GROUPING CASE: Create fake Panel Data----
 Count <- 1L
 for(Level in LETTERS) {
-  datatemp <- RemixAutoML::FakeDataGenerator(
+  datatemp <- AutoQuant::FakeDataGenerator(
     Correlation = 0.75,
     N = 25000L,
     ID = 0L,
@@ -356,7 +352,7 @@ for(Level in LETTERS) {
 }
 
 # NO GROUPING CASE: Create rolling modes for categorical features
-data <- RemixAutoML::AutoLagRollMode(
+data <- AutoQuant::AutoLagRollMode(
   data,
   Lags           = seq(1,5,1),
   ModePeriods    = seq(2,5,1),
@@ -370,7 +366,7 @@ data <- RemixAutoML::AutoLagRollMode(
 # GROUPING CASE: Create fake Panel Data----
 Count <- 1L
 for(Level in LETTERS) {
-  datatemp <- RemixAutoML::FakeDataGenerator(
+  datatemp <- AutoQuant::FakeDataGenerator(
     Correlation = 0.75,
     N = 25000L,
     ID = 0L,
@@ -390,7 +386,7 @@ for(Level in LETTERS) {
 }
 
 # GROUPING CASE: Create rolling modes for categorical features
-data <- RemixAutoML::AutoLagRollMode(
+data <- AutoQuant::AutoLagRollMode(
   data,
   Lags           = seq(1,5,1),
   ModePeriods    = seq(2,5,1),
@@ -426,7 +422,7 @@ data <- RemixAutoML::AutoLagRollMode(
 ##############################
  
 # Create fake data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.70,
   N = 50000,
   ID = 2L,
@@ -442,14 +438,14 @@ data <- RemixAutoML::FakeDataGenerator(
 Cols <- names(data)[which(unlist(data[, lapply(.SD, is.numeric)]))]
 
 # Clean data before running AutoDiffLagN
-data <- RemixAutoML::ModelDataPrep(
+data <- AutoQuant::ModelDataPrep(
   data = data,
   Impute = FALSE,
   CharToFactor = FALSE,
   FactorToChar = TRUE)
 
 # Run function
-data <- RemixAutoML::AutoDiffLagN(
+data <- AutoQuant::AutoDiffLagN(
   data,
   DateVariable = "DateTime",
   GroupVariables = c("Factor_2"),
@@ -466,7 +462,7 @@ data <- RemixAutoML::AutoDiffLagN(
 ##############################
 
 # Create fake data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.70,
   N = 50000,
   ID = 2L,
@@ -482,14 +478,14 @@ data <- RemixAutoML::FakeDataGenerator(
 Cols <- names(data)[which(unlist(data[, lapply(.SD, is.numeric)]))]
 
 # Clean data before running AutoDiffLagN
-data <- RemixAutoML::ModelDataPrep(
+data <- AutoQuant::ModelDataPrep(
   data = data,
   Impute = FALSE,
   CharToFactor = FALSE,
   FactorToChar = TRUE)
 
 # Run function
-data <- RemixAutoML::AutoDiffLagN(
+data <- AutoQuant::AutoDiffLagN(
   data,
   DateVariable = "DateTime",
   GroupVariables = c("Factor_2"),
@@ -524,7 +520,7 @@ data <- RemixAutoML::AutoDiffLagN(
 #########################################
 
 # Create fake data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.70,
   N = 50000,
   ID = 2L,
@@ -544,7 +540,7 @@ Cols <-names(data)[c(which(unlist(lapply(data, is.numeric))),
                      which(unlist(lapply(data, is.integer))))]
 
 # Model Training Feature Engineering
-system.time(data <- RemixAutoML::AutoInteraction(
+system.time(data <- AutoQuant::AutoInteraction(
   data = data,
   NumericVars = Cols,
   InteractionDepth = 4,
@@ -566,7 +562,7 @@ print(ncol(data))
 ########################################
 
 # Create fake data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.70,
   N = 50000,
   ID = 2L,
@@ -586,7 +582,7 @@ print(ncol(data))
 data <- data[1L]
 
 # Model Scoring Feature Engineering
-system.time(data <- RemixAutoML::AutoInteraction(
+system.time(data <- AutoQuant::AutoInteraction(
   data = data,
   NumericVars = names(data)[
     c(which(unlist(lapply(data, is.numeric))),
@@ -624,7 +620,7 @@ print(ncol(data))
 
 ```r
 # Create fake data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.70,
   N = 1000L,
   ID = 2L,
@@ -638,7 +634,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 # Create Model and Vectors
-data <- RemixAutoML::AutoWord2VecModeler(
+data <- AutoQuant::AutoWord2VecModeler(
   data,
   BuildType = "individual",
   stringCol = c("Comment"),
@@ -657,7 +653,7 @@ data <- RemixAutoML::AutoWord2VecModeler(
 rm(data)
 
 # Create fake data for mock scoring
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.70,
   N = 1000L,
   ID = 2L,
@@ -671,7 +667,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 # Create vectors for scoring
-data <- RemixAutoML::AutoWord2VecScoring(
+data <- AutoQuant::AutoWord2VecScoring(
   data,
   BuildType = "individual",
   ModelObject = NULL,
@@ -706,7 +702,7 @@ data <- RemixAutoML::AutoWord2VecScoring(
 
 ```r
 # Create fake data with 10 categorical
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 1000000,
   ID = 2L,
@@ -732,7 +728,7 @@ MethNum <- 1
 test <- data.table::copy(data)
 
 # Run in Train Mode
-data <- RemixAutoML::CategoricalEncoding(
+data <- AutoQuant::CategoricalEncoding(
   data = data,
   ML_Type = "classification",
   GroupVariables = paste0("Factor_", 1:10),
@@ -748,7 +744,7 @@ data <- RemixAutoML::CategoricalEncoding(
 print(data)
 
 # Run in Score Mode by pulling in the csv's
-test <- RemixAutoML::CategoricalEncoding(
+test <- AutoQuant::CategoricalEncoding(
   data = data,
   ML_Type = "classification",
   GroupVariables = paste0("Factor_", 1:10),
@@ -787,7 +783,7 @@ test <- RemixAutoML::CategoricalEncoding(
 ############################
 
 # Create simulated data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.70,
   N = 1000L,
   ID = 2L,
@@ -801,7 +797,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 # Run algo
-Output <- RemixAutoML::H2OAutoencoder(
+Output <- AutoQuant::H2OAutoencoder(
   
   # Select the service
   AnomalyDetection = TRUE,
@@ -844,7 +840,7 @@ ValidationData <- Output$ValidationData
 ############################
 
 # Create simulated data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.70,
   N = 1000L,
   ID = 2L,
@@ -858,7 +854,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 # Run algo
-data <- RemixAutoML::H2OAutoencoderScoring(
+data <- AutoQuant::H2OAutoencoderScoring(
 
   # Select the service
   AnomalyDetection = TRUE,
@@ -901,7 +897,7 @@ data <- RemixAutoML::H2OAutoencoderScoring(
 
 ```r
 # Create simulated data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.70,
   N = 50000,
   ID = 2L,
@@ -914,7 +910,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 # Run algo
-data <- RemixAutoML::H2OIsolationForest(
+data <- AutoQuant::H2OIsolationForest(
   data,
   Features = names(data)[2L:ncol(data)],
   IDcols = c("Adrian", "IDcol_1", "IDcol_2"),
@@ -937,7 +933,7 @@ data <- RemixAutoML::H2OIsolationForest(
 data[, eval(names(data)[17:ncol(data)]) := NULL]
 
 # Run algo
-Outliers <- RemixAutoML::H2OIsolationForestScoring(
+Outliers <- AutoQuant::H2OIsolationForestScoring(
   data,
   Features = names(data)[2:ncol(data)],
   IDcols = c("Adrian", "IDcol_1", "IDcol_2"),
@@ -975,7 +971,7 @@ Outliers <- RemixAutoML::H2OIsolationForestScoring(
 #########################
 
 # Create fake data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 1000,
   ID = 2,
@@ -985,7 +981,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 # Run function
-data <- RemixAutoML::AutoClustering(
+data <- AutoQuant::AutoClustering(
   data,
   FeatureColumns = names(data)[2:(ncol(data)-1)],
   ModelID = "TestModel",
@@ -1009,7 +1005,7 @@ data <- RemixAutoML::AutoClustering(
 Sys.sleep(10)
 
 # Create fake data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 1000,
   ID = 2,
@@ -1019,7 +1015,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 # Run function
-data <- RemixAutoML::AutoClusteringScoring(
+data <- AutoQuant::AutoClusteringScoring(
   data,
   FeatureColumns = names(data)[2:(ncol(data)-1)],
   ModelID = "TestModel",
@@ -1047,7 +1043,7 @@ data <- RemixAutoML::AutoClusteringScoring(
 
 ```r
 # Create fake data with a Date column----
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.75,
   N = 25000L,
   ID = 2L,
@@ -1058,7 +1054,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 for(i in seq_len(20L)) {
   print(i)
-  data <- data.table::rbindlist(list(data, RemixAutoML::FakeDataGenerator(
+  data <- data.table::rbindlist(list(data, AutoQuant::FakeDataGenerator(
     Correlation = 0.75,
     N = 25000L,
     ID = 2L,
@@ -1072,7 +1068,7 @@ for(i in seq_len(20L)) {
 # Create calendar variables - automatically excludes the second, minute, and hour selections since
 #   it is not timestamp data
 runtime <- system.time(
-  data <- RemixAutoML::CreateCalendarVariables(
+  data <- AutoQuant::CreateCalendarVariables(
     data = data,
     DateCols = "DateTime",
     AsFactor = FALSE,
@@ -1099,7 +1095,7 @@ print(runtime)
  
 ```r
 # Create fake data with a Date----
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.75,
   N = 25000L,
   ID = 2L,
@@ -1110,7 +1106,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 for(i in seq_len(20L)) {
   print(i)
-  data <- data.table::rbindlist(list(data, RemixAutoML::FakeDataGenerator(
+  data <- data.table::rbindlist(list(data, AutoQuant::FakeDataGenerator(
     Correlation = 0.75,
     N = 25000L,
     ID = 2L,
@@ -1152,7 +1148,7 @@ This function counts up the number of specified holidays between the current rec
 
 ```r
 # Create fake data with 10 categorical columns
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 25000,
   ID = 2L,
@@ -1185,7 +1181,7 @@ data <- DummifyDT(
   ReturnFactorLevels = FALSE)
 
 # Create Fake Data for Scoring Replication
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 25000,
   ID = 2L,
@@ -1196,7 +1192,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 # Scoring Version (imports csv's to generate matching levels and ordering)
-data <- RemixAutoML::DummifyDT(
+data <- AutoQuant::DummifyDT(
   data = data,
   cols = c("Factor_1",
            "Factor_2",
@@ -1236,7 +1232,7 @@ data <- RemixAutoML::DummifyDT(
 
 ```r
 # Create fake data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85, 
   N = 1000, 
   ID = 2, 
@@ -1246,7 +1242,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 # Run data partitioning function
-dataSets <- RemixAutoML::AutoDataPartition(
+dataSets <- AutoQuant::AutoDataPartition(
   data,
   NumDataSets = 3L,
   Ratios = c(0.70,0.20,0.10),
@@ -1278,7 +1274,7 @@ TestData <- dataSets$TestData
  
 ```r
 # Create fake data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.75,
   N = 250000L,
   ID = 2L,
@@ -1295,7 +1291,7 @@ data <- RemixAutoML::FakeDataGenerator(
 str(data)
 
 # RUn function
-data <- RemixAutoML::ModelDataPrep(
+data <- AutoQuant::ModelDataPrep(
   data,
   Impute = TRUE,
   CharToFactor = FALSE,
@@ -1357,7 +1353,7 @@ str(data)
 
 
 
-## Supervised Learning <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/SupervisedLearningImage.png" align="right" width="80" />
+## Supervised Learning <img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/SupervisedLearningImage.png" align="right" width="80" />
 
 <details><summary>Expand to view content</summary>
 <p>
@@ -1403,7 +1399,7 @@ The Auto_Regression() models handle a multitude of tasks. In order:
 
 ```r
 # Create some dummy correlated data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 10000,
   ID = 2,
@@ -1413,7 +1409,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 # Run function
-TestModel <- RemixAutoML::AutoCatBoostRegression(
+TestModel <- AutoQuant::AutoCatBoostRegression(
 
   # GPU or CPU and the number of available GPUs
   TrainOnFull = FALSE,
@@ -1488,7 +1484,7 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
 
 ```r
 # Create some dummy correlated data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 1000,
   ID = 2,
@@ -1498,7 +1494,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 # Run function
-TestModel <- RemixAutoML::AutoXGBoostRegression(
+TestModel <- AutoQuant::AutoXGBoostRegression(
   
   # GPU or CPU
   TreeMethod = 'hist',
@@ -1561,7 +1557,7 @@ TestModel <- RemixAutoML::AutoXGBoostRegression(
 
 ```r
 # Create some dummy correlated data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 1000,
   ID = 2,
@@ -1571,7 +1567,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 # Run function
-TestModel <- RemixAutoML::AutoLightGBMRegression(
+TestModel <- AutoQuant::AutoLightGBMRegression(
 
   # Metadata args
   OutputSelection = c('Importances','EvalPlots','EvalMetrics','Score_TrainData'),
@@ -1704,7 +1700,7 @@ TestModel <- RemixAutoML::AutoLightGBMRegression(
 
 ```r
 # Create some dummy correlated data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 1000,
   ID = 2,
@@ -1714,7 +1710,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 # Run function
-TestModel <- RemixAutoML::AutoH2oGBMRegression(
+TestModel <- AutoQuant::AutoH2oGBMRegression(
   
   # Compute management
   MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
@@ -1780,7 +1776,7 @@ TestModel <- RemixAutoML::AutoH2oGBMRegression(
  
 ```r
 # Create some dummy correlated data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 1000,
   ID = 2,
@@ -1790,7 +1786,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 # Run function
-TestModel <- RemixAutoML::AutoH2oDRFRegression(
+TestModel <- AutoQuant::AutoH2oDRFRegression(
   
   # Compute management
   MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
@@ -1852,7 +1848,7 @@ TestModel <- RemixAutoML::AutoH2oDRFRegression(
  
 ```r
 # Create some dummy correlated data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 1000,
   ID = 2,
@@ -1862,7 +1858,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 # Run function
-TestModel <- RemixAutoML::AutoH2oGLMRegression(
+TestModel <- AutoQuant::AutoH2oGLMRegression(
   
   # Compute management
   MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
@@ -1927,7 +1923,7 @@ TestModel <- RemixAutoML::AutoH2oGLMRegression(
  
 ```r
 # Create some dummy correlated data with numeric and categorical features
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 1000,
   ID = 2,
@@ -1937,7 +1933,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 # Run function
-TestModel <- RemixAutoML::AutoH2oMLRegression(
+TestModel <- AutoQuant::AutoH2oMLRegression(
 
   # Compute management
   MaxMem = "32G",
@@ -1980,7 +1976,7 @@ TestModel <- RemixAutoML::AutoH2oMLRegression(
  
 ```r
 # Create some dummy correlated data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 1000,
   ID = 2,
@@ -1995,7 +1991,7 @@ GamCols <- GamCols[!GamCols %in% c("Adrian","IDcol_1","IDcol_2")]
 GamCols <- GamCols[1L:(min(9L,length(GamCols)))]
 
 # Run function
-TestModel <- RemixAutoML::AutoH2oGAMRegression(
+TestModel <- AutoQuant::AutoH2oGAMRegression(
   
   # Compute management
   MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
@@ -2095,7 +2091,7 @@ The Auto_Classifier() models handle a multitude of tasks. In order:
 
 ```r
 # Create some dummy correlated data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 10000,
   ID = 2,
@@ -2105,7 +2101,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 # Run function
-TestModel <- RemixAutoML::AutoCatBoostClassifier(
+TestModel <- AutoQuant::AutoCatBoostClassifier(
 
   # GPU or CPU and the number of available GPUs
   task_type = 'GPU',
@@ -2178,7 +2174,7 @@ TestModel <- RemixAutoML::AutoCatBoostClassifier(
  
 ```r
 # Create some dummy correlated data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 1000L,
   ID = 2L,
@@ -2188,7 +2184,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 # Run function
-TestModel <- RemixAutoML::AutoXGBoostClassifier(
+TestModel <- AutoQuant::AutoXGBoostClassifier(
 
   # GPU or CPU
   TreeMethod = "hist",
@@ -2250,7 +2246,7 @@ TestModel <- RemixAutoML::AutoXGBoostClassifier(
  
 ```r
 # Create some dummy correlated data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 1000,
   ID = 2,
@@ -2260,7 +2256,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 # Run function
-TestModel <- RemixAutoML::AutoLightGBMClassifier(
+TestModel <- AutoQuant::AutoLightGBMClassifier(
 
   # Metadata args
   OutputSelection = c("Importances","EvalPlots","EvalMetrics","Score_TrainData"),
@@ -2388,7 +2384,7 @@ TestModel <- RemixAutoML::AutoLightGBMClassifier(
 
 ```r
 # Create some dummy correlated data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 1000L,
   ID = 2L,
@@ -2397,7 +2393,7 @@ data <- RemixAutoML::FakeDataGenerator(
   Classification = TRUE,
   MultiClass = FALSE)
 
-TestModel <- RemixAutoML::AutoH2oGBMClassifier(
+TestModel <- AutoQuant::AutoH2oGBMClassifier(
   
   # Compute management
   MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
@@ -2460,7 +2456,7 @@ TestModel <- RemixAutoML::AutoH2oGBMClassifier(
  
 ```r
 # Create some dummy correlated data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 1000L,
   ID = 2L,
@@ -2469,7 +2465,7 @@ data <- RemixAutoML::FakeDataGenerator(
   Classification = TRUE,
   MultiClass = FALSE)
 
-TestModel <- RemixAutoML::AutoH2oDRFClassifier(
+TestModel <- AutoQuant::AutoH2oDRFClassifier(
   
   # Compute management
   MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
@@ -2529,7 +2525,7 @@ TestModel <- RemixAutoML::AutoH2oDRFClassifier(
  
 ```r
 # Create some dummy correlated data with numeric and categorical features
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 1000L,
   ID = 2L,
@@ -2539,7 +2535,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 # Run function
-TestModel <- RemixAutoML::AutoH2oGLMClassifier(
+TestModel <- AutoQuant::AutoH2oGLMClassifier(
   
   # Compute management
   MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
@@ -2601,7 +2597,7 @@ TestModel <- RemixAutoML::AutoH2oGLMClassifier(
  
 ```r
 # Create some dummy correlated data with numeric and categorical features
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85, 
   N = 1000L, 
   ID = 2L, 
@@ -2610,7 +2606,7 @@ data <- RemixAutoML::FakeDataGenerator(
   Classification = TRUE, 
   MultiClass = FALSE)
 
-TestModel <- RemixAutoML::AutoH2oMLClassifier(
+TestModel <- AutoQuant::AutoH2oMLClassifier(
    data,
    TrainOnFull = FALSE,
    ValidationData = NULL,
@@ -2642,7 +2638,7 @@ TestModel <- RemixAutoML::AutoH2oMLClassifier(
  
 ```r
 # Create some dummy correlated data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 1000,
   ID = 2,
@@ -2657,7 +2653,7 @@ GamCols <- GamCols[!GamCols %in% c("Adrian","IDcol_1","IDcol_2")]
 GamCols <- GamCols[1L:(min(9L,length(GamCols)))]
 
 # Run function
-TestModel <- RemixAutoML::AutoH2oGAMClassifier(
+TestModel <- AutoQuant::AutoH2oGAMClassifier(
 
   # Compute management
   MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
@@ -2750,7 +2746,7 @@ The Auto_MultiClass() models handle a multitude of tasks. In order:
 
 ```r
 # Create some dummy correlated data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 10000L,
   ID = 2L,
@@ -2760,7 +2756,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = TRUE)
 
 # Run function
-TestModel <- RemixAutoML::AutoCatBoostMultiClass(
+TestModel <- AutoQuant::AutoCatBoostMultiClass(
   
   # GPU or CPU and the number of available GPUs
   task_type = 'GPU',
@@ -2831,7 +2827,7 @@ TestModel <- RemixAutoML::AutoCatBoostMultiClass(
 
 ```r
 # Create some dummy correlated data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 1000L,
   ID = 2L,
@@ -2841,7 +2837,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = TRUE)
 
 # Run function
-TestModel <- RemixAutoML::AutoXGBoostMultiClass(
+TestModel <- AutoQuant::AutoXGBoostMultiClass(
   
   # GPU or CPU
   TreeMethod = "hist",
@@ -2901,7 +2897,7 @@ TestModel <- RemixAutoML::AutoXGBoostMultiClass(
 
 ```r
 # Create some dummy correlated data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 1000,
   ID = 2,
@@ -2911,7 +2907,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 # Run function
-TestModel <- RemixAutoML::AutoLightGBMMultiClass(
+TestModel <- AutoQuant::AutoLightGBMMultiClass(
 
   # Metadata args
   OutputSelection = c("Importances","EvalPlots","EvalMetrics","Score_TrainData"),
@@ -3040,7 +3036,7 @@ TestModel <- RemixAutoML::AutoLightGBMMultiClass(
 
 ```r
 # Create some dummy correlated data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 1000,
   ID = 2,
@@ -3050,7 +3046,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = TRUE)
 
 # Run function
-TestModel <- RemixAutoML::AutoH2oGBMMultiClass(
+TestModel <- AutoQuant::AutoH2oGBMMultiClass(
    data,
    TrainOnFull = FALSE,
    ValidationData = NULL,
@@ -3102,7 +3098,7 @@ TestModel <- RemixAutoML::AutoH2oGBMMultiClass(
 
 ```r
 # Create some dummy correlated data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 1000L,
   ID = 2L,
@@ -3112,7 +3108,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = TRUE)
 
 # Run function
-TestModel <- RemixAutoML::AutoH2oDRFMultiClass(
+TestModel <- AutoQuant::AutoH2oDRFMultiClass(
   data,
   TrainOnFull = FALSE,
   ValidationData = NULL,
@@ -3162,7 +3158,7 @@ TestModel <- RemixAutoML::AutoH2oDRFMultiClass(
 
 ```r
 # Create some dummy correlated data with numeric and categorical features
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 1000L,
   ID = 2L,
@@ -3172,7 +3168,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = TRUE)
 
 # Run function
-TestModel <- RemixAutoML::AutoH2oGLMMultiClass(
+TestModel <- AutoQuant::AutoH2oGLMMultiClass(
   
   # Compute management
   MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
@@ -3233,10 +3229,10 @@ TestModel <- RemixAutoML::AutoH2oGLMMultiClass(
 
 ```r
 # Create some dummy correlated data with numeric and categorical features
-data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000, ID = 2, ZIP = 0, AddDate = FALSE, Classification = FALSE, MultiClass = TRUE)
+data <- AutoQuant::FakeDataGenerator(Correlation = 0.85, N = 1000, ID = 2, ZIP = 0, AddDate = FALSE, Classification = FALSE, MultiClass = TRUE)
 
 # Run function
-TestModel <- RemixAutoML::AutoH2oMLMultiClass(
+TestModel <- AutoQuant::AutoH2oMLMultiClass(
    data,
    TrainOnFull = FALSE,
    ValidationData = NULL,
@@ -3267,7 +3263,7 @@ TestModel <- RemixAutoML::AutoH2oMLMultiClass(
 
 ```r
 # Create some dummy correlated data with numeric and categorical features
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 1000L,
   ID = 2L,
@@ -3282,7 +3278,7 @@ GamCols <- GamCols[!GamCols %in% c("Adrian","IDcol_1","IDcol_2")]
 GamCols <- GamCols[1L:(min(9L,length(GamCols)))]
 
 # Run function
-TestModel <- RemixAutoML::AutoH2oGAMMultiClass(
+TestModel <- AutoQuant::AutoH2oGAMMultiClass(
   data,
   TrainOnFull = FALSE,
   ValidationData = NULL,
@@ -3342,7 +3338,7 @@ TestModel <- RemixAutoML::AutoH2oGAMMultiClass(
 
 
 
-## Model Scoring <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/ModelScoringImage.png" align="right" width="80" />
+## Model Scoring <img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/ModelScoringImage.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
 
@@ -3378,7 +3374,7 @@ TestModel <- RemixAutoML::AutoH2oGAMMultiClass(
 
 ```r
 # Create some dummy correlated data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 10000,
   ID = 2,
@@ -3394,7 +3390,7 @@ data1 <- data.table::copy(data)
 Features <- names(data1)[!names(data1) %in% c("IDcol_1", "IDcol_2","DateTime","Adrian")]
 
 # Run function
-TestModel <- RemixAutoML::AutoCatBoostRegression(
+TestModel <- AutoQuant::AutoCatBoostRegression(
   
   # GPU or CPU and the number of available GPUs
   TrainOnFull = FALSE,
@@ -3460,7 +3456,7 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
 
 
 # Insights Report
-RemixAutoML::ModelInsightsReport(
+AutoQuant::ModelInsightsReport(
   
   # Meta info
   TargetColumnName = 'Adrian',
@@ -3473,11 +3469,11 @@ RemixAutoML::ModelInsightsReport(
   ModelID = 'Test_Model_1',
   Algo = 'catboost',
   OutputPath = getwd(),
-  RemixOutput = TestModel)
+  ModelOutput = TestModel)
 
 
 # Score data
-Preds <- RemixAutoML::AutoCatBoostScoring(
+Preds <- AutoQuant::AutoCatBoostScoring(
   TargetType = 'regression',
   ScoringData = data,
   FeatureColumnNames = Features,
@@ -3512,7 +3508,7 @@ Preds <- RemixAutoML::AutoCatBoostScoring(
 
 ```r
 # Refresh data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 25000L,
   ID = 2L,
@@ -3526,7 +3522,7 @@ data <- RemixAutoML::FakeDataGenerator(
 data1 <- data.table::copy(data)
 
 # Partition Data
-Sets <- RemixAutoML::AutoDataPartition(
+Sets <- AutoQuant::AutoDataPartition(
   data = data,
   NumDataSets = 3,
   Ratios = c(0.7,0.2,0.1),
@@ -3542,7 +3538,7 @@ rm(Sets)
 Features <- names(TTrainData)[!names(TTrainData) %in% c("IDcol_1", "IDcol_2","DateTime","Adrian")]
 
 # AutoCatBoostClassifier
-TestModel <- RemixAutoML::AutoCatBoostClassifier(
+TestModel <- AutoQuant::AutoCatBoostClassifier(
   
   # GPU or CPU and the number of available GPUs
   task_type = tasktypemode,
@@ -3607,7 +3603,7 @@ TestModel <- RemixAutoML::AutoCatBoostClassifier(
 
 
 # Insights Report
-RemixAutoML::ModelInsightsReport(
+AutoQuant::ModelInsightsReport(
   
   # Meta info
   TargetColumnName = 'Adrian',
@@ -3620,11 +3616,11 @@ RemixAutoML::ModelInsightsReport(
   ModelID = 'Test_Model_1',
   Algo = 'catboost',
   OutputPath = getwd(),
-  RemixOutput = TestModel)
+  ModelOutput = TestModel)
 
 
 # Score data
-Preds <- RemixAutoML::AutoCatBoostScoring(
+Preds <- AutoQuant::AutoCatBoostScoring(
   TargetType = 'classifier',
   ScoringData = data,
   FeatureColumnNames = Features,
@@ -3659,7 +3655,7 @@ Preds <- RemixAutoML::AutoCatBoostScoring(
 
 ```r
 # Refresh data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 25000L,
   ID = 2L,
@@ -3673,7 +3669,7 @@ data <- RemixAutoML::FakeDataGenerator(
 data1 <- data.table::copy(data)
 
 # Partition Data
-Sets <- RemixAutoML::AutoDataPartition(
+Sets <- AutoQuant::AutoDataPartition(
   data = data,
   NumDataSets = 3,
   Ratios = c(0.7,0.2,0.1),
@@ -3689,7 +3685,7 @@ rm(Sets)
 Features <- names(TTrainData)[!names(TTrainData) %in% c("IDcol_1", "IDcol_2","Adrian","DateTime")]
 
 # Run function
-TestModel <- RemixAutoML::AutoCatBoostMultiClass(
+TestModel <- AutoQuant::AutoCatBoostMultiClass(
   
   # GPU or CPU and the number of available GPUs
   task_type = "GPU",
@@ -3751,7 +3747,7 @@ TestModel <- RemixAutoML::AutoCatBoostMultiClass(
 
 
 # Insights Report
-RemixAutoML::ModelInsightsReport(
+AutoQuant::ModelInsightsReport(
   
   # Meta info
   TargetColumnName = 'Adrian',
@@ -3764,11 +3760,11 @@ RemixAutoML::ModelInsightsReport(
   ModelID = 'Test_Model_1',
   Algo = 'catboost',
   OutputPath = getwd(),
-  RemixOutput = TestModel)
+  ModelOutput = TestModel)
 
 
 # Score data
-Preds <- RemixAutoML::AutoCatBoostScoring(
+Preds <- AutoQuant::AutoCatBoostScoring(
   TargetType = 'multiclass',
   ScoringData = data,
   FeatureColumnNames = Features,
@@ -3807,13 +3803,13 @@ Classify <- TRUE
 
 # Create data
 if(Classify) {
-  data <- RemixAutoML::FakeDataGenerator(N = 15000, ZIP = 1)
+  data <- AutoQuant::FakeDataGenerator(N = 15000, ZIP = 1)
 } else {
-  data <- RemixAutoML::FakeDataGenerator(N = 15000, ZIP = 2)
+  data <- AutoQuant::FakeDataGenerator(N = 15000, ZIP = 2)
 }
 
 # Partition Data
-Sets <- RemixAutoML::AutoDataPartition(
+Sets <- AutoQuant::AutoDataPartition(
   data = data,
   NumDataSets = 3,
   Ratios = c(0.7,0.2,0.1),
@@ -3826,7 +3822,7 @@ TTestData <- Sets$TestData
 rm(Sets)
 
 # Run function
-TestModel <- RemixAutoML::AutoCatBoostHurdleModel(
+TestModel <- AutoQuant::AutoCatBoostHurdleModel(
   
   # Operationalization
   task_type = 'GPU',
@@ -3882,7 +3878,7 @@ TestModel <- RemixAutoML::AutoCatBoostHurdleModel(
 TTrainData[, c("Target_Buckets", "Adrian") := NULL]
 
 # Score CatBoost Hurdle Model
-Output <- RemixAutoML::AutoCatBoostHurdleModelScoring(
+Output <- AutoQuant::AutoCatBoostHurdleModelScoring(
   TestData = TTrainData,
   Path = NULL,
   ModelID = "ModelTest",
@@ -3907,7 +3903,7 @@ Output <- RemixAutoML::AutoCatBoostHurdleModelScoring(
 
 ```r
 # Refresh data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 25000L,
   ID = 2L,
@@ -3918,7 +3914,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 # Partition Data
-Sets <- RemixAutoML::AutoDataPartition(
+Sets <- AutoQuant::AutoDataPartition(
   data = data,
   NumDataSets = 3,
   Ratios = c(0.7,0.2,0.1),
@@ -3931,7 +3927,7 @@ TTestData <- Sets$TestData
 rm(Sets)
 
 # Run function
-TestModel <- RemixAutoML::AutoLightGBMRegression(
+TestModel <- AutoQuant::AutoLightGBMRegression(
   
   # GPU or CPU
   NThreads = parallel::detectCores(),
@@ -4060,7 +4056,7 @@ TestModel <- RemixAutoML::AutoLightGBMRegression(
 # Outcome
 ModelID = "Test_Model_1"
 colnames <- data.table::fread(file = file.path(getwd(), paste0(ModelID, "_ColNames.csv")))
-Preds <- RemixAutoML::AutoLightGBMScoring(
+Preds <- AutoQuant::AutoLightGBMScoring(
   TargetType = "regression",
   ScoringData = TTestData,
   ReturnShapValues = FALSE,
@@ -4094,7 +4090,7 @@ Preds <- RemixAutoML::AutoLightGBMScoring(
 
 ```r
 # Refresh data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 25000L,
   ID = 2L,
@@ -4105,7 +4101,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 # Partition Data
-Sets <- RemixAutoML::AutoDataPartition(
+Sets <- AutoQuant::AutoDataPartition(
   data = data,
   NumDataSets = 3,
   Ratios = c(0.7,0.2,0.1),
@@ -4118,7 +4114,7 @@ TTestData <- Sets$TestData
 rm(Sets)
 
 # Run function
-TestModel <- RemixAutoML::AutoLightGBMClassifier(
+TestModel <- AutoQuant::AutoLightGBMClassifier(
   
   # Multithreading
   NThreads = parallel::detectCores(),
@@ -4243,7 +4239,7 @@ TestModel <- RemixAutoML::AutoLightGBMClassifier(
 # Outcome
 ModelID = "Test_Model_1"
 colnames <- data.table::fread(file = file.path(getwd(), paste0(ModelID, "_ColNames.csv")))
-Preds <- RemixAutoML::AutoLightGBMScoring(
+Preds <- AutoQuant::AutoLightGBMScoring(
   TargetType = "classification",
   ScoringData = TTestData,
   ReturnShapValues = FALSE,
@@ -4277,7 +4273,7 @@ Preds <- RemixAutoML::AutoLightGBMScoring(
 
 ```r
 # Refresh data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 25000L,
   ID = 2L,
@@ -4288,7 +4284,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = TRUE)
 
 # Partition Data
-Sets <- RemixAutoML::AutoDataPartition(
+Sets <- AutoQuant::AutoDataPartition(
   data = data,
   NumDataSets = 3,
   Ratios = c(0.7,0.2,0.1),
@@ -4301,7 +4297,7 @@ TTestData <- Sets$TestData
 rm(Sets)
 
 # Run function
-TestModel <- RemixAutoML::AutoLightGBMMultiClass(
+TestModel <- AutoQuant::AutoLightGBMMultiClass(
   
   # GPU or CPU
   NThreads = parallel::detectCores(),
@@ -4427,7 +4423,7 @@ TestModel <- RemixAutoML::AutoLightGBMMultiClass(
 # Outcome
 ModelID = "Test_Model_1"
 colnames <- data.table::fread(file = file.path(getwd(), paste0(ModelID, "_ColNames.csv")))
-Preds <- RemixAutoML::AutoLightGBMScoring(
+Preds <- AutoQuant::AutoLightGBMScoring(
   TargetType = "multiclass",
   ScoringData = TTestData,
   ReturnShapValues = FALSE,
@@ -4465,13 +4461,13 @@ Classify <- TRUE
 
 # Get data
 if(Classify) {
-  data <- RemixAutoML::FakeDataGenerator(N = 15000, ZIP = 1)
+  data <- AutoQuant::FakeDataGenerator(N = 15000, ZIP = 1)
 } else {
-  data <- RemixAutoML::FakeDataGenerator(N = 100000, ZIP = 2)
+  data <- AutoQuant::FakeDataGenerator(N = 100000, ZIP = 2)
 }
 
 # Partition Data
-Sets <- RemixAutoML::AutoDataPartition(
+Sets <- AutoQuant::AutoDataPartition(
   data = data,
   NumDataSets = 3,
   Ratios = c(0.7,0.2,0.1),
@@ -4484,7 +4480,7 @@ TTestData <- Sets$TestData
 rm(Sets)
 
 # Run function
-TestModel <- RemixAutoML::AutoLightGBMHurdleModel(
+TestModel <- AutoQuant::AutoLightGBMHurdleModel(
   
   # Operationalization
   ModelID = 'ModelTest',
@@ -4602,7 +4598,7 @@ TestModel <- RemixAutoML::AutoLightGBMHurdleModel(
 TTrainData[, c("Target_Buckets", "Adrian") := NULL]
 
 # Score LightGBM Hurdle Model
-Output <- RemixAutoML::AutoLightGBMHurdleModelScoring(
+Output <- AutoQuant::AutoLightGBMHurdleModelScoring(
   TestData = TTrainData,
   Path = NULL,
   ModelID = "ModelTest",
@@ -4626,7 +4622,7 @@ Output <- RemixAutoML::AutoLightGBMHurdleModelScoring(
 
 ```r
 # Refresh data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 25000L,
   ID = 2L,
@@ -4641,7 +4637,7 @@ data <- RemixAutoML::FakeDataGenerator(
 data1 <- data.table::copy(data)
 
 # Partition Data
-Sets <- RemixAutoML::AutoDataPartition(
+Sets <- AutoQuant::AutoDataPartition(
   data = data1,
   NumDataSets = 3,
   Ratios = c(0.7,0.2,0.1),
@@ -4654,7 +4650,7 @@ TTestData <- Sets$TestData
 rm(Sets)
 
 # Run function
-TestModel <- RemixAutoML::AutoXGBoostRegression(
+TestModel <- AutoQuant::AutoXGBoostRegression(
   
   # GPU or CPU
   TreeMethod = "hist",
@@ -4707,7 +4703,7 @@ TestModel <- RemixAutoML::AutoXGBoostRegression(
   colsample_bytree = 0.55)
 
 # Score model
-Preds <- RemixAutoML::AutoXGBoostScoring(
+Preds <- AutoQuant::AutoXGBoostScoring(
   TargetType = "regression",
   ScoringData = data,
   ReturnShapValues = FALSE,
@@ -4741,7 +4737,7 @@ Preds <- RemixAutoML::AutoXGBoostScoring(
 
 ```r
 # Refresh data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 25000L,
   ID = 2L,
@@ -4752,7 +4748,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 # Partition Data
-Sets <- RemixAutoML::AutoDataPartition(
+Sets <- AutoQuant::AutoDataPartition(
   data = data,
   NumDataSets = 3,
   Ratios = c(0.7,0.2,0.1),
@@ -4765,7 +4761,7 @@ TTestData <- Sets$TestData
 rm(Sets)
 
 # Run function
-TestModel <- RemixAutoML::AutoXGBoostClassifier(
+TestModel <- AutoQuant::AutoXGBoostClassifier(
   
   # GPU or CPU
   TreeMethod = "hist",
@@ -4818,7 +4814,7 @@ TestModel <- RemixAutoML::AutoXGBoostClassifier(
   colsample_bytree = 0.55)
 
 # Score model
-Preds <- RemixAutoML::AutoXGBoostScoring(
+Preds <- AutoQuant::AutoXGBoostScoring(
   TargetType = "classifier",
   ScoringData = data,
   ReturnShapValues = FALSE,
@@ -4852,7 +4848,7 @@ Preds <- RemixAutoML::AutoXGBoostScoring(
 
 ```r
 # Refresh data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 25000L,
   ID = 2L,
@@ -4863,7 +4859,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = TRUE)
 
 # Partition Data
-Sets <- RemixAutoML::AutoDataPartition(
+Sets <- AutoQuant::AutoDataPartition(
   data = data,
   NumDataSets = 3,
   Ratios = c(0.7,0.2,0.1),
@@ -4876,7 +4872,7 @@ TTestData <- Sets$TestData
 rm(Sets)
 
 # Run function
-TestModel <- RemixAutoML::AutoXGBoostMultiClass(
+TestModel <- AutoQuant::AutoXGBoostMultiClass(
   
   # GPU or CPU
   TreeMethod = "hist",
@@ -4926,7 +4922,7 @@ TestModel <- RemixAutoML::AutoXGBoostMultiClass(
   colsample_bytree = 0.55)
 
 # Score model
-Preds <- RemixAutoML::AutoXGBoostScoring(
+Preds <- AutoQuant::AutoXGBoostScoring(
   TargetType = "multiclass",
   ScoringData = data,
   ReturnShapValues = FALSE,
@@ -4964,13 +4960,13 @@ Classify <- TRUE
 
 # Get data
 if(Classify) {
-  data <- RemixAutoML::FakeDataGenerator(N = 15000, ZIP = 1)
+  data <- AutoQuant::FakeDataGenerator(N = 15000, ZIP = 1)
 } else {
-  data <- RemixAutoML::FakeDataGenerator(N = 100000, ZIP = 2)
+  data <- AutoQuant::FakeDataGenerator(N = 100000, ZIP = 2)
 }
 
 # Partition Data
-Sets <- RemixAutoML::AutoDataPartition(
+Sets <- AutoQuant::AutoDataPartition(
   data = data,
   NumDataSets = 3,
   Ratios = c(0.7,0.2,0.1),
@@ -4983,7 +4979,7 @@ TTestData <- Sets$TestData
 rm(Sets)
 
 # Run function
-TestModel <- RemixAutoML::AutoXGBoostHurdleModel(
+TestModel <- AutoQuant::AutoXGBoostHurdleModel(
   
   # Operationalization
   ModelID = 'ModelTest',
@@ -5035,7 +5031,7 @@ TestModel <- RemixAutoML::AutoXGBoostHurdleModel(
 TTrainData[, c("Target_Buckets", "Adrian") := NULL]
 
 # Score XGBoost Hurdle Model
-Output <- RemixAutoML::AutoXGBoostHurdleModelScoring(
+Output <- AutoQuant::AutoXGBoostHurdleModelScoring(
   TestData = TTrainData,
   Path = NULL,
   ModelID = "ModelTest",
@@ -5057,7 +5053,7 @@ Output <- RemixAutoML::AutoXGBoostHurdleModelScoring(
 
 
 
-## Model Evaluation <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/ModelEvaluationImage.png" align="right" width="80" />
+## Model Evaluation <img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/ModelEvaluationImage.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
 
@@ -5066,7 +5062,7 @@ Output <- RemixAutoML::AutoXGBoostHurdleModelScoring(
 
 ```r
 # Create some dummy correlated data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 10000,
   ID = 2,
@@ -5082,7 +5078,7 @@ data1 <- data.table::copy(data)
 Features <- c(names(data1)[!names(data1) %in% c('IDcol_1','IDcol_2','Adrian')])
 
 # Run function
-RemixOutput <- RemixAutoML::AutoCatBoostRegression(
+ModelOutput <- AutoQuant::AutoCatBoostRegression(
   
   # GPU or CPU and the number of available GPUs
   task_type = 'GPU',
@@ -5105,7 +5101,7 @@ RemixOutput <- RemixAutoML::AutoCatBoostRegression(
   Methods = c('Asinh','Asin','Log','LogPlus1','Sqrt','Logit'))
 
 # Build report
-RemixAutoML::ModelInsightsReport(
+AutoQuant::ModelInsightsReport(
   
   # Meta info
   TargetColumnName = 'Adrian',
@@ -5118,7 +5114,7 @@ RemixAutoML::ModelInsightsReport(
   ModelID = 'Test_Model_1',
   Algo = 'catboost',
   OutputPath = getwd(),
-  RemixOutput = RemixOutput)
+  ModelOutput = ModelOutput)
 ```
 
 </p>
@@ -5130,7 +5126,7 @@ RemixAutoML::ModelInsightsReport(
 
 ```r
 # Create some dummy correlated data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 10000,
   ID = 2,
@@ -5146,7 +5142,7 @@ data1 <- data.table::copy(data)
 Features <- c(names(data1)[!names(data1) %in% c('IDcol_1','IDcol_2','Adrian')])
 
 # Run function
-RemixOutput <- RemixAutoML::AutoCatBoostClassifier(
+ModelOutput <- AutoQuant::AutoCatBoostClassifier(
   
   # GPU or CPU and the number of available GPUs
   task_type = 'GPU',
@@ -5167,7 +5163,7 @@ RemixOutput <- RemixAutoML::AutoCatBoostClassifier(
   IDcols = c('IDcol_1','IDcol_2'))
 
 # Build report
-RemixAutoML::ModelInsightsReport(
+AutoQuant::ModelInsightsReport(
   
   # Meta info
   TargetColumnName = 'Adrian',
@@ -5180,7 +5176,7 @@ RemixAutoML::ModelInsightsReport(
   ModelID = 'Test_Model_1',
   Algo = 'catboost',
   OutputPath = getwd(),
-  RemixOutput = RemixOutput)
+  ModelOutput = ModelOutput)
 ```
 
 </p>
@@ -5193,7 +5189,7 @@ RemixAutoML::ModelInsightsReport(
 
 ```r
 # Create some dummy correlated data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 10000L,
   ID = 2L,
@@ -5209,7 +5205,7 @@ data1 <- data.table::copy(data)
 Features <- c(names(data1)[!names(data1) %in% c('IDcol_1','IDcol_2','Adrian')])
 
 # Run function
-RemixOutput <- RemixAutoML::AutoCatBoostMultiClass(
+ModelOutput <- AutoQuant::AutoCatBoostMultiClass(
   
   # GPU or CPU and the number of available GPUs
   task_type = 'GPU',
@@ -5230,7 +5226,7 @@ RemixOutput <- RemixAutoML::AutoCatBoostMultiClass(
   IDcols = c('IDcol_1','IDcol_2'))
 
 # Create Model Insights Report
-RemixAutoML::ModelInsightsReport(
+AutoQuant::ModelInsightsReport(
   
   # DataSets (use TestData for ValidationData)
   TrainData = train,
@@ -5247,7 +5243,7 @@ RemixAutoML::ModelInsightsReport(
   ModelID = 'Test_Model_1',
   Algo = 'catboost',
   OutputPath = getwd(),
-  RemixOutput = RemixOutput)
+  ModelOutput = ModelOutput)
 ```
 
 </p>
@@ -5289,8 +5285,6 @@ ShapTable <- SingleRowShapeShap(
 <code>AutoShapeShap()</code> will take your CatBoost or XGBoost TestData or TrainData returned from one of the supervised learning functions and build out a table. The table will have columns, 'Date', 'EntityID', 'Variable', 'AbsShapValue', 'ShapValue', 'CurrentValue', 'DiffValue', 'PreviousValue' which can be used to analyze variable importance for any slice of the data. A few interesting areas to investigate include varible importance by records associated with a classifier label of 1 vs 0, for different grouping levels, and for different time slices. Further, if you analyze the ShapeValue column you will get a directional variable importance instead of a magnitute importance. You can further analyze the data by looking at standard deviation of ShapValues or any other aggregations method of interest. The function runs row by row so I set it up to run in parallel. You can specify the number of cores to utilize in case you have other processes running on your computer. The function calls the SingleRowShapeShap() function repeatedly. If you want to return information from the Shap Table for a single record you can run SingleRowShapeShap().
 
 <code>SingleRowShapeShap()</code> Generate a table of shap values, current value, and diff values if diff variables are present, for a single predicted value.
- 
-<code>RemixClassificationMetrics()</code> will return all confusion matrix metrics across all possible thresholds (seq(0.01,0.99,0.01) for any Remix Auto_Classification() model. Cost sensitive thresholds are also returned.
 
 <code>ParDepCalPlots()</code> is for visualizing the relationships of features and the reliability of the model in predicting those effects. Build a partial dependence calibration line plot, box plot or bar plot for the case of categorical variables. For numeric variables, if you have a date variable you can supply the name of that column and a time aggregation to return a heatmap as well, which captures the relationship over time.
 
@@ -5318,7 +5312,7 @@ ShapTable <- SingleRowShapeShap(
 
 
 
-## Panel Data Forecasting <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/AutoCARMA2.png" align="right" width="80" />
+## Panel Data Forecasting <img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/AutoCARMA2.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
 
@@ -5328,7 +5322,7 @@ ShapTable <- SingleRowShapeShap(
  
 ```r
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-# Out-of-Sample Feature + Grid Tuning of RemixAutoML::AutoCatBoostCARMA()
+# Out-of-Sample Feature + Grid Tuning of AutoQuant::AutoCatBoostCARMA()
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 # Set up your output file path for saving results as a .csv
@@ -5344,7 +5338,7 @@ data.table::setDTthreads(percent = max(1L, parallel::detectCores()-2L))
 data <- data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
 
 # Ensure series have no missing dates (also remove series with more than 25% missing values)
-data <- RemixAutoML::TimeSeriesFill(
+data <- AutoQuant::TimeSeriesFill(
   data,
   DateColumnName = "Date",
   GroupVariables = c("Store","Dept"),
@@ -5422,7 +5416,7 @@ for(Run in seq_len(TotalRuns)) {
   StartTime <- Sys.time()
 
   # Run carma system
-  CatBoostResults <- RemixAutoML::AutoCatBoostCARMA(
+  CatBoostResults <- AutoQuant::AutoCatBoostCARMA(
 
     # data args
     data = data_new,
@@ -5601,7 +5595,7 @@ data <- data[as.Date(Date) < as.Date('2012-09-28')]
 #  Vector CARMA testingdata[, Weekly_Profit := Weekly_Sales * 0.75]
 
 # Build forecast
-CatBoostResults <- RemixAutoML::AutoCatBoostVectorCARMA(
+CatBoostResults <- AutoQuant::AutoCatBoostVectorCARMA(
 
   # data args
   data = data, # TwoGroup_Data,
@@ -5689,7 +5683,7 @@ CatBoostResults <- RemixAutoML::AutoCatBoostVectorCARMA(
 data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
 
 # Ensure series have no missing dates (also remove series with more than 25% missing values)
-data <- RemixAutoML::TimeSeriesFill(
+data <- AutoQuant::TimeSeriesFill(
   data,
   DateColumnName = "Date",
   GroupVariables = c("Store","Dept"),
@@ -5799,7 +5793,7 @@ XGBoostResults <- AutoXGBoostCARMA(
 data <- data.table::fread('https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1')
 
 # Ensure series have no missing dates (also remove series with more than 25% missing values)
-data <- RemixAutoML::TimeSeriesFill(
+data <- AutoQuant::TimeSeriesFill(
   data,
   DateColumnName = 'Date',
   GroupVariables = c('Store','Dept'),
@@ -5987,7 +5981,7 @@ Results <- AutoLightGBMCARMA(
 data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
 
 # Ensure series have no missing dates (also remove series with more than 25% missing values)
-data <- RemixAutoML::TimeSeriesFill(
+data <- AutoQuant::TimeSeriesFill(
   data,
   DateColumnName = "Date",
   GroupVariables = c("Store","Dept"),
@@ -6010,7 +6004,7 @@ data[, ":=" (Store = as.character(Store), Dept = as.character(Dept))]
 xregs[, ":=" (Store = as.character(Store), Dept = as.character(Dept))]
 
 # Build forecast
-Results <- RemixAutoML::AutoH2OCARMA(
+Results <- AutoQuant::AutoH2OCARMA(
 
   # Data Artifacts
   AlgoType = "drf",
@@ -6122,7 +6116,7 @@ Results <- RemixAutoML::AutoH2OCARMA(
 </p>
 </details>
 
-## Time Series Forecasting <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/AutoTS.png" align="right" width="80" />
+## Time Series Forecasting <img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/AutoTS.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
 
@@ -6147,10 +6141,10 @@ There are three sets of functions for single series traditional time series mode
  
 ```r
 # Build model
-data <- RemixAutoML::FakeDataGenerator(Correlation = 0.82, TimeSeries = TRUE, TimeSeriesTimeAgg = "1min")
+data <- AutoQuant::FakeDataGenerator(Correlation = 0.82, TimeSeries = TRUE, TimeSeriesTimeAgg = "1min")
 
 # Run system
-Output <- RemixAutoML::AutoBanditSarima(
+Output <- AutoQuant::AutoBanditSarima(
   data = data,
   SaveFile = NULL,
   ByDataType = FALSE,
@@ -6187,10 +6181,10 @@ Output$PerformanceGrid
  
 ```r
 # Build model
-data <- RemixAutoML::FakeDataGenerator(Correlation = 0.82, TimeSeries = TRUE, TimeSeriesTimeAgg = "1min")
+data <- AutoQuant::FakeDataGenerator(Correlation = 0.82, TimeSeries = TRUE, TimeSeriesTimeAgg = "1min")
 
 # Run system
-Output <- RemixAutoML::AutoBanditNNet(
+Output <- AutoQuant::AutoBanditNNet(
   data = data,
   TargetVariableName = "Weekly_Sales",
   DateColumnName = "Date",
@@ -6221,10 +6215,10 @@ Output$PerformanceGrid
  
 ```r
 # Build model
-data <- RemixAutoML::FakeDataGenerator(Correlation = 0.82, TimeSeries = TRUE, TimeSeriesTimeAgg = "1min")
+data <- AutoQuant::FakeDataGenerator(Correlation = 0.82, TimeSeries = TRUE, TimeSeriesTimeAgg = "1min")
 
 # Run system
-Output <- RemixAutoML::AutoTBATS(
+Output <- AutoQuant::AutoTBATS(
   data = data,
   FilePath = getwd(),
   TargetVariableName = "Weekly_Sales",
@@ -6256,10 +6250,10 @@ Output$PerformanceGrid
  
 ```r
 # Build model
-data <- RemixAutoML::FakeDataGenerator(Correlation = 0.82, TimeSeries = TRUE, TimeSeriesTimeAgg = "1min")
+data <- AutoQuant::FakeDataGenerator(Correlation = 0.82, TimeSeries = TRUE, TimeSeriesTimeAgg = "1min")
 
 # Run system
-Output <- RemixAutoML::AutoETS(
+Output <- AutoQuant::AutoETS(
   data = data,
   FilePath = getwd(),
   TargetVariableName = "Weekly_Sales",
@@ -6288,10 +6282,10 @@ Output$PerformanceGrid
  
 ```r
 # Build model
-data <- RemixAutoML::FakeDataGenerator(Correlation = 0.82, TimeSeries = TRUE, TimeSeriesTimeAgg = "1min")
+data <- AutoQuant::FakeDataGenerator(Correlation = 0.82, TimeSeries = TRUE, TimeSeriesTimeAgg = "1min")
 
 # Run system
-Output <- RemixAutoML::AutoArfima(
+Output <- AutoQuant::AutoArfima(
   data = data,
   FilePath = getwd(),
   TargetVariableName = "Weekly_Sales",
@@ -6322,10 +6316,10 @@ Output$PerformanceGrid
  
 ```r
 # Build model
-data <- RemixAutoML::FakeDataGenerator(Correlation = 0.82, TimeSeries = TRUE, TimeSeriesTimeAgg = "1min")
+data <- AutoQuant::FakeDataGenerator(Correlation = 0.82, TimeSeries = TRUE, TimeSeriesTimeAgg = "1min")
 
 # Run system
-Output <- RemixAutoML::AutoTS(
+Output <- AutoQuant::AutoTS(
   data,
   TargetName = "Weekly_Sales",
   DateName = "Date",

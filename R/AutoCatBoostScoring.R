@@ -36,7 +36,7 @@
 #' # CatBoost Regression Example
 #'
 #' # Create some dummy correlated data
-#' data <- RemixAutoML::FakeDataGenerator(
+#' data <- AutoQuant::FakeDataGenerator(
 #'   Correlation = 0.85,
 #'   N = 10000,
 #'   ID = 2,
@@ -49,7 +49,7 @@
 #' data1 <- data.table::copy(data)
 #'
 #' # Run function
-#' TestModel <- RemixAutoML::AutoCatBoostRegression(
+#' TestModel <- AutoQuant::AutoCatBoostRegression(
 #'
 #'   # GPU or CPU and the number of available GPUs
 #'   TrainOnFull = FALSE,
@@ -165,7 +165,7 @@
 #' TestModel$GridList
 #'
 #' # Score data
-#' Preds <- RemixAutoML::AutoCatBoostScoring(
+#' Preds <- AutoQuant::AutoCatBoostScoring(
 #'   TargetType = 'regression',
 #'   ScoringData = data,
 #'   FeatureColumnNames = names(data)[!names(data) %in% c('IDcol_1', 'IDcol_2','Adrian')],
@@ -192,7 +192,7 @@
 #'   RemoveModel = FALSE)
 #'
 #'   # Step through scoring function
-#'   library(RemixAutoML)
+#'   library(AutoQuant)
 #'   library(data.table)
 #'   TargetType = 'regression'
 #'   ScoringData = data
@@ -296,7 +296,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
     y <- names(ScoringData)[which(names(ScoringData) %like% paste0('_', x))]
     if(length(y) != 0) data.table::set(ScoringData, j = c(names(ScoringData)[which(names(ScoringData) %like% paste0('_', x))]), value = NULL)
     xx <- names(data.table::copy(ScoringData))
-    Output <- RemixAutoML:::EncodeCharacterVariables(
+    Output <- AutoQuant:::EncodeCharacterVariables(
       RunMode = 'score',
       ModelType = TargetType,
       TrainData = ScoringData,

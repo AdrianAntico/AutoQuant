@@ -167,7 +167,7 @@ AutoCatBoostClassifier is an automated modeling function that runs a variety of 
 \examples{
 \dontrun{
 # Create some dummy correlated data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 10000,
   ID = 2,
@@ -177,7 +177,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 # Run function
-TestModel <- RemixAutoML::AutoCatBoostClassifier(
+TestModel <- AutoQuant::AutoCatBoostClassifier(
 
   # GPU or CPU and the number of available GPUs
   task_type = 'GPU',

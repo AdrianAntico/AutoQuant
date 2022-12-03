@@ -42,7 +42,7 @@ CreateHolidayVariables Rapidly creates holiday count variables based on the date
 \examples{
 \dontrun{
 # Create fake data with a Date----
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.75,
   N = 25000L,
   ID = 2L,
@@ -54,7 +54,7 @@ data <- RemixAutoML::FakeDataGenerator(
 for(i in seq_len(20L)) {
   print(i)
   data <- data.table::rbindlist(list(data,
-  RemixAutoML::FakeDataGenerator(
+  AutoQuant::FakeDataGenerator(
     Correlation = 0.75,
     N = 25000L,
     ID = 2L,
@@ -66,7 +66,7 @@ for(i in seq_len(20L)) {
 }
 # Run function and time it
 runtime <- system.time(
-  data <- RemixAutoML::CreateHolidayVariables(
+  data <- AutoQuant::CreateHolidayVariables(
     data,
     DateCols = "DateTime",
     LookbackDays = NULL,

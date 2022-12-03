@@ -51,12 +51,12 @@ This function automatically builds partial dependence calibration plots and part
 \examples{
 \dontrun{
 # Create fake data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.70, N = 10000000, Classification = FALSE)
 data.table::setnames(data, "Independent_Variable2", "Predict")
 
 # Build plot
-Plot <- RemixAutoML::ParDepCalPlots(
+Plot <- AutoQuant::ParDepCalPlots(
   data,
   PredictionColName = "Predict",
   TargetColName = "Adrian",

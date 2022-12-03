@@ -92,10 +92,10 @@
 #'
 #' # Load data
 #' data <- data.table::fread('https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1')
-#' data <- Rappture::DM.pgQuery(Host = 'localhost', DataBase = 'RemixAutoML', SELECT = NULL, FROM = 'WalmartFull', User = 'postgres', Port = 5432, Password = 'Aa1028#@')
+#' data <- Rappture::DM.pgQuery(Host = 'localhost', DataBase = 'AutoQuant', SELECT = NULL, FROM = 'WalmartFull', User = 'postgres', Port = 5432, Password = 'Aa1028#@')
 #'
 #' # Ensure series have no missing dates (also remove series with more than 25% missing values)
-#' data <- RemixAutoML::TimeSeriesFill(
+#' data <- AutoQuant::TimeSeriesFill(
 #'   data,
 #'   DateColumnName = 'Date',
 #'   GroupVariables = c('Store','Dept'),
@@ -173,7 +173,7 @@
 #'   StartTime <- Sys.time()
 #'
 #'   # Run carma system
-#'   CatBoostResults <- RemixAutoML::AutoCatBoostCARMA(
+#'   CatBoostResults <- AutoQuant::AutoCatBoostCARMA(
 #'
 #'     # data args
 #'     data = data_new,
@@ -410,7 +410,7 @@ AutoCatBoostCARMA <- function(data,
     } else {
       skip_cols <- c('TrainOnFull','data','FC_Periods','ArgsList','ModelID')
     }
-    default_args <- formals(fun = RemixAutoML::AutoCatBoostCARMA)
+    default_args <- formals(fun = AutoQuant::AutoCatBoostCARMA)
     for(sc in skip_cols) default_args[[sc]] <- NULL
     nar <- names(ArgsList)
     for(arg in names(default_args)) if(length(arg) > 0L && arg %in% nar && length(ArgsList[[arg]]) > 0L) assign(x = arg, value = ArgsList[[arg]])
@@ -586,7 +586,7 @@ AutoCatBoostCARMA <- function(data,
     TransformObject <- TransformResults$FinalResults; rm(TransformResults)
   } else if(TargetTransformation) {
     if(length(GroupVariables) > 0L) x <- 'GroupVar' else x <- NULL
-    TransformResults <- RemixAutoML::Standardize(data, ColNames = TargetColumnName, GroupVars = x, Center = TRUE, Scale = TRUE, ScoreTable = FALSE)
+    TransformResults <- AutoQuant::Standardize(data, ColNames = TargetColumnName, GroupVars = x, Center = TRUE, Scale = TRUE, ScoreTable = FALSE)
     data <- TransformResults$data
     TransformObject <- TransformResults$ScoreTable
     rm(TransformResults)

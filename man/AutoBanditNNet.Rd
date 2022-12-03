@@ -65,10 +65,10 @@ AutoBanditNNet is a multi-armed bandit model testing framework for AR and SAR NN
 \examples{
 \dontrun{
 # Create fake data
-data <- RemixAutoML::FakeDataGenerator(TimeSeries = TRUE, TimeSeriesTimeAgg = "days")
+data <- AutoQuant::FakeDataGenerator(TimeSeries = TRUE, TimeSeriesTimeAgg = "days")
 
 # Build models
-Output <- RemixAutoML::AutoBanditNNet(
+Output <- AutoQuant::AutoBanditNNet(
   data = data,
   FilePath = NULL,
   TargetVariableName = "Weekly_Sales",

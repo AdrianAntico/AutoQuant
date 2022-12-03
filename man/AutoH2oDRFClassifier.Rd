@@ -140,7 +140,7 @@ AutoH2oDRFClassifier is an automated H2O modeling framework with grid-tuning and
 \examples{
 \dontrun{
 # Create some dummy correlated data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 1000L,
   ID = 2L,
@@ -149,7 +149,7 @@ data <- RemixAutoML::FakeDataGenerator(
   Classification = TRUE,
   MultiClass = FALSE)
 
-TestModel <- RemixAutoML::AutoH2oDRFClassifier(
+TestModel <- AutoQuant::AutoH2oDRFClassifier(
 
   # Compute management args
   MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},

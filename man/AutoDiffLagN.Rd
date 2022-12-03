@@ -48,7 +48,7 @@ AutoDiffLagN create differences for selected numerical columns
 \dontrun{
 
 # Create fake data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.70,
   N = 50000,
   ID = 2L,
@@ -64,10 +64,10 @@ data <- RemixAutoML::FakeDataGenerator(
 Cols <- names(data)[which(unlist(data[, lapply(.SD, is.numeric)]))]
 
 # Clean data before running AutoDiffLagN
-data <- RemixAutoML::ModelDataPrep(data = data, Impute = FALSE, CharToFactor = FALSE, FactorToChar = TRUE)
+data <- AutoQuant::ModelDataPrep(data = data, Impute = FALSE, CharToFactor = FALSE, FactorToChar = TRUE)
 
 # Run function
-data <- RemixAutoML::AutoDiffLagN(
+data <- AutoQuant::AutoDiffLagN(
   data,
   DateVariable = "DateTime",
   GroupVariables = c("Factor_1", "Factor_2"),

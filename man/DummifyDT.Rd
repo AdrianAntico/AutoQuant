@@ -52,7 +52,7 @@ DummifyDT creates dummy variables for the selected columns. Either one-hot encod
 }
 \examples{
 \dontrun{
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 25000,
   ID = 2L,
@@ -63,7 +63,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 # Create dummy variables
-data <- RemixAutoML::DummifyDT(
+data <- AutoQuant::DummifyDT(
   data = data,
   cols = c("Factor_1",
            "Factor_2",
@@ -85,7 +85,7 @@ data <- RemixAutoML::DummifyDT(
   ReturnFactorLevels = FALSE)
 
 # Create Fake Data for Scoring Replication
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 25000,
   ID = 2L,
@@ -96,7 +96,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 # Scoring Version
-data <- RemixAutoML::DummifyDT(
+data <- AutoQuant::DummifyDT(
   data = data,
   cols = c("Factor_1",
            "Factor_2",

@@ -35,7 +35,7 @@ This function will take your ratings matrix and model and score your data in par
 \examples{
 \donttest{
 # Create fake data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 1000,
   ID = 2,
@@ -45,7 +45,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 # Run data partitioning function
-dataSets <- RemixAutoML::AutoDataPartition(
+dataSets <- AutoQuant::AutoDataPartition(
   data,
   NumDataSets = 3L,
   Ratios = c(0.70,0.20,0.10),

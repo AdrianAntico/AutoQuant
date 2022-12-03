@@ -45,7 +45,7 @@
 #' @examples
 #' \dontrun{
 #' # Create some dummy correlated data
-#' data <- RemixAutoML::FakeDataGenerator(
+#' data <- AutoQuant::FakeDataGenerator(
 #'   Correlation = 0.85,
 #'   N = 1000L,
 #'   ID = 2L,
@@ -55,7 +55,7 @@
 #'   MultiClass = TRUE)
 #'
 #' # Run function
-#' TestModel <- RemixAutoML::AutoH2oDRFMultiClass(
+#' TestModel <- AutoQuant::AutoH2oDRFMultiClass(
 #'   OutputSelection = c("EvalMetrics","Score_TrainData"),
 #'   data,
 #'   TrainOnFull = FALSE,

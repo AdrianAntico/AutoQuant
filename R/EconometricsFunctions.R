@@ -3028,7 +3028,7 @@ ParallelAutoARIMA <- function(
   for(i in seq_len(length(TrainArtifacts))) if(!is.null(TrainArtifacts[[i]][["Data"]])) Counter <- Counter + 1L
 
   # Setup the parallel environment----
-  packages <- c("RemixAutoML","data.table","forecast")
+  packages <- c("AutoQuant","data.table","forecast")
   cl       <- parallel::makePSOCKcluster(NumCores)
   doParallel::registerDoParallel(cl)
   on.exit(parallel::stopCluster(cl))
@@ -3136,7 +3136,7 @@ ParallelAutoETS <- function(
   }
 
   # Setup the parallel environment----
-  packages <- c("RemixAutoML","data.table","forecast")
+  packages <- c("AutoQuant","data.table","forecast")
   cl       <- parallel::makePSOCKcluster(NumCores)
   doParallel::registerDoParallel(cl)
   on.exit(parallel::stopCluster(cl))
@@ -3225,7 +3225,7 @@ ParallelAutoTBATS <- function(
   for(i in seq_len(length(TrainArtifacts))) if(!is.null(TrainArtifacts[[i]][["Data"]])) Counter <- Counter + 1L
 
   # Setup the parallel environment----
-  packages <- c("RemixAutoML","data.table","forecast")
+  packages <- c("AutoQuant","data.table","forecast")
   cl <- parallel::makePSOCKcluster(NumCores)
   doParallel::registerDoParallel(cl)
   on.exit(parallel::stopCluster(cl))
@@ -3328,7 +3328,7 @@ ParallelAutoNNET <- function(
   for(i in seq_len(length(TrainArtifacts))) if(!is.null(TrainArtifacts[[i]][["Data"]])) Counter <- Counter + 1L
 
   # Setup the parallel environment----
-  packages <- c("RemixAutoML","data.table","forecast")
+  packages <- c("AutoQuant","data.table","forecast")
   cl <- parallel::makePSOCKcluster(NumCores)
   doParallel::registerDoParallel(cl)
   on.exit(parallel::stopCluster(cl))
@@ -3426,7 +3426,7 @@ ParallelAutoArfima <- function(
   for(i in seq_len(length(TrainArtifacts))) if(!is.null(TrainArtifacts[[i]][["Data"]])) Counter <- Counter + 1L
 
   # Setup the parallel environment----
-  packages <- c("RemixAutoML","data.table","forecast")
+  packages <- c("AutoQuant","data.table","forecast")
   cl <- parallel::makePSOCKcluster(NumCores)
   doParallel::registerDoParallel(cl)
   on.exit(parallel::stopCluster(cl))
@@ -3517,7 +3517,7 @@ ParallelAutoTSLM <- function(
   for(i in seq_len(length(TrainArtifacts))) if(!is.null(TrainArtifacts[[i]][["Data"]])) Counter <- Counter + 1L
 
   # Setup the parallel environment----
-  packages <- c("RemixAutoML","data.table","forecast")
+  packages <- c("AutoQuant","data.table","forecast")
   cl <- parallel::makePSOCKcluster(NumCores)
   doParallel::registerDoParallel(cl)
   on.exit(parallel::stopCluster(cl))
@@ -5609,7 +5609,7 @@ AutoFourierFeatures <- function(data,
     }
 
     # Run in parallel ----
-    packages <- c("RemixAutoML","data.table","forecast","lubridate","stats")
+    packages <- c("AutoQuant","data.table","forecast","lubridate","stats")
     cores <- parallel::detectCores()
     cl <- parallel::makePSOCKcluster(cores)
     doParallel::registerDoParallel(cl)

@@ -54,7 +54,7 @@ This function allows you to automatically build a word2vec model and merge the d
 \dontrun{
 
 # Create fake data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.70,
   N = 1000L,
   ID = 2L,
@@ -68,7 +68,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 # Create Model and Vectors
-data <- RemixAutoML::AutoWord2VecModeler(
+data <- AutoQuant::AutoWord2VecModeler(
   data,
   BuildType = "individual",
   stringCol = c("Comment"),
@@ -87,7 +87,7 @@ data <- RemixAutoML::AutoWord2VecModeler(
 rm(data)
 
 # Create fake data for mock scoring
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.70,
   N = 1000L,
   ID = 2L,
@@ -104,7 +104,7 @@ data <- RemixAutoML::FakeDataGenerator(
 Sys.sleep(5L)
 
 # Create vectors for scoring
-data <- RemixAutoML::AutoWord2VecScoring(
+data <- AutoQuant::AutoWord2VecScoring(
   data,
   BuildType = 'individual',
   ModelObject = NULL,

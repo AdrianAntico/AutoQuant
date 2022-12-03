@@ -42,7 +42,7 @@ AutoClusteringScoring adds a column to your original data with a cluster number 
 #########################
 
 # Create fake data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 1000,
   ID = 2,
@@ -52,7 +52,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 # Run function
-data <- RemixAutoML::AutoClustering(
+data <- AutoQuant::AutoClustering(
   data,
   FeatureColumns = names(data)[2:(ncol(data)-1)],
   ModelID = 'TestModel',
@@ -76,7 +76,7 @@ data <- RemixAutoML::AutoClustering(
 Sys.sleep(10)
 
 # Create fake data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 1000,
   ID = 2,
@@ -86,7 +86,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 # Run function
-data <- RemixAutoML::AutoClusteringScoring(
+data <- AutoQuant::AutoClusteringScoring(
   data,
   FeatureColumns = names(data)[2:(ncol(data)-1)],
   ModelID = 'TestModel',

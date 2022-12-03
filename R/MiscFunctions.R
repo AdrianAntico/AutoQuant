@@ -187,10 +187,10 @@ BuildBinary <- function(Root = NULL) {
   x <- getwd()
   if(!is.null(Root)) {
     setwd(Root)
-    devtools::install(pkg = "RemixAutoML", dependencies = FALSE)
+    devtools::install(pkg = "AutoQuant", dependencies = FALSE)
   } else {
     setwd("C:/Users/Bizon/Documents/GitHub")
-    devtools::build(pkg = "RemixAutoML")
+    devtools::build(pkg = "AutoQuant")
   }
   setwd(x)
 }
@@ -210,10 +210,10 @@ Install <- function(Root = NULL) {
   x <- getwd()
   if(!is.null(Root)) {
     setwd(Root)
-    devtools::install(pkg = "RemixAutoML", dependencies = FALSE)
+    devtools::install(pkg = "AutoQuant", dependencies = FALSE)
   } else {
     setwd("C:/Users/Bizon/Documents/GitHub")
-    devtools::install(pkg = "RemixAutoML", dependencies = FALSE)
+    devtools::install(pkg = "AutoQuant", dependencies = FALSE)
   }
   setwd(x)
 }
@@ -234,7 +234,7 @@ UpdateDocs <- function(BuildVignette = FALSE, Root = NULL) {
     devtools::document()
     if(BuildVignette) devtools::build_manual()
   } else {
-    setwd("C:/Users/Bizon/Documents/GitHub/RemixAutoML")
+    setwd("C:/Users/Bizon/Documents/GitHub/AutoQuant")
     devtools::document()
     if(BuildVignette) devtools::build_manual()
   }

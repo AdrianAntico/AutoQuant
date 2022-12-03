@@ -86,7 +86,7 @@ AutoLightGBMScoring is an automated scoring function that compliments the AutoLi
 }
 \examples{
 \dontrun{
-Preds <- RemixAutoML::AutoLightGBMScoring(
+Preds <- AutoQuant::AutoLightGBMScoring(
   TargetType = 'regression',
   ScoringData = data,
   ReturnShapValues = FALSE,

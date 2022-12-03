@@ -33,10 +33,10 @@
 #' @examples
 #' \dontrun{
 #' # Create data
-#' data <- RemixAutoML::FakeDataGenerator()
+#' data <- AutoQuant::FakeDataGenerator()
 #'
 #' # Build plot
-#' RemixAutoML::ScatterCopula(
+#' AutoQuant::ScatterCopula(
 #'   data = data,
 #'   x_var = 'Independent_Variable1',
 #'   y_var = 'Independent_Variable2',
@@ -237,12 +237,12 @@ ScatterCopula <- function(data = NULL,
 #' @examples
 #' \dontrun{
 #' # Create fake data
-#' data <- RemixAutoML::FakeDataGenerator(
+#' data <- AutoQuant::FakeDataGenerator(
 #'   Correlation = 0.70, N = 10000000, Classification = TRUE)
 #' data.table::setnames(data, "IDcol_1", "Predict")
 #'
 #' # Run function
-#' RemixAutoML::EvalPlot(
+#' AutoQuant::EvalPlot(
 #'   data,
 #'   PredictionColName = "Predict",
 #'   TargetColName = "Adrian",
@@ -338,12 +338,12 @@ EvalPlot <- function(data,
 #' @examples
 #' \dontrun{
 #' # Create fake data
-#' data <- RemixAutoML::FakeDataGenerator(
+#' data <- AutoQuant::FakeDataGenerator(
 #'   Correlation = 0.70, N = 10000000, Classification = FALSE)
 #' data.table::setnames(data, "Independent_Variable2", "Predict")
 #'
 #' # Build plot
-#' Plot <- RemixAutoML::ParDepCalPlots(
+#' Plot <- AutoQuant::ParDepCalPlots(
 #'   data,
 #'   PredictionColName = "Predict",
 #'   TargetColName = "Adrian",
@@ -571,7 +571,7 @@ ParDepCalPlots <- function(data,
 #' @examples
 #' \dontrun{
 #' # Create fake data
-#' test_data <- RemixAutoML::FakeDataGenerator(
+#' test_data <- AutoQuant::FakeDataGenerator(
 #'   Correlation = 0.80,
 #'   N = 250000,
 #'   ID = 0,
@@ -582,7 +582,7 @@ ParDepCalPlots <- function(data,
 #'   ZIP = 0)
 #'
 #' # Build Plots
-#' output <- RemixAutoML::ResidualPlots(
+#' output <- AutoQuant::ResidualPlots(
 #'   TestData = test_data,
 #'   Target = "Adrian",
 #'   Predicted = "Independent_Variable1",
@@ -708,7 +708,7 @@ ROCPlot <- function(data = ValidationData,
   ROC_Plot <- eval(ggplot2::ggplot(AUC_Data, ggplot2::aes(x = 1 - Specificity)) +
     ggplot2::geom_line(ggplot2::aes(y = AUC_Data[["Sensitivity"]]), color = "blue") +
     ggplot2::geom_abline(slope = 1, color = "black") +
-    ggplot2::labs(title = paste0("Catboost AUC: ", 100 * round(AUC_Metrics$auc, 3), "%"), caption = 'RemixAutoML') +
+    ggplot2::labs(title = paste0("Catboost AUC: ", 100 * round(AUC_Metrics$auc, 3), "%"), caption = 'AutoQuant') +
     ChartTheme() + ggplot2::xlab("Specificity") +
     ggplot2::ylab("Sensitivity"))
 
@@ -881,7 +881,7 @@ CumGainsChart <- function(data = NULL,
       ggplot2::guides(fill = "none") +
       ggplot2::scale_colour_continuous(guide = 'none') +
       ggplot2::scale_x_continuous(breaks = c(0, seq(10,100,10))) +
-      RemixAutoML::ChartTheme() + ggplot2::theme(legend.position = "none"))
+      AutoQuant::ChartTheme() + ggplot2::theme(legend.position = "none"))
 
   # Save plot
   if(SavePlot) {
@@ -895,8 +895,8 @@ CumGainsChart <- function(data = NULL,
   }
 
   # Add titles and caption
-  p_gain <- p_gain + ggplot2::labs(title = 'Cumulative Gains %', caption = 'RemixAutoML')
-  p_lift <- p_lift + ggplot2::labs(title = 'Lift Plot', caption = 'RemixAutoML')
+  p_gain <- p_gain + ggplot2::labs(title = 'Cumulative Gains %', caption = 'AutoQuant')
+  p_lift <- p_lift + ggplot2::labs(title = 'Lift Plot', caption = 'AutoQuant')
 
   # Return
   return(list(GainsPlot = p_gain, LiftPlot = p_lift))
@@ -1435,7 +1435,7 @@ AutoShapeShap <- function(ScoringData = NULL,
   # Parallel env setup
   if(Threads > 1L) {
     library(parallel); library(doParallel); library(foreach)
-    Packages <- c("RemixAutoML", "data.table", "parallel", "doParallel", "foreach")
+    Packages <- c("AutoQuant", "data.table", "parallel", "doParallel", "foreach")
     cl <- parallel::makePSOCKcluster(Threads)
     doParallel::registerDoParallel(cl)
     on.exit(parallel::stopCluster(cl))

@@ -88,7 +88,7 @@ AutoH2oDRFMultiClass is an automated H2O modeling framework with grid-tuning and
 \examples{
 \donttest{
 # Create some dummy correlated data with numeric and categorical features
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 1000,
   ID = 2,
@@ -98,7 +98,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = TRUE)
 
 # Run function
-TestModel <- RemixAutoML::AutoH2oMLMultiClass(
+TestModel <- AutoQuant::AutoH2oMLMultiClass(
   OutputSelection = c("EvalMetrics", "Score_TrainData"),
   data,
   TrainOnFull = FALSE,

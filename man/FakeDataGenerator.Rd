@@ -56,7 +56,7 @@ Create fake data for examples
 #   multiclass won't however since they were created separately.
 
 # Regression
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.77,
   N = 1000000L,
   ID = 4L,
@@ -72,7 +72,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 # Classification
-data2 <- RemixAutoML::FakeDataGenerator(
+data2 <- AutoQuant::FakeDataGenerator(
   Correlation = 0.77,
   N = 1000000L,
   ID = 4L,
@@ -88,7 +88,7 @@ data2 <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 # MultiClass
-data3 <- RemixAutoML::FakeDataGenerator(
+data3 <- AutoQuant::FakeDataGenerator(
   Correlation = 0.77,
   N = 1000000L,
   ID = 4L,
@@ -112,14 +112,14 @@ data.table::setnames(data, c('V2','V3'), c('BinaryTarget','MultiClassTarget'))
 data.table::setcolorder(data, c(1, c(ncol(data)-1,ncol(data),2:(ncol(data)-2))))
 
 # Load to warehouse
-RemixAutoML::PostGRE_RemoveCreateAppend(
+AutoQuant::PostGRE_RemoveCreateAppend(
   data = data,
   Append = TRUE,
   TableName = "App_QA_BigData",
   CloseConnection = TRUE,
   CreateSchema = NULL,
   Host = "localhost",
-  DBName = "RemixAutoML",
+  DBName = "AutoQuant",
   User = "postgres",
   Port = 5432,
   Password = "",

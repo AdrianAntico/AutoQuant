@@ -95,7 +95,7 @@ AutoCatBoostScoring is an automated scoring function that compliments the AutoCa
 # CatBoost Regression Example
 
 # Create some dummy correlated data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 10000,
   ID = 2,
@@ -108,7 +108,7 @@ data <- RemixAutoML::FakeDataGenerator(
 data1 <- data.table::copy(data)
 
 # Run function
-TestModel <- RemixAutoML::AutoCatBoostRegression(
+TestModel <- AutoQuant::AutoCatBoostRegression(
 
   # GPU or CPU and the number of available GPUs
   TrainOnFull = FALSE,
@@ -224,7 +224,7 @@ TestModel$TransformationResults
 TestModel$GridList
 
 # Score data
-Preds <- RemixAutoML::AutoCatBoostScoring(
+Preds <- AutoQuant::AutoCatBoostScoring(
   TargetType = 'regression',
   ScoringData = data,
   FeatureColumnNames = names(data)[!names(data) \%in\% c('IDcol_1', 'IDcol_2','Adrian')],
@@ -251,7 +251,7 @@ Preds <- RemixAutoML::AutoCatBoostScoring(
   RemoveModel = FALSE)
 
   # Step through scoring function
-  library(RemixAutoML)
+  library(AutoQuant)
   library(data.table)
   TargetType = 'regression'
   ScoringData = data

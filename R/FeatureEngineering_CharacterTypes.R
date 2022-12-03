@@ -20,7 +20,7 @@
 #' @examples
 #' \dontrun{
 #  # Create fake data with 10 categorical columns
-#' data <- RemixAutoML::FakeDataGenerator(
+#' data <- AutoQuant::FakeDataGenerator(
 #'   Correlation = 0.85,
 #'   N = 25000,
 #'   ID = 2L,
@@ -31,7 +31,7 @@
 #'   MultiClass = FALSE)
 #'
 #' # Create dummy variables
-#' data <- RemixAutoML::DummifyDT(
+#' data <- AutoQuant::DummifyDT(
 #'   data = data,
 #'   cols = c("Factor_1",
 #'            "Factor_2",
@@ -53,7 +53,7 @@
 #'   ReturnFactorLevels = FALSE)
 #'
 #' # Create Fake Data for Scoring Replication
-#' data <- RemixAutoML::FakeDataGenerator(
+#' data <- AutoQuant::FakeDataGenerator(
 #'   Correlation = 0.85,
 #'   N = 25000,
 #'   ID = 2L,
@@ -64,7 +64,7 @@
 #'   MultiClass = FALSE)
 #'
 #' # Scoring Version
-#' data <- RemixAutoML::DummifyDT(
+#' data <- AutoQuant::DummifyDT(
 #'   data = data,
 #'   cols = c("Factor_1",
 #'            "Factor_2",
@@ -234,7 +234,7 @@ DummifyDT <- function(data,
 #' @examples
 #' \dontrun{
 #' # Create fake data with 10 categorical
-#' data <- RemixAutoML::FakeDataGenerator(
+#' data <- AutoQuant::FakeDataGenerator(
 #'   Correlation = 0.85,
 #'   N = 1000000,
 #'   ID = 2L,
@@ -260,7 +260,7 @@ DummifyDT <- function(data,
 #' test <- data.table::copy(data)
 #'
 #' # Run in Train Mode
-#' data <- RemixAutoML::CategoricalEncoding(
+#' data <- AutoQuant::CategoricalEncoding(
 #'   data = data,
 #'   ML_Type = "classification",
 #'   GroupVariables = paste0("Factor_", 1:10),
@@ -277,7 +277,7 @@ DummifyDT <- function(data,
 #' print(data)
 #'
 #' # Run in Score Mode by pulling in the csv's
-#' test <- RemixAutoML::CategoricalEncoding(
+#' test <- AutoQuant::CategoricalEncoding(
 #'   data = data,
 #'   ML_Type = "classification",
 #'   GroupVariables = paste0("Factor_", 1:10),
@@ -817,7 +817,7 @@ CategoricalEncoding <- function(data = NULL,
 #'
 #' @examples
 #' \dontrun{
-#' Output <- RemixAutoML::DummyVariables(
+#' Output <- AutoQuant::DummyVariables(
 #'   data = data,
 #'   RunMode = "train",
 #'   ArgsList = ArgsList_FE,
@@ -844,7 +844,7 @@ DummyVariables <- function(data,
     tempnames <- names(data.table::copy(data))
 
     # Run function
-    data <- RemixAutoML::DummifyDT(
+    data <- AutoQuant::DummifyDT(
       data = data,
       cols = ArgsList$Data$GroupVariables,
       TopN = ArgsList$FE_Args$Partial_Dummies$NumberLevels,
@@ -878,7 +878,7 @@ DummyVariables <- function(data,
   } else {
 
     # Run function
-    data <- RemixAutoML::DummifyDT(
+    data <- AutoQuant::DummifyDT(
       data = data,
       cols = ArgsList$DummyVariables$cols,
       TopN = ArgsList$DummyVariables$TopN,
@@ -1033,7 +1033,7 @@ EncodeCharacterVariables <- function(RunMode = 'train',
     }
   } else {
     if(Debug) print("EncodeCharacterVariables 3.f")
-    temp <- RemixAutoML::CategoricalEncoding(data=temp, ML_Type=ModelType, GroupVariables=CategoricalVariableNames, TargetVariable=TargetVariableName, Method=EncodeMethod, SavePath=MetaDataPath, Scoring=Score, ImputeValueScoring=ImputeMissingValue, ReturnFactorLevelList=TRUE, SupplyFactorLevelList=MetaDataList, KeepOriginalFactors=KeepCategoricalVariables)
+    temp <- AutoQuant::CategoricalEncoding(data=temp, ML_Type=ModelType, GroupVariables=CategoricalVariableNames, TargetVariable=TargetVariableName, Method=EncodeMethod, SavePath=MetaDataPath, Scoring=Score, ImputeValueScoring=ImputeMissingValue, ReturnFactorLevelList=TRUE, SupplyFactorLevelList=MetaDataList, KeepOriginalFactors=KeepCategoricalVariables)
     MetaDataList <- temp$FactorCompenents
     temp <- temp$data
   }
@@ -1093,7 +1093,7 @@ Encoding <- function(RunMode = 'train',
     tempnames <- names(data.table::copy(TrainData))
 
     # Dummify dataTrain Categorical Features ----
-    Output <- RemixAutoML:::EncodeCharacterVariables(
+    Output <- AutoQuant:::EncodeCharacterVariables(
       RunMode = 'train',
       ModelType = ArgsList$MetaData$ModelType,
       TrainData = TrainData,

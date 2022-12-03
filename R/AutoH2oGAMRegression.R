@@ -55,7 +55,7 @@
 #' \donttest{
 #'
 #' # Create some dummy correlated data
-#' data <- RemixAutoML::FakeDataGenerator(
+#' data <- AutoQuant::FakeDataGenerator(
 #'   Correlation = 0.85,
 #'   N = 1000,
 #'   ID = 2,
@@ -70,7 +70,7 @@
 #' GamCols <- GamCols[1L:(min(9L,length(GamCols)))]
 #'
 #' # Run function
-#' TestModel <- RemixAutoML::AutoH2oGAMRegression(
+#' TestModel <- AutoQuant::AutoH2oGAMRegression(
 #'
 #'  # Compute management
 #'  MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},

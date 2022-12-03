@@ -396,14 +396,14 @@ AutoLightGBMFunnelCARMA is a forecasting model for cohort funnel forecasting for
 \examples{
 \dontrun{
 # Create Fake Data
-data <- RemixAutoML::FakeDataGenerator(ChainLadderData = TRUE)
+data <- AutoQuant::FakeDataGenerator(ChainLadderData = TRUE)
 
 # Subset data for training
 ModelDataBase <- data[CalendarDateColumn < '2020-01-01' & CohortDateColumn < '2020-01-01']
 ModelData <- data.table::copy(ModelDataBase)
 
 # Train Funne Model
-TestModel <- RemixAutoML::AutoLightGBMFunnelCARMA(
+TestModel <- AutoQuant::AutoLightGBMFunnelCARMA(
 
   # Data Arguments
   data = ModelData,
@@ -562,7 +562,7 @@ LeadsData <- data[, lapply(.SD, data.table::first), .SDcols = c("Leads"), by = c
 ModelData <- ModelDataBase[, Leads := NULL]
 
 # Forecast Funnel Model
-Test <- RemixAutoML::AutoLightGBMFunnelCARMAScoring(
+Test <- AutoQuant::AutoLightGBMFunnelCARMAScoring(
   TrainData = ModelData,
   ForwardLookingData = LeadsData,
   TrainEndDate = ModelData[, max(CalendarDateColumn)],

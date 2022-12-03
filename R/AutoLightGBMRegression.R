@@ -119,7 +119,7 @@
 #' @examples
 #' \dontrun{
 #' # Create some dummy correlated data
-#' data <- RemixAutoML::FakeDataGenerator(
+#' data <- AutoQuant::FakeDataGenerator(
 #'   Correlation = 0.85,
 #'   N = 1000,
 #'   ID = 2,
@@ -129,7 +129,7 @@
 #'   MultiClass = FALSE)
 #'
 #' # Run function
-#' TestModel <- RemixAutoML::AutoLightGBMRegression(
+#' TestModel <- AutoQuant::AutoLightGBMRegression(
 #'
 #'   # Metadata args
 #'   OutputSelection = c('Importances','EvalPlots','EvalMetrics','Score_TrainData'),

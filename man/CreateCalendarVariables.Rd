@@ -35,7 +35,7 @@ CreateCalendarVariables Rapidly creates calendar variables based on the date col
 \examples{
 \dontrun{
 # Create fake data with a Date column----
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.75,
   N = 25000L,
   ID = 2L,
@@ -47,7 +47,7 @@ data <- RemixAutoML::FakeDataGenerator(
 for(i in seq_len(20L)) {
   print(i)
   data <- data.table::rbindlist(
-    list(data, RemixAutoML::FakeDataGenerator(
+    list(data, AutoQuant::FakeDataGenerator(
     Correlation = 0.75,
     N = 25000L,
     ID = 2L,
@@ -62,7 +62,7 @@ for(i in seq_len(20L)) {
 #   the second, minute, and hour selections since
 #   it is not timestamp data
 runtime <- system.time(
-  data <- RemixAutoML::CreateCalendarVariables(
+  data <- AutoQuant::CreateCalendarVariables(
     data = data,
     DateCols = "DateTime",
     AsFactor = FALSE,

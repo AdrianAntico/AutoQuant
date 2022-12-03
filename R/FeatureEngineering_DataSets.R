@@ -16,7 +16,7 @@
 #' @examples
 #' \donttest{
 #' # Create fake data
-#' data <- RemixAutoML::FakeDataGenerator(
+#' data <- AutoQuant::FakeDataGenerator(
 #'   Correlation = 0.85,
 #'   N = 1000,
 #'   ID = 2,
@@ -26,7 +26,7 @@
 #'   MultiClass = FALSE)
 #'
 #' # Run data partitioning function
-#' dataSets <- RemixAutoML::AutoDataPartition(
+#' dataSets <- AutoQuant::AutoDataPartition(
 #'   data,
 #'   NumDataSets = 3L,
 #'   Ratios = c(0.70,0.20,0.10),
@@ -226,7 +226,7 @@ AutoDataPartition <- function(data,
 #' @examples
 #' \dontrun{
 #' # Create fake data
-#' data <- RemixAutoML::FakeDataGenerator(
+#' data <- AutoQuant::FakeDataGenerator(
 #'   Correlation = 0.75,
 #'   N = 250000L,
 #'   ID = 2L,
@@ -240,7 +240,7 @@ AutoDataPartition <- function(data,
 #' str(data)
 #'
 #' # Convert some factors to character
-#' data <- RemixAutoML::ModelDataPrep(
+#' data <- AutoQuant::ModelDataPrep(
 #'   data,
 #'   Impute       = TRUE,
 #'   CharToFactor = FALSE,
@@ -344,7 +344,7 @@ ModelDataPrep <- function(data,
 #'
 #' @examples
 #' \dontrun{
-#' Output <- RemixAutoML:::PartitionData(
+#' Output <- AutoQuant:::PartitionData(
 #'   data = data,
 #'   ArgsList = ArgsList)
 #' TrainData <- Output$TrainData
@@ -360,7 +360,7 @@ PartitionData <- function(data = NULL,
   Start <- Sys.time()
 
   # Run function
-  DataSets <- RemixAutoML::AutoDataPartition(
+  DataSets <- AutoQuant::AutoDataPartition(
     data = data,
     NumDataSets = length(ArgsList[['FE_Args']][['Partition']][['PartitionRatios']]),
     Ratios = ArgsList[['FE_Args']][['Partition']][['PartitionRatios']],
@@ -556,7 +556,7 @@ TimeSeriesFill <- function(data = NULL,
 
   # Impute
   if(SimpleImpute) {
-    FillData <- RemixAutoML::ModelDataPrep(
+    FillData <- AutoQuant::ModelDataPrep(
       FillData,
       Impute = TRUE,
       CharToFactor = FALSE,

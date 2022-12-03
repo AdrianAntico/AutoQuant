@@ -19,7 +19,7 @@
 #'
 #' @examples
 #' \dontrun{
-#' data <- RemixAutoML::FakeDataGenerator(
+#' data <- AutoQuant::FakeDataGenerator(
 #'   Correlation = 0.85,
 #'   N = 10000L,
 #'   ID = 2L,
@@ -32,7 +32,7 @@
 #'   MultiClass = FALSE)
 #'
 #' # Run Analysis
-#' data <- RemixAutoML::AutoCorrAnalysis(
+#' data <- AutoQuant::AutoCorrAnalysis(
 #'   data = data,
 #'   CorVars = NULL,
 #'   SkipCorVars = c("IDcol_1","IDcol_2","DateTime"),
@@ -74,7 +74,7 @@ AutoCorrAnalysis <- function(data = NULL,
   }
 
   # Convert character to factor
-  data <- RemixAutoML::ModelDataPrep(data = data, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = FALSE, LogicalToBinary = TRUE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
+  data <- AutoQuant::ModelDataPrep(data = data, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = FALSE, LogicalToBinary = TRUE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
 
   # Corr Analysis ----
   if(is.null(ByGroupVars)) {
@@ -273,7 +273,7 @@ EDA_Histograms <- function(data = NULL,
               varAnalyze, ggplot2::aes(dat)) +
               ggplot2::geom_histogram(ggplot2::aes(y = ..density..), bins = bins, show.legend = FALSE, col = "grey", fill = "#5555ee") +
               ggplot2::scale_fill_discrete(h = c(180, 250), l = 50) +
-              RemixAutoML::ChartTheme(
+              AutoQuant::ChartTheme(
                 Size = Size,
                 AngleX = AngleX,
                 AngleY = AngleY,
@@ -296,7 +296,7 @@ EDA_Histograms <- function(data = NULL,
               varAnalyze, ggplot2::aes(dat, fill = dat)) +
               ggplot2::geom_bar(show.legend = FALSE) +
               ggplot2::scale_fill_discrete(h = c(180, 250), l = 50) +
-              RemixAutoML::ChartTheme(
+              AutoQuant::ChartTheme(
                 Size = Size,
                 AngleX = AngleX,
                 AngleY = AngleY,
@@ -323,7 +323,7 @@ EDA_Histograms <- function(data = NULL,
             ggplot2::geom_bar(stat = "identity", show.legend = FALSE) +
             ggplot2::coord_flip() +
             ggplot2::scale_fill_discrete(h = c(180, 250), l = 50) +
-            RemixAutoML::ChartTheme(
+            AutoQuant::ChartTheme(
               Size = Size,
               AngleX = AngleX,
               AngleY = AngleY,

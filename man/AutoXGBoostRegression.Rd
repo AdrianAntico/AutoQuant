@@ -149,7 +149,7 @@ AutoXGBoostRegression is an automated XGBoost modeling framework with grid-tunin
 \examples{
 \dontrun{
 # Create some dummy correlated data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 1000,
   ID = 2,
@@ -159,7 +159,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 # Run function
-TestModel <- RemixAutoML::AutoXGBoostRegression(
+TestModel <- AutoQuant::AutoXGBoostRegression(
 
   # GPU or CPU
   TreeMethod = 'hist',

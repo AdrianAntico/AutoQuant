@@ -87,7 +87,7 @@ H2OAutoencoder for anomaly detection and or dimensionality reduction
 ############################
 
 # Create simulated data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.70,
   N = 1000L,
   ID = 2L,
@@ -101,7 +101,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 # Run algo
-Output <- RemixAutoML::H2OAutoencoder(
+Output <- AutoQuant::H2OAutoencoder(
 
   # Select the service
   AnomalyDetection = TRUE,
@@ -145,7 +145,7 @@ ValidationData <- Output$ValidationData
 ############################
 
 # Create simulated data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.70,
   N = 1000L,
   ID = 2L,
@@ -159,7 +159,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 # Run algo
-data <- RemixAutoML::H2OAutoencoderScoring(
+data <- AutoQuant::H2OAutoencoderScoring(
 
   # Select the service
   AnomalyDetection = TRUE,

@@ -406,7 +406,7 @@ SQL_Server_DBConnection <- function(DataBaseName = "",
 #'
 #' @family Database
 #'
-#' @param DBConnection RemixAutoML::SQL_Server_DBConnection()
+#' @param DBConnection AutoQuant::SQL_Server_DBConnection()
 #' @param Query The SQL statement you want to run
 #' @param CloseChannel TRUE to close when done, FALSE to leave the channel open
 #'
@@ -430,7 +430,7 @@ SQL_Query_Push <- function(DBConnection,
 #'
 #' @family Database
 #'
-#' @param DBConnection RemixAutoML::SQL_Server_DBConnection()
+#' @param DBConnection AutoQuant::SQL_Server_DBConnection()
 #' @param Query The SQL statement you want to run
 #' @param ASIS Auto column typing
 #' @param CloseChannel TRUE to close when done, FALSE to leave the channel open
@@ -459,7 +459,7 @@ SQL_Query <- function(DBConnection,
 #'
 #' @family Database
 #'
-#' @param DBConnection RemixAutoML::SQL_Server_DBConnection()
+#' @param DBConnection AutoQuant::SQL_Server_DBConnection()
 #' @param SQLTableName The SQL statement you want to run
 #' @param CloseChannel TRUE to close when done, FALSE to leave the channel open
 #' @param Errors Set to TRUE to halt, FALSE to return -1 in cases of errors
@@ -486,7 +486,7 @@ SQL_ClearTable <- function(DBConnection,
 #'
 #' @family Database
 #'
-#' @param DBConnection RemixAutoML::SQL_Server_DBConnection()
+#' @param DBConnection AutoQuant::SQL_Server_DBConnection()
 #' @param SQLTableName The SQL statement you want to run
 #' @param CloseChannel TRUE to close when done, FALSE to leave the channel open
 #' @param Errors Set to TRUE to halt, FALSE to return -1 in cases of errors
@@ -514,7 +514,7 @@ SQL_DropTable <- function(DBConnection,
 #' @family Database
 #'
 #' @param DataToPush data to be sent to warehouse
-#' @param DBConnection RemixAutoML::SQL_Server_DBConnection()
+#' @param DBConnection AutoQuant::SQL_Server_DBConnection()
 #' @param SQLTableName The SQL statement you want to run
 #' @param RowNames c("Segment","Date")
 #' @param ColNames Column names in first row
@@ -548,7 +548,7 @@ SQL_SaveTable <- function(DataToPush,
 #' @family Database
 #'
 #' @param DataToPush Update data table in warehouse with new values
-#' @param DBConnection RemixAutoML::SQL_Server_DBConnection()
+#' @param DBConnection AutoQuant::SQL_Server_DBConnection()
 #' @param SQLTableName The SQL statement you want to run
 #' @param Index Column name of index
 #' @param Verbose TRUE or FALSE
@@ -816,7 +816,7 @@ SQL_Server_BulkPush <- function(Server = NULL,
 #' \dontrun{
 #'
 #' # Query data from table with Uppercase name
-#' data <- RemixAutoML::PostGRE_Query(
+#' data <- AutoQuant::PostGRE_Query(
 #'   Query = paste0("SELECT * FROM ", shQuote('Devices')),
 #'   Host = 'localhost',
 #'   CloseConnection = FALSE,
@@ -834,8 +834,8 @@ SQL_Server_BulkPush <- function(Server = NULL,
 #' # Password = 'Aa...'
 #'
 #' # Create Schema
-#' query <- "CREATE SCHEMA remixautoml AUTHORIZATION postgres;"
-#' RemixAutoML::PostGRE_Query(
+#' query <- "CREATE SCHEMA AutoQuant AUTHORIZATION postgres;"
+#' AutoQuant::PostGRE_Query(
 #'   Query = query,
 #'   Host = 'localhost',
 #'   CloseConnection = FALSE,
@@ -896,13 +896,13 @@ PostGRE_Query <- function(Query = NULL,
 #'
 #' @examples
 #' \dontrun{
-#' RemixAutoML::PostGRE_AppendData(
+#' AutoQuant::PostGRE_AppendData(
 #'   data = data,
 #'   TableName = 'somename',
 #'   Append = FALSE,
 #'   CloseConnection = FALSE,
 #'   Host = 'localhost',
-#'   DBName = 'RemixAutoML',
+#'   DBName = 'AutoQuant',
 #'   User = 'postgres',
 #'   Port = 5432,
 #'   Password = 'Aa...')
@@ -976,7 +976,7 @@ PostGRE_AppendData <- function(data = NULL,
 #'
 #' @examples
 #' \dontrun{
-#' RemixAutoML::PostGRE_CreateTable(
+#' AutoQuant::PostGRE_CreateTable(
 #'   data,
 #'   DBName = 'Testing',
 #'   Schema = NULL,
@@ -1058,7 +1058,7 @@ PostGRE_CreateTable <- function(data = NULL,
 #'
 #' @examples
 #' \dontrun{
-#' RemixAutoML::PostGRE_RemoveTable(
+#' AutoQuant::PostGRE_RemoveTable(
 #'   TableName = 'static_data',
 #'   Connection = NULL,
 #'   CloseConnection = FALSE,
@@ -1170,7 +1170,7 @@ PostGRE_RemoveCreateAppend <- function(data = NULL,
 
   # Create
   tryCatch({
-    RemixAutoML::PostGRE_CreateTable(
+    AutoQuant::PostGRE_CreateTable(
       data = data,
       DBName = DBName.,
       Schema = Schema.,
@@ -1272,7 +1272,7 @@ PostGRE_GetTableNames <- function(Host = NULL,
                                   Port = NULL,
                                   Password = NULL) {
   if(length(TableName) > 0L) {
-    return(names(RemixAutoML::PostGRE_Query(
+    return(names(AutoQuant::PostGRE_Query(
       Query = glue::glue_sql(paste0("SELECT * FROM ", shQuote(TableName), " WHERE 0 = 1;")),
       Host = Host,
       CloseConnection = CloseConnection,
@@ -1419,12 +1419,12 @@ Post_Query_Helper <- function(RefTable){
   str1 <- "SELECT * FROM "
   str2 <- '"public"'
   str3 <- '.'
-  RemixAutoML::PostGRE_Query(
+  AutoQuant::PostGRE_Query(
     Query = paste(str1, str2, str3, .RefTable, sep=""),
     Connection = NULL,
     CloseConnection = TRUE,
     Host = "localhost",
-    DBName = "RemixAutoML",
+    DBName = "AutoQuant",
     User = "postgres",
     Port = 5432,
     Password = "Aa1028#@"
@@ -1434,26 +1434,26 @@ Post_Query_Helper <- function(RefTable){
 
 #' @noRd
 Post_Append_Helper <- function(data, tableName){
-  RemixAutoML::PostGRE_AppendData(
+  AutoQuant::PostGRE_AppendData(
     data = data,
     TableName = tableName,
     Connection = NULL,
     CloseConnection = TRUE,
     Append = FALSE,
     Host = "localhost",
-    DBName = "RemixAutoML",
+    DBName = "AutoQuant",
     User = "postgres",
     Port = 5432,
     Password = "Aa1028#@")
 }
 
 #
-# RemixAutoML::PostGRE_RemoveCreateAppend(
+# AutoQuant::PostGRE_RemoveCreateAppend(
 #   TableName = 'static_data',
 #   Connection = NULL,
 #   CloseConnection = FALSE,
 #   Host = 'localhost',
-#   DBName = 'RemixAutoML',
+#   DBName = 'AutoQuant',
 #   User = 'postgres',
 #   Port = 5432,
 #   Password = 'Aa...')

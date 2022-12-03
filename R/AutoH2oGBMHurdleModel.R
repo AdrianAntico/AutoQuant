@@ -29,7 +29,7 @@
 #' @return Returns AutoXGBoostRegression() model objects: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and the grid used
 #' @examples
 #' \donttest{
-#' Output <- RemixAutoML::AutoH2oGBMHurdleModel(
+#' Output <- AutoQuant::AutoH2oGBMHurdleModel(
 #'   data,
 #'   ValidationData = NULL,
 #'   TestData = NULL,

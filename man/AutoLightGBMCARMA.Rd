@@ -382,7 +382,7 @@ AutoLightGBMCARMA Mutlivariate Forecasting with calendar variables, Holiday coun
 data <- data.table::fread('https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1')
 
 # Ensure series have no missing dates (also remove series with more than 25\% missing values)
-data <- RemixAutoML::TimeSeriesFill(
+data <- AutoQuant::TimeSeriesFill(
   data,
   DateColumnName = 'Date',
   GroupVariables = c('Store','Dept'),

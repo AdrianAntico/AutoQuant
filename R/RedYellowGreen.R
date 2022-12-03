@@ -86,7 +86,7 @@ RedYellowGreen <- function(data,
 
   # Parallel setup ----
   requireNamespace(c("parallel", "doParallel", "foreach"))
-  packages <- c("data.table","RemixAutoML")
+  packages <- c("data.table","AutoQuant")
   cores <- Cores
   bat <- ceiling(nrow(new) / cores)
   parts <- floor(nrow(new) / bat)

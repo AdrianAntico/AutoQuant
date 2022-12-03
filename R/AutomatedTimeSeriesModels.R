@@ -29,10 +29,10 @@
 #' @examples
 #' \dontrun{
 #' # Create fake data
-#' data <- RemixAutoML::FakeDataGenerator(TimeSeries = TRUE, TimeSeriesTimeAgg = "days")
+#' data <- AutoQuant::FakeDataGenerator(TimeSeries = TRUE, TimeSeriesTimeAgg = "days")
 #'
 #' # Build models
-#' Output <- RemixAutoML::AutoBanditSarima(
+#' Output <- AutoQuant::AutoBanditSarima(
 #'   data = data,
 #'   FilePath = NULL,
 #'   ByDataType = FALSE,
@@ -238,7 +238,7 @@ AutoBanditSarima <- function(data,
           if(TimeAggLevel %chin% c("month","months","mth","mths")) XTickMarkss <- "1 year"
           if(TimeAggLevel %chin% c("quarter","quarters")) XTickMarkss <- "2 year"
           if(TimeAggLevel %chin% c("year","years","yr","yrs")) XTickMarkss <- "5 year"
-          Output$ForecastPlot <- tryCatch({RemixAutoML::TimeSeriesPlotter(
+          Output$ForecastPlot <- tryCatch({AutoQuant::TimeSeriesPlotter(
             dt = Output$Forecast,
             TargetVariable = c(TargetVariableName,"Forecast"),
             DateVariable = DateColumnName,
@@ -327,10 +327,10 @@ AutoBanditSarima <- function(data,
 #' @examples
 #' \dontrun{
 #' # Create fake data
-#' data <- RemixAutoML::FakeDataGenerator(TimeSeries = TRUE, TimeSeriesTimeAgg = "days")
+#' data <- AutoQuant::FakeDataGenerator(TimeSeries = TRUE, TimeSeriesTimeAgg = "days")
 #'
 #' # Build models
-#' Output <- RemixAutoML::AutoBanditNNet(
+#' Output <- AutoQuant::AutoBanditNNet(
 #'   data = data,
 #'   FilePath = NULL,
 #'   TargetVariableName = "Weekly_Sales",
@@ -507,7 +507,7 @@ AutoBanditNNet <- function(data,
           if(TimeAggLevel %chin% c("month","months","mth","mths")) XTickMarkss <- "1 year"
           if(TimeAggLevel %chin% c("quarter","quarters")) XTickMarkss <- "2 year"
           if(TimeAggLevel %chin% c("year","years","yr","yrs")) XTickMarkss <- "5 year"
-          Output$ForecastPlot <- tryCatch({RemixAutoML::TimeSeriesPlotter(
+          Output$ForecastPlot <- tryCatch({AutoQuant::TimeSeriesPlotter(
             data = Output$Forecast,
             TargetVariable = c(TargetVariableName,"Forecast"),
             DateVariable = DateColumnName,
@@ -595,10 +595,10 @@ AutoBanditNNet <- function(data,
 #' @examples
 #' \dontrun{
 #' # Create fake data
-#' data <- RemixAutoML::FakeDataGenerator(TimeSeries = TRUE, TimeSeriesTimeAgg = "days")
+#' data <- AutoQuant::FakeDataGenerator(TimeSeries = TRUE, TimeSeriesTimeAgg = "days")
 #'
 #' # Build model
-#' Output <- RemixAutoML::AutoTBATS(
+#' Output <- AutoQuant::AutoTBATS(
 #'   data,
 #'   FilePath = NULL,
 #'   TargetVariableName = "Weekly_Sales",
@@ -739,7 +739,7 @@ AutoTBATS <- function(data,
           if(TimeAggLevel %chin% c("month","months","mth","mths")) XTickMarkss <- "1 year"
           if(TimeAggLevel %chin% c("quarter","quarters")) XTickMarkss <- "2 year"
           if(TimeAggLevel %chin% c("year","years","yr","yrs")) XTickMarkss <- "5 year"
-          Output$ForecastPlot <- tryCatch({RemixAutoML::TimeSeriesPlotter(
+          Output$ForecastPlot <- tryCatch({AutoQuant::TimeSeriesPlotter(
             data = Output$Forecast,
             TargetVariable = c(TargetVariableName,"Forecast"),
             DateVariable = DateColumnName,
@@ -823,10 +823,10 @@ AutoTBATS <- function(data,
 #' @examples
 #' \dontrun{
 #' # Create fake data
-#' data <- RemixAutoML::FakeDataGenerator(TimeSeries = TRUE, TimeSeriesTimeAgg = "days")
+#' data <- AutoQuant::FakeDataGenerator(TimeSeries = TRUE, TimeSeriesTimeAgg = "days")
 #'
 #' # Build model
-#' Output <- RemixAutoML::AutoETS(
+#' Output <- AutoQuant::AutoETS(
 #'   data,
 #'   FilePath = NULL,
 #'   TargetVariableName = "Weekly_Sales",
@@ -946,7 +946,7 @@ AutoETS <- function(data,
           if(TimeAggLevel %chin% c("month","months","mth","mths")) XTickMarkss <- "1 year"
           if(TimeAggLevel %chin% c("quarter","quarters")) XTickMarkss <- "2 year"
           if(TimeAggLevel %chin% c("year","years","yr","yrs")) XTickMarkss <- "5 year"
-          Output$ForecastPlot <- tryCatch({RemixAutoML::TimeSeriesPlotter(
+          Output$ForecastPlot <- tryCatch({AutoQuant::TimeSeriesPlotter(
             data = Output$Forecast,
             TargetVariable = c(TargetVariableName,"Forecast"),
             DateVariable = DateColumnName,
@@ -1031,10 +1031,10 @@ AutoETS <- function(data,
 #' @examples
 #' \dontrun{
 #' # Create fake data
-#' data <- RemixAutoML::FakeDataGenerator(TimeSeries = TRUE, TimeSeriesTimeAgg = "days")
+#' data <- AutoQuant::FakeDataGenerator(TimeSeries = TRUE, TimeSeriesTimeAgg = "days")
 #'
 #' # Build model
-#' Output <- RemixAutoML::AutoArfima(
+#' Output <- AutoQuant::AutoArfima(
 #'   data,
 #'   FilePath = NULL,
 #'   TargetVariableName = "Weekly_Sales",
@@ -1173,7 +1173,7 @@ AutoArfima <- function(data,
           if(TimeAggLevel %chin% c("month","months","mth","mths")) XTickMarkss <- "1 year"
           if(TimeAggLevel %chin% c("quarter","quarters")) XTickMarkss <- "2 year"
           if(TimeAggLevel %chin% c("year","years","yr","yrs")) XTickMarkss <- "5 year"
-          Output$ForecastPlot <- tryCatch({RemixAutoML::TimeSeriesPlotter(
+          Output$ForecastPlot <- tryCatch({AutoQuant::TimeSeriesPlotter(
             data = Output$Forecast,
             TargetVariable = c(TargetVariableName,"Forecast"),
             DateVariable = DateColumnName,

@@ -722,7 +722,7 @@ CarmaScore <- function(Type = 'catboost',
       if(Debug) print('CarmaScore lightgbm score')
       IDcols <- unique(c(IDcols, DateColumnName.))
 
-      x <- RemixAutoML::AutoLightGBMScoring(
+      x <- AutoQuant::AutoLightGBMScoring(
         TargetType = 'regression',
         ScoringData = Step1SCore.,
         FeatureColumnNames = ModelFeatures.,
@@ -890,7 +890,7 @@ CarmaScore <- function(Type = 'catboost',
 
       } else if(Type == 'lightgbm') {
 
-        Preds <- RemixAutoML::AutoLightGBMScoring(
+        Preds <- AutoQuant::AutoLightGBMScoring(
           TargetType = 'regression',
           ScoringData = Step1SCore.,
           FeatureColumnNames = ModelFeatures.,
@@ -2541,7 +2541,7 @@ CarmaReturnDataPrep <- function(UpdateData. = NULL,
 
         if(Debug) print("CarmaReturnDataPrep 4.3b")
 
-        UpdateData. <- RemixAutoML::StandardizeScoring(UpdateData., TransformObject., Apply = 'backtransform', GroupVars = GroupVariables.)
+        UpdateData. <- AutoQuant::StandardizeScoring(UpdateData., TransformObject., Apply = 'backtransform', GroupVars = GroupVariables.)
 
       }
 

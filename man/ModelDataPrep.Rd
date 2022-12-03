@@ -53,7 +53,7 @@ This function replaces inf values with NA, converts characters to factors, and i
 \examples{
 \dontrun{
 # Create fake data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.75,
   N = 250000L,
   ID = 2L,
@@ -67,7 +67,7 @@ data <- RemixAutoML::FakeDataGenerator(
 str(data)
 
 # Convert some factors to character
-data <- RemixAutoML::ModelDataPrep(
+data <- AutoQuant::ModelDataPrep(
   data,
   Impute       = TRUE,
   CharToFactor = FALSE,

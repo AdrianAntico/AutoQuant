@@ -92,7 +92,7 @@
 #' data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
 #'
 #' # Ensure series have no missing dates (also remove series with more than 25% missing values)
-#' data <- RemixAutoML::TimeSeriesFill(
+#' data <- AutoQuant::TimeSeriesFill(
 #'   data,
 #'   DateColumnName = "Date",
 #'   GroupVariables = c("Store","Dept"),
@@ -115,7 +115,7 @@
 #' xregs[, ":=" (Store = as.character(Store), Dept = as.character(Dept))]
 #'
 #' # Build forecast
-#' Results <- RemixAutoML::AutoH2OCARMA(
+#' Results <- AutoQuant::AutoH2OCARMA(
 #'
 #'   # Data Artifacts
 #'   AlgoType = "drf",
@@ -578,7 +578,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
   if(tolower(AlgoType) == "drf") {
 
     # Distributed Random Forecast ----
-    TestModel <- RemixAutoML::AutoH2oDRFRegression(
+    TestModel <- AutoQuant::AutoH2oDRFRegression(
 
       OutputSelection = NULL,
 
@@ -637,7 +637,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
   } else if(tolower(AlgoType) == "gbm") {
 
     # Gradient Boosting Machine ----
-    TestModel <- RemixAutoML::AutoH2oGBMRegression(
+    TestModel <- AutoQuant::AutoH2oGBMRegression(
 
       # Compute management
       MaxMem = MaxMem,
@@ -698,7 +698,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
   } else if(tolower(AlgoType) == "glm") {
 
     # Generalized Linear Model ----
-    TestModel <- RemixAutoML::AutoH2oGLMRegression(
+    TestModel <- AutoQuant::AutoH2oGLMRegression(
 
       # Compute management
       MaxMem = MaxMem,
@@ -753,7 +753,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
   } else if(tolower(AlgoType) == "automl") {
 
     # H2O AutoML ----
-    TestModel <- RemixAutoML::AutoH2oMLRegression(
+    TestModel <- AutoQuant::AutoH2oMLRegression(
 
       # Compute management
       MaxMem = MaxMem,
@@ -796,7 +796,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
     GamCols <- GamCols[1L:(min(9L,length(GamCols)))]
 
     # Build GAM ----
-    TestModel <- RemixAutoML::AutoH2oGAMRegression(
+    TestModel <- AutoQuant::AutoH2oGAMRegression(
 
       # Compute management
       MaxMem = MaxMem,

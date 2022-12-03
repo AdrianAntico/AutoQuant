@@ -50,7 +50,7 @@
 #' @examples
 #' \donttest{
 #' # Create some dummy correlated data with numeric and categorical features
-#' data <- RemixAutoML::FakeDataGenerator(
+#' data <- AutoQuant::FakeDataGenerator(
 #'   Correlation = 0.85,
 #'   N = 1000L,
 #'   ID = 2L,
@@ -60,7 +60,7 @@
 #'   MultiClass = TRUE)
 #'
 #' # Run function
-#' TestModel <- RemixAutoML::AutoH2oGLMMultiClass(
+#' TestModel <- AutoQuant::AutoH2oGLMMultiClass(
 #'
 #'   # Compute management
 #'   OutputSelection = c("EvalMetrics", "Score_TrainData"),

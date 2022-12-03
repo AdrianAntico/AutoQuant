@@ -29,7 +29,7 @@ Residual plots for regression models
 \examples{
 \dontrun{
 # Create fake data
-test_data <- RemixAutoML::FakeDataGenerator(
+test_data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.80,
   N = 250000,
   ID = 0,
@@ -40,7 +40,7 @@ test_data <- RemixAutoML::FakeDataGenerator(
   ZIP = 0)
 
 # Build Plots
-output <- RemixAutoML::ResidualPlots(
+output <- AutoQuant::ResidualPlots(
   TestData = test_data,
   Target = "Adrian",
   Predicted = "Independent_Variable1",

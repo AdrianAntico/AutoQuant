@@ -35,7 +35,7 @@ Mode <- function(x) {
 #' # NO GROUPING CASE: Create fake Panel Data----
 #' Count <- 1L
 #' for(Level in LETTERS) {
-#'   datatemp <- RemixAutoML::FakeDataGenerator(
+#'   datatemp <- AutoQuant::FakeDataGenerator(
 #'     Correlation = 0.75,
 #'     N = 25000L,
 #'     ID = 0L,
@@ -55,7 +55,7 @@ Mode <- function(x) {
 #' }
 #'
 #' # NO GROUPING CASE: Create rolling modes for categorical features
-#' data <- RemixAutoML::AutoLagRollMode(
+#' data <- AutoQuant::AutoLagRollMode(
 #'   data,
 #'   Lags           = seq(1,5,1),
 #'   ModePeriods    = seq(2,5,1),
@@ -69,7 +69,7 @@ Mode <- function(x) {
 #' # GROUPING CASE: Create fake Panel Data----
 #' Count <- 1L
 #' for(Level in LETTERS) {
-#'   datatemp <- RemixAutoML::FakeDataGenerator(
+#'   datatemp <- AutoQuant::FakeDataGenerator(
 #'     Correlation = 0.75,
 #'     N = 25000L,
 #'     ID = 0L,
@@ -89,7 +89,7 @@ Mode <- function(x) {
 #' }
 #'
 #' # GROUPING CASE: Create rolling modes for categorical features
-#' data <- RemixAutoML::AutoLagRollMode(
+#' data <- AutoQuant::AutoLagRollMode(
 #'   data,
 #'   Lags           = seq(1,5,1),
 #'   ModePeriods    = seq(2,5,1),
@@ -462,7 +462,7 @@ DiffDT <- function(data, x, NLag1, NLag2, Type = "numeric") {
 #' \dontrun{
 #'
 #' # Create fake data
-#' data <- RemixAutoML::FakeDataGenerator(
+#' data <- AutoQuant::FakeDataGenerator(
 #'   Correlation = 0.70,
 #'   N = 50000,
 #'   ID = 2L,
@@ -478,10 +478,10 @@ DiffDT <- function(data, x, NLag1, NLag2, Type = "numeric") {
 #' Cols <- names(data)[which(unlist(data[, lapply(.SD, is.numeric)]))]
 #'
 #' # Clean data before running AutoDiffLagN
-#' data <- RemixAutoML::ModelDataPrep(data = data, Impute = FALSE, CharToFactor = FALSE, FactorToChar = TRUE)
+#' data <- AutoQuant::ModelDataPrep(data = data, Impute = FALSE, CharToFactor = FALSE, FactorToChar = TRUE)
 #'
 #' # Run function
-#' data <- RemixAutoML::AutoDiffLagN(
+#' data <- AutoQuant::AutoDiffLagN(
 #'   data,
 #'   DateVariable = "DateTime",
 #'   GroupVariables = c("Factor_1", "Factor_2"),
@@ -658,7 +658,7 @@ AutoDiffLagN <- function(data,
 #' # Create fake Panel Data----
 #' Count <- 1L
 #' for(Level in LETTERS) {
-#'   datatemp <- RemixAutoML::FakeDataGenerator(
+#'   datatemp <- AutoQuant::FakeDataGenerator(
 #'     Correlation = 0.75,
 #'     N = 25000L,
 #'     ID = 0L,
@@ -678,7 +678,7 @@ AutoDiffLagN <- function(data,
 #' }
 #'
 #' # Add scoring records
-#' data <- RemixAutoML::AutoLagRollStats(
+#' data <- AutoQuant::AutoLagRollStats(
 #'   data                 = data,
 #'   DateColumn           = "DateTime",
 #'   Targets              = "Adrian",
@@ -1122,7 +1122,7 @@ AutoLagRollStats <- function(data,
 #' # Create fake Panel Data----
 #' Count <- 1L
 #' for(Level in LETTERS) {
-#'   datatemp <- RemixAutoML::FakeDataGenerator(
+#'   datatemp <- AutoQuant::FakeDataGenerator(
 #'     Correlation = 0.75,
 #'     N = 25000L,
 #'     ID = 0L,
@@ -1146,7 +1146,7 @@ AutoLagRollStats <- function(data,
 #' data.table::set(data1, i = which(data1[["ID"]] == 2L), j = "ID", value = 1L)
 #'
 #' # Score records
-#' data1 <- RemixAutoML::AutoLagRollStatsScoring(
+#' data1 <- AutoQuant::AutoLagRollStatsScoring(
 #'
 #'   # Data
 #'   data                 = data1,
@@ -2752,7 +2752,7 @@ Partial_DT_GDL_Feature_Engineering2 <- function(data,
 #'
 #' @examples
 #' \dontrun{
-#' Output <- RemixAutoML:::DiffLagN(
+#' Output <- AutoQuant:::DiffLagN(
 #'   data = data,
 #'   RunMode = "train",
 #'   ArgsList = ArgsList_FE,
@@ -2786,7 +2786,7 @@ DiffLagN <- function(data = NULL,
     tempnames <- names(data.table::copy(data))
 
     # Run function
-    data <- RemixAutoML::AutoDiffLagN(
+    data <- AutoQuant::AutoDiffLagN(
       data = data,
       GroupVariables = ArgsList$Data$GroupVariables,
       DateVariable = ArgsList$Data$DateVariables,
@@ -2820,7 +2820,7 @@ DiffLagN <- function(data = NULL,
     Start <- Sys.time()
 
     # Run function
-    data <- RemixAutoML::AutoDiffLagN(
+    data <- AutoQuant::AutoDiffLagN(
       data = data,
       GroupVariables = ArgsList$FE_AutoDiffLagN$GroupVariables[[RunNumber]],
       DateVariable = ArgsList$FE_AutoDiffLagN$DateVariables[[RunNumber]],
@@ -2865,7 +2865,7 @@ DiffLagN <- function(data = NULL,
 #'
 #' @examples
 #' \dontrun{
-#' Output <- RemixAutoML:::TimeSeriesFeatures(
+#' Output <- AutoQuant:::TimeSeriesFeatures(
 #'   data = data,
 #'   RunMode = "train",
 #'   ArgsList = NULL,
@@ -2897,7 +2897,7 @@ TimeSeriesFeatures <- function(data = NULL,
     tempnames <- names(data.table::copy(data))
 
     # Run function
-    data <- RemixAutoML::AutoLagRollStats(
+    data <- AutoQuant::AutoLagRollStats(
 
       # Data
       data                 = data,
@@ -2958,7 +2958,7 @@ TimeSeriesFeatures <- function(data = NULL,
     Start <- Sys.time()
 
     # Run function
-    data <- RemixAutoML::AutoLagRollStatsScoring(
+    data <- AutoQuant::AutoLagRollStatsScoring(
 
       # Data
       data                 = data,

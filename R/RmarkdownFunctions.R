@@ -91,11 +91,11 @@ RmdApply <- function(X,
 #' ```
 #'
 #' ```{r Example, echo = FALSE}
-#' RemixAutoML::DataTable(data)
+#' AutoQuant::DataTable(data)
 #' ````
 #'
 #' # Shiny Usage
-#' output$Table <- shiny::renderUI({RemixAutoML::DataTable(data)})
+#' output$Table <- shiny::renderUI({AutoQuant::DataTable(data)})
 #'
 #' }
 #'
@@ -165,11 +165,11 @@ DataTable <- function(data, FixedCols = 2) {
 #' ```
 #'
 #' ```{r Example, echo = FALSE}
-#' RemixAutoML::DataTable2(data)
+#' AutoQuant::DataTable2(data)
 #' ````
 #'
 #' # Shiny Usage
-#' output$Table <- shiny::renderUI({RemixAutoML::DataTable2(data)})
+#' output$Table <- shiny::renderUI({AutoQuant::DataTable2(data)})
 #'
 #' }
 #'

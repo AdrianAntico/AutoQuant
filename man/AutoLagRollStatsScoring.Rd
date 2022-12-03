@@ -88,7 +88,7 @@ AutoLagRollStatsScoring Builds lags and a large variety of rolling statistics wi
 # Create fake Panel Data----
 Count <- 1L
 for(Level in LETTERS) {
-  datatemp <- RemixAutoML::FakeDataGenerator(
+  datatemp <- AutoQuant::FakeDataGenerator(
     Correlation = 0.75,
     N = 25000L,
     ID = 0L,
@@ -112,7 +112,7 @@ data1[, ID := .N:1L, by = "Factor1"]
 data.table::set(data1, i = which(data1[["ID"]] == 2L), j = "ID", value = 1L)
 
 # Score records
-data1 <- RemixAutoML::AutoLagRollStatsScoring(
+data1 <- AutoQuant::AutoLagRollStatsScoring(
 
   # Data
   data                 = data1,

@@ -36,7 +36,7 @@ AutoTransformationCreate is a function for automatically identifying the optimal
 \examples{
 \dontrun{
 # Create Fake Data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 25000,
   ID = 2L,
@@ -51,7 +51,7 @@ Cols <- names(data)[1L:11L]
 print(Cols)
 
 # Run function
-data <- RemixAutoML::AutoTransformationCreate(
+data <- AutoQuant::AutoTransformationCreate(
   data,
   ColumnNames = Cols,
   Methods = c("YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit", "Identity"),

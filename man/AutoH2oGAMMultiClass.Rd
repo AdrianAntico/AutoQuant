@@ -135,7 +135,7 @@ AutoH2oGAMMultiClass is an automated H2O modeling framework with grid-tuning and
 \examples{
 \donttest{
 # Create some dummy correlated data with numeric and categorical features
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 1000L,
   ID = 2L,
@@ -150,7 +150,7 @@ GamCols <- GamCols[!GamCols \%in\% c("Adrian","IDcol_1","IDcol_2")]
 GamCols <- GamCols[1L:(min(9L,length(GamCols)))]
 
 # Run function
-TestModel <- RemixAutoML::AutoH2oGAMMultiClass(
+TestModel <- AutoQuant::AutoH2oGAMMultiClass(
   OutputSelection = c("EvalMetrics", "Score_TrainData"),
   data,
   TrainOnFull = FALSE,

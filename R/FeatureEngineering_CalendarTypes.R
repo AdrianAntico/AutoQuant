@@ -14,7 +14,7 @@
 #' @examples
 #' \dontrun{
 #' # Create fake data with a Date column----
-#' data <- RemixAutoML::FakeDataGenerator(
+#' data <- AutoQuant::FakeDataGenerator(
 #'   Correlation = 0.75,
 #'   N = 25000L,
 #'   ID = 2L,
@@ -26,7 +26,7 @@
 #' for(i in seq_len(20L)) {
 #'   print(i)
 #'   data <- data.table::rbindlist(
-#'     list(data, RemixAutoML::FakeDataGenerator(
+#'     list(data, AutoQuant::FakeDataGenerator(
 #'     Correlation = 0.75,
 #'     N = 25000L,
 #'     ID = 2L,
@@ -41,7 +41,7 @@
 #' #   the second, minute, and hour selections since
 #' #   it is not timestamp data
 #' runtime <- system.time(
-#'   data <- RemixAutoML::CreateCalendarVariables(
+#'   data <- AutoQuant::CreateCalendarVariables(
 #'     data = data,
 #'     DateCols = "DateTime",
 #'     AsFactor = FALSE,
@@ -76,7 +76,7 @@ CreateCalendarVariables <- function(data,
   # Load data from file if CachePath is not NULL
   if(length(CachePath) > 0L) {
     if(Debug) print('CreateHolidayVariables 1.1')
-    data <- RemixAutoML:::ReactiveLoadCSV(Infile = CachePath, Debug = Debug)
+    data <- AutoQuant:::ReactiveLoadCSV(Infile = CachePath, Debug = Debug)
     if(Debug) print('CreateHolidayVariables 1.2')
     for(i in DateCols) if(class(data[[i]])[1L] %in% c('character')) {
       if(Debug) print('CreateHolidayVariables 1.3')
@@ -268,7 +268,7 @@ CreateCalendarVariables <- function(data,
 #' @examples
 #' \dontrun{
 #' # Create fake data with a Date----
-#' data <- RemixAutoML::FakeDataGenerator(
+#' data <- AutoQuant::FakeDataGenerator(
 #'   Correlation = 0.75,
 #'   N = 25000L,
 #'   ID = 2L,
@@ -280,7 +280,7 @@ CreateCalendarVariables <- function(data,
 #' for(i in seq_len(20L)) {
 #'   print(i)
 #'   data <- data.table::rbindlist(list(data,
-#'   RemixAutoML::FakeDataGenerator(
+#'   AutoQuant::FakeDataGenerator(
 #'     Correlation = 0.75,
 #'     N = 25000L,
 #'     ID = 2L,
@@ -292,7 +292,7 @@ CreateCalendarVariables <- function(data,
 #' }
 #' # Run function and time it
 #' runtime <- system.time(
-#'   data <- RemixAutoML::CreateHolidayVariables(
+#'   data <- AutoQuant::CreateHolidayVariables(
 #'     data,
 #'     DateCols = "DateTime",
 #'     LookbackDays = NULL,
@@ -318,7 +318,7 @@ CreateHolidayVariables <- function(data,
 
   if(length(CachePath) > 0L) {
     if(Debug) {print('CreateHolidayVariables 1.1'); print(CachePath)}
-    data <- RemixAutoML:::ReactiveLoadCSV(Infile = CachePath, Debug = Debug)
+    data <- AutoQuant:::ReactiveLoadCSV(Infile = CachePath, Debug = Debug)
     if(Debug) print(data)
     if(Debug) print(class(data))
     if(Debug) print('CreateHolidayVariables 1.2')
@@ -493,7 +493,7 @@ CreateHolidayVariables <- function(data,
 #'
 #' @examples
 #' \dontrun{
-#' Output <- RemixAutoML:::CalendarVariables(
+#' Output <- AutoQuant:::CalendarVariables(
 #'   data = data,
 #'   RunMode = "train",
 #'   ArgsList = ArgsList_FE,
@@ -518,7 +518,7 @@ CalendarVariables <- function(data = NULL,
   # Run function
   if(tolower(RunMode) == "train") {
     for(dat in ArgsList$Data$DateVariables) {
-      data <- RemixAutoML::CreateCalendarVariables(
+      data <- AutoQuant::CreateCalendarVariables(
         data = data,
         DateCols = dat,
         AsFactor = FALSE,
@@ -551,7 +551,7 @@ CalendarVariables <- function(data = NULL,
 
     # Run function
     for(dat in DateVariables) {
-      data <- RemixAutoML::CreateCalendarVariables(
+      data <- AutoQuant::CreateCalendarVariables(
         data = data,
         DateCols = ArgsList$CalendarVariables$DateCols,
         AsFactor = ArgsList$CalendarVariables$AsFactor,
@@ -589,7 +589,7 @@ CalendarVariables <- function(data = NULL,
 #'
 #' @examples
 #' \dontrun{
-#' Output <- RemixAutoML:::HolidayVariables(
+#' Output <- AutoQuant:::HolidayVariables(
 #'   data = data,
 #'   RunMode = "train",
 #'   ArgsList = ArgsList,
@@ -613,7 +613,7 @@ HolidayVariables <- function(data = NULL,
     tempnames <- names(data.table::copy(data))
     for(dat in ArgsList$Data$DateVariables) {
       for(i in seq_along(ArgsList$FE_Args$Holiday_Variables$HolidayVariables)) {
-        data <- RemixAutoML::CreateHolidayVariables(
+        data <- AutoQuant::CreateHolidayVariables(
           data = data,
           DateCols = dat,
           LookbackDays = ArgsList$FE_Args$Holiday_Variables$LookBackDays,
@@ -648,7 +648,7 @@ HolidayVariables <- function(data = NULL,
     # Run function
     for(dat in ArgsList$FE_HolidayVariables$DateCols) {
       for(i in seq_along(ArgsList$FE_HolidayVariables$HolidaySets)) {
-        data <- RemixAutoML::CreateHolidayVariables(
+        data <- AutoQuant::CreateHolidayVariables(
           data = data,
           DateCols = ArgsList$HolidayVariables$DateCols,
           LookbackDays = ArgsList$HolidayVariables$LookbackDays,

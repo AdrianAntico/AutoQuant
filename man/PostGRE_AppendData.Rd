@@ -41,13 +41,13 @@ PostGRE_AppendData get data from a database table
 }
 \examples{
 \dontrun{
-RemixAutoML::PostGRE_AppendData(
+AutoQuant::PostGRE_AppendData(
   data = data,
   TableName = 'somename',
   Append = FALSE,
   CloseConnection = FALSE,
   Host = 'localhost',
-  DBName = 'RemixAutoML',
+  DBName = 'AutoQuant',
   User = 'postgres',
   Port = 5432,
   Password = 'Aa...')

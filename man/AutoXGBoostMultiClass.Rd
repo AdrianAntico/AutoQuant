@@ -136,7 +136,7 @@ AutoXGBoostMultiClass is an automated XGBoost modeling framework with grid-tunin
 }
 \examples{
 \dontrun{
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 1000L,
   ID = 2L,
@@ -146,7 +146,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = TRUE)
 
 # Run function
-TestModel <- RemixAutoML::AutoXGBoostMultiClass(
+TestModel <- AutoQuant::AutoXGBoostMultiClass(
 
   # GPU or CPU
   TreeMethod = "hist",

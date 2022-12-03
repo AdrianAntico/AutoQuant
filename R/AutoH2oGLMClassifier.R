@@ -51,7 +51,7 @@
 #' @examples
 #' \donttest{
 #' # Create some dummy correlated data with numeric and categorical features
-#' data <- RemixAutoML::FakeDataGenerator(
+#' data <- AutoQuant::FakeDataGenerator(
 #'   Correlation = 0.85,
 #'   N = 1000L,
 #'   ID = 2L,
@@ -61,7 +61,7 @@
 #'   MultiClass = FALSE)
 #'
 #' # Run function
-#' TestModel <- RemixAutoML::AutoH2oGLMClassifier(
+#' TestModel <- AutoQuant::AutoH2oGLMClassifier(
 #'
 #'     # Compute management
 #'     MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},

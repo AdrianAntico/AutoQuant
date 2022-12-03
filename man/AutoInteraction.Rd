@@ -43,7 +43,7 @@ AutoInteraction creates interaction variables from your numerical features in yo
 #########################################
 
 # Create fake data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.70,
   N = 50000,
   ID = 2L,
@@ -63,7 +63,7 @@ Cols <-names(data)[c(which(unlist(lapply(data, is.numeric))),
                      which(unlist(lapply(data, is.integer))))]
 
 # Model Training Feature Engineering
-system.time(data <- RemixAutoML::AutoInteraction(
+system.time(data <- AutoQuant::AutoInteraction(
   data = data,
   NumericVars = Cols,
   InteractionDepth = 4,
@@ -84,7 +84,7 @@ print(ncol(data))
 ########################################
 
 # Create fake data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.70,
   N = 1000,
   ID = 2L,
@@ -103,7 +103,7 @@ print(ncol(data))
 data <- data[1L]
 
 # Model Scoring Feature Engineering
-system.time(data <- RemixAutoML::AutoInteraction(
+system.time(data <- AutoQuant::AutoInteraction(
   data = data,
   NumericVars = names(data)[
     c(which(unlist(lapply(data, is.numeric))),

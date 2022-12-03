@@ -41,14 +41,14 @@ AutoLightGBMFunnelCARMAScoring for generating forecasts
 \examples{
 \dontrun{
 # Create fake data
-data <- RemixAutoML::FakeDataGenerator(ChainLadderData = TRUE)
+data <- AutoQuant::FakeDataGenerator(ChainLadderData = TRUE)
 
 # Subset data for training
 ModelDataBase <- data[CalendarDateColumn < '2020-01-01' & CohortDateColumn < '2020-01-01']
 ModelData <- data.table::copy(ModelDataBase)
 
 # Train Funne Model
-TestModel <- RemixAutoML::AutoXGBoostFunnelCARMA(
+TestModel <- AutoQuant::AutoXGBoostFunnelCARMA(
 
   # Data Arguments
   data = ModelData,
@@ -133,7 +133,7 @@ LeadsData <- data[, lapply(.SD, data.table::first), .SDcols = c("Leads"), by = c
 ModelData <- ModelDataBase[, Leads := NULL]
 
 # Forecast Funnel Model
-Test <- RemixAutoML::AutoXGBoostFunnelCARMAScoring(
+Test <- AutoQuant::AutoXGBoostFunnelCARMAScoring(
   TrainData = ModelData,
   ForwardLookingData = LeadsData,
   TrainEndDate = ModelData[, max(CalendarDateColumn)],

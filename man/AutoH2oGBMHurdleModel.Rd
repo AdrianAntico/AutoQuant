@@ -84,7 +84,7 @@ AutoH2oGBMHurdleModel for hurdle modeing
 }
 \examples{
 \donttest{
-Output <- RemixAutoML::AutoH2oGBMHurdleModel(
+Output <- AutoQuant::AutoH2oGBMHurdleModel(
   data,
   ValidationData = NULL,
   TestData = NULL,

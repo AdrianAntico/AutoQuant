@@ -161,7 +161,7 @@ AutoCatBoostMultiClass is an automated modeling function that runs a variety of 
 \examples{
 \dontrun{
 # Create some dummy correlated data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 10000L,
   ID = 2L,
@@ -171,7 +171,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = TRUE)
 
 # Run function
-TestModel <- RemixAutoML::AutoCatBoostMultiClass(
+TestModel <- AutoQuant::AutoCatBoostMultiClass(
 
  # GPU or CPU and the number of available GPUs
  task_type = 'GPU',

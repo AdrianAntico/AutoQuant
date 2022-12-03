@@ -75,14 +75,14 @@
 #' @examples
 #' \dontrun{
 #' # Create fake data
-#' data <- RemixAutoML::FakeDataGenerator(ChainLadderData = TRUE)
+#' data <- AutoQuant::FakeDataGenerator(ChainLadderData = TRUE)
 #'
 #' # Subset data for training
 #' ModelDataBase <- data[CalendarDateColumn < '2020-01-01' & CohortDateColumn < '2020-01-01']
 #' ModelData <- data.table::copy(ModelDataBase)
 #'
 #' # Train Funne Model
-#' TestModel <- RemixAutoML::AutoXGBoostFunnelCARMA(
+#' TestModel <- AutoQuant::AutoXGBoostFunnelCARMA(
 #'
 #'   # Data Arguments
 #'   data = ModelData,
@@ -167,7 +167,7 @@
 #' ModelData <- ModelDataBase[, Leads := NULL]
 #'
 #' # Forecast Funnel Model
-#' Test <- RemixAutoML::AutoXGBoostFunnelCARMAScoring(
+#' Test <- AutoQuant::AutoXGBoostFunnelCARMAScoring(
 #'   TrainData = ModelData,
 #'   ForwardLookingData = LeadsData,
 #'   TrainEndDate = ModelData[, max(CalendarDateColumn)],
@@ -435,8 +435,8 @@ AutoXGBoostFunnelCARMA <- function(data,
 
     # FE: CreateCalendarVariables() CalendarDate and CohortDate ----
     if(DebugMode) print("FE: CreateCalendarVariables() CalendarDate and CohortDate ----")
-    x <- system.time(gcFirst = FALSE, data <- RemixAutoML::CreateCalendarVariables(data, DateCols = c(eval(CalendarDate)), AsFactor = FALSE, TimeUnits = CalendarVariables))
-    data <- RemixAutoML::CreateCalendarVariables(data, DateCols = c(eval(CohortDate)), AsFactor = FALSE, TimeUnits = CalendarVariables)
+    x <- system.time(gcFirst = FALSE, data <- AutoQuant::CreateCalendarVariables(data, DateCols = c(eval(CalendarDate)), AsFactor = FALSE, TimeUnits = CalendarVariables))
+    data <- AutoQuant::CreateCalendarVariables(data, DateCols = c(eval(CohortDate)), AsFactor = FALSE, TimeUnits = CalendarVariables)
     if(proc %chin% c("evaluate","eval","evaluation")) {
       data.table::set(TimerDataEval, i = 2L, j = "Time", value = x[[3L]])
       data.table::set(TimerDataEval, i = 2L, j = "Process", value = "# Add CalendarDate and CohortDate calendar variables----")
@@ -450,7 +450,7 @@ AutoXGBoostFunnelCARMA <- function(data,
 
     # FE: CreateHolidayVariables() CalendarDate ----
     if(DebugMode) print("FE: CreateHolidayVariables() CalendarDate ----")
-    x <- system.time(gcFirst = FALSE, data <- RemixAutoML::CreateHolidayVariables(data, DateCols = eval(CalendarDate), LookbackDays = if(!is.null(HolidayLookback)) HolidayLookback else LB(TimeUnit), HolidayGroups = HolidayGroups, Holidays = NULL, Print = FALSE))
+    x <- system.time(gcFirst = FALSE, data <- AutoQuant::CreateHolidayVariables(data, DateCols = eval(CalendarDate), LookbackDays = if(!is.null(HolidayLookback)) HolidayLookback else LB(TimeUnit), HolidayGroups = HolidayGroups, Holidays = NULL, Print = FALSE))
     data.table::setnames(data, old = "HolidayCounts", new = paste0(CalendarDate,"HolidayCounts"))
     if(proc %chin% c("evaluate","eval","evaluation")) {
       data.table::set(TimerDataEval, i = 3L, j = "Time", value = x[[3L]])
@@ -465,7 +465,7 @@ AutoXGBoostFunnelCARMA <- function(data,
 
     # FE: CreateHolidayVariables() CohortDate ----
     if(DebugMode) print("FE: CreateHolidayVariables() CohortDate ----")
-    x <- system.time(gcFirst = FALSE, data <- RemixAutoML::CreateHolidayVariables(data, DateCols = eval(CohortDate), LookbackDays = if(!is.null(HolidayLookback)) HolidayLookback else LB(TimeUnit), HolidayGroups = eval(HolidayGroups), Holidays = NULL, Print = FALSE))
+    x <- system.time(gcFirst = FALSE, data <- AutoQuant::CreateHolidayVariables(data, DateCols = eval(CohortDate), LookbackDays = if(!is.null(HolidayLookback)) HolidayLookback else LB(TimeUnit), HolidayGroups = eval(HolidayGroups), Holidays = NULL, Print = FALSE))
     data.table::setnames(data, old = "HolidayCounts", new = paste0(CohortDate, "HolidayCounts"))
     if(proc %chin% c("evaluate","eval","evaluation")) {
       data.table::set(TimerDataEval, i = 4L, j = "Time", value = x[[3L]])
@@ -483,8 +483,8 @@ AutoXGBoostFunnelCARMA <- function(data,
       temp1 <- data[, list(Leads = max(get(BaseFunnelMeasure[1]))), by = eval(CalendarDate)]
       temp <- merge(temp, temp1, by = eval(CalendarDate), all = FALSE); rm(temp1)
       temp <- temp[, ConversionRate := ConversionCheck / (Leads + 1)][, .SD, .SDcols = c(eval(CalendarDate), "ConversionRate")]
-      temp <- RemixAutoML::CreateCalendarVariables(data = temp, DateCols = eval(CalendarDate), AsFactor = FALSE, TimeUnits = "wday")
-      temp <- RemixAutoML::GenTSAnomVars(data = temp, ValueCol = "ConversionRate", GroupVars = paste0(CalendarDate,"_wday"), DateVar = eval(CalendarDate), HighThreshold = AnomalyDetection$tstat_high, LowThreshold = AnomalyDetection$tstat_low, KeepAllCols = TRUE, IsDataScaled = FALSE)
+      temp <- AutoQuant::CreateCalendarVariables(data = temp, DateCols = eval(CalendarDate), AsFactor = FALSE, TimeUnits = "wday")
+      temp <- AutoQuant::GenTSAnomVars(data = temp, ValueCol = "ConversionRate", GroupVars = paste0(CalendarDate,"_wday"), DateVar = eval(CalendarDate), HighThreshold = AnomalyDetection$tstat_high, LowThreshold = AnomalyDetection$tstat_low, KeepAllCols = TRUE, IsDataScaled = FALSE)
       temp <- temp[, .SD, .SDcols = c(eval(CalendarDate), "AnomHigh","AnomLow")]
       if(!is.null(temp)) {
         data <- merge(data, temp, by.x = eval(CohortDate), by.y = eval(CalendarDate), all.x = TRUE)
@@ -542,7 +542,7 @@ AutoXGBoostFunnelCARMA <- function(data,
     # FE: AutoLagRollStats() ConversionMeasure OVER CohortDate ----
     if(DebugMode) print("FE: AutoLagRollStats() ConversionMeasure with CalendarDate as a Grouping Variable ----")
     if(proc %in% c("evaluate","evaluation","eval","train","training")) {
-      x <- system.time(gcFirst = FALSE, data <- RemixAutoML::AutoLagRollStats(
+      x <- system.time(gcFirst = FALSE, data <- AutoQuant::AutoLagRollStats(
 
         # Data
         data                 = data,
@@ -584,7 +584,7 @@ AutoXGBoostFunnelCARMA <- function(data,
     # FE: AutoLagRollStats() CohortDate HolidayCounts OVER CohortDate ----
     if(DebugMode) print("FE: AutoLagRollStats() CohortDate HolidayCounts with CalendarDate as a Grouping Variable ----")
     if(proc %in% c("evaluate","evaluation","eval","train","training") && !is.null(CohortHolidayLags)) {
-      x <- system.time(gcFirst = FALSE, data <- RemixAutoML::AutoLagRollStats(
+      x <- system.time(gcFirst = FALSE, data <- AutoQuant::AutoLagRollStats(
 
         # Data
         data                 = data,
@@ -642,7 +642,7 @@ AutoXGBoostFunnelCARMA <- function(data,
         } else {
           temp <- data[, lapply(.SD, data.table::first), .SDcols = c(BaseFunnelMeasure[bfm]), by = c(eval(CalendarDate))]
         }
-        x <- system.time(gcFirst = FALSE, temp <- RemixAutoML::AutoLagRollStats(
+        x <- system.time(gcFirst = FALSE, temp <- AutoQuant::AutoLagRollStats(
 
           # Data
           data                 = temp,
@@ -692,7 +692,7 @@ AutoXGBoostFunnelCARMA <- function(data,
 
     # FE: ModelDataPrep() Impute Numeric Columns from AutoLagRollStats() ----
     if(DebugMode) print("FE: ModelDataPrep() Impute Numeric Columns from AutoLagRollStats() ----")
-    x <- system.time(gcFirst = FALSE, data <- RemixAutoML::ModelDataPrep(
+    x <- system.time(gcFirst = FALSE, data <- AutoQuant::ModelDataPrep(
       data         = data,
       Impute       = TRUE,
       CharToFactor = FALSE,
@@ -755,7 +755,7 @@ AutoXGBoostFunnelCARMA <- function(data,
     # DM: Partition Data ----
     if(DebugMode) print("DM: Partition Data ----")
     if(proc %chin% c("evaluate","eval","evaluation")) {
-      x <- system.time(gcFirst = FALSE, DataSets <- RemixAutoML::AutoDataPartition(
+      x <- system.time(gcFirst = FALSE, DataSets <- AutoQuant::AutoDataPartition(
         data = data,
         NumDataSets = 3L,
         Ratios = PartitionRatios,
@@ -793,7 +793,7 @@ AutoXGBoostFunnelCARMA <- function(data,
       if(proc %chin% c("eval","evaluation","evaluate")) NTrees <- Trees
 
       # Build model ----
-      x <- system.time(gcFirst = FALSE, TestModel <- RemixAutoML::AutoXGBoostRegression(
+      x <- system.time(gcFirst = FALSE, TestModel <- AutoQuant::AutoXGBoostRegression(
 
         # Metadata arguments
         ModelID = paste0(ModelID,"_", proc, "_"),
@@ -928,14 +928,14 @@ AutoXGBoostFunnelCARMA <- function(data,
 #' @examples
 #' \dontrun{
 #' # Create fake data
-#' data <- RemixAutoML::FakeDataGenerator(ChainLadderData = TRUE)
+#' data <- AutoQuant::FakeDataGenerator(ChainLadderData = TRUE)
 #'
 #' # Subset data for training
 #' ModelDataBase <- data[CalendarDateColumn < '2020-01-01' & CohortDateColumn < '2020-01-01']
 #' ModelData <- data.table::copy(ModelDataBase)
 #'
 #' # Train Funne Model
-#' TestModel <- RemixAutoML::AutoXGBoostFunnelCARMA(
+#' TestModel <- AutoQuant::AutoXGBoostFunnelCARMA(
 #'
 #'   # Data Arguments
 #'   data = ModelData,
@@ -1020,7 +1020,7 @@ AutoXGBoostFunnelCARMA <- function(data,
 #' ModelData <- ModelDataBase[, Leads := NULL]
 #'
 #' # Forecast Funnel Model
-#' Test <- RemixAutoML::AutoXGBoostFunnelCARMAScoring(
+#' Test <- AutoQuant::AutoXGBoostFunnelCARMAScoring(
 #'   TrainData = ModelData,
 #'   ForwardLookingData = LeadsData,
 #'   TrainEndDate = ModelData[, max(CalendarDateColumn)],
@@ -1193,11 +1193,11 @@ AutoXGBoostFunnelCARMAScoring <- function(TrainData,
 
     # FE: Calendar & Holiday Variables ----
     if(DebugMode) print("FE: Calendar & Holiday Variables ----")
-    TrainData <- RemixAutoML::CreateCalendarVariables(TrainData, DateCols = c(eval(ArgsList$CalendarDate)), AsFactor = FALSE, TimeUnits = ArgsList$CalendarVariables)
-    TrainData <- RemixAutoML::CreateCalendarVariables(TrainData, DateCols = c(eval(ArgsList$CohortDate)), AsFactor = FALSE, TimeUnits = ArgsList$CalendarVariables)
-    TrainData <- RemixAutoML::CreateHolidayVariables(TrainData, DateCols = c(ArgsList$CalendarDate), LookbackDays = if(!is.null(ArgsList$HolidayLookback)) ArgsList$HolidayLookback else LB(ArgsList$TimeUnit), HolidayGroups = ArgsList$HolidayGroups, Holidays = NULL, Print = FALSE)
+    TrainData <- AutoQuant::CreateCalendarVariables(TrainData, DateCols = c(eval(ArgsList$CalendarDate)), AsFactor = FALSE, TimeUnits = ArgsList$CalendarVariables)
+    TrainData <- AutoQuant::CreateCalendarVariables(TrainData, DateCols = c(eval(ArgsList$CohortDate)), AsFactor = FALSE, TimeUnits = ArgsList$CalendarVariables)
+    TrainData <- AutoQuant::CreateHolidayVariables(TrainData, DateCols = c(ArgsList$CalendarDate), LookbackDays = if(!is.null(ArgsList$HolidayLookback)) ArgsList$HolidayLookback else LB(ArgsList$TimeUnit), HolidayGroups = ArgsList$HolidayGroups, Holidays = NULL, Print = FALSE)
     data.table::setnames(TrainData, old = "HolidayCounts", new = paste0(ArgsList$CalendarDate,"HolidayCounts"))
-    TrainData <- RemixAutoML::CreateHolidayVariables(TrainData, DateCols = c(ArgsList$CohortDate), LookbackDays = if(!is.null(ArgsList$HolidayLookback)) ArgsList$HolidayLookback else LB(ArgsList$TimeUnit), HolidayGroups = ArgsList$HolidayGroups, Holidays = NULL, Print = FALSE)
+    TrainData <- AutoQuant::CreateHolidayVariables(TrainData, DateCols = c(ArgsList$CohortDate), LookbackDays = if(!is.null(ArgsList$HolidayLookback)) ArgsList$HolidayLookback else LB(ArgsList$TimeUnit), HolidayGroups = ArgsList$HolidayGroups, Holidays = NULL, Print = FALSE)
     data.table::setnames(TrainData, old = "HolidayCounts", new = paste0(ArgsList$CohortDate,"HolidayCounts"))
     data.table::setorderv(TrainData, cols = c(ArgsList$CalendarDate,eval(ArgsList$CohortPeriodsVariable)), c(1L, 1L))
 
@@ -1209,7 +1209,7 @@ AutoXGBoostFunnelCARMAScoring <- function(TrainData,
     if(DebugMode) print("FE: ConversionMeasure OVER CohortDate ----")
     temp <- data.table::copy(TrainData)
     data.table::set(temp, j = ArgsList$CalendarDate, value = as.character(temp[[ArgsList$CalendarDate]]))
-    temp <- RemixAutoML::AutoLagRollStatsScoring(
+    temp <- AutoQuant::AutoLagRollStatsScoring(
 
       # Data
       data                 = temp,
@@ -1250,7 +1250,7 @@ AutoXGBoostFunnelCARMAScoring <- function(TrainData,
     if(DebugMode) print("FE: CohortDateHolidayCounts OVER CohortDate ----")
     temp <- data.table::copy(TrainData)
     data.table::set(temp, j = eval(ArgsList$CalendarDate), value = as.character(temp[[eval(ArgsList$CalendarDate)]]))
-    temp <- RemixAutoML::AutoLagRollStatsScoring(
+    temp <- AutoQuant::AutoLagRollStatsScoring(
 
       # Data
       data                 = temp,
@@ -1296,7 +1296,7 @@ AutoXGBoostFunnelCARMAScoring <- function(TrainData,
       }
       temp[, ScoreRecords := data.table::fifelse(get(ArgsList$CalendarDate) == eval(ScoreDate), 1, 2)]
       if(!any(class(temp[[ArgsList$CalendarDate]]) %chin% "Date")) data.table::set(temp, j = eval(ArgsList$CalendarDate), value = as.Date(temp[[eval(ArgsList$CalendarDate)]]))
-      temp <- RemixAutoML::AutoLagRollStatsScoring(
+      temp <- AutoQuant::AutoLagRollStatsScoring(
 
         # Data
         data                 = temp,
@@ -1341,7 +1341,7 @@ AutoXGBoostFunnelCARMAScoring <- function(TrainData,
 
     # DE: Model data prep ----
     if(DebugMode) print("DE: Model data prep ----")
-    TrainData <- RemixAutoML::ModelDataPrep(
+    TrainData <- AutoQuant::ModelDataPrep(
       data         = TrainData,
       Impute       = TRUE,
       CharToFactor = FALSE,
@@ -1367,7 +1367,7 @@ AutoXGBoostFunnelCARMAScoring <- function(TrainData,
     temp1 <- data.table::copy(TrainData)
     temp <- temp1[ScoreRecords == 1]
     Features <- TrainOutput$ColNames[[1L]]
-    temp <- RemixAutoML::AutoXGBoostScoring(
+    temp <- AutoQuant::AutoXGBoostScoring(
       FactorLevelsList = TrainOutput$FactorLevelsList,
       TargetType = "regression",
       ScoringData = temp,

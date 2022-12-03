@@ -50,7 +50,7 @@
 #' @examples
 #' \dontrun{
 #' # Create some dummy correlated data
-#' data <- RemixAutoML::FakeDataGenerator(
+#' data <- AutoQuant::FakeDataGenerator(
 #'   Correlation = 0.85,
 #'   N = 1000L,
 #'   ID = 2L,
@@ -60,7 +60,7 @@
 #'   MultiClass = FALSE)
 #'
 #' # Run function
-#' TestModel <- RemixAutoML::AutoXGBoostClassifier(
+#' TestModel <- AutoQuant::AutoXGBoostClassifier(
 #'
 #'   # GPU or CPU
 #'   TreeMethod = "hist",

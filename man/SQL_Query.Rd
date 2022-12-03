@@ -13,7 +13,7 @@ SQL_Query(
 )
 }
 \arguments{
-\item{DBConnection}{RemixAutoML::SQL_Server_DBConnection()}
+\item{DBConnection}{AutoQuant::SQL_Server_DBConnection()}
 
 \item{Query}{The SQL statement you want to run}
 

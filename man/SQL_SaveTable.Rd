@@ -19,7 +19,7 @@ SQL_SaveTable(
 \arguments{
 \item{DataToPush}{data to be sent to warehouse}
 
-\item{DBConnection}{RemixAutoML::SQL_Server_DBConnection()}
+\item{DBConnection}{AutoQuant::SQL_Server_DBConnection()}
 
 \item{SQLTableName}{The SQL statement you want to run}
 

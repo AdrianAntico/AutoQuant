@@ -32,7 +32,7 @@ AutoTransformationScore() is a the compliment function to AutoTransformationCrea
 \examples{
 \dontrun{
 # Create Fake Data
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 25000,
   ID = 2L,
@@ -49,7 +49,7 @@ print(Cols)
 data <- data[1]
 
 # Run function
-Output <- RemixAutoML::AutoTransformationCreate(
+Output <- AutoQuant::AutoTransformationCreate(
   data,
   ColumnNames = Cols,
   Methods = c("YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit", "Identity"),
@@ -62,7 +62,7 @@ data <- Output$Data
 TransInfo <- Output$FinalResults
 
 # Back Transform
-data <- RemixAutoML::AutoTransformationScore(
+data <- AutoQuant::AutoTransformationScore(
   data,
   FinalResults = TransInfo,
   Path = NULL,

@@ -118,14 +118,14 @@ GetAllTickers <- function() {
     Sys.sleep(12L)
   }
   xx <- xx[, .SD, .SDcols = c(names(xx)[c(1,2,5,6,12)])]
-  data.table::fwrite(xx, file = file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/inst/shiny-apps/AutoInsights/ticker_data.csv'))
-  RemixAutoML::PostGRE_RemoveCreateAppend(
+  data.table::fwrite(xx, file = file.path('C:/Users/Bizon/Documents/GitHub/AutoQuant/inst/shiny-apps/AutoInsights/ticker_data.csv'))
+  AutoQuant::PostGRE_RemoveCreateAppend(
     data = xx,
     TableName = "ticker_data",
     CloseConnection = TRUE,
     CreateSchema = NULL,
     Host = "localhost",
-    DBName = "RemixAutoML",
+    DBName = "AutoQuant",
     User = "postgres",
     Port = 5432,
     Password = "Aa1028#@",
@@ -185,7 +185,7 @@ StockData <- function(PolyOut = NULL,
   PolyOut <- jsonlite::fromJSON(paste0("https://api.polygon.io/v2/aggs/ticker/",Symbol,"/range/1/day/",StartDate, "/", EndDate, "?adjusted=true&sort=asc&limit=10000&apiKey=", APIKey))
   data <- data.table::setDT(PolyOut$results)
   datas <- data.table::data.table(Date = seq(StartDate, EndDate, 'days'))
-  datas <- RemixAutoML::CreateCalendarVariables(data = datas, DateCols = 'Date', AsFactor = FALSE, TimeUnits = 'wday')
+  datas <- AutoQuant::CreateCalendarVariables(data = datas, DateCols = 'Date', AsFactor = FALSE, TimeUnits = 'wday')
   datas <- datas[Date_wday %in% c(2L:6L)]
   datas <- datas[!Date %in% as.Date(holidayNYSE(year = c(data.table::year(StartDate),data.table::year(EndDate))))]
   if(nrow(datas) == nrow(data) + 1L) datas <- datas[seq_len(.N-1L)]
@@ -266,7 +266,7 @@ DensityPlot <- function(data, GroupVariables, MeasureVars) {
     plotly::ggplotly(
       eval(ggplot2::ggplot(data, ggplot2::aes(x = get(MeasureVars))) +
              ggplot2::geom_density(alpha = 0.3) +
-             RemixAutoML::ChartTheme(BackGroundColor = 'gray75', ChartColor = RColorBrewer::brewer.pal(n = 3L, name = 'Dark2')[[3L]])))
+             AutoQuant::ChartTheme(BackGroundColor = 'gray75', ChartColor = RColorBrewer::brewer.pal(n = 3L, name = 'Dark2')[[3L]])))
   } else {
     xx <- data.table::melt.data.table(
       data = data,
@@ -274,7 +274,7 @@ DensityPlot <- function(data, GroupVariables, MeasureVars) {
     plotly::ggplotly(
       eval(ggplot2::ggplot(xx, ggplot2::aes(x = Value, fill = Method)) +
              ggplot2::geom_density(alpha = 0.3) +
-             RemixAutoML::ChartTheme(BackGroundColor = 'gray75', ChartColor = RColorBrewer::brewer.pal(n = 3L, name = 'Dark2')[[3L]])))
+             AutoQuant::ChartTheme(BackGroundColor = 'gray75', ChartColor = RColorBrewer::brewer.pal(n = 3L, name = 'Dark2')[[3L]])))
   }
 }
 
@@ -556,8 +556,8 @@ ShapImportancePlot <- function(data,
   }
 
   # Build VI Plot
-  p <- RemixAutoML:::VI_Plot(VI_Data = temp1, Type = 'catboost', TopN = TopN)
-  p <- p + ggplot2::labs(title = 'Shapely Variable Importance', caption = 'RemixAutoML')
+  p <- AutoQuant:::VI_Plot(VI_Data = temp1, Type = 'catboost', TopN = TopN)
+  p <- p + ggplot2::labs(title = 'Shapely Variable Importance', caption = 'AutoQuant')
 
 
   # Y-Axis Label (its the Y-Axis because of coord_flip() in the VI_Plot() function
@@ -672,14 +672,14 @@ CorrMatrixPlot <- function(data = NULL,
 #' @examples
 #' \dontrun{
 #' # Load packages
-#' library(RemixAutoML)
+#' library(AutoQuant)
 #' library(data.table)
 #'
 #' # Load data
 #' data <- data.table::fread(file = file.path('C:/Users/Bizon/Documents/GitHub/BenchmarkData1.csv'))
 #'
 #' # Run function
-#' RemixAutoML:::ViolinPlot(
+#' AutoQuant:::ViolinPlot(
 #'   data = data,
 #'   XVar = 'Region',
 #'   YVar = 'Weekly_Sales',
@@ -805,9 +805,9 @@ ViolinPlot <- function(data = NULL,
   # Create Plot labs
   if(Debug) print('Create Plot labs')
   if(X_and_Y) {
-    p1 <- p1 + ggplot2::labs(title = paste0('BoxPlot by ', stringr::str_to_title(gsub(pattern = '_', replacement = ' ', x = XVar))), subtitle = 'Blue line = mean(Y)', caption = 'RemixAutoML')
+    p1 <- p1 + ggplot2::labs(title = paste0('BoxPlot by ', stringr::str_to_title(gsub(pattern = '_', replacement = ' ', x = XVar))), subtitle = 'Blue line = mean(Y)', caption = 'AutoQuant')
   } else {
-    p1 <- p1 + ggplot2::labs(title = 'Violin Plot', subtitle = 'Blue line = mean(Y)', caption = 'RemixAutoML')
+    p1 <- p1 + ggplot2::labs(title = 'Violin Plot', subtitle = 'Blue line = mean(Y)', caption = 'AutoQuant')
   }
 
   # Labels
@@ -827,7 +827,7 @@ ViolinPlot <- function(data = NULL,
 
   # Add ChartTheme
   if(Debug) print('ChartTheme')
-  p1 <- p1 + RemixAutoML::ChartTheme(
+  p1 <- p1 + AutoQuant::ChartTheme(
     Size = TextSize,
     AngleX = AngleX,
     AngleY = AngleY,
@@ -915,14 +915,14 @@ ViolinPlot <- function(data = NULL,
 #' @examples
 #' \dontrun{
 #' # Load packages
-#' library(RemixAutoML)
+#' library(AutoQuant)
 #' library(data.table)
 #'
 #' # Load data
 #' data <- data.table::fread(file = file.path('C:/Users/Bizon/Documents/GitHub/BenchmarkData1.csv'))
 #'
 #' # Run function
-#' RemixAutoML:::BoxPlot(
+#' AutoQuant:::BoxPlot(
 #'   data = data,
 #'   XVar = 'Region',
 #'   YVar = 'Weekly_Sales',
@@ -1053,9 +1053,9 @@ BoxPlot <- function(data = NULL,
   # Create Plot labs
   if(Debug) print('Create Plot labs')
   if(X_and_Y) {
-    p1 <- p1 + ggplot2::labs(title = paste0('Box Plot by ', stringr::str_to_title(gsub(pattern = '_', replacement = ' ', x = XVar))), subtitle = 'Blue line = mean(Y)', caption = 'RemixAutoML')
+    p1 <- p1 + ggplot2::labs(title = paste0('Box Plot by ', stringr::str_to_title(gsub(pattern = '_', replacement = ' ', x = XVar))), subtitle = 'Blue line = mean(Y)', caption = 'AutoQuant')
   } else {
-    p1 <- p1 + ggplot2::labs(title = 'BoxPlot', subtitle = 'Blue line = mean(Y)', caption = 'RemixAutoML')
+    p1 <- p1 + ggplot2::labs(title = 'BoxPlot', subtitle = 'Blue line = mean(Y)', caption = 'AutoQuant')
   }
 
   # Labels
@@ -1075,7 +1075,7 @@ BoxPlot <- function(data = NULL,
 
   # Add ChartTheme
   if(Debug) print('ChartTheme')
-  p1 <- p1 + RemixAutoML::ChartTheme(
+  p1 <- p1 + AutoQuant::ChartTheme(
     Size = TextSize,
     AngleX = AngleX,
     AngleY = AngleY,
@@ -1165,14 +1165,14 @@ BoxPlot <- function(data = NULL,
 #' @examples
 #' \dontrun{
 #' # Load packages
-#' library(RemixAutoML)
+#' library(AutoQuant)
 #' library(data.table)
 #'
 #' # Load data
 #' data <- data.table::fread(file = file.path('C:/Users/Bizon/Documents/GitHub/BenchmarkData1.csv'))
 #'
 #' # Run function
-#' RemixAutoML:::BarPlot(
+#' AutoQuant:::BarPlot(
 #'   data = data,
 #'   XVar = 'Region',
 #'   YVar = 'Weekly_Sales',
@@ -1497,14 +1497,14 @@ BarPlot <- function(data = NULL,
 
   # Create Plot labs
   if(Debug) print('Create Plot labs')
-  p1 <- p1 + ggplot2::labs(title = 'Bar Plot', caption = 'RemixAutoML')
+  p1 <- p1 + ggplot2::labs(title = 'Bar Plot', caption = 'AutoQuant')
 
   # Add faceting (returns no faceting in none was requested)
   p1 <- AddFacet(p1, fv1=FacetVar1, fv2=FacetVar2, Exclude = 'None', Debug = Debug)
 
   # Add ChartTheme
   if(Debug) print('ChartTheme')
-  p1 <- p1 + RemixAutoML::ChartTheme(
+  p1 <- p1 + AutoQuant::ChartTheme(
     Size = TextSize,
     AngleX = AngleX,
     AngleY = AngleY,
@@ -1594,14 +1594,14 @@ BarPlot <- function(data = NULL,
 #' @examples
 #' \dontrun{
 #' # Load packages
-#' library(RemixAutoML)
+#' library(AutoQuant)
 #' library(data.table)
 #'
 #' # Load data
 #' data <- data.table::fread(file = file.path('C:/Users/Bizon/Documents/GitHub/BenchmarkData1.csv'))
 #'
 #' # Run function
-#' p1 <- RemixAutoML:::HistPlot(
+#' p1 <- AutoQuant:::HistPlot(
 #'   data = data,
 #'   XVar = NULL,
 #'   YVar = 'Weekly_Sales',
@@ -1720,7 +1720,7 @@ HistPlot <- function(data = NULL,
 
   # Create Plot labs
   if(Debug) print('Create Plot labs')
-  p1 <- p1 + ggplot2::labs(title = 'Histogram', subtitle = 'Blue line: mean(X), Red lines: q5, q50, q95', caption = 'RemixAutoML')
+  p1 <- p1 + ggplot2::labs(title = 'Histogram', subtitle = 'Blue line: mean(X), Red lines: q5, q50, q95', caption = 'AutoQuant')
 
   # Labels
   p1 <- p1 + ggplot2::ylab(NULL)
@@ -1731,7 +1731,7 @@ HistPlot <- function(data = NULL,
 
   # Add ChartTheme
   if(Debug) print('ChartTheme')
-  p1 <- p1 + RemixAutoML::ChartTheme(
+  p1 <- p1 + AutoQuant::ChartTheme(
     Size = TextSize,
     AngleX = AngleX,
     AngleY = AngleY,
@@ -1796,7 +1796,7 @@ HistPlot <- function(data = NULL,
 #'   pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
 #' data[, Predict := (
 #'   pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
-#' p1 <- RemixAutoML::ParDepCalPlots(
+#' p1 <- AutoQuant::ParDepCalPlots(
 #'   data,
 #'   PredictionColName = "Predict",
 #'   TargetColName = "Target",
@@ -1805,7 +1805,7 @@ HistPlot <- function(data = NULL,
 #'   PercentileBucket = 0.20,
 #'   FactLevels = 10,
 #'   Function = function(x) mean(x, na.rm = TRUE))
-#' p2 <- RemixAutoML::ParDepCalPlots(
+#' p2 <- AutoQuant::ParDepCalPlots(
 #'   data,
 #'   PredictionColName = "Predict",
 #'   TargetColName = "Target",
@@ -1814,7 +1814,7 @@ HistPlot <- function(data = NULL,
 #'   PercentileBucket = 0.20,
 #'   FactLevels = 10,
 #'   Function = function(x) mean(x, na.rm = TRUE))
-#' RemixAutoML::multiplot(plotlist = list(p1,p2))
+#' AutoQuant::multiplot(plotlist = list(p1,p2))
 #' }
 #' @return Multiple ggplots on a single image
 #' @export
@@ -2598,8 +2598,8 @@ BlankPlot <- function() {
   return(
     eval(ggplot2::ggplot(df, ggplot2::aes(`X Axis`,`Y Axis`)) +
            ggplot2::geom_blank() +
-           RemixAutoML::ChartTheme(ChartColor = 'aliceblue', GridColor = 'lightsteelblue1', BorderColor = 'lightsteelblue2') +
-           ggplot2::labs(title = 'Title', subtitle = 'Subtitle', caption = 'RemixAutoML'))
+           AutoQuant::ChartTheme(ChartColor = 'aliceblue', GridColor = 'lightsteelblue1', BorderColor = 'lightsteelblue2') +
+           ggplot2::labs(title = 'Title', subtitle = 'Subtitle', caption = 'AutoQuant'))
 
   )
 }

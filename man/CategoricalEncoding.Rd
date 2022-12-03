@@ -50,7 +50,7 @@ Categorical encoding for factor and character columns
 \examples{
 \dontrun{
 # Create fake data with 10 categorical
-data <- RemixAutoML::FakeDataGenerator(
+data <- AutoQuant::FakeDataGenerator(
   Correlation = 0.85,
   N = 1000000,
   ID = 2L,
@@ -76,7 +76,7 @@ MethNum <- 1
 test <- data.table::copy(data)
 
 # Run in Train Mode
-data <- RemixAutoML::CategoricalEncoding(
+data <- AutoQuant::CategoricalEncoding(
   data = data,
   ML_Type = "classification",
   GroupVariables = paste0("Factor_", 1:10),
@@ -93,7 +93,7 @@ data <- RemixAutoML::CategoricalEncoding(
 print(data)
 
 # Run in Score Mode by pulling in the csv's
-test <- RemixAutoML::CategoricalEncoding(
+test <- AutoQuant::CategoricalEncoding(
   data = data,
   ML_Type = "classification",
   GroupVariables = paste0("Factor_", 1:10),

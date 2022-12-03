@@ -39,7 +39,7 @@ PostGRE_Query get data from a database table
 \dontrun{
 
 # Query data from table with Uppercase name
-data <- RemixAutoML::PostGRE_Query(
+data <- AutoQuant::PostGRE_Query(
   Query = paste0("SELECT * FROM ", shQuote('Devices')),
   Host = 'localhost',
   CloseConnection = FALSE,
@@ -57,8 +57,8 @@ data <- RemixAutoML::PostGRE_Query(
 # Password = 'Aa...'
 
 # Create Schema
-query <- "CREATE SCHEMA remixautoml AUTHORIZATION postgres;"
-RemixAutoML::PostGRE_Query(
+query <- "CREATE SCHEMA AutoQuant AUTHORIZATION postgres;"
+AutoQuant::PostGRE_Query(
   Query = query,
   Host = 'localhost',
   CloseConnection = FALSE,

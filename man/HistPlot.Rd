@@ -92,14 +92,14 @@ Build a histogram plot by simply passing arguments to a single function. It will
 \examples{
 \dontrun{
 # Load packages
-library(RemixAutoML)
+library(AutoQuant)
 library(data.table)
 
 # Load data
 data <- data.table::fread(file = file.path('C:/Users/Bizon/Documents/GitHub/BenchmarkData1.csv'))
 
 # Run function
-p1 <- RemixAutoML:::HistPlot(
+p1 <- AutoQuant:::HistPlot(
   data = data,
   XVar = NULL,
   YVar = 'Weekly_Sales',

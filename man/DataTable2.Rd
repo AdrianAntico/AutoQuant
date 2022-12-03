@@ -43,11 +43,11 @@ setTimeout(function() {
 ```
 
 ```{r Example, echo = FALSE}
-RemixAutoML::DataTable2(data)
+AutoQuant::DataTable2(data)
 ````
 
 # Shiny Usage
-output$Table <- shiny::renderUI({RemixAutoML::DataTable2(data)})
+output$Table <- shiny::renderUI({AutoQuant::DataTable2(data)})
 
 }
 

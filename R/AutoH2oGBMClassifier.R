@@ -51,7 +51,7 @@
 #' @examples
 #' \dontrun{
 #' # Create some dummy correlated data
-#' data <- RemixAutoML::FakeDataGenerator(
+#' data <- AutoQuant::FakeDataGenerator(
 #'   Correlation = 0.85,
 #'   N = 1000L,
 #'   ID = 2L,
@@ -60,7 +60,7 @@
 #'   Classification = TRUE,
 #'   MultiClass = FALSE)
 #'
-#' TestModel <- RemixAutoML::AutoH2oGBMClassifier(
+#' TestModel <- AutoQuant::AutoH2oGBMClassifier(
 #'
 #'     # Compute management
 #'     MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},

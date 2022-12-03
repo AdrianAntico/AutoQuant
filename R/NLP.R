@@ -26,7 +26,7 @@
 #'
 #' @examples
 #' \dontrun{
-#' Tokenize_Object <- RemixAutoML:::KerasTokenizerFit(
+#' Tokenize_Object <- AutoQuant:::KerasTokenizerFit(
 #'   Fit_Text = x_train_text,
 #'   Fit_Object = NULL,
 #'   Tok_num_words = NULL,
@@ -247,14 +247,14 @@ Keras_t2s_pad <- function(RunText2Seq = TRUE,
 #' @author Adrian Antico
 #'
 #' @param LayerFunc Required, Positional. E.g. keras::layer_input without quotes
-#' @param PriorOutput The resulting list contained in Output <- RemixAutoML::Keras(). If you pass this LayerList and ArgsList will be ignored. Same Output from ArgsList and LayerList.
+#' @param PriorOutput The resulting list contained in Output <- AutoQuant::Keras(). If you pass this LayerList and ArgsList will be ignored. Same Output from ArgsList and LayerList.
 #' @param Name Name for the LayerList and ArgsList elements
 #' @param Debug FALSE
 #' @param ... Passthrough args for keras layer_input
 #'
 #' @examples
 #' \dontrun{
-#' Output <- RemixAutoML::KerasInputs(keras::flatten, PriorOutput = Output, Name = 'flatten1', object = Output$LayerList$PreviousLayer)
+#' Output <- AutoQuant::KerasInputs(keras::flatten, PriorOutput = Output, Name = 'flatten1', object = Output$LayerList$PreviousLayer)
 #' }
 #'
 #'
@@ -265,7 +265,7 @@ Keras <- function(LayerFunc,
                   Debug = FALSE,
                   ...) {
 
-  if(missing(LayerFunc)) stop(cat('LayerFunc is required. \nAn example: \n keras::layer_input \nNote: \n do not add quotes and do not add parentheses \n parameter is positional so I typically start with RemixAutoML::Keras(keras::layer_input, LayerList = NULL, Name =', if(is.null(Name)) shQuote('Args1') else shQuote(Name), ')'))
+  if(missing(LayerFunc)) stop(cat('LayerFunc is required. \nAn example: \n keras::layer_input \nNote: \n do not add quotes and do not add parentheses \n parameter is positional so I typically start with AutoQuant::Keras(keras::layer_input, LayerList = NULL, Name =', if(is.null(Name)) shQuote('Args1') else shQuote(Name), ')'))
 
   # Args fed to the function LayerFunc in: output <- do.call(LayerFunc, Args)
   Args <- list(...) #; for(i in seq_along(ArgsList)) assign(x = names(ArgsList)[i], value = ArgsList[[i]])
@@ -274,7 +274,7 @@ Keras <- function(LayerFunc,
     print('length(LayerList) == 0L'); print(length(LayerList) == 0L)
   }
 
-  # PriorOutput is an Output <- RemixAutoML::Keras() object
+  # PriorOutput is an Output <- AutoQuant::Keras() object
   if(length(PriorOutput) > 0) {
     LayerList <- PriorOutput$LayerList
     ArgsList <- PriorOutput$ArgsList
@@ -330,7 +330,7 @@ Keras <- function(LayerFunc,
 #' @author Adrian Antico
 #' @family DL
 #'
-#' @param PriorOutput Default NULL. E.g. Output from a previous RemixAutoML::Keras() call. Ignore if using Sequential Mode (API = FALSE)
+#' @param PriorOutput Default NULL. E.g. Output from a previous AutoQuant::Keras() call. Ignore if using Sequential Mode (API = FALSE)
 #' @param Name Default NULL. A name that is used to store and reference objects in the output list
 #' @param inputs Default NULL. E.g. c(Output$LayerList$text, Output$LayerList$features)
 #' @param outputs Default NULL. E.g. Output$LayerList$outputtot
@@ -354,7 +354,7 @@ Keras <- function(LayerFunc,
 #' @examples
 #' \dontrun{
 #'
-#' Output <- RemixAutoML:::KerasTrainEval(
+#' Output <- AutoQuant:::KerasTrainEval(
 #'   PriorOutput = NULL, # Output
 #'   inputs = NULL, # c(Output$LayerList$text, Output$LayerList$features),
 #'   outputs = NULL, # Output$LayerList$outputtot,
@@ -427,7 +427,7 @@ KerasTrainEval <- function(PriorOutput = NULL,
   # ... equivalent
   Args <- c(as.list(environment()))
 
-  # PriorOutput is an Output <- RemixAutoML::Keras() object
+  # PriorOutput is an Output <- AutoQuant::Keras() object
   if(length(PriorOutput) > 0) {
 
     # meta
@@ -454,13 +454,13 @@ KerasTrainEval <- function(PriorOutput = NULL,
   }
 
   # Build model structure
-  PriorOutput <- RemixAutoML::Keras(
+  PriorOutput <- AutoQuant::Keras(
     keras::keras_model, PriorOutput = PriorOutput, Name = nam,
     inputs = inputs,
     outputs = outputs)
 
   # Compile model
-  PriorOutput <- RemixAutoML::Keras(
+  PriorOutput <- AutoQuant::Keras(
     keras::compile, PriorOutput = PriorOutput, Name = nam,
     object = PriorOutput$LayerList[[length(PriorOutput$LayerList)]],
     optimizer = Compile_optimizer,
@@ -468,7 +468,7 @@ KerasTrainEval <- function(PriorOutput = NULL,
     metrics = Compile_metrics)
 
   # Train model
-  PriorOutput <- RemixAutoML::Keras(
+  PriorOutput <- AutoQuant::Keras(
     keras::fit, PriorOutput = PriorOutput, Name = paste0(nam, '_history'),
     object = PriorOutput$LayerList[[length(PriorOutput$LayerList)]],
     x = Data_FeaturesTrain, y = Data_YTrain,
@@ -486,7 +486,7 @@ KerasTrainEval <- function(PriorOutput = NULL,
     validation_steps = Fit_validation_steps)
 
   # Evaluate model
-  temp <- RemixAutoML:::Keras_BinaryScoreEval(
+  temp <- AutoQuant:::Keras_BinaryScoreEval(
     CompiledModel = PriorOutput$LayerList[[length(PriorOutput$LayerList) - 1L]],
     YTest = YTest,
     Features = FeaturesTest,
@@ -496,7 +496,7 @@ KerasTrainEval <- function(PriorOutput = NULL,
   PriorOutput[[paste0(nam, '_ScoreData')]] <- temp$ScoreData
   PriorOutput[[paste0(nam, '_EvalMetrics')]] <- temp$Metrics
   PriorOutput[[paste0(nam, '_ConfusionMatrix')]] <- temp[["ConfusionMatrix"]]
-  PriorOutput[[paste0(nam, '_PlotTrainHistory')]] <- plot(PriorOutput$LayerList[[length(PriorOutput$LayerList)]]) + RemixAutoML::ChartTheme() + ggplot2::ylab('')
+  PriorOutput[[paste0(nam, '_PlotTrainHistory')]] <- plot(PriorOutput$LayerList[[length(PriorOutput$LayerList)]]) + AutoQuant::ChartTheme() + ggplot2::ylab('')
 
   # Return output
   return(PriorOutput)
@@ -541,7 +541,7 @@ Keras_BinaryScoreEval <- function(CompiledModel = NULL, # model_word2vec
 
   # Remix Metrics
   if(ReturnMetrics) {
-    m <- RemixAutoML:::BinaryMetrics(
+    m <- AutoQuant:::BinaryMetrics(
       ValidationData. = s,
       TargetColumnName. = 'Actual',
       ClassWeights. = c(1,1),

@@ -22,7 +22,7 @@
 #' \dontrun{
 #'
 #' # Create fake data
-#' data <- RemixAutoML::FakeDataGenerator(
+#' data <- AutoQuant::FakeDataGenerator(
 #'   Correlation = 0.70,
 #'   N = 1000L,
 #'   ID = 2L,
@@ -36,7 +36,7 @@
 #'   MultiClass = FALSE)
 #'
 #' # Create Model and Vectors
-#' data <- RemixAutoML::AutoWord2VecModeler(
+#' data <- AutoQuant::AutoWord2VecModeler(
 #'   data,
 #'   BuildType = "individual",
 #'   stringCol = c("Comment"),
@@ -55,7 +55,7 @@
 #' rm(data)
 #'
 #' # Create fake data for mock scoring
-#' data <- RemixAutoML::FakeDataGenerator(
+#' data <- AutoQuant::FakeDataGenerator(
 #'   Correlation = 0.70,
 #'   N = 1000L,
 #'   ID = 2L,
@@ -72,7 +72,7 @@
 #' Sys.sleep(5L)
 #'
 #' # Create vectors for scoring
-#' data <- RemixAutoML::AutoWord2VecScoring(
+#' data <- AutoQuant::AutoWord2VecScoring(
 #'   data,
 #'   BuildType = 'individual',
 #'   ModelObject = NULL,
@@ -287,7 +287,7 @@ AutoWord2VecModeler <- function(data,
 #' @examples
 #' \dontrun{
 #' # Create fake data
-#' data <- RemixAutoML::FakeDataGenerator(
+#' data <- AutoQuant::FakeDataGenerator(
 #'   Correlation = 0.70,
 #'   N = 1000L,
 #'   ID = 2L,
@@ -301,7 +301,7 @@ AutoWord2VecModeler <- function(data,
 #'   MultiClass = FALSE)
 #'
 #' # Create Model and Vectors
-#' data <- RemixAutoML::AutoWord2VecModeler(
+#' data <- AutoQuant::AutoWord2VecModeler(
 #'   data,
 #'   BuildType = "individual",
 #'   stringCol = c("Comment"),
@@ -320,7 +320,7 @@ AutoWord2VecModeler <- function(data,
 #' rm(data)
 #'
 #' # Create fake data for mock scoring
-#' data <- RemixAutoML::FakeDataGenerator(
+#' data <- AutoQuant::FakeDataGenerator(
 #'   Correlation = 0.70,
 #'   N = 1000L,
 #'   ID = 2L,
@@ -334,7 +334,7 @@ AutoWord2VecModeler <- function(data,
 #'   MultiClass = FALSE)
 #'
 #' # Create vectors for scoring
-#' data <- RemixAutoML::AutoWord2VecScoring(
+#' data <- AutoQuant::AutoWord2VecScoring(
 #'   data,
 #'   BuildType = "individual",
 #'   ModelObject = NULL,
@@ -445,7 +445,7 @@ Word2Vec_H2O <- function(TrainData. = NULL,
     tempnames <- names(TrainData.)
 
     # Run AutoWord2VecModeler
-    TrainData. <- RemixAutoML::AutoWord2VecModeler(
+    TrainData. <- AutoQuant::AutoWord2VecModeler(
       data = TrainData.,
       BuildType = ArgsList$BuildType,
       stringCol = ArgsList$stringCol,
@@ -469,7 +469,7 @@ Word2Vec_H2O <- function(TrainData. = NULL,
 
     # Score new data
     if(!is.null(ValidationData.)) {
-      ValidationData. <- RemixAutoML::AutoWord2VecScoring(
+      ValidationData. <- AutoQuant::AutoWord2VecScoring(
         data = ValidationData.,
         BuildType = ArgsList$BuildType,
         stringCol = ArgsList$stringCol,
@@ -485,7 +485,7 @@ Word2Vec_H2O <- function(TrainData. = NULL,
 
     # Score new data
     if(!is.null(ValidationData.)) {
-      TestData. <- RemixAutoML::AutoWord2VecScoring(
+      TestData. <- AutoQuant::AutoWord2VecScoring(
         data = TestData.,
         BuildType = ArgsList$BuildType,
         stringCol = ArgsList$stringCol,
@@ -510,7 +510,7 @@ Word2Vec_H2O <- function(TrainData. = NULL,
     tempnames <- names(ScoringData.)
 
     # Score new data
-    data <- RemixAutoML::AutoWord2VecScoring(
+    data <- AutoQuant::AutoWord2VecScoring(
       data = ScoringData.,
       BuildType = ArgsList$FE_H2OWord2VecScoring$BuildType,
       stringCol = ArgsList$FE_H2OWord2VecScoring$stringCol,
@@ -568,7 +568,7 @@ Word2Vec_H2O <- function(TrainData. = NULL,
 #' ############################
 #'
 #' # Create simulated data
-#' data <- RemixAutoML::FakeDataGenerator(
+#' data <- AutoQuant::FakeDataGenerator(
 #'   Correlation = 0.70,
 #'   N = 1000L,
 #'   ID = 2L,
@@ -582,7 +582,7 @@ Word2Vec_H2O <- function(TrainData. = NULL,
 #'   MultiClass = FALSE)
 #'
 #' # Run algo
-#' Output <- RemixAutoML::H2OAutoencoder(
+#' Output <- AutoQuant::H2OAutoencoder(
 #'
 #'   # Select the service
 #'   AnomalyDetection = TRUE,
@@ -626,7 +626,7 @@ Word2Vec_H2O <- function(TrainData. = NULL,
 #' ############################
 #'
 #' # Create simulated data
-#' data <- RemixAutoML::FakeDataGenerator(
+#' data <- AutoQuant::FakeDataGenerator(
 #'   Correlation = 0.70,
 #'   N = 1000L,
 #'   ID = 2L,
@@ -640,7 +640,7 @@ Word2Vec_H2O <- function(TrainData. = NULL,
 #'   MultiClass = FALSE)
 #'
 #' # Run algo
-#' data <- RemixAutoML::H2OAutoencoderScoring(
+#' data <- AutoQuant::H2OAutoencoderScoring(
 #'
 #'   # Select the service
 #'   AnomalyDetection = TRUE,
@@ -818,7 +818,7 @@ H2OAutoencoder <- function(AnomalyDetection = FALSE,
 #' ############################
 #'
 #' # Create simulated data
-#' data <- RemixAutoML::FakeDataGenerator(
+#' data <- AutoQuant::FakeDataGenerator(
 #'   Correlation = 0.70,
 #'   N = 1000L,
 #'   ID = 2L,
@@ -832,7 +832,7 @@ H2OAutoencoder <- function(AnomalyDetection = FALSE,
 #'   MultiClass = FALSE)
 #'
 #' # Run algo
-#' data <- RemixAutoML::H2OAutoencoder(
+#' data <- AutoQuant::H2OAutoencoder(
 #'
 #'   # Select the service
 #'   AnomalyDetection = TRUE,
@@ -868,7 +868,7 @@ H2OAutoencoder <- function(AnomalyDetection = FALSE,
 #' ############################
 #'
 #' # Create simulated data
-#' data <- RemixAutoML::FakeDataGenerator(
+#' data <- AutoQuant::FakeDataGenerator(
 #'   Correlation = 0.70,
 #'   N = 1000L,
 #'   ID = 2L,
@@ -882,7 +882,7 @@ H2OAutoencoder <- function(AnomalyDetection = FALSE,
 #'   MultiClass = FALSE)
 #'
 #' # Run algo
-#' data <- RemixAutoML::H2OAutoencoderScoring(
+#' data <- AutoQuant::H2OAutoencoderScoring(
 #'
 #'   # Select the service
 #'   AnomalyDetection = TRUE,
@@ -1039,7 +1039,7 @@ AutoEncoder_H2O <- function(RunMode = 'train',
     tempnames <- names(data.table::copy(TrainData.))
 
     # Run function
-    TrainData. <- RemixAutoML::H2OAutoencoder(
+    TrainData. <- AutoQuant::H2OAutoencoder(
 
       # Select the service
       AnomalyDetection = ArgsList$AnomalyDetection,
@@ -1092,7 +1092,7 @@ AutoEncoder_H2O <- function(RunMode = 'train',
       Sys.sleep(8L)
 
       # Score model
-      ValidationData. <- RemixAutoML::H2OAutoencoderScoring(
+      ValidationData. <- AutoQuant::H2OAutoencoderScoring(
 
         # Select the service
         AnomalyDetection = ArgsList$AnomalyDetection,
@@ -1124,7 +1124,7 @@ AutoEncoder_H2O <- function(RunMode = 'train',
       Sys.sleep(8L)
 
       # Score model
-      TestData. <- RemixAutoML::H2OAutoencoderScoring(
+      TestData. <- AutoQuant::H2OAutoencoderScoring(
 
         # Select the service
         AnomalyDetection = ArgsList$AnomalyDetection,
@@ -1152,7 +1152,7 @@ AutoEncoder_H2O <- function(RunMode = 'train',
     print('AE ::: 10')
 
     # Score model
-    ScoringData. <- RemixAutoML::H2OAutoencoderScoring(
+    ScoringData. <- AutoQuant::H2OAutoencoderScoring(
 
       # Select the service
       AnomalyDetection = ArgsList$AnomalyDetection,
@@ -1212,7 +1212,7 @@ AutoEncoder_H2O <- function(RunMode = 'train',
 #' @examples
 #' \dontrun{
 #' # Create simulated data
-#' data <- RemixAutoML::FakeDataGenerator(
+#' data <- AutoQuant::FakeDataGenerator(
 #'   Correlation = 0.70,
 #'   N = 50000,
 #'   ID = 2L,
@@ -1225,7 +1225,7 @@ AutoEncoder_H2O <- function(RunMode = 'train',
 #'   MultiClass = FALSE)
 #'
 #' # Run algo
-#' data <- RemixAutoML::H2OIsolationForest(
+#' data <- AutoQuant::H2OIsolationForest(
 #'   data,
 #'   Features = names(data)[2L:ncol(data)],
 #'   IDcols = c("Adrian", "IDcol_1", "IDcol_2"),
@@ -1248,7 +1248,7 @@ AutoEncoder_H2O <- function(RunMode = 'train',
 #' data[, eval(names(data)[17:ncol(data)]) := NULL]
 #'
 #' # Run algo
-#' Outliers <- RemixAutoML::H2OIsolationForestScoring(
+#' Outliers <- AutoQuant::H2OIsolationForestScoring(
 #'   data,
 #'   Features = names(data)[2:ncol(data)],
 #'   IDcols = c("Adrian", "IDcol_1", "IDcol_2"),
@@ -1404,7 +1404,7 @@ H2OIsolationForest <- function(data,
 #' @examples
 #' \dontrun{
 #' # Create simulated data
-#' data <- RemixAutoML::FakeDataGenerator(
+#' data <- AutoQuant::FakeDataGenerator(
 #'   Correlation = 0.70,
 #'   N = 50000,
 #'   ID = 2L,
@@ -1417,7 +1417,7 @@ H2OIsolationForest <- function(data,
 #'   MultiClass = FALSE)
 #'
 #' # Run algo
-#' data <- RemixAutoML::H2OIsolationForest(
+#' data <- AutoQuant::H2OIsolationForest(
 #'   data,
 #'   Features = names(data)[2L:ncol(data)],
 #'   IDcols = c("Adrian", "IDcol_1", "IDcol_2"),
@@ -1440,7 +1440,7 @@ H2OIsolationForest <- function(data,
 #' data[, eval(names(data)[17:ncol(data)]) := NULL]
 #'
 #' # Run algo
-#' Outliers <- RemixAutoML::H2OIsolationForestScoring(
+#' Outliers <- AutoQuant::H2OIsolationForestScoring(
 #'   data,
 #'   Features = names(data)[2:ncol(data)],
 #'   IDcols = c("Adrian", "IDcol_1", "IDcol_2"),
@@ -1589,7 +1589,7 @@ IsolationForest_H2O <- function(ArgsList=ArgsList,
     ColsUsed <- ColsUsedp[!ColsUsed %chin% c(ArgsList$Data$TargetVariables, ArgsList$Data$PrimaryDateVariables, ArgsList$Data$IDVariables)]
 
     # Run function
-    TrainData. <- RemixAutoML::H2OIsolationForest(
+    TrainData. <- AutoQuant::H2OIsolationForest(
       data = TrainData.,
       Features = ColsUsed,
       IDcols = c(ArgsList$Data$TargetVariables, ArgsList$Data$PrimaryDateVariables, ArgsList$Data$IDVariables),
@@ -1638,7 +1638,7 @@ IsolationForest_H2O <- function(ArgsList=ArgsList,
       Sys.sleep(10L)
 
       # Score model
-      ValidationData. <- RemixAutoML::H2OIsolationForestScoring(
+      ValidationData. <- AutoQuant::H2OIsolationForestScoring(
         data = ValidationData.,
         Features = ArgsList$FE_H2OIsolationForest$Features,
         IDcols = ArgsList$FE_H2OIsolationForest$IDcols,
@@ -1668,7 +1668,7 @@ IsolationForest_H2O <- function(ArgsList=ArgsList,
       Sys.sleep(10L)
 
       # Score model
-      TestData. <- RemixAutoML::H2OIsolationForestScoring(
+      TestData. <- AutoQuant::H2OIsolationForestScoring(
         data = TestData.,
         Features = ArgsList$FE_H2OIsolationForestScoring$Features,
         IDcols = ArgsList$FE_H2OIsolationForestScoring$IDcols,
@@ -1685,7 +1685,7 @@ IsolationForest_H2O <- function(ArgsList=ArgsList,
   } else {
 
     # Score model
-    ScoringData. <- RemixAutoML::H2OIsolationForestScoring(
+    ScoringData. <- AutoQuant::H2OIsolationForestScoring(
       data = ScoringData.,
       Features = ArgsList$FE_H2OIsolationForestScoring$Features,
       IDcols = ArgsList$FE_H2OIsolationForestScoring$IDcols,
@@ -1737,7 +1737,7 @@ IsolationForest_H2O <- function(ArgsList=ArgsList,
 #' #########################
 #'
 #' # Create fake data
-#' data <- RemixAutoML::FakeDataGenerator(
+#' data <- AutoQuant::FakeDataGenerator(
 #'   Correlation = 0.85,
 #'   N = 1000,
 #'   ID = 2,
@@ -1747,7 +1747,7 @@ IsolationForest_H2O <- function(ArgsList=ArgsList,
 #'   MultiClass = FALSE)
 #'
 #' # Run function
-#' data <- RemixAutoML::AutoClustering(
+#' data <- AutoQuant::AutoClustering(
 #'   data,
 #'   FeatureColumns = names(data)[2:(ncol(data)-1)],
 #'   ModelID = 'TestModel',
@@ -1771,7 +1771,7 @@ IsolationForest_H2O <- function(ArgsList=ArgsList,
 #' Sys.sleep(10)
 #'
 #' # Create fake data
-#' data <- RemixAutoML::FakeDataGenerator(
+#' data <- AutoQuant::FakeDataGenerator(
 #'   Correlation = 0.85,
 #'   N = 1000,
 #'   ID = 2,
@@ -1781,7 +1781,7 @@ IsolationForest_H2O <- function(ArgsList=ArgsList,
 #'   MultiClass = FALSE)
 #'
 #' # Run function
-#' data <- RemixAutoML::AutoClusteringScoring(
+#' data <- AutoQuant::AutoClusteringScoring(
 #'   data,
 #'   FeatureColumns = names(data)[2:(ncol(data)-1)],
 #'   ModelID = 'TestModel',
@@ -1819,7 +1819,7 @@ AutoClustering <- function(data,
     tempnames <- names(data.table::copy(data))
 
     # H2OAutoencoder ----
-    data <- RemixAutoML::H2OAutoencoder(
+    data <- AutoQuant::H2OAutoencoder(
 
       # Select the service
       AnomalyDetection = FALSE,
@@ -1927,7 +1927,7 @@ AutoClustering <- function(data,
 #' #########################
 #'
 #' # Create fake data
-#' data <- RemixAutoML::FakeDataGenerator(
+#' data <- AutoQuant::FakeDataGenerator(
 #'   Correlation = 0.85,
 #'   N = 1000,
 #'   ID = 2,
@@ -1937,7 +1937,7 @@ AutoClustering <- function(data,
 #'   MultiClass = FALSE)
 #'
 #' # Run function
-#' data <- RemixAutoML::AutoClustering(
+#' data <- AutoQuant::AutoClustering(
 #'   data,
 #'   FeatureColumns = names(data)[2:(ncol(data)-1)],
 #'   ModelID = 'TestModel',
@@ -1961,7 +1961,7 @@ AutoClustering <- function(data,
 #' Sys.sleep(10)
 #'
 #' # Create fake data
-#' data <- RemixAutoML::FakeDataGenerator(
+#' data <- AutoQuant::FakeDataGenerator(
 #'   Correlation = 0.85,
 #'   N = 1000,
 #'   ID = 2,
@@ -1971,7 +1971,7 @@ AutoClustering <- function(data,
 #'   MultiClass = FALSE)
 #'
 #' # Run function
-#' data <- RemixAutoML::AutoClusteringScoring(
+#' data <- AutoQuant::AutoClusteringScoring(
 #'   data,
 #'   FeatureColumns = names(data)[2:(ncol(data)-1)],
 #'   ModelID = 'TestModel',
@@ -2001,7 +2001,7 @@ AutoClusteringScoring <- function(data,
     tempnames <- names(data.table::copy(data))
 
     # Score H2OAutoencoder
-    data <- RemixAutoML::H2OAutoencoderScoring(
+    data <- AutoQuant::H2OAutoencoderScoring(
 
       # Select the service
       AnomalyDetection = FALSE,
@@ -2098,7 +2098,7 @@ Clustering_H2O <- function(ArgsList=ArgsList_FEE,
     }
 
     # Run function
-    TrainData. <- RemixAutoML::AutoClustering(
+    TrainData. <- AutoQuant::AutoClustering(
       data = TrainData.,
       Features = ColsUsed,
       ModelID = paste0(ArgsList$MetaData$ProjectID, "_Clustering"),
@@ -2147,7 +2147,7 @@ Clustering_H2O <- function(ArgsList=ArgsList_FEE,
       Sys.sleep(10L)
 
       # Score model
-      ValidationData. <- RemixAutoML::AutoClusteringScoring(
+      ValidationData. <- AutoQuant::AutoClusteringScoring(
         data = ValidationData.,
         FeatureColumns = ArgsList$FE_H2OClustering$Features,
         ModelID = ArgsList$FE_H2OClustering$ModelID,
@@ -2172,7 +2172,7 @@ Clustering_H2O <- function(ArgsList=ArgsList_FEE,
       Sys.sleep(10L)
 
       # Score model
-      TestData. <- RemixAutoML::AutoClusteringScoring(
+      TestData. <- AutoQuant::AutoClusteringScoring(
         data = TestData.,
         FeatureColumns = ArgsList$FE_H2OClusteringScoring$FeatureColumns,
         ModelID = ArgsList$FE_H2OClusteringScoring$ModelID,
@@ -2185,7 +2185,7 @@ Clustering_H2O <- function(ArgsList=ArgsList_FEE,
   } else {
 
     # Score model
-    ScoringData. <- RemixAutoML::AutoClusteringScoring(
+    ScoringData. <- AutoQuant::AutoClusteringScoring(
       data = ScoringData.,
       FeatureColumns = ArgsList$FE_H2OClusteringScoring$FeatureColumns,
       ModelID = ArgsList$FE_H2OClusteringScoring$ModelID,
