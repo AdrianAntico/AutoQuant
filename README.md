@@ -167,7 +167,7 @@ install.packages("https://github.com/AdrianAntico/AutoQuant/archive/refs/tags/<v
 </p>
 </details>
 
-<img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/Documentation.PNG" align="center" width="725" />
+# Usage
 
 ## Feature Engineering <img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/FeatureEngineeringMenu.PNG" align="right" width="80" />
 
