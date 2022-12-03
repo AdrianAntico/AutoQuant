@@ -86,7 +86,6 @@ The minimal set of packages that need to be installed are below. The full list c
 # Core pacakges
 if(!("data.table" %in% rownames(installed.packages()))) install.packages("data.table"); print("data.table")
 if(!("collapse" %in% rownames(install.packages()))) install.packages("collapse"); print("collapse")
-if(!("arules" %in% rownames(installed.packages()))) install.packages("arules"); print("arules")
 if(!("bit64" %in% rownames(installed.packages()))) install.packages("bit64"); print("bit64")
 if(!("devtools" %in% rownames(installed.packages()))) install.packages("devtools"); print("devtools")
 if(!("doParallel" %in% rownames(installed.packages()))) install.packages("doParallel"); print("doParallel")
