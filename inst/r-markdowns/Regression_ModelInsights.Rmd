@@ -1,10 +1,10 @@
 ---
 title: "Regression Evaluation & Insights"
-author: "Provided by RemixAutoML"
+author: "Provided by AutoQuant"
 date: "`r format(Sys.time(), '%Y-%m-%d')`"
 output:
   prettydoc::html_pretty:
-    theme: remixautoml
+    theme: AutoQuant
     toc: yes
     toc_depth: 2
     fig_caption: yes
@@ -13,7 +13,7 @@ classoption: landscape
 ---
 
 ```{r Environment, include=FALSE}
-# theme options up top: hpstr, cayman, architect, remixautoml
+# theme options up top: hpstr, cayman, architect, AutoQuant
 knitr::opts_chunk$set(echo = TRUE)
 temp <- globalenv()
 TempNames <- names(temp)
@@ -314,7 +314,7 @@ if(!is.null(RemixOutput)) {
       if(is.numeric(TestData[[g]])) {
         
         # Add
-        Test_ParDepPlots[[g]] <- RemixAutoML::ParDepCalPlots(
+        Test_ParDepPlots[[g]] <- AutoQuant::ParDepCalPlots(
           data = TestData, 
           PredictionColName = 'Predict', 
           TargetColName = TargetColumnName, 
@@ -368,7 +368,7 @@ if(!is.null(RemixOutput)) {
       if(is.numeric(TrainData[[g]])) {
 
         # Add
-        Train_ParDepPlots[[g]] <- RemixAutoML::ParDepCalPlots(
+        Train_ParDepPlots[[g]] <- AutoQuant::ParDepCalPlots(
           data = TrainData, 
           PredictionColName = 'Predict', 
           TargetColName = TargetColumnName, 
@@ -422,7 +422,7 @@ if(!is.null(RemixOutput)) {
       if(is.numeric(TestData[[g]])) {
 
         # Add
-        Test_ParDepBoxPlots[[g]] <- RemixAutoML::ParDepCalPlots(
+        Test_ParDepBoxPlots[[g]] <- AutoQuant::ParDepCalPlots(
           data = TestData, 
           PredictionColName = 'Predict', 
           TargetColName = TargetColumnName, 
@@ -474,7 +474,7 @@ if(!is.null(RemixOutput)) {
       if(is.numeric(TrainData[[g]])) {
 
         # Add
-        Train_ParDepBoxPlots[[g]] <- RemixAutoML::ParDepCalPlots(
+        Train_ParDepBoxPlots[[g]] <- AutoQuant::ParDepCalPlots(
           data = TrainData, 
           PredictionColName = 'Predict', 
           TargetColName = TargetColumnName, 
@@ -528,7 +528,7 @@ if(!is.null(RemixOutput)) {
       if(!is.numeric(TestData[[g]])) {
 
         # Add
-        Test_ParDepCatPlots[[g]] <- RemixAutoML::ParDepCalPlots(
+        Test_ParDepCatPlots[[g]] <- AutoQuant::ParDepCalPlots(
           data = TestData, 
           PredictionColName = 'Predict', 
           TargetColName = TargetColumnName, 
@@ -580,7 +580,7 @@ if(!is.null(RemixOutput)) {
       if(!is.numeric(TrainData[[g]])) {
 
         # Add
-        Train_ParDepCatPlots[[g]] <- RemixAutoML::ParDepCalPlots(
+        Train_ParDepCatPlots[[g]] <- AutoQuant::ParDepCalPlots(
           data = TrainData, 
           PredictionColName = 'Predict', 
           TargetColName = TargetColumnName, 
@@ -643,7 +643,7 @@ if(is.null(RemixOutput)) {
 
   ## Test_ResidualsPlots ----
   if(!is.null(TestData)) {
-    Test_ResidualPlot <- RemixAutoML::ResidualPlots(
+    Test_ResidualPlot <- AutoQuant::ResidualPlots(
       TestData = data.table::copy(TestData), 
       Target = TargetColumnName,
       Predicted = 'Predict',
@@ -655,7 +655,7 @@ if(is.null(RemixOutput)) {
 
   ## Train_ResidualsPlots ----
   if(!is.null(TrainData)) {
-    Train_ResidualPlot <- RemixAutoML::ResidualPlots(
+    Train_ResidualPlot <- AutoQuant::ResidualPlots(
       TestData = data.table::copy(TrainData),
       Target = TargetColumnName,
       Predicted = 'Predict',
@@ -703,7 +703,7 @@ if(is.null(RemixOutput)) {
   
   ### Test
   if(!is.null(TestData) && !is.null(TrainData) && !file.exists(file.path(SourcePath, paste0(ModelID, "_Test_EvaluationMetrics.csv")))) {
-    Test_EvalMetrics <- RemixAutoML:::RegressionMetrics(
+    Test_EvalMetrics <- AutoQuant:::RegressionMetrics(
       SaveModelObjects. = FALSE,
       data.           = TrainData,
       ValidationData. = TestData,
@@ -715,7 +715,7 @@ if(is.null(RemixOutput)) {
       model_path. = SourcePath,
       metadata_path. = SourcePath)
   } else if(!is.null(TestData) && is.null(TrainData) && !file.exists(file.path(SourcePath, paste0(ModelID, "_Test_EvaluationMetrics.csv")))) {
-    Test_EvalMetrics <- RemixAutoML:::RegressionMetrics(
+    Test_EvalMetrics <- AutoQuant:::RegressionMetrics(
       SaveModelObjects. = FALSE,
       data.           = TestData,
       ValidationData. = TestData,
@@ -734,7 +734,7 @@ if(is.null(RemixOutput)) {
 
   ### Train
   if(!is.null(TrainData) && !file.exists(file.path(SourcePath, paste0(ModelID, "_Train_EvaluationMetrics.csv")))) {
-    Train_EvalMetrics <- RemixAutoML:::RegressionMetrics(
+    Train_EvalMetrics <- AutoQuant:::RegressionMetrics(
       SaveModelObjects. = FALSE,
       data. = TrainData,
       ValidationData. = TrainData,
@@ -958,7 +958,7 @@ if(is.null(RemixOutput)) {
   if(!is.null(Test_ResidualPlot[['ResidualsHistogram']])) {
     Test_ResidualHistogram <- Test_ResidualPlot[['ResidualsHistogram']]
   } else if(!is.null(TestData)) {
-    Test_ResidualPlot <- RemixAutoML::ResidualPlots(
+    Test_ResidualPlot <- AutoQuant::ResidualPlots(
       TestData = TestData,
       Target = TargetColumnName,
       Predicted = 'Predict',
@@ -973,7 +973,7 @@ if(is.null(RemixOutput)) {
   if(!is.null(Train_ResidualPlot[['ResidualsHistogram']])) {
     Train_ResidualHistogram <- Train_ResidualPlot[['ResidualsHistogram']]
   } else if(!is.null(TrainData)) {
-    Train_ResidualPlot <- RemixAutoML::ResidualPlots(
+    Train_ResidualPlot <- AutoQuant::ResidualPlots(
       TestData = TrainData,
       Target = TargetColumnName,
       Predicted = 'Predict',
@@ -988,7 +988,7 @@ if(is.null(RemixOutput)) {
   
   ### Test
   if(!is.null(TestData)) {
-    Test_EvaluationPlot <- RemixAutoML::EvalPlot(
+    Test_EvaluationPlot <- AutoQuant::EvalPlot(
       data = data.table::copy(TestData), 
       PredictionColName = 'Predict', 
       TargetColName = TargetColumnName, 
@@ -1001,7 +1001,7 @@ if(is.null(RemixOutput)) {
 
   ### Train
   if(!is.null(TrainData)) {
-    Train_EvaluationPlot <- RemixAutoML::EvalPlot(
+    Train_EvaluationPlot <- AutoQuant::EvalPlot(
       data = data.table::copy(TrainData), 
       PredictionColName = 'Predict',
       TargetColName = TargetColumnName, 
@@ -1016,7 +1016,7 @@ if(is.null(RemixOutput)) {
 
   ### Test
   if(!is.null(TestData)) {
-    Test_EvaluationBoxPlot <- RemixAutoML::EvalPlot(
+    Test_EvaluationBoxPlot <- AutoQuant::EvalPlot(
       data = data.table::copy(TestData), 
       PredictionColName = 'Predict', 
       TargetColName = TargetColumnName, 
@@ -1029,7 +1029,7 @@ if(is.null(RemixOutput)) {
 
   ### Train
   if(!is.null(TrainData)) {
-    Train_EvaluationBoxPlot <- RemixAutoML::EvalPlot(
+    Train_EvaluationBoxPlot <- AutoQuant::EvalPlot(
       data = data.table::copy(TrainData),
       PredictionColName = 'Predict',
       TargetColName = TargetColumnName,
@@ -1100,7 +1100,7 @@ if(is.null(RemixOutput)) {
       if(is.numeric(TestData[[g]])) {
 
         # Add
-        Test_ParDepPlots[[g]] <- RemixAutoML::ParDepCalPlots(
+        Test_ParDepPlots[[g]] <- AutoQuant::ParDepCalPlots(
           data = TestData, 
           PredictionColName = 'Predict', 
           TargetColName = TargetColumnName, 
@@ -1158,7 +1158,7 @@ if(is.null(RemixOutput)) {
       if(is.numeric(TrainData[[g]])) {
 
         # Add
-        Train_ParDepPlots[[g]] <- RemixAutoML::ParDepCalPlots(
+        Train_ParDepPlots[[g]] <- AutoQuant::ParDepCalPlots(
           data = TrainData, 
           PredictionColName = 'Predict', 
           TargetColName = TargetColumnName, 
@@ -1218,7 +1218,7 @@ if(is.null(RemixOutput)) {
       if(is.numeric(TestData[[g]])) {
 
         # Add
-        Test_ParDepBoxPlots[[g]] <- RemixAutoML::ParDepCalPlots(
+        Test_ParDepBoxPlots[[g]] <- AutoQuant::ParDepCalPlots(
           data = TestData, 
           PredictionColName = 'Predict', 
           TargetColName = TargetColumnName, 
@@ -1277,7 +1277,7 @@ if(is.null(RemixOutput)) {
       if(is.numeric(TrainData[[g]])) {
 
         # Add
-        Train_ParDepBoxPlots[[g]] <- RemixAutoML::ParDepCalPlots(
+        Train_ParDepBoxPlots[[g]] <- AutoQuant::ParDepCalPlots(
           data = data.table::copy(TrainData),
           PredictionColName = 'Predict', 
           TargetColName = TargetColumnName, 
@@ -1337,7 +1337,7 @@ if(is.null(RemixOutput)) {
       if(!is.numeric(TestData[[g]])) {
 
         # Add
-        Test_ParDepCatPlots[[g]] <- RemixAutoML::ParDepCalPlots(
+        Test_ParDepCatPlots[[g]] <- AutoQuant::ParDepCalPlots(
           data = data.table::copy(TestData), 
           PredictionColName = 'Predict', 
           TargetColName = TargetColumnName, 
@@ -1395,7 +1395,7 @@ if(is.null(RemixOutput)) {
       if(!is.numeric(TrainData[[g]])) {
 
         # Add
-        Train_ParDepCatPlots[[g]] <- RemixAutoML::ParDepCalPlots(
+        Train_ParDepCatPlots[[g]] <- AutoQuant::ParDepCalPlots(
           data = TrainData, 
           PredictionColName = 'Predict', 
           TargetColName = TargetColumnName, 
@@ -1542,21 +1542,21 @@ if(!is.null(All_Interaction)) {
 print('Test Importance')
 if(!is.null(Test_Importance)) {
   data.table::setnames(Test_Importance, 'Test_Importance', 'Importance', skip_absent = TRUE)
-  eval(RemixAutoML:::PlotlyConversion(RemixAutoML:::VI_Plot(Type = 'catboost', VI_Data = Test_Importance, TopN = 15)))
+  eval(AutoQuant:::PlotlyConversion(AutoQuant:::VI_Plot(Type = 'catboost', VI_Data = Test_Importance, TopN = 15)))
 } else {
   print("Test_Importance is NULL")
 }
 print('Validation Importance')
 if(!is.null(Validation_Importance)) {
   data.table::setnames(Validation_Importance, 'Validation_Importance', 'Importance', skip_absent = TRUE)
-  eval(RemixAutoML:::PlotlyConversion(RemixAutoML:::VI_Plot(Type = 'catboost', VI_Data = Validation_Importance, TopN = 15)))
+  eval(AutoQuant:::PlotlyConversion(AutoQuant:::VI_Plot(Type = 'catboost', VI_Data = Validation_Importance, TopN = 15)))
 } else {
   print("Validation_Importance is NULL")
 }
 print('Train Importance')
 if(!is.null(Train_Importance)) {
   data.table::setnames(Train_Importance, 'Train_Importance', 'Importance', skip_absent = TRUE)
-  eval(RemixAutoML:::PlotlyConversion(RemixAutoML:::VI_Plot(Type = 'catboost', VI_Data = Train_Importance, TopN = 15)))
+  eval(AutoQuant:::PlotlyConversion(AutoQuant:::VI_Plot(Type = 'catboost', VI_Data = Train_Importance, TopN = 15)))
 } else {
   print("Train_Importance is NULL")
 }
@@ -1576,13 +1576,13 @@ if(!is.null(Train_Importance)) {
 ```{r EvaluationPlots_ResidualHistogram, echo=FALSE}
 print('Test Data')
 if(!is.null(Test_ResidualHistogram)) {
-  eval(RemixAutoML:::PlotlyConversion(Test_ResidualHistogram))
+  eval(AutoQuant:::PlotlyConversion(Test_ResidualHistogram))
 } else {
   print('Test_ResidualHistogram is NULL or TestData is NULL')
 }
 print('Train + Validation Data')
 if(!is.null(Train_ResidualHistogram)) {
-  eval(RemixAutoML:::PlotlyConversion(Train_ResidualHistogram))
+  eval(AutoQuant:::PlotlyConversion(Train_ResidualHistogram))
 } else {
   print('Train_ResidualHistogram is NULL or TrainData is NULL')
 }
@@ -1603,13 +1603,13 @@ if(!is.null(Train_ResidualHistogram)) {
 ```{r EvaluationPlots_CalibrationPlot, echo=FALSE}
 print('Test Data Evaluation Plots')
 if(!is.null(Test_EvaluationPlot)) {
-  eval(RemixAutoML:::PlotlyConversion(Test_EvaluationPlot))
+  eval(AutoQuant:::PlotlyConversion(Test_EvaluationPlot))
 } else {
   print('Test_EvaluationPlot is NULL or TestData is NULL')
 }
 print('Train + Validation Data Evaluation Plots')
 if(!is.null(Train_EvaluationPlot)) {
-  eval(RemixAutoML:::PlotlyConversion(Train_EvaluationPlot))
+  eval(AutoQuant:::PlotlyConversion(Train_EvaluationPlot))
 } else {
   print('Test_EvaluationPlot is NULL or TrainData is NULL')
 }
@@ -1631,13 +1631,13 @@ if(!is.null(Train_EvaluationPlot)) {
 ```{r EvaluationPlots_CalibrationBoxPlot, echo=FALSE}
 print('Test Data Evaluation Box Plots')
 if(!is.null(Test_EvaluationBoxPlot)) {
-  eval(RemixAutoML:::PlotlyConversion(Test_EvaluationBoxPlot))
+  eval(AutoQuant:::PlotlyConversion(Test_EvaluationBoxPlot))
 } else {
   print('Test_EvaluationBoxPlot is NULL or TestData is NULL')
 }
 print('Train + Validation Data Evaluation Box Plots')
 if(!is.null(Train_EvaluationBoxPlot)) {
-  eval(RemixAutoML:::PlotlyConversion(Train_EvaluationBoxPlot))
+  eval(AutoQuant:::PlotlyConversion(Train_EvaluationBoxPlot))
 } else {
   print('Train_EvaluationBoxPlot is NULL or TrainData is NULL')
 }
@@ -1659,13 +1659,13 @@ if(!is.null(Train_EvaluationBoxPlot)) {
 ```{r EvaluationPlots_ResidualsScatterPlot, echo=FALSE}
 print('Test Data Scatter Plot')
 if(!is.null(Test_ScatterPlot)) {
-  eval(RemixAutoML:::PlotlyConversion(Test_ScatterPlot))
+  eval(AutoQuant:::PlotlyConversion(Test_ScatterPlot))
 } else {
   print('Test_ScatterPlot is NULL or TestData is NULL')
 }
 print('Train + Validation Data Scatter Plot')
 if(!is.null(Train_ScatterPlot)) {
-  eval(RemixAutoML:::PlotlyConversion(Train_ScatterPlot))
+  eval(AutoQuant:::PlotlyConversion(Train_ScatterPlot))
 } else {
   print('Train_ScatterPlot is NULL or TrainData is NULL')
 }
@@ -1687,13 +1687,13 @@ if(!is.null(Train_ScatterPlot)) {
 ```{r EvaluationPlots_ResidualsCopulaPlot, echo=FALSE}
 print('Test Data Copula Plot')
 if(!is.null(Test_CopulaPlot)) {
-  eval(RemixAutoML:::PlotlyConversion(Test_CopulaPlot))
+  eval(AutoQuant:::PlotlyConversion(Test_CopulaPlot))
 } else {
   print('Test_CopulaPlot is NULL or TestData is NULL')
 }
 print('Train + Validation Data Copula Plot')
 if(!is.null(Train_CopulaPlot)) {
-  eval(RemixAutoML:::PlotlyConversion(Train_CopulaPlot))
+  eval(AutoQuant:::PlotlyConversion(Train_CopulaPlot))
 } else {
   print('Train_CopulaPlot is NULL or TrainData is NULL')
 }

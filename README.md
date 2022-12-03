@@ -45,16 +45,6 @@ Documentation + Code Examples
 
 ## Highlights
 
-#### Model Insights Reports
-
-Automatically generate reports with relevant evaluation metrics, tables, plots, and metadata
-<p>
-
-<img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/Rmarkdown-regression-collapsed.PNG" align="center" width="166" height="200" />
-<img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/Rmarkdown-classification-collapsed.PNG" align="center" width="166" height="200" />
-<img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/Rmarkdown-multiclass-collapsed.PNG" align="center" width="166" height="200" />
-
-
 #### Machine Learning and Panel Forecasting Models
 
 AutoML functions by algorithm type and use case type

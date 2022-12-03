@@ -1,10 +1,10 @@
 ---
 title: "MultiClass Evaluation & Insights"
-author: "Provided by RemixAutoML"
+author: "Provided by AutoQuant"
 date: "`r format(Sys.time(), '%Y-%m-%d')`"
 output:
   prettydoc::html_pretty:
-    theme: remixautoml
+    theme: AutoQuant
     toc: yes
     toc_depth: 2
     fig_caption: yes
@@ -13,7 +13,7 @@ classoption: landscape
 ---
 
 ```{r Environment, include=FALSE}
-# theme options up top: hpstr, cayman, architect, remixautoml
+# theme options up top: hpstr, cayman, architect, AutoQuant
 knitr::opts_chunk$set(echo = TRUE)
 temp <- globalenv()
 TempNames <- names(temp)
@@ -370,7 +370,7 @@ if(!is.null(RemixOutput)) {
           TestData[, paste0('Temp_', nam) := data.table::fifelse(Predict == eval(nam), 1, 0)]
           
           # Add Plots
-          Test_ParDepPlots[[nam]][[g]] <- RemixAutoML::ParDepCalPlots(
+          Test_ParDepPlots[[nam]][[g]] <- AutoQuant::ParDepCalPlots(
             data = TestData, 
             PredictionColName = 'p1', 
             TargetColName = paste0('Temp_', nam), 
@@ -439,7 +439,7 @@ if(!is.null(RemixOutput)) {
           TrainData[, paste0('Temp_', nam) := data.table::fifelse(Predict == eval(nam), 1, 0)]
           
           # Add Plots
-          Train_ParDepPlots[[nam]][[g]] <- RemixAutoML::ParDepCalPlots(
+          Train_ParDepPlots[[nam]][[g]] <- AutoQuant::ParDepCalPlots(
             data = TrainData, 
             PredictionColName = 'p1', 
             TargetColName = paste0('Temp_', nam), 
@@ -509,7 +509,7 @@ if(!is.null(RemixOutput)) {
           TestData[, paste0('Temp_', nam) := data.table::fifelse(Predict == eval(nam), 1, 0)]
   
           # Add Plots
-          Test_ParDepCatPlots[[nam]][[g]] <- RemixAutoML::ParDepCalPlots(
+          Test_ParDepCatPlots[[nam]][[g]] <- AutoQuant::ParDepCalPlots(
             data = TestData, 
             PredictionColName = 'p1', 
             TargetColName = paste0('Temp_', nam), 
@@ -577,7 +577,7 @@ if(!is.null(RemixOutput)) {
           TrainData[, paste0('Temp_', nam) := data.table::fifelse(Predict == eval(nam), 1, 0)]
   
           # Add Plots
-          Train_ParDepCatPlots[[nam]][[g]] <- RemixAutoML::ParDepCalPlots(
+          Train_ParDepCatPlots[[nam]][[g]] <- AutoQuant::ParDepCalPlots(
             data = TrainData, 
             PredictionColName = 'p1', 
             TargetColName = paste0('Temp_', nam), 
@@ -713,7 +713,7 @@ if(is.null(RemixOutput)) {
   
   ### Test
   if(!is.null(TestData) && !file.exists(file.path(SourcePath, paste0(ModelID, "_Test_EvaluationMetrics.csv")))) {
-    Test_EvalMetrics <- RemixAutoML:::MultiClassMetrics(
+    Test_EvalMetrics <- AutoQuant:::MultiClassMetrics(
       ModelClass='catboost',
       DataType = 'Test',
       SaveModelObjects.=FALSE,
@@ -733,7 +733,7 @@ if(is.null(RemixOutput)) {
 
   ### Train
   if(!is.null(TrainData) && !file.exists(file.path(SourcePath, paste0(ModelID, "_Train_EvaluationMetrics.csv")))) {
-    Train_EvalMetrics <- RemixAutoML:::MultiClassMetrics(
+    Train_EvalMetrics <- AutoQuant:::MultiClassMetrics(
       ModelClass='catboost',
       DataType = 'Test',
       SaveModelObjects.=FALSE,
@@ -962,7 +962,7 @@ if(is.null(RemixOutput)) {
     for(tarlevel in TargetLevels) {
       TestData[, p1 := get(tarlevel)]
       TestData[, paste0('Temp_', tarlevel) := data.table::fifelse(Predict == eval(tarlevel), 1, 0)]
-      Test_EvaluationPlot[[tarlevel]] <- suppressMessages(RemixAutoML::EvalPlot(
+      Test_EvaluationPlot[[tarlevel]] <- suppressMessages(AutoQuant::EvalPlot(
         data = data.table::copy(TestData), 
         PredictionColName = 'p1',
         TargetColName = paste0('Temp_', tarlevel), 
@@ -981,7 +981,7 @@ if(is.null(RemixOutput)) {
     for(tarlevel in TargetLevels) {
       TrainData[, p1 := get(tarlevel)]
       TrainData[, paste0('Temp_', tarlevel) := data.table::fifelse(Predict == eval(tarlevel), 1, 0)]
-      Train_EvaluationPlot[[tarlevel]] <- suppressMessages(RemixAutoML::EvalPlot(
+      Train_EvaluationPlot[[tarlevel]] <- suppressMessages(AutoQuant::EvalPlot(
         data = data.table::copy(TrainData),
         PredictionColName = 'p1',
         TargetColName = paste0('Temp_', tarlevel),
@@ -1001,7 +1001,7 @@ if(is.null(RemixOutput)) {
     for(tarlevel in TargetLevels) {
       TestData[, p1 := get(tarlevel)]
       TestData[, paste0('Temp_', tarlevel) := data.table::fifelse(Predict == eval(tarlevel), 1, 0)]
-      Test_ROCPlot[[tarlevel]] <- suppressMessages(RemixAutoML::ROCPlot(
+      Test_ROCPlot[[tarlevel]] <- suppressMessages(AutoQuant::ROCPlot(
         data = TestData,
         TargetName = paste0('Temp_', tarlevel),
         SavePlot = FALSE,
@@ -1019,7 +1019,7 @@ if(is.null(RemixOutput)) {
     for(tarlevel in TargetLevels) {
       TrainData[, p1 := get(tarlevel)]
       TrainData[, paste0('Temp_', tarlevel) := data.table::fifelse(Predict == eval(tarlevel), 1, 0)]
-      Train_ROCPlot[[tarlevel]] <- suppressMessages(RemixAutoML::ROCPlot(
+      Train_ROCPlot[[tarlevel]] <- suppressMessages(AutoQuant::ROCPlot(
         data = TrainData,
         TargetName = paste0('Temp_', tarlevel),
         SavePlot = FALSE,
@@ -1037,7 +1037,7 @@ if(is.null(RemixOutput)) {
     for(tarlevel in TargetLevels) {
       TestData[, p1 := get(tarlevel)]
       TestData[, paste0('Temp_', tarlevel) := data.table::fifelse(Predict == eval(tarlevel), 1, 0)]
-      Test_CumGainsChart[[tarlevel]] <- suppressMessages(RemixAutoML::CumGainsChart(
+      Test_CumGainsChart[[tarlevel]] <- suppressMessages(AutoQuant::CumGainsChart(
         data = data.table::copy(TestData),
         PredictedColumnName = 'p1',
         TargetColumnName = paste0('Temp_', tarlevel),
@@ -1057,7 +1057,7 @@ if(is.null(RemixOutput)) {
     for(tarlevel in TargetLevels) {
       TrainData[, p1 := get(tarlevel)]
       TrainData[, paste0('Temp_', tarlevel) := data.table::fifelse(Predict == eval(tarlevel), 1, 0)]
-      Train_CumGainsChart[[tarlevel]] <- suppressMessages(RemixAutoML::CumGainsChart(
+      Train_CumGainsChart[[tarlevel]] <- suppressMessages(AutoQuant::CumGainsChart(
         data = data.table::copy(TrainData),
         PredictedColumnName = 'p1',
         TargetColumnName = paste0('Temp_', tarlevel),
@@ -1126,7 +1126,7 @@ if(is.null(RemixOutput)) {
           # Add
           TestData[, p1 := get(tarlevel)]
           TestData[, paste0('Temp_', tarlevel) := data.table::fifelse(Predict == eval(tarlevel), 1, 0)]
-          Test_ParDepPlots[[nam]][[g]] <- RemixAutoML::ParDepCalPlots(
+          Test_ParDepPlots[[nam]][[g]] <- AutoQuant::ParDepCalPlots(
             data = TestData,
             PredictionColName = 'p1',
             TargetColName = paste0('Temp_', tarlevel),
@@ -1189,7 +1189,7 @@ if(is.null(RemixOutput)) {
           # Add
           TrainData[, p1 := get(tarlevel)]
           TrainData[, paste0('Temp_', tarlevel) := data.table::fifelse(Predict == eval(tarlevel), 1, 0)]
-          Train_ParDepPlots[[nam]][[g]] <- RemixAutoML::ParDepCalPlots(
+          Train_ParDepPlots[[nam]][[g]] <- AutoQuant::ParDepCalPlots(
             data = TrainData,
             PredictionColName = 'p1',
             TargetColName = paste0('Temp_', tarlevel),
@@ -1253,7 +1253,7 @@ if(is.null(RemixOutput)) {
           # Add
           TestData[, p1 := get(tarlevel)]
           TestData[, paste0('Temp_', tarlevel) := data.table::fifelse(Predict == eval(tarlevel), 1, 0)]
-          Test_ParDepCatPlots[[nam]][[g]] <- RemixAutoML::ParDepCalPlots(
+          Test_ParDepCatPlots[[nam]][[g]] <- AutoQuant::ParDepCalPlots(
             data = data.table::copy(TestData), 
             PredictionColName = 'p1',
             TargetColName = paste0('Temp_', tarlevel),
@@ -1316,7 +1316,7 @@ if(is.null(RemixOutput)) {
           # Add
           TrainData[, p1 := get(tarlevel)]
           TrainData[, paste0('Temp_', tarlevel) := data.table::fifelse(Predict == eval(tarlevel), 1, 0)]
-          Train_ParDepCatPlots[[nam]][[g]] <- RemixAutoML::ParDepCalPlots(
+          Train_ParDepCatPlots[[nam]][[g]] <- AutoQuant::ParDepCalPlots(
             data = TrainData,
             PredictionColName = 'p1',
             TargetColName = paste0('Temp_', tarlevel),
@@ -1503,21 +1503,21 @@ if(!is.null(All_Interaction)) {
 print('Test Importance')
 if(!is.null(Test_Importance)) {
   data.table::setnames(Test_Importance, 'Test_Importance', 'Importance', skip_absent = TRUE)
-  eval(RemixAutoML:::VI_Plot(Type = 'catboost', VI_Data = Test_Importance, TopN = 15))
+  eval(AutoQuant:::VI_Plot(Type = 'catboost', VI_Data = Test_Importance, TopN = 15))
 } else {
   print("Test_Importance is NULL")
 }
 print('Validation Importance')
 if(!is.null(Validation_Importance)) {
   data.table::setnames(Validation_Importance, 'Validation_Importance', 'Importance', skip_absent = TRUE)
-  eval(RemixAutoML:::VI_Plot(Type = 'catboost', VI_Data = Validation_Importance, TopN = 15))
+  eval(AutoQuant:::VI_Plot(Type = 'catboost', VI_Data = Validation_Importance, TopN = 15))
 } else {
   print("Validation_Importance is NULL")
 }
 print('Train Importance')
 if(!is.null(Train_Importance)) {
   data.table::setnames(Train_Importance, 'Train_Importance', 'Importance', skip_absent = TRUE)
-  eval(RemixAutoML:::VI_Plot(Type = 'catboost', VI_Data = Train_Importance, TopN = 15))
+  eval(AutoQuant:::VI_Plot(Type = 'catboost', VI_Data = Train_Importance, TopN = 15))
 } else {
   print("Train_Importance is NULL")
 }
