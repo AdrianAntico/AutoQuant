@@ -43,22 +43,6 @@ Documentation + Code Examples
 </p>
 </details>
 
-## Highlights
-
-#### Machine Learning and Panel Forecasting Models
-
-AutoML functions by algorithm type and use case type
-<p>
-
-<img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/ML_Models_Menu.PNG" align="center" width="500" />
-
-#### Feature Engineering
-
-Feature engineering functions for a variety of data types and data sets
-<p>
-
-<img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/FeatureEngineeringMenu.PNG" align="center" width="500" />
-
 ## Installation
 
 The Description File is designed to require only the minimum number of packages to install AutoQuant. However, in order to utilize most of the functions in the package, you'll have to install additional libraries. I set it up this way on purpose. You don't need to install every single possible dependency if you are only interested in using a few of the functions. For example, if you only want to use CatBoost then install the catboost package and forget about the h2o, xgboost, and lightgbm packages. This is one of the primary benefits of not hosting an R package on cran, as they require dependencies to be part of the Imports section on the Description File, which subsequently requires users to have all dependencies installed in order to install the package.
@@ -6105,7 +6089,7 @@ Results <- AutoQuant::AutoH2OCARMA(
 </p>
 </details>
 
-## Time Series Forecasting <img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/AutoTS.png" align="right" width="80" />
+## Time Series Forecasting <img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/ModelEvaluationImage.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
 
@@ -6113,14 +6097,13 @@ Results <- AutoQuant::AutoH2OCARMA(
 <details><summary>Time Series Forecasting Description</summary>
 <p>
 
-There are three sets of functions for single series traditional time series model forecasting. The first set includes the AutoBanditSarima() and AutoBanditNNet() functions. These two offer the most robust fitting strategies. The utilize a multi-armed-bandit to help narrow the search space of available parameter settings. The next batch includes the AutoTBATS(), AutoETS(), and the AutoArfima() functions. These don't utilze the bandit framework. Rather, they run through a near exhaustive search through all their possible settings. Both the bandit set and the non-bandit set utilize parallelism to burn through as many models as possible for a fixed amount of time. The third set includes the AutoTS() function. This function will run through ARIMA, ARFIMA, NNet, ETS, TBATS, TSLM, and DSHW models with a few variation of parameter settings. The best possible model of the set will likely come from the AutoBanditSarima() function but it's never a bad idea to start with a model search using AutoTS() and then running through the others. This way you can speak to different algorithm performance and the benefits of the selected model.
+There are three sets of functions for single series traditional time series model forecasting. The first set includes the AutoBanditSarima() and AutoBanditNNet() functions. These two offer the most robust fitting strategies. The utilize a multi-armed-bandit to help narrow the search space of available parameter settings. The next batch includes the AutoTBATS(), AutoETS(), and the AutoArfima() functions. These don't utilze the bandit framework. Rather, they run through a near exhaustive search through all their possible settings. Both the bandit set and the non-bandit set utilize parallelism to burn through as many models as possible for a fixed amount of time. 
 
 * Bandit: AutoBanditSarima
 * Bandit: AutoBanditNNet
 * Exhaustive: AutoTBATS
 * Exhaustive: AutoETS
 * Exhaustive: AutoArfima
-* Best of forecast package: AutoTS
 
 </p>
 </details>
@@ -6299,44 +6282,6 @@ Output$PerformanceGrid
 </p>
 </details>
 
-
-<details><summary>AutoTS() Example</summary>
-<p>
- 
-```r
-# Build model
-data <- AutoQuant::FakeDataGenerator(Correlation = 0.82, TimeSeries = TRUE, TimeSeriesTimeAgg = "1min")
-
-# Run system
-Output <- AutoQuant::AutoTS(
-  data,
-  TargetName = "Weekly_Sales",
-  DateName = "Date",
-  FCPeriods = 16L,
-  HoldOutPeriods = 12L,
-  EvaluationMetric = "MAPE",
-  InnerEval = "AICc",
-  TimeUnit = "day",
-  Lags = 25,
-  SLags = 2,
-  MaxFourierPairs = 0,
-  NumCores = 4,
-  SkipModels = NULL,
-  StepWise = TRUE,
-  TSClean = TRUE,
-  ModelFreq = TRUE,
-  PrintUpdates = FALSE,
-  PlotPredictionIntervals = TRUE)
-
-# View output
-Output$Forecast
-Output$EvaluationMetrics
-Output$ChampionModel
-Output$TimeSeriesPlot
-```
-
-</p>
-</details>
 
 </p>
 </details>
