@@ -12,7 +12,6 @@
 
 Table of Contents
 - [Background](#background)
-- [Highlights](#highlights)
 - [Installation](#installation)
 
 Documentation + Code Examples
