@@ -1844,52 +1844,6 @@ multiplot <- function(plotlist = NULL) {
   }
 }
 
-#' @title RemixTheme
-#'
-#' @description This function adds the Remix Theme to ggplots
-#'
-#' @author Douglas Pestana
-#' @family Graphics
-#'
-#' @examples
-#' \dontrun{
-#' data <- data.table::data.table(
-#'   DateTime = as.Date(Sys.time()),
-#'   Target = stats::filter(rnorm(1000,
-#'                                mean = 50,
-#'                                sd = 20),
-#'                          filter=rep(1,10),
-#'                          circular=TRUE))
-#' data[, temp := seq(1:1000)][, DateTime := DateTime - temp][
-#'   , temp := NULL]
-#' data <- data[order(DateTime)]
-#' p <- ggplot2::ggplot(data, ggplot2::aes(x = DateTime, y = Target)) +
-#'   ggplot2::geom_line()
-#' p <- p + RemixTheme()
-#' }
-#' @return An object to pass along to ggplot objects following the "+" sign
-#' @noRd
-RemixTheme <- function() {
-  ggplot2::theme(
-    axis.title = ggplot2::element_text(size = 11),
-    axis.text = ggplot2::element_text(size = 11),
-    legend.background = ggplot2::element_blank(),
-    legend.key = ggplot2::element_blank(),
-    legend.text = ggplot2::element_text(color = "#1c1c1c", size = 11),
-    legend.title = ggplot2::element_blank(),
-    legend.justification = 0,
-    legend.position = "top",
-    plot.background = ggplot2::element_rect(fill = "#E7E7E7"),
-    panel.background = ggplot2::element_rect(fill = "#E7E7E7"),
-    panel.grid.major.x = ggplot2::element_blank(),
-    panel.grid.minor.x = ggplot2::element_blank(),
-    panel.grid.major.y = ggplot2::element_line(color = "white"),
-    panel.grid.minor.y = ggplot2::element_line(color = "white"),
-    plot.title = ggplot2::element_text(color = "#1c1c1c", size = 28, hjust = 0, face = "bold"),
-    plot.subtitle = ggplot2::element_text(color = "#1c1c1c", size = 16, hjust = 0),
-    plot.caption = ggplot2::element_text(size = 9, hjust = 0, face = "italic"))
-}
-
 #' @title ChartTheme
 #'
 #' @description This function helps your ggplots look professional with the choice of the two main colors that will dominate the theme
