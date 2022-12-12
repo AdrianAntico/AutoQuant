@@ -6,6 +6,7 @@
 \usage{
 TimeSeriesFill(
   data = NULL,
+  TargetColumn = NULL,
   DateColumnName = NULL,
   GroupVariables = NULL,
   TimeUnit = "days",
@@ -16,6 +17,8 @@ TimeSeriesFill(
 }
 \arguments{
 \item{data}{Supply your full series data set here}
+
+\item{TargetColumn}{= NULL}
 
 \item{DateColumnName}{Supply the name of your date column}
 

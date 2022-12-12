@@ -389,6 +389,7 @@ PartitionData <- function(data = NULL,
 #' @author Adrian Antico
 #'
 #' @param data Supply your full series data set here
+#' @param TargetColumn = NULL
 #' @param DateColumnName Supply the name of your date column
 #' @param GroupVariables Supply the column names of your group variables. E.g. "Group" or c("Group1","Group2")
 #' @param TimeUnit Choose from "second", "minute", "hour", "day", "week", "month", "quarter", "year"
@@ -421,6 +422,7 @@ PartitionData <- function(data = NULL,
 #' @return Returns a data table with missing time series records filled (currently just zeros)
 #' @export
 TimeSeriesFill <- function(data = NULL,
+                           TargetColumn = NULL,
                            DateColumnName = NULL,
                            GroupVariables = NULL,
                            TimeUnit = 'days',
@@ -444,8 +446,8 @@ TimeSeriesFill <- function(data = NULL,
   if(length(x) > 0L && tolower(x) == "dynamic") {
 
     # Fill
-    TargetColumnName <- setdiff(names(data), c(GroupVariables,DateColumnName))
-    FillData <- Rappture::FE.Impute.TimeSeriesFill(data,TargetColumnName,DateColumnName,TimeUnit,FillType,CJList,GroupVariables = GroupVariables)
+    data <- data[, .SD, .SDcols = c(TargetColumn,DateColumnName,GroupVariables)]
+    FillData <- Rappture::FE.Impute.TimeSeriesFill(data,TargetColumn,DateColumnName,TimeUnit,FillType,CJList,GroupVariables = GroupVariables)
     return(FillData)
   }
 

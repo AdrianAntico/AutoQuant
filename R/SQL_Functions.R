@@ -1424,7 +1424,7 @@ Post_Query_Helper <- function(RefTable){
     Connection = NULL,
     CloseConnection = TRUE,
     Host = "localhost",
-    DBName = "AutoQuant",
+    DBName = "RemixAutoML",
     User = "postgres",
     Port = 5432,
     Password = "Aa1028#@"
@@ -1441,7 +1441,7 @@ Post_Append_Helper <- function(data, tableName){
     CloseConnection = TRUE,
     Append = FALSE,
     Host = "localhost",
-    DBName = "AutoQuant",
+    DBName = "RemixAutoML",
     User = "postgres",
     Port = 5432,
     Password = "Aa1028#@")
