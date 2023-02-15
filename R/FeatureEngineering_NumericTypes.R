@@ -857,7 +857,8 @@ InvApply_Log <- function(x) {
 #' @return LogPlus1 results
 Test_LogPlus1 <- function(x) {
   stopifnot(is.numeric(x))
-  trans_data <- log(x+1)
+  xx <- min(x, na.rm = TRUE)
+  if(xx < 0) trans_data <- log(x+xx) else log(x)
   mu <- mean(trans_data, na.rm = TRUE)
   sigma <- sd(trans_data, na.rm = TRUE)
   trans_data_standardized <- (trans_data - mu) / sigma
@@ -936,7 +937,7 @@ InvApply_Sqrt <- function(x) {
 #' @family Feature Engineering
 #' @param data This is your source data
 #' @param ColumnNames List your columns names in a vector, for example, c("Target", "IV1")
-#' @param Methods Choose from "YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Asin", "Logit", and "Identity".
+#' @param Methods Choose from "YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Asin", "Logit", and "Identity". Note, LogPlus1 runs
 #' @param Path Set to the directly where you want to save all of your modeling files
 #' @param TransID Set to a character value that corresponds with your modeling project
 #' @param SaveOutput Set to TRUE to save necessary file to run AutoTransformationScore()
