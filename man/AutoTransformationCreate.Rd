@@ -19,7 +19,7 @@ AutoTransformationCreate(
 
 \item{ColumnNames}{List your columns names in a vector, for example, c("Target", "IV1")}
 
-\item{Methods}{Choose from "YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Asin", "Logit", and "Identity".}
+\item{Methods}{Choose from "YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Asin", "Logit", and "Identity". Note, LogPlus1 runs}
 
 \item{Path}{Set to the directly where you want to save all of your modeling files}
 

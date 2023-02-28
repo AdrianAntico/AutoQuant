@@ -576,8 +576,6 @@ Test <- AutoQuant::AutoLightGBMFunnelCARMAScoring(
 }
 \seealso{
 Other Automated Funnel Data Forecasting: 
-\code{\link{AutoCatBoostFunnelCARMAScoring}()},
-\code{\link{AutoCatBoostFunnelCARMA}()},
 \code{\link{AutoLightGBMFunnelCARMAScoring}()},
 \code{\link{AutoXGBoostFunnelCARMAScoring}()},
 \code{\link{AutoXGBoostFunnelCARMA}()}
