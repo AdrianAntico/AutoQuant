@@ -858,7 +858,7 @@ InvApply_Log <- function(x) {
 Test_LogPlus1 <- function(x) {
   stopifnot(is.numeric(x))
   xx <- min(x, na.rm = TRUE)
-  if(xx < 0) trans_data <- log(x+xx) else log(x)
+  if(xx < 0) trans_data <- log(x+xx) else trans_data <- log(x)
   mu <- mean(trans_data, na.rm = TRUE)
   sigma <- sd(trans_data, na.rm = TRUE)
   trans_data_standardized <- (trans_data - mu) / sigma
@@ -985,6 +985,7 @@ AutoTransformationCreate <- function(data,
   for(i in ColumnNames) if(!(any(class(data[[eval(i)]]) %chin% c("numeric", "integer")))) stop("ColumnNames must be for numeric or integer columns")
 
   # Loop through ColumnNames ----
+  # colNames = 1
   for(colNames in seq_along(ColumnNames)) {
 
     # Collection Object----
