@@ -414,20 +414,20 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalPlots
   # Return Model Objects ----
   if(DebugMode) print('Return Model Objects')
     if(ReturnModelObjects) {
-    return(list(
-      Model = model,
-      TrainData = if(exists('TrainData')) TrainData else NULL,
-      TestData = if(exists('ValidationData') && !is.null(ValidationData)) ValidationData else NULL,
-      PlotList = if(exists('PlotList')) PlotList else NULL,
-      MultinomialMetrics = if(exists('MultinomialMetrics') && !is.null(MultinomialMetrics)) MultinomialMetrics else NULL,
-      EvaluationMetrics = if(exists('EvalMetricsList')) EvalMetricsList else NULL,
-      EvaluationMetrics2 = if(exists('EvalMetrics2List')) EvalMetrics2List else NULL,
-      VariableImportance = if(exists('VariableImportance')) VariableImportance else NULL,
-      InteractionImportance = if(exists('Interaction')) Interaction else NULL,
-      GridMetrics = if(exists('ExperimentalGrid') && !is.null(ExperimentalGrid)) ExperimentalGrid else NULL,
-      ColNames = if(exists('Names') && !is.null(Names)) Names else NULL,
-      TargetLevels = if(exists('TargetLevels') && !is.null(TargetLevels)) TargetLevels else NULL,
-      FactorLevelsList = if(exists('FactorLevelsList')) FactorLevelsList else NULL,
-      ArgsList = ArgsList))
+      outputList <- list()
+      outputList[["Model"]] <- model
+      outputList[["TrainData"]] <- if(exists('ShapValues') && !is.null(ShapValues[['Train_Shap']])) ShapValues[['Train_Shap']] else if(exists('TrainData')) TrainData else NULL
+      outputList[["TestData"]] <- if(exists('ShapValues') && !is.null(ShapValues[['Test_Shap']])) ShapValues[['Test_Shap']] else if(exists('ValidationData')) ValidationData else NULL
+      outputList[["PlotList"]] <- if(exists('PlotList')) PlotList else NULL
+      outputList[["EvaluationMetrics"]] <- if(exists('EvalMetricsList')) EvalMetricsList else NULL
+      outputList[["EvaluationMetrics2"]] <- if(exists('EvalMetrics2List')) EvalMetrics2List else NULL,
+      outputList[["VariableImportance"]] <- if(exists('VariableImportance')) VariableImportance else NULL
+      outputList[["InteractionImportance"]] <- if(exists('Interaction')) Interaction else NULL
+      outputList[["GridMetrics"]] <- if(exists('ExperimentalGrid') && !is.null(ExperimentalGrid)) ExperimentalGrid else NULL
+      outputList[["ColNames"]] <- if(exists('Names')) Names else NULL
+      outputList[["MultinomialMetrics"]] <- if(exists('MultinomialMetrics') && !is.null(MultinomialMetrics)) MultinomialMetrics else NULL
+      outputList[["FactorLevelsList"]] <- if(exists('FactorLevelsList')) FactorLevelsList else NULL
+      outputList[["ArgsList"]] <- ArgsList
+      return(outputList)
   }
 }

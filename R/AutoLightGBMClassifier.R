@@ -516,17 +516,18 @@ AutoLightGBMClassifier <- function(# Data Args
   # Return objects ----
   if(DebugMode) print("Return objects ----")
   if(ReturnModelObjects) {
-    return(list(
-      Model = model,
-      TrainData = if(exists("TrainData")) TrainData else NULL,
-      TestData = if(exists("ValidationData")) ValidationData else NULL,
-      PlotList = if(exists("PlotList")) PlotList else NULL,
-      EvaluationMetrics = if(exists("EvalMetricsList")) EvalMetricsList else NULL,
-      EvaluationMetrics2 = if(exists("EvalMetrics2List")) EvalMetrics2List else NULL,
-      VariableImportance = if(exists("VariableImportance")) VariableImportance else NULL,
-      GridMetrics = if(exists("ExperimentalGrid") && !is.null(ExperimentalGrid)) data.table::setorderv(ExperimentalGrid, cols = "EvalMetric", order = -1L, na.last = TRUE) else NULL,
-      ColNames = if(exists("Names")) Names else NULL,
-      FactorLevelsList = if(exists("FactorLevelsList")) FactorLevelsList else NULL,
-      ArgsList = ArgsList))
+    outputList <- list()
+    outputList[["Model"]] <- model
+    outputList[["TrainData"]] <- if(exists('ShapValues') && !is.null(ShapValues[['Train_Shap']])) ShapValues[['Train_Shap']] else if(exists('TrainData')) TrainData else NULL
+    outputList[["TestData"]] <- if(exists('ShapValues') && !is.null(ShapValues[['Test_Shap']])) ShapValues[['Test_Shap']] else if(exists('ValidationData')) ValidationData else NULL
+    outputList[["PlotList"]] <- if(exists('PlotList')) PlotList else NULL
+    outputList[["EvaluationMetrics"]] <- if(exists('EvalMetricsList')) EvalMetricsList else NULL
+    outputList[["EvaluationMetrics2"]] <- if(exists('EvalMetrics2List')) EvalMetrics2List else NULL
+    outputList[["VariableImportance"]] <- if(exists('VariableImportance')) VariableImportance else NULL
+    outputList[["GridMetrics"]] <- if(exists('ExperimentalGrid') && !is.null(ExperimentalGrid)) ExperimentalGrid else NULL
+    outputList[["ColNames"]] <- if(exists('Names')) Names else NULL
+    outputList[["FactorLevelsList"]] <- if(exists('FactorLevelsList')) FactorLevelsList else NULL
+    outputList[["ArgsList"]] <- ArgsList
+    return(outputList)
   }
 }

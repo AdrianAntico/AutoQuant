@@ -371,6 +371,17 @@ AutoH2oGBMMultiClass <- function(OutputSelection = c("EvalMetrics","Score_TrainD
   # Return Objects ----
   if(DebugMode) print("Return Objects ----")
   if(ReturnModelObjects) {
+    outputList <- list()
+    outputList[["Model"]] <- base_model
+    outputList[["TrainData"]] <- if(exists("TrainData") && !is.null(TrainData)) TrainData else NULL
+    outputList[["TestData"]] <- if(exists("ValidationData") && !is.null(ValidationData)) ValidationData else NULL
+    outputList[["H2OExplain"]] <- if(exists("ExplainList")) ExplainList else NULL
+    outputList[["EvaluationMetrics"]] <- if(exists("EvalMetricsList")) EvalMetricsList else NULL
+    outputList[["VariableImportance"]] <- if(exists("VariableImportance")) VariableImportance else NULL
+    outputList[["ArgsList"]] <- ArgsList
+    outputList[["ColNames"]] <- if(exists("Names")) Names else NULL
+    outputList[["MultinomialMetrics"]] <- if(exists("MultinomialMetrics")) MultinomialMetrics else NULL
+    return(outputList)
     return(list(
       Model = base_model,
       TrainData = if(exists("TrainData")) TrainData else NULL,

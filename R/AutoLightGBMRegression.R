@@ -541,17 +541,18 @@ AutoLightGBMRegression <- function(# data parameters
   # Return Model Objects ----
   if(DebugMode) print('Return Model Objects ----')
   if(ReturnModelObjects) {
-    return(list(
-      Model = model,
-      TrainData = if(exists('TrainData')) TrainData else NULL,
-      TestData = if(exists('ValidationData')) ValidationData else NULL,
-      PlotList = if(exists('PlotList')) PlotList else NULL,
-      EvaluationMetrics = if(exists('EvalMetricsList')) EvalMetricsList else NULL,
-      VariableImportance = if(exists('VariableImportance')) VariableImportance else NULL,
-      GridMetrics = if(exists('ExperimentalGrid')) ExperimentalGrid else NULL,
-      ColNames = if(exists('Names')) Names else NULL,
-      TransformationResults = if(exists('TransformationResults')) TransformationResults else NULL,
-      FactorLevelsList = if(exists('FactorLevelsList')) FactorLevelsList else NULL,
-      ArgsList = ArgsList))
+    outputList <- list()
+    outputList[["Model"]] <- model
+    outputList[["TrainData"]] <- if(exists('ShapValues') && !is.null(ShapValues[['Train_Shap']])) ShapValues[['Train_Shap']] else if(exists('TrainData')) TrainData else NULL
+    outputList[["TestData"]] <- if(exists('ShapValues') && !is.null(ShapValues[['Test_Shap']])) ShapValues[['Test_Shap']] else if(exists('ValidationData')) ValidationData else NULL
+    outputList[["PlotList"]] <- if(exists('PlotList')) PlotList else NULL
+    outputList[["EvaluationMetrics"]] <- if(exists('EvalMetricsList')) EvalMetricsList else NULL
+    outputList[["VariableImportance"]] <- if(exists('VariableImportance')) VariableImportance else NULL
+    outputList[["GridMetrics"]] <- if(exists('ExperimentalGrid') && !is.null(ExperimentalGrid)) ExperimentalGrid else NULL
+    outputList[["ColNames"]] <- if(exists('Names')) Names else NULL
+    outputList[["TransformationResults"]] <- if(exists('TransformationResults')) TransformationResults else NULL
+    outputList[["FactorLevelsList"]] <- if(exists('FactorLevelsList')) FactorLevelsList else NULL
+    outputList[["ArgsList"]] <- ArgsList
+    return(outputList)
   }
 }
