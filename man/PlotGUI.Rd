@@ -13,7 +13,6 @@ Spin up the esquisse plotting gui
 Other EDA: 
 \code{\link{AutoWordFreq}()},
 \code{\link{EDA_Histograms}()},
-\code{\link{Mode}()},
 \code{\link{ScatterCopula}()},
 \code{\link{UserBaseEvolution}()}
 }

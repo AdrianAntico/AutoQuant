@@ -297,7 +297,7 @@ CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
     UseBestModel <- TRUE
     if(ModelType %chin% c("regression", "vector")) {
       if(!is.null(TransformNumericColumns.)) {
-        dataSets <- AutoDataPartition(
+        dataSets <- Rodeo::AutoDataPartition(
           data = data.,
           NumDataSets = 3L,
           Ratios = c(0.80, 0.10, 0.10),
@@ -313,7 +313,7 @@ CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
         MeanTrainTarget <- mean(data.[[eval(TargetColumnName.[1L])]], na.rm = TRUE)
 
         # Transform data sets----
-        Output <- AutoTransformationCreate(
+        Output <- Rodeo::AutoTransformationCreate(
           data.,
           ColumnNames = TransformNumericColumns.,
           Methods = Methods.,
@@ -324,7 +324,7 @@ CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
         TransformationResults <- Output$FinalResults
 
         # Transform ValidationData----
-        ValidationData. <- AutoTransformationScore(
+        ValidationData. <- Rodeo::AutoTransformationScore(
           ScoringData = ValidationData.,
           Type = "Apply",
           FinalResults = TransformationResults,
@@ -333,7 +333,7 @@ CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
 
         # Transform TestData----
         if(!is.null(TestData.)) {
-          TestData. <- AutoTransformationScore(
+          TestData. <- Rodeo::AutoTransformationScore(
             ScoringData = TestData.,
             Type = "Apply",
             FinalResults = TransformationResults,
@@ -341,7 +341,7 @@ CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
             Path = NULL)
         }
       } else {
-        dataSets <- AutoDataPartition(
+        dataSets <- Rodeo::AutoDataPartition(
           data = data.,
           NumDataSets = 3L,
           Ratios = c(0.80, 0.10, 0.10),
@@ -362,7 +362,7 @@ CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
         }
       }
     } else if(ModelType %chin% c("classification", "multiclass")) {
-      dataSets <- AutoDataPartition(
+      dataSets <- Rodeo::AutoDataPartition(
         data = data.,
         NumDataSets = 3L,
         Ratios = c(0.80, 0.10, 0.10),
@@ -381,7 +381,7 @@ CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
 
     # Transform data sets----
     if(!is.null(TransformNumericColumns.)) {
-      Output <- AutoTransformationCreate(
+      Output <- Rodeo::AutoTransformationCreate(
         data.,
         ColumnNames = TransformNumericColumns.,
         Methods = Methods.,
@@ -400,7 +400,7 @@ CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
 
     # Encode
     xx <- names(data.table::copy(data.))
-    Output <- AutoQuant:::EncodeCharacterVariables(
+    Output <- Rodeo::EncodeCharacterVariables(
       RunMode = 'train',
       ModelType = ModelType,
       TrainData = data.,
@@ -1072,7 +1072,7 @@ CatBoostValidationData <- function(ModelType = "classification",
         }
 
         # Back transform
-        ValidationData <- AutoTransformationScore(
+        ValidationData <- Rodeo::AutoTransformationScore(
           ScoringData = ValidationData,
           Type = "Inverse",
           FinalResults = TransformationResults.,
@@ -1086,7 +1086,7 @@ CatBoostValidationData <- function(ModelType = "classification",
         for(z in seq_along(TargetColumnName.)) TransformationResults.[length(TargetColumnName.) + z, ColumnName := paste0("Predict.V",z)]
 
         # Back transform
-        ValidationData <- AutoTransformationScore(
+        ValidationData <- Rodeo::AutoTransformationScore(
           ScoringData = ValidationData,
           Type = "Inverse",
           FinalResults = TransformationResults.,

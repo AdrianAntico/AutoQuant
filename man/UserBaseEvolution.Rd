@@ -33,7 +33,6 @@ This function creates a table of user counts over time for accumulated unique us
 Other EDA: 
 \code{\link{AutoWordFreq}()},
 \code{\link{EDA_Histograms}()},
-\code{\link{Mode}()},
 \code{\link{PlotGUI}()},
 \code{\link{ScatterCopula}()}
 }

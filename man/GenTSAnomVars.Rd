@@ -67,10 +67,6 @@ stuff <- GenTSAnomVars(
 }
 \seealso{
 Other Unsupervised Learning: 
-\code{\link{AutoClusteringScoring}()},
-\code{\link{AutoClustering}()},
-\code{\link{H2OIsolationForestScoring}()},
-\code{\link{H2OIsolationForest}()},
 \code{\link{ResidualOutliers}()}
 }
 \author{

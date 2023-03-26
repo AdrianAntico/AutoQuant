@@ -139,7 +139,7 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
     # Data Partition
     if(DebugMode.) print("Data Partition")
     if(is.null(ValidationData.) && is.null(TestData.) && !TrainOnFull.) {
-      dataSets <- AutoDataPartition(
+      dataSets <- Rodeo::AutoDataPartition(
         data = data.,
         NumDataSets = 3L,
         Ratios = c(0.80, 0.10, 0.10),
@@ -155,7 +155,7 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
     if(DebugMode.) print("Dummify dataTrain Categorical Features")
     if(length(CatFeatures) > 0L) {
       x <- names(data.table::copy(data.))
-      Output <- EncodeCharacterVariables(RunMode='train', ModelType=ModelType, TrainData=data., ValidationData=ValidationData., TestData=TestData., TargetVariableName=TargetColumnName., CategoricalVariableNames=CatFeatures, EncodeMethod=EncodingMethod., KeepCategoricalVariables=TRUE, ReturnMetaData=TRUE, MetaDataPath=model_path., MetaDataList=NULL, ImputeMissingValue=0)
+      Output <- Rodeo::EncodeCharacterVariables(RunMode='train', ModelType=ModelType, TrainData=data., ValidationData=ValidationData., TestData=TestData., TargetVariableName=TargetColumnName., CategoricalVariableNames=CatFeatures, EncodeMethod=EncodingMethod., KeepCategoricalVariables=TRUE, ReturnMetaData=TRUE, MetaDataPath=model_path., MetaDataList=NULL, ImputeMissingValue=0)
       data. <- Output$TrainData; Output$TrainData <- NULL
       ValidationData. <- Output$ValidationData; Output$ValidationData <- NULL
       TestData. <- Output$TestData; Output$TestData. <- NULL
@@ -231,7 +231,7 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
     if(DebugMode.) print("Transform data., ValidationData., and TestData.")
     if((TrainOnFull. || !is.null(ValidationData.)) && !is.null(TransformNumericColumns.)) {
       MeanTrainTarget <- data.[, mean(get(TargetColumnName.))]
-      Output <- AutoTransformationCreate(
+      Output <- Rodeo::AutoTransformationCreate(
         data.,
         ColumnNames = TransformNumericColumns.,
         Methods = Methods.,
@@ -244,7 +244,7 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
       # Transform ValidationData.
       if(DebugMode.) print("Transform ValidationData.")
       if(!is.null(ValidationData.)) {
-        ValidationData. <- AutoTransformationScore(
+        ValidationData. <- Rodeo::AutoTransformationScore(
           ScoringData = ValidationData.,
           Type = 'Apply',
           FinalResults = TransformationResults,
@@ -255,7 +255,7 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
       # Transform TestData.
       if(DebugMode.) print("Transform TestData.")
       if(!is.null(TestData.)) {
-        TestData. <- AutoTransformationScore(
+        TestData. <- Rodeo::AutoTransformationScore(
           ScoringData = TestData.,
           Type = 'Apply',
           FinalResults = TransformationResults,
@@ -268,8 +268,8 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
     if(DebugMode.) print("Regression Data Partition")
     if(is.null(ValidationData.) && is.null(TestData.) && !TrainOnFull.) {
       if(!is.null(TransformNumericColumns.)) {
-        dataSets <- AutoDataPartition(
-          data.,
+        dataSets <- Rodeo::AutoDataPartition(
+          data = data.,
           NumDataSets = 3L,
           Ratios = c(0.80, 0.10, 0.10),
           PartitionType = 'random',
@@ -285,8 +285,8 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
 
         # Transform data. sets
         if(DebugMode.) print("Transform data. sets")
-        Output <- AutoTransformationCreate(
-          data.,
+        Output <- Rodeo::AutoTransformationCreate(
+          data = data.,
           ColumnNames = TransformNumericColumns.,
           Methods = Methods.,
           Path = model_path.,
@@ -297,7 +297,7 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
 
         # Transform ValidationData.
         if(DebugMode.) print("Transform ValidationData.")
-        ValidationData. <- AutoTransformationScore(
+        ValidationData. <- Rodeo::AutoTransformationScore(
           ScoringData = ValidationData.,
           Type = 'Apply',
           FinalResults = TransformationResults,
@@ -307,7 +307,7 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
         # Transform TestData.
         if(DebugMode.) print("Transform TestData.")
         if(!is.null(TestData.)) {
-          TestData. <- AutoTransformationScore(
+          TestData. <- Rodeo::AutoTransformationScore(
             ScoringData = TestData.,
             Type = 'Apply',
             FinalResults = TransformationResults,
@@ -318,7 +318,7 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
 
         # Partition Data
         if(DebugMode.) print("Partition Data")
-        dataSets <- AutoDataPartition(
+        dataSets <- Rodeo::AutoDataPartition(
           data.,
           NumDataSets = 3L,
           Ratios = c(0.80, 0.10, 0.10),
@@ -332,16 +332,11 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
       }
     }
 
-
-
-
-
-
     # Dummify dataTrain Categorical Features ----
     if(DebugMode.) print("Dummify dataTrain Categorical Features")
     if(length(CatFeatures) != 0L) {
       x <- names(data.table::copy(data.))
-      Output <- EncodeCharacterVariables(RunMode='train', ModelType=ModelType, TrainData=data., ValidationData=ValidationData., TestData=TestData., TargetVariableName=TargetColumnName., CategoricalVariableNames=CatFeatures, EncodeMethod=EncodingMethod., KeepCategoricalVariables=TRUE, ReturnMetaData=TRUE, MetaDataPath=model_path., MetaDataList=NULL, ImputeMissingValue=0, Debug = DebugMode.)
+      Output <- Rodeo::EncodeCharacterVariables(RunMode='train', ModelType=ModelType, TrainData=data., ValidationData=ValidationData., TestData=TestData., TargetVariableName=TargetColumnName., CategoricalVariableNames=CatFeatures, EncodeMethod=EncodingMethod., KeepCategoricalVariables=TRUE, ReturnMetaData=TRUE, MetaDataPath=model_path., MetaDataList=NULL, ImputeMissingValue=0, Debug = DebugMode.)
       data. <- Output$TrainData; Output$TrainData <- NULL
       ValidationData. <- Output$ValidationData; Output$ValidationData <- NULL
       TestData. <- Output$TestData; Output$TestData. <- NULL
@@ -354,12 +349,6 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
       FeatureColNames. <- FeatureColNames.[!FeatureColNames. %in% CatFeatures]
       FeatureColNames. <- c(FeatureColNames., y)
     }
-
-
-
-
-
-
 
     # Regression data. Subset Columns Needed
     if(DebugMode.) print("Regression data. Subset Columns Needed")
@@ -428,7 +417,7 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
     # MultiClass Data Partition
     if(DebugMode.) print("MultiClass Data Partition")
     if(is.null(ValidationData.) && is.null(TestData.) && !TrainOnFull.) {
-      dataSets <- AutoDataPartition(
+      dataSets <- Rodeo::AutoDataPartition(
         data = data.,
         NumDataSets = 3L,
         Ratios = c(0.80, 0.10, 0.10),
@@ -444,7 +433,7 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
     if(DebugMode.) print("Dummify dataTrain Categorical Features")
     if(length(CatFeatures) > 0L) {
       x <- names(data.table::copy(data.))
-      Output <- EncodeCharacterVariables(RunMode='train', ModelType=ModelType, TrainData=data., ValidationData=ValidationData., TestData=TestData., TargetVariableName=TargetColumnName., CategoricalVariableNames=CatFeatures, EncodeMethod=EncodingMethod., KeepCategoricalVariables=TRUE, ReturnMetaData=TRUE, MetaDataPath=model_path., MetaDataList=NULL, ImputeMissingValue=0)
+      Output <- Rodeo::EncodeCharacterVariables(RunMode='train', ModelType=ModelType, TrainData=data., ValidationData=ValidationData., TestData=TestData., TargetVariableName=TargetColumnName., CategoricalVariableNames=CatFeatures, EncodeMethod=EncodingMethod., KeepCategoricalVariables=TRUE, ReturnMetaData=TRUE, MetaDataPath=model_path., MetaDataList=NULL, ImputeMissingValue=0)
       data. <- Output$TrainData; Output$TrainData <- NULL
       ValidationData. <- Output$ValidationData; Output$ValidationData <- NULL
       TestData. <- Output$TestData; Output$TestData. <- NULL
@@ -526,49 +515,6 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
     } else {
       data.table::setnames(Names, 'V1', 'ColNames')
     }
-
-    # # Dummify dataTrain Categorical Features ----
-    # if(DebugMode.) print("Dummify dataTrain Categorical Features")
-    # Output <- EncodeCharacterVariables(RunMode='train', ModelType=ModelType, TrainData=dataTrain, ValidationData=dataTest, TestData=TestData., TargetVariableName=TargetColumnName., CategoricalVariableNames=CatFeatures, EncodeMethod=EncodingMethod., KeepCategoricalVariables=FALSE, ReturnMetaData=TRUE, MetaDataPath=model_path., MetaDataList=NULL, ImputeMissingValue=0)
-    # dataTrain <- Output$TrainData; Output$TrainData <- NULL
-    # dataTest <- Output$ValidationData; Output$ValidationData <- NULL
-    # TestData. <- Output$TestData; Output$TestData. <- NULL
-    # FactorLevelsList <- Output$MetaData; rm(Output)
-
-    # # MultiClass Obtain Unique Target Levels
-    # if(DebugMode.) print("MultiClass Obtain Unique Target Levels")
-    # if(!is.null(dataTest) && !is.null(TestData.)) {
-    #   temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData.))
-    # } else if(!is.null(dataTest)) {
-    #   temp <- data.table::rbindlist(list(dataTrain, dataTest))
-    # } else {
-    #   temp <- dataTrain
-    # }
-    # TargetLevels <- data.table::as.data.table(sort(unique(temp[[eval(TargetColumnName.)]])))
-    # data.table::setnames(TargetLevels, 'V1', 'OriginalLevels')
-    # TargetLevels[, NewLevels := 0L:(.N - 1L)]
-    # if(SaveModelObjects.) data.table::fwrite(TargetLevels, file = file.path(model_path., paste0(ModelID., '_TargetLevels.csv')))
-    #
-    # # Number of levels
-    # if(DebugMode.) print("Number of levels")
-    # NumLevels <- TargetLevels[, .N]
-    #
-    # # MultiClass Convert Target to Numeric Factor
-    # if(DebugMode.) print("MultiClass Convert Target to Numeric Factor")
-    # dataTrain <- merge(dataTrain, TargetLevels, by.x = eval(TargetColumnName.), by.y = 'OriginalLevels', all = FALSE)
-    # dataTrain[, paste0(TargetColumnName.) := NewLevels]
-    # dataTrain[, NewLevels := NULL]
-    # # Merging causes data to sort differently
-    # if(!is.null(dataTest)) {
-    #   dataTest <- merge(dataTest, TargetLevels, by.x = eval(TargetColumnName.), by.y = 'OriginalLevels', all = FALSE)
-    #   dataTest[, paste0(TargetColumnName.) := NewLevels]
-    #   dataTest[, NewLevels := NULL]
-    #   if(!is.null(TestData.)) {
-    #     TestData. <- merge(TestData., TargetLevels, by.x = eval(TargetColumnName.), by.y = 'OriginalLevels', all = FALSE)
-    #     TestData.[, paste0(TargetColumnName.) := NewLevels]
-    #     TestData.[, NewLevels := NULL]
-    #   }
-    # }
 
     # MultiClass Subset Target Variables ----
     if(DebugMode.) print("MultiClass Subset Target Variables")
@@ -696,7 +642,6 @@ XGBoostFinalParams <- function(GridTune.=GridTune,
   base_params$eval_metric <- tolower(eval_metric.)
   base_params$nthread <- NThreads.
   base_params$max_bin <- 64L
-  #base_params$early_stopping_rounds <- 10L
   base_params$tree_method <- TreeMethod.
 
   # Grid tuning
@@ -838,7 +783,6 @@ XGBoostGridParams <- function(N. = N,
   base_params$eval_metric <- tolower(EvalMetric.)
   base_params$nthread <- NThreads.
   base_params$max_bin <- 64L
-  # base_params$early_stopping_rounds <- 10L
   base_params$tree_method <- TreeMethod.
 
   # Run-dependent args and updates
@@ -947,7 +891,7 @@ XGBoostValidationData <- function(model.=model,
       if(TestDataCheck) {
         ValidationData <- data.table::as.data.table(cbind(TestMerge., p1 = predict.))
         if(!any(class(model.) %chin% c('lgb.Booster', 'R6'))) {
-          ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(TestData.), model = model., features = names(TestData.))$shap_contrib)
+          ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(TestData.), model = model., features = names(TestData.), max_observations = 2000000000)$shap_contrib)
         } else {
           ShapValues <- NULL
         }
@@ -955,7 +899,7 @@ XGBoostValidationData <- function(model.=model,
         ValidationData <- data.table::as.data.table(cbind(Target = TestTarget., dataTest., p1 = predict.))
         data.table::setnames(ValidationData, 'Target', eval(TargetColumnName.), skip_absent = TRUE)
         if(!any(class(model.) %chin% c('lgb.Booster', 'R6'))) {
-          ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(dataTest.), model = model., features = names(dataTest.))$shap_contrib)
+          ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(dataTest.), model = model., features = names(dataTest.), max_observations = 2000000000)$shap_contrib)
         } else {
           ShapValues <- NULL
         }
@@ -963,8 +907,8 @@ XGBoostValidationData <- function(model.=model,
     } else if(!is.null(TrainMerge.)) {
       ValidationData <- data.table::as.data.table(cbind(TrainMerge., predict.))
       if(!any(class(model.) %chin% c('lgb.Booster', 'R6'))) {
-        ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(data.), model = model., features = names(data.))$shap_contrib)
-        Shap_test <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(dataTest.), model = model., features = names(dataTest.))$shap_contrib)
+        ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(data.), model = model., features = names(data.), max_observations = 2000000000)$shap_contrib)
+        Shap_test <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(dataTest.), model = model., features = names(dataTest.), max_observations = 2000000000)$shap_contrib)
         ShapValues <- data.table::rbindlist(list(ShapValues, Shap_test), use.names = TRUE, fill = TRUE)
         rm(Shap_test)
       } else {
@@ -974,7 +918,7 @@ XGBoostValidationData <- function(model.=model,
       ValidationData <- data.table::as.data.table(cbind(Target = TrainTarget., data., p1 = predict.))
       data.table::setnames(ValidationData, 'Target', eval(TargetColumnName.), skip_absent = TRUE)
       if(!any(class(model.) %chin% c('lgb.Booster', 'R6'))) {
-        ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(data.), model = model., features = names(data.))$shap_contrib)
+        ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(data.), model = model., features = names(data.), max_observations = 2000000000)$shap_contrib)
       } else {
         ShapValues <- NULL
       }
@@ -991,7 +935,7 @@ XGBoostValidationData <- function(model.=model,
         data.table::setnames(ValidationData, 'Target', TargetColumnName., skip_absent = TRUE)
         if(!any(class(model.) %chin% c('lgb.Booster', 'R6'))) {
           if(length(names(TestData.)) > 1L) {
-            ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(TestData.), model = model., features = names(TestData.))$shap_contrib)
+            ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(TestData.), model = model., features = names(TestData.), max_observations = 2000000000)$shap_contrib)
           } else {
             ShapValues <- NULL
           }
@@ -1002,7 +946,7 @@ XGBoostValidationData <- function(model.=model,
         ValidationData <- data.table::as.data.table(cbind(Target = TestTarget., dataTest., Predict = predict.))
         if(!any(class(model.) %chin% c('lgb.Booster', 'R6'))) {
           if(length(names(dataTest.)) > 1L) {
-            ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(dataTest.), model = model., features = names(dataTest.))$shap_contrib)
+            ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(dataTest.), model = model., features = names(dataTest.), max_observations = 2000000000)$shap_contrib)
           } else {
             ShapValues <- NULL
           }
@@ -1019,8 +963,8 @@ XGBoostValidationData <- function(model.=model,
       ValidationData <- data.table::as.data.table(cbind(TrainMerge., predict.))
       if(!any(class(model.) %chin% c('lgb.Booster', 'R6'))) {
         if(length(names(data.)) > 1L) {
-          ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(data.), model = model., features = names(data.))$shap_contrib)
-          Shap_test <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(dataTest.), model = model., features = names(dataTest.))$shap_contrib)
+          ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(data.), model = model., features = names(data.), max_observations = 2000000000)$shap_contrib)
+          Shap_test <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(dataTest.), model = model., features = names(dataTest.), max_observations = 2000000000)$shap_contrib)
           ShapValues <- data.table::rbindlist(list(ShapValues, Shap_test), use.names = TRUE, fill = TRUE)
           rm(Shap_test)
         } else {
@@ -1033,7 +977,7 @@ XGBoostValidationData <- function(model.=model,
       ValidationData <- data.table::as.data.table(cbind(Target = TrainTarget., data., Predict = predict.))
       if(!any(class(model.) %chin% c('lgb.Booster', 'R6'))) {
         if(length(names(data.)) > 1L) {
-          ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(data.), model = model., features = names(data.))$shap_contrib)
+          ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(data.), model = model., features = names(data.), max_observations = 2000000000)$shap_contrib)
         } else {
           ShapValues <- NULL
         }
@@ -1075,7 +1019,7 @@ XGBoostValidationData <- function(model.=model,
         }
 
         # Back transform
-        ValidationData <- AutoTransformationScore(
+        ValidationData <- Rodeo::AutoTransformationScore(
           ScoringData = ValidationData,
           Type = 'Inverse',
           FinalResults = TransformationResults.,
@@ -1089,7 +1033,7 @@ XGBoostValidationData <- function(model.=model,
         for(z in seq_along(TargetColumnName.)) TransformationResults.[length(TargetColumnName.) + z, ColumnName := paste0('Predict.V',z)]
 
         # Back transform
-        ValidationData <- AutoTransformationScore(
+        ValidationData <- Rodeo::AutoTransformationScore(
           ScoringData = ValidationData,
           Type = 'Inverse',
           FinalResults = TransformationResults.,
@@ -1113,7 +1057,7 @@ XGBoostValidationData <- function(model.=model,
       } else {
         ValidationData <- data.table::as.data.table(cbind(predict., Target = TestTarget., dataTest.))
         if(!any(class(model.) %chin% c('lgb.Booster', 'R6'))) {
-          ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(dataTest.), model = model., features = names(dataTest.))$shap_contrib)
+          ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(dataTest.), model = model., features = names(dataTest.), max_observations = 2000000000)$shap_contrib)
         } else {
           ShapValues <- NULL
         }
@@ -1124,16 +1068,10 @@ XGBoostValidationData <- function(model.=model,
         }
       }
     } else if(!is.null(TrainMerge.)) {
-      print('nrow(predict.)')
-      print(nrow(predict.))
-      print('nrow(TrainMerge.)')
-      print(nrow(TrainMerge.))
-      print('nrow(data.)')
-      print(data.)
       ValidationData <- data.table::as.data.table(cbind(predict., TrainMerge.))
       if(!any(class(model.) %chin% c('lgb.Booster', 'R6'))) {
         if(!is.null(dataTest.)) data. <- data.table::rbindlist(list(data., dataTest.), use.names = TRUE, fill = TRUE)
-        ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(data.), model = model., features = names(data.))$shap_contrib)
+        ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(data.), model = model., features = names(data.), max_observations = 2000000000)$shap_contrib)
       } else {
         ShapValues <- NULL
       }

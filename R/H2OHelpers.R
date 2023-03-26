@@ -213,7 +213,7 @@ H2ODataPrep <- function(TargetType. = "classifier",
     # Data Partition
     if(TargetType. != "regression") {
       if(is.null(ValidationData.) && is.null(TestData.) && !TrainOnFull.) {
-        dataSets <- AutoDataPartition(
+        dataSets <- Rodeo::AutoDataPartition(
           data = data.,
           NumDataSets = 3L,
           Ratios = c(0.70, 0.20, 0.10),
@@ -231,7 +231,7 @@ H2ODataPrep <- function(TargetType. = "classifier",
 
       # Transform data, ValidationData, and TestData ----
       if(!is.null(ValidationData.) && !is.null(TransformNumericColumns.)) {
-        Output <- AutoTransformationCreate(
+        Output <- Rodeo::AutoTransformationCreate(
           data = data.,
           ColumnNames = TransformNumericColumns.,
           Methods = Methods.,
@@ -242,7 +242,7 @@ H2ODataPrep <- function(TargetType. = "classifier",
         TransformationResults <- Output$FinalResults
 
         # Transform ValidationData
-        ValidationData. <- AutoTransformationScore(
+        ValidationData. <- Rodeo::AutoTransformationScore(
           ScoringData = ValidationData.,
           Type = "Apply",
           FinalResults = TransformationResults,
@@ -251,7 +251,7 @@ H2ODataPrep <- function(TargetType. = "classifier",
 
         # Transform TestData
         if(!is.null(TestData.)) {
-          TestData. <- AutoTransformationScore(
+          TestData. <- Rodeo::AutoTransformationScore(
             ScoringData = TestData.,
             Type = "Apply",
             FinalResults = TransformationResults,
@@ -263,7 +263,7 @@ H2ODataPrep <- function(TargetType. = "classifier",
       # Regression Data Partition
       if(is.null(ValidationData.) && is.null(TestData.) && !TrainOnFull.) {
         if(!is.null(TransformNumericColumns.)) {
-          dataSets <- AutoDataPartition(
+          dataSets <- Rodeo::AutoDataPartition(
             data = data.,
             NumDataSets = 3L,
             Ratios = c(0.70, 0.20, 0.10),
@@ -276,7 +276,7 @@ H2ODataPrep <- function(TargetType. = "classifier",
           rm(dataSets)
 
           # Transform data sets
-          Output <- AutoTransformationCreate(
+          Output <- Rodeo::AutoTransformationCreate(
             dataTrain,
             ColumnNames = TransformNumericColumns.,
             Methods = Methods.,
@@ -287,7 +287,7 @@ H2ODataPrep <- function(TargetType. = "classifier",
           TransformationResults <- Output$FinalResults
 
           # Transform ValidationData
-          dataTest <- AutoTransformationScore(
+          dataTest <- Rodeo::AutoTransformationScore(
             ScoringData = dataTest,
             Type = "Apply",
             FinalResults = TransformationResults,
@@ -296,7 +296,7 @@ H2ODataPrep <- function(TargetType. = "classifier",
 
           # Transform TestData
           if(!is.null(TestData.)) {
-            TestData. <- AutoTransformationScore(
+            TestData. <- Rodeo::AutoTransformationScore(
               ScoringData = TestData.,
               Type = "Apply",
               FinalResults = TransformationResults,
@@ -304,7 +304,7 @@ H2ODataPrep <- function(TargetType. = "classifier",
               Path = NULL)
           }
         } else {
-          dataSets <- AutoDataPartition(
+          dataSets <- Rodeo::AutoDataPartition(
             data = data.,
             NumDataSets = 3,
             Ratios = c(0.70, 0.20, 0.10),
@@ -431,7 +431,7 @@ H2OValidationData <- function(Predict. = Predict,
     }
 
     # Transform Target and Predicted Value
-    ValidationData <- AutoTransformationScore(
+    ValidationData <- Rodeo::AutoTransformationScore(
       ScoringData = ValidationData,
       Type = "Inverse",
       FinalResults = TransformationResults.,
