@@ -420,7 +420,7 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalPlots
       outputList[["TestData"]] <- if(exists('ShapValues') && !is.null(ShapValues[['Test_Shap']])) ShapValues[['Test_Shap']] else if(exists('ValidationData')) ValidationData else NULL
       outputList[["PlotList"]] <- if(exists('PlotList')) PlotList else NULL
       outputList[["EvaluationMetrics"]] <- if(exists('EvalMetricsList')) EvalMetricsList else NULL
-      outputList[["EvaluationMetrics2"]] <- if(exists('EvalMetrics2List')) EvalMetrics2List else NULL,
+      outputList[["EvaluationMetrics2"]] <- if(exists('EvalMetrics2List')) EvalMetrics2List else NULL
       outputList[["VariableImportance"]] <- if(exists('VariableImportance')) VariableImportance else NULL
       outputList[["InteractionImportance"]] <- if(exists('Interaction')) Interaction else NULL
       outputList[["GridMetrics"]] <- if(exists('ExperimentalGrid') && !is.null(ExperimentalGrid)) ExperimentalGrid else NULL
