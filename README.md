@@ -5,7 +5,8 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=default)](http://makeapullrequest.com)
 [![GitHub Stars](https://img.shields.io/github/stars/AdrianAntico/AutoQuant.svg?style=social)](https://github.com/AdrianAntico/AutoQuant)
 
-<img src="https://github.com/AdrianAntico/AutoQuant/blob/main/inst/logo.PNG?raw=true" align="center" width="800" />
+<img src="https://github.com/AdrianAntico/AutoQuant/blob/master/Images/AutoQuant.PNG?raw=true" align="center" width="800" />
+
 
 ## AutoQuant Reference Manual
 
