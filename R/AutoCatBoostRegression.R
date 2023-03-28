@@ -290,7 +290,7 @@ AutoCatBoostRegression <- function(OutputSelection = c('Importances', 'EvalPlots
       }
       rm(predict_validate)
     }
-    TrainData <- CatBoostValidationData(ModelType='regression', TrainOnFull.=TRUE, TestDataCheck=FALSE, FinalTestTarget.=FinalTestTarget, TestTarget.=TestTarget, TrainTarget.=TrainTarget, TrainMerge.=TrainMerge, TestMerge.=TestMerge, dataTest.=NULL, data.=dataTrain, predict.=predict, TargetColumnName.=TargetColumnName, SaveModelObjects. = SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID, LossFunction.=NULL, TransformNumericColumns.=NULL, GridTune.=GridTune, TransformationResults.=NULL, TargetLevels.=NULL)
+    TrainData <- CatBoostValidationData(ModelType='regression', TrainOnFull.=TRUE, TestDataCheck=FALSE, FinalTestTarget.=FinalTestTarget, TestTarget.=TestTarget, TrainTarget.=TrainTarget, TrainMerge.=TrainMerge, TestMerge.=TestMerge, dataTest.=NULL, data.=dataTrain, predict.=predict, TargetColumnName.=TargetColumnName, SaveModelObjects. = SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID, LossFunction.=NULL, TransformNumericColumns.=TransformNumericColumns, GridTune.=GridTune, TransformationResults.=TransformationResults, TargetLevels.=NULL)
     if(ncol(predict) > 1L) {
       if(!'Predict.V1' %chin% names(TrainData)) data.table::setnames(TrainData, c('V1','V2'), paste0('Predict', c('V1','V2')))
     } else {
