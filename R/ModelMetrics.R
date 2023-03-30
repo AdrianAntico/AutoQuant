@@ -373,7 +373,7 @@ RegressionMetrics <- function(SaveModelObjects. = SaveModelObjects,
     EvaluationMetrics <- data.table::data.table(Metric = c("MAE","MAPE","RMSE","R2"), MetricValue = rep(999999, 4L))
     i <- 0L
     # metric <- 'r2'
-    for(metric in c("mae", "mape", "rmse", "r2")) {
+    for(metric in c("mae", "mape", "rmse", "r2")) {# metric = "r2"
       i <- i + 1L
       if(tolower(metric) == "mae") {
         ValidationData.[, Metric := abs(get(TargetColumnName.) - Predict)]
@@ -385,14 +385,8 @@ RegressionMetrics <- function(SaveModelObjects. = SaveModelObjects,
         ValidationData.[, Metric := (get(TargetColumnName.) - Predict) ^ 2]
         MetricVal <- sqrt(ValidationData.[, mean(Metric, na.rm = TRUE)])
       } else if(tolower(metric) == "r2") {
-        # print(paste0('Mean Intercept Only = ', data.[, mean(get(TargetColumnName.))]))
-        # print(paste0('Mean Target = ', ValidationData.[, mean(get(TargetColumnName.))]))
-        # print(paste0('Mean Predict = ', ValidationData.[, mean(Predict)]))
         ValidationData.[, ':=' (Metric1 = (get(TargetColumnName.) - data.[, mean(get(TargetColumnName.))]) ^ 2, Metric2 = (get(TargetColumnName.) - Predict) ^ 2)]
-        # print(paste0('Metric1 = ', ValidationData.[, sum(Metric1)]))
-        # print(paste0('Metric2 = ', ValidationData.[, sum(Metric2)]))
         MetricVal <- 1 - ValidationData.[, sum(Metric2, na.rm = TRUE)] / ValidationData.[, sum(Metric1, na.rm = TRUE)]
-        # print(paste0('MetricVal = ', MetricVal))
       }
       data.table::set(EvaluationMetrics, i = i, j = 2L, value = round(MetricVal, 4L))
     }

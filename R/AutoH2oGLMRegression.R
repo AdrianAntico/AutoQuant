@@ -298,6 +298,7 @@ AutoH2oGLMRegression <- function(OutputSelection = c("EvalMetrics", "Score_Train
       H2OArgs[["random_columns"]] <- RandomColNumbers
     } else {
       H2OArgs[["validation_frame"]] <- datavalidate
+      H2OArgs[["HGLM"]] <- FALSE
     }
     H2OArgs[["solver"]] <- Solver
     H2OArgs[["alpha"]] <- Alpha
