@@ -501,7 +501,7 @@ MultiClassMetrics <- function(ModelClass = "catboost",
   if(Debug) print("# Logloss")
   if(!data.table::is.data.table(TargetLevels.)) N <- length(TargetLevels.) else N <- TargetLevels.[, .N]
   temp <- ValidationData.[, .SD, .SDcols = c(TargetColumnName., "Predict")]
-  temp <- DummifyDT(data=temp, cols=eval(TargetColumnName.), KeepFactorCols=FALSE, OneHot=FALSE, SaveFactorLevels=FALSE, SavePath=NULL, ImportFactorLevels=FALSE, FactorLevelsList=NULL, ClustScore=FALSE, ReturnFactorLevels=FALSE)
+  temp <- Rodeo::DummifyDT(data=temp, cols=eval(TargetColumnName.), KeepFactorCols=FALSE, OneHot=FALSE, SaveFactorLevels=FALSE, SavePath=NULL, ImportFactorLevels=FALSE, FactorLevelsList=NULL, ClustScore=FALSE, ReturnFactorLevels=FALSE)
   if(ModelClass == "xgboost") {
     if(Debug) print("# ModelClass == xgboost")
     logloss <- MLmetrics::LogLoss(
@@ -509,7 +509,7 @@ MultiClassMetrics <- function(ModelClass = "catboost",
       y_true = as.matrix(temp[, .SD, .SDcols = c(names(temp)[c(2L:(1L+N))])]))
   } else if(ModelClass == "catboost") {
     if(Debug) print("# ModelClass == catboost")
-    temp <- DummifyDT(data=temp, cols='Predict', KeepFactorCols=FALSE, OneHot=FALSE, SaveFactorLevels=FALSE, SavePath=NULL, ImportFactorLevels=FALSE, FactorLevelsList=NULL, ClustScore=FALSE, ReturnFactorLevels=FALSE)
+    temp <- Rodeo::DummifyDT(data=temp, cols='Predict', KeepFactorCols=FALSE, OneHot=FALSE, SaveFactorLevels=FALSE, SavePath=NULL, ImportFactorLevels=FALSE, FactorLevelsList=NULL, ClustScore=FALSE, ReturnFactorLevels=FALSE)
     logloss <- MLmetrics::LogLoss(
       y_pred = as.matrix(ValidationData.[, .SD, .SDcols = unique(as.character(TargetLevels.[['OriginalLevels']]))]),
       y_true = as.matrix(temp[, .SD, .SDcols = c(names(temp)[seq_len(N)])]))
