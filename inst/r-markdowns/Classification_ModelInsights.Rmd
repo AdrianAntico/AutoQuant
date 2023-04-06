@@ -791,7 +791,7 @@ if(!is.null(TestData) && !is.null(FeatureColumnNames)) {
     if(is.numeric(TestData[[g]])) {
 
       # Add
-      Test_ParDepPlots[[g]] <- AutoPlots::Plot.PartialDependence.Box(
+      Test_ParDepBoxPlots[[g]] <- AutoPlots::Plot.PartialDependence.Box(
         dt = TestData,
         XVar = g,
         YVar = TargetColumnName,
@@ -841,7 +841,7 @@ if(!is.null(TrainData) && !is.null(FeatureColumnNames)) {
     if(is.numeric(TrainData[[g]])) {
 
       # Add
-      Train_ParDepPlots[[g]] <- AutoPlots::Plot.PartialDependence.Box(
+      Train_ParDepBoxPlots[[g]] <- AutoPlots::Plot.PartialDependence.Box(
         dt = TrainData,
         XVar = g,
         YVar = TargetColumnName,
