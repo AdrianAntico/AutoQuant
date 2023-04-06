@@ -4,7 +4,7 @@ author: "Provided by AutoQuant"
 date: "`r format(Sys.time(), '%Y-%m-%d')`"
 output:
   prettydoc::html_pretty:
-    theme: AutoQuant
+    theme: RemixAutoML
     toc: yes
     toc_depth: 2
     fig_caption: yes
@@ -22,58 +22,57 @@ for(nam in TempNames) {
 }
 ```
 
-
-```{r RemixOutput_DataSets_And_MetaData, echo = FALSE}
-if(!is.null(RemixOutput)) {
+```{r ModelObject_DataSets_And_MetaData, echo = FALSE}
+if(!is.null(ModelObject)) {
   
   # DataSets
-  TestData <- RemixOutput[['TestData']]
-  TrainData <- RemixOutput[['TrainData']]
+  TestData <- ModelObject[['TestData']]
+  TrainData <- ModelObject[['TrainData']]
   
   # Meta info
-  TargetColumnName <- RemixOutput[['ArgsList']][['TargetColumnName']]
+  TargetColumnName <- ModelObject[['ArgsList']][['TargetColumnName']]
   PredictionColumnName <- 'Predict'
   if(is.null(FeatureColumnNames)) {
-    FeatureColumnNames <- RemixOutput[['ColNames']][[1L]]
+    FeatureColumnNames <- ModelObject[['ColNames']][[1L]]
   }
-  if(is.null(DateColumnName) && !is.null(RemixOutput[['ArgsList']][['PrimaryDateColumn']])) {
-    DateColumnName <- RemixOutput[['ArgsList']][['PrimaryDateColumn']]
+  if(is.null(DateColumnName) && !is.null(ModelObject[['ArgsList']][['PrimaryDateColumn']])) {
+    DateColumnName <- ModelObject[['ArgsList']][['PrimaryDateColumn']]
   } else {
     DateColumnName <- NULL
   }
 }
 ```
 
-```{r RemixOutput_Model_MetaData, echo = FALSE}
-if(!is.null(RemixOutput)) {
+```{r ModelObject_Model_MetaData, echo = FALSE}
+if(!is.null(ModelObject)) {
   
   # Model MetaData ----
 
   ## Model_MetaData_Parameters ----
-  ArgsList <- RemixOutput[['ArgsList']]
+  ArgsList <- ModelObject[['ArgsList']]
   
   ## Model_MetaData_GridMetrics ----
-  GridMetrics <- RemixOutput[['GridMetrics']]
+  GridMetrics <- ModelObject[['GridMetrics']]
   
 }
 ``` 
 
-```{r RemixOutput_Evaluation_Metrics, echo = FALSE}
-if(!is.null(RemixOutput)) {
+```{r ModelObject_Evaluation_Metrics, echo = FALSE}
+if(!is.null(ModelObject)) {
   
   # Evaluation Metrics ----
   
   ## Model_Evaluation_Metrics ----
-  Test_EvalMetrics <- RemixOutput[['EvaluationMetrics']][['TestData']]
-  Train_EvalMetrics <- RemixOutput[['EvaluationMetrics']][['TrainData']]
+  Test_EvalMetrics <- ModelObject[['EvaluationMetrics']][['TestData']]
+  Train_EvalMetrics <- ModelObject[['EvaluationMetrics']][['TrainData']]
   
   ## Model_VarImportanceTable ----
   if(tolower(Algo) == 'catboost') {
     
     # Store data
-    Test_Importance <- RemixOutput[['VariableImportance']][['Test_Importance']]
-    Validation_Importance <- RemixOutput[['VariableImportance']][['Validation_Importance']]
-    Train_Importance <- RemixOutput[['VariableImportance']][['Train_Importance']]
+    Test_Importance <- ModelObject[['VariableImportance']][['Test_Importance']]
+    Validation_Importance <- ModelObject[['VariableImportance']][['Validation_Importance']]
+    Train_Importance <- ModelObject[['VariableImportance']][['Train_Importance']]
 
     # Update Colnames
     if(!is.null(Test_Importance)) data.table::setnames(Test_Importance, old = 'Importance', new = 'Test_Importance', skip_absent = TRUE)
@@ -116,7 +115,7 @@ if(!is.null(RemixOutput)) {
       Validation_Importance <- Validation_Importance_dt
     }
     if(is.null(Train_Importance_dt)) {
-      Train_Importance <- RemixOutput[['VariableImportance']]
+      Train_Importance <- ModelObject[['VariableImportance']]
     } else {
       Train_Importance <- Train_Importance_dt
     }
@@ -152,9 +151,9 @@ if(!is.null(RemixOutput)) {
   
   ## Model_IntImportanceTable ----
   if(tolower(Algo) == 'catboost') {
-    Test_Interaction <- RemixOutput[['InteractionImportance']][['Test_Interaction']]
-    Validation_Interaction <- RemixOutput[['InteractionImportance']][['Validation_Interaction']]
-    Train_Interaction <- RemixOutput[['InteractionImportance']][['Train_Interaction']]
+    Test_Interaction <- ModelObject[['InteractionImportance']][['Test_Interaction']]
+    Validation_Interaction <- ModelObject[['InteractionImportance']][['Validation_Interaction']]
+    Train_Interaction <- ModelObject[['InteractionImportance']][['Train_Interaction']]
     
     # Update Colnames
     if(!is.null(Test_Interaction)) data.table::setnames(Test_Interaction, old = 'score', new = 'Test_Importance', skip_absent = TRUE)
@@ -186,419 +185,12 @@ if(!is.null(RemixOutput)) {
     } else {
       All_Interaction <- NULL
     }
-    
-  } else {
-    
-    # Encoding-based Models + Generic Connector
-    if(is.null(Test_Interaction_dt)) {
-      Test_Interaction <- NULL
-    } else {
-      Test_Interaction <- Test_Interaction_dt
-    }
-    if(is.null(Validation_Interaction_dt)) {
-      Validation_Interaction <- NULL
-    } else {
-      Validation_Interaction <- Validation_Interaction_dt
-    }
-    if(is.null(Train_Interaction_dt)) {
-      Train_Interaction <- NULL
-    } else {
-      Train_Interaction <- Train_Interaction_dt
-    }
-    
-    # Update Colnames
-    if(!is.null(Test_Interaction)) data.table::setnames(Test_Interaction, old = 'score', new = 'Test_Importance', skip_absent = TRUE)
-    if(!is.null(Validation_Interaction)) data.table::setnames(Validation_Interaction, old = 'score', new = 'Validation_Importance', skip_absent = TRUE)
-    if(!is.null(Train_Interaction)) data.table::setnames(Train_Interaction, old = 'score', new = 'Train_Importance', skip_absent = TRUE)
-
-    # CatBoost only
-    if(is.null(Test_Interaction) && is.null(Validation_Interaction) && is.null(Train_Interaction)) {
-      All_Interaction <- NULL
-    } else if(!is.null(Test_Interaction) && !is.null(Validation_Interaction) && !is.null(Train_Interaction)) {
-      All_Interaction <- merge(Test_Interaction, Validation_Interaction, by = c('Features1','Features2'), all = TRUE)
-      All_Interaction <- merge(All_Interaction, Train_Interaction, by = c('Features1','Features2'), all = TRUE)
-      data.table::setorderv(x = All_Interaction, cols = names(All_Interaction)[3L], order = -1)
-    } else if(!is.null(Test_Interaction) && !is.null(Validation_Interaction) && is.null(Train_Interaction)) {
-      All_Interaction <- merge(Test_Interaction, Validation_Interaction, by = c('Features1','Features2'), all = TRUE)
-      data.table::setorderv(x = All_Interaction, cols = names(All_Interaction)[3L], order = -1)
-    } else if(!is.null(Test_Interaction) && is.null(Validation_Interaction) && !is.null(Train_Interaction)) {
-      All_Interaction <- merge(Test_Interaction, Train_Interaction, by = c('Features1','Features2'), all = TRUE)
-      data.table::setorderv(x = All_Interaction, cols = names(All_Interaction)[3L], order = -1)
-    } else if(is.null(Test_Interaction) && !is.null(Validation_Interaction) && !is.null(Train_Interaction)) {
-      All_Interaction <- merge(Validation_Interaction, Train_Interaction, by = c('Features1','Features2'), all = TRUE)
-      data.table::setorderv(x = All_Interaction, cols = names(All_Interaction)[3L], order = -1)
-    } else if(is.null(Test_Interaction) && is.null(Validation_Interaction) && !is.null(Train_Interaction)) {
-      All_Interaction <- Train_Interaction
-    } else if(is.null(Test_Interaction) && !is.null(Validation_Interaction) && is.null(Train_Interaction)) {
-      All_Interaction <- Validation_Interaction
-    } else if(!is.null(Test_Interaction) && is.null(Validation_Interaction) && is.null(Train_Interaction)) {
-      All_Interaction <- Test_Interaction
-    } else {
-      All_Interaction <- NULL
-    }
-    
   }
 }
 ``` 
 
-```{r RemixOutput_Evaluation_Plots, echo = FALSE}
-if(!is.null(RemixOutput)) {
-
-  # Evaluation Plots ----
-  
-  ## EvaluationPlots_ResidualHistogram ----
-  Test_ResidualHistogram <- RemixOutput[['PlotList']][['Test_ResidualsHistogram']]
-  Train_ResidualHistogram <- RemixOutput[['PlotList']][['Train_ResidualsHistogram']]
-  
-  ## EvaluationPlots_CalibrationPlot ----
-  Test_EvaluationPlot <- RemixOutput[['PlotList']][['Test_EvaluationPlot']]
-  Train_EvaluationPlot <- RemixOutput[['PlotList']][['Train_EvaluationPlot']]
-  
-  ## EvaluationPlots_CalibrationBoxPlot ----
-  Test_EvaluationBoxPlot <- RemixOutput[['PlotList']][['Test_EvaluationBoxPlot']]
-  Train_EvaluationBoxPlot <- RemixOutput[['PlotList']][['Train_EvaluationBoxPlot']]
-  
-  ## EvaluationPlots_ResidualsScatterPlot ----
-  Test_ScatterPlot <- RemixOutput[['PlotList']][['Test_ScatterPlot']]
-  Train_ScatterPlot <- RemixOutput[['PlotList']][['Train_ScatterPlot']]
-  
-  ## EvaluationPlots_ResidualsCopulaPlot ----
-  Test_CopulaPlot <- RemixOutput[['PlotList']][['Test_CopulaPlot']]
-  Train_CopulaPlot <- RemixOutput[['PlotList']][['Train_CopulaPlot']]
-}
-```  
-
-```{r RemixOutput_Model_Interpretation, echo = FALSE}
-if(!is.null(RemixOutput)) {
-  
-  # Model Interpretation ----
-  
-  ## Model_Evaluation_Metrics_NumericVariables ----
-  
-  ### TestData ----
-  
-  # Plots to Add and Remove
-  
-  # Starting batch of plots
-  Test_ParDepPlots <- RemixOutput[['PlotList']][['Test_ParDepPlots']]
-  
-  # Name to keep and remove
-  # setdiff(x = c(1,2,3,4,5), y = c(3,4,5,6,7))
-  
-  # Remove Names
-  A <- names(Test_ParDepPlots)
-  B <- FeatureColumnNames
-  RemovePDPList_Line <- setdiff(A, B)
-  if(identical(character(0), RemovePDPList_Line)) RemovePDPList_Line <- NULL
-  
-  # Add Names
-  AddPDPList_Line = setdiff(B, A)
-  if(identical(character(0), AddPDPList_Line)) AddPDPList_Line <- NULL
-  
-  # Remove Plots
-  if(!is.null(A)) {
-    for(v in A) {
-
-      # Remove
-      if(!is.null(TestData) && (!is.numeric(TestData[[v]]) || v %in% RemovePDPList_Line)) {
-        Test_ParDepPlots[[v]] <- NULL
-      } else if(v %in% RemovePDPList_Line) {
-        Test_ParDepPlots[[v]] <- NULL
-      }
-    }
-  }
-    
-  # Add Plots
-  if(!is.null(TestData) && !is.null(AddPDPList_Line)) {
-    for(g in AddPDPList_Line) {
-      if(is.numeric(TestData[[g]])) {
-        
-        # Add
-        Test_ParDepPlots[[g]] <- AutoQuant::ParDepCalPlots(
-          data = TestData, 
-          PredictionColName = 'Predict', 
-          TargetColName = TargetColumnName, 
-          IndepVar = g, 
-          GraphType = 'calibration', 
-          PercentileBucket = 0.05, 
-          FactLevels = 10, 
-          Function = function(x) mean(x, na.rm = TRUE), 
-          DateColumn = NULL, 
-          DateAgg_3D = FALSE)
-      }
-    }
-  }
-
-  ### TrainData ----
-  
-  # Plots to Add and Remove
-  
-  # Starting batch of plots
-  Train_ParDepPlots <- RemixOutput[['PlotList']][['Train_ParDepPlots']]
-
-  # Name to keep and remove
-  # setdiff(x = c(1,2,3,4,5), y = c(3,4,5,6,7))
-
-  # Remove Names
-  A <- names(Train_ParDepPlots)
-  B <- FeatureColumnNames
-  RemovePDPList_Line <- setdiff(A, B)
-  if(identical(character(0), RemovePDPList_Line)) RemovePDPList_Line <- NULL
-  
-  # Add Names
-  AddPDPList_Line = setdiff(B, A)
-  if(identical(character(0), AddPDPList_Line)) AddPDPList_Line <- NULL
-
-  # Remove Plots
-  if(!is.null(A)) {
-    for(v in A) {
-
-      # Remove
-      if(!is.null(TrainData) && (!is.numeric(TrainData[[v]]) || v %in% RemovePDPList_Line)) {
-        Train_ParDepPlots[[v]] <- NULL
-      } else if(v %in% RemovePDPList_Line) {
-        Train_ParDepPlots[[v]] <- NULL
-      }
-    }
-  }
-
-  # Add Plots
-  if(!is.null(TrainData) && !is.null(AddPDPList_Line)) {
-    for(g in AddPDPList_Line) {
-      if(is.numeric(TrainData[[g]])) {
-
-        # Add
-        Train_ParDepPlots[[g]] <- AutoQuant::ParDepCalPlots(
-          data = TrainData, 
-          PredictionColName = 'Predict', 
-          TargetColName = TargetColumnName, 
-          IndepVar = g, 
-          GraphType = 'calibration', 
-          PercentileBucket = 0.05, 
-          FactLevels = 10, 
-          Function = function(x) mean(x, na.rm = TRUE), 
-          DateColumn = NULL, 
-          DateAgg_3D = FALSE)
-      }
-    }
-  }
-  
-  ## Model_Evaluation_Metrics_NumericVariables_Box ----
-    
-  ### Test Data ----
-    
-  # Starting batch of plots
-  Test_ParDepBoxPlots <- RemixOutput[['PlotList']][['Test_ParDepBoxPlots']]
-  
-  # Name to keep and remove
-  # setdiff(x = c(1,2,3,4,5), y = c(3,4,5,6,7))
-
-  # Remove Names
-  A <- names(Test_ParDepBoxPlots)
-  B <- FeatureColumnNames
-  RemovePDPList_Box <- setdiff(A, B)
-  if(identical(character(0), RemovePDPList_Box)) RemovePDPList_Box <- NULL
-  
-  # Add Names
-  AddPDPList_Box = setdiff(B, A)
-  if(identical(character(0), AddPDPList_Box)) AddPDPList_Box <- NULL
-
-  # Remove Plots
-  if(!is.null(A)) {
-    for(v in A) {
-
-      # Remove
-      if(!is.null(TestData) && (!is.numeric(TestData[[v]]) || v %in% RemovePDPList_Box)) {
-        Test_ParDepBoxPlots[[v]] <- NULL
-      } else if(v %in% RemovePDPList_Box) {
-        Test_ParDepBoxPlots[[v]] <- NULL
-      }
-    }
-  }
-
-  # Add Plots
-  if(!is.null(TestData) && !is.null(AddPDPList_Box)) {
-    for(g in AddPDPList_Box) {
-      if(is.numeric(TestData[[g]])) {
-
-        # Add
-        Test_ParDepBoxPlots[[g]] <- AutoQuant::ParDepCalPlots(
-          data = TestData, 
-          PredictionColName = 'Predict', 
-          TargetColName = TargetColumnName, 
-          IndepVar = g, 
-          GraphType = 'calibration', 
-          PercentileBucket = 0.05, 
-          FactLevels = 10, 
-          Function = function(x) mean(x, na.rm = TRUE), 
-          DateColumn = NULL, 
-          DateAgg_3D = FALSE)
-      }
-    }
-  }
-    
-  ### Train Data ----
-  
-  # Starting batch of plots
-  Train_ParDepBoxPlots <- RemixOutput[['PlotList']][['Train_ParDepBoxPlots']]
-  
-  # Name to keep and remove
-  # setdiff(x = c(1,2,3,4,5), y = c(3,4,5,6,7))
-
-  # Remove Names
-  A <- names(Train_ParDepBoxPlots)
-  B <- FeatureColumnNames
-  RemovePDPList_Box <- setdiff(A, B)
-  if(identical(character(0), RemovePDPList_Box)) RemovePDPList_Box <- NULL
-  
-  # Add Names
-  AddPDPList_Box = setdiff(B, A)
-  if(identical(character(0), AddPDPList_Box)) AddPDPList_Box <- NULL
-
-  # Remove Plots
-  if(!is.null(A)) {
-    for(v in A) {
-
-      # Remove
-      if(!is.null(TrainData) && (is.numeric(TrainData[[v]]) || v %in% RemovePDPList_Box)) {
-        Train_ParDepBoxPlots[[v]] <- NULL
-      } else if(v %in% RemovePDPList_Box) {
-        Train_ParDepBoxPlots[[v]] <- NULL
-      }
-    }
-  }
-
-  # Add Plots
-  if(!is.null(TrainData) && !is.null(AddPDPList_Box)) {
-    for(g in AddPDPList_Box) {
-      if(is.numeric(TrainData[[g]])) {
-
-        # Add
-        Train_ParDepBoxPlots[[g]] <- AutoQuant::ParDepCalPlots(
-          data = TrainData, 
-          PredictionColName = 'Predict', 
-          TargetColName = TargetColumnName, 
-          IndepVar = g, 
-          GraphType = 'calibration', 
-          PercentileBucket = 0.05, 
-          FactLevels = 10, 
-          Function = function(x) mean(x, na.rm = TRUE), 
-          DateColumn = NULL, 
-          DateAgg_3D = FALSE)
-      }
-    }
-  }
-    
-  ## Model_Evaluation_Metrics_CategoricalVariables ---- 
-  
-  ### Test Data ----
-  
-  # Starting batch of plots
-  Test_ParDepCatPlots <- RemixOutput[['PlotList']][['Test_ParDepPlots']]
-  
-  # Name to keep and remove
-  # setdiff(x = c(1,2,3,4,5), y = c(3,4,5,6,7))
-
-  # Remove Names
-  A <- names(Test_ParDepCatPlots)
-  B <- FeatureColumnNames
-  RemovePDPList_Bar <- setdiff(A, B)
-  if(identical(character(0), RemovePDPList_Bar)) RemovePDPList_Bar <- NULL
-  
-  # Add Names
-  AddPDPList_Bar = setdiff(B, A)
-  if(identical(character(0), AddPDPList_Bar)) AddPDPList_Bar <- NULL
-
-  # Remove Plots
-  if(!is.null(A)) {
-    for(v in A) {
-    
-      # Remove
-      if(!is.null(TestData) && (is.numeric(TestData[[v]]) || v %in% RemovePDPList_Bar)) {
-        Test_ParDepCatPlots[[v]] <- NULL
-      } else if(v %in% RemovePDPList_Bar) {
-        Test_ParDepCatPlots[[v]] <- NULL
-      }
-    }
-  }
-    
-  # Add Plots
-  if(!is.null(TestData) && !is.null(AddPDPList_Bar)) {
-    for(g in AddPDPList_Bar) {
-      if(!is.numeric(TestData[[g]])) {
-
-        # Add
-        Test_ParDepCatPlots[[g]] <- AutoQuant::ParDepCalPlots(
-          data = TestData, 
-          PredictionColName = 'Predict', 
-          TargetColName = TargetColumnName, 
-          IndepVar = g, 
-          GraphType = 'calibration', 
-          PercentileBucket = 0.05, 
-          FactLevels = 10, 
-          Function = function(x) mean(x, na.rm = TRUE), 
-          DateColumn = NULL, 
-          DateAgg_3D = FALSE)
-      }
-    }
-  }
-    
-  ### Train Data ----
-  
-  # Starting batch of plots
-  Train_ParDepCatPlots <- RemixOutput[['PlotList']][['Train_ParDepPlots']]
-  
-  # Name to keep and remove
-  # setdiff(x = c(1,2,3,4,5), y = c(3,4,5,6,7))
-
-  # Remove Names
-  A <- names(Train_ParDepCatPlots)
-  B <- FeatureColumnNames
-  RemovePDPList_Bar <- setdiff(A, B)
-  if(identical(character(0), RemovePDPList_Bar)) RemovePDPList_Bar <- NULL
-  
-  # Add Names
-  AddPDPList_Bar = setdiff(B, A)
-  if(identical(character(0), AddPDPList_Bar)) AddPDPList_Bar <- NULL
-
-  # Remove Plots
-  if(!is.null(A)) {
-    for(v in A) {
-
-      # Remove
-      if(!is.null(TrainData) && (is.numeric(TrainData[[v]]) || v %in% RemovePDPList_Bar)) {
-        Train_ParDepCatPlots[[v]] <- NULL
-      } else if(v %in% RemovePDPList_Bar) {
-        Train_ParDepCatPlots[[v]] <- NULL
-      }
-    }
-  }
-
-  # Add Plots
-  if(!is.null(TrainData) && !is.null(AddPDPList_Bar)) {
-    for(g in AddPDPList_Bar) {
-      if(!is.numeric(TrainData[[g]])) {
-
-        # Add
-        Train_ParDepCatPlots[[g]] <- AutoQuant::ParDepCalPlots(
-          data = TrainData, 
-          PredictionColName = 'Predict', 
-          TargetColName = TargetColumnName, 
-          IndepVar = g, 
-          GraphType = 'calibration', 
-          PercentileBucket = 0.05, 
-          FactLevels = 10, 
-          Function = function(x) mean(x, na.rm = TRUE), 
-          DateColumn = NULL, 
-          DateAgg_3D = FALSE)
-      }
-    }
-  }
-}
-```
-
 ```{r Generic_DataSets_And_MetaData, echo = FALSE}
-if(is.null(RemixOutput)) {
+if(is.null(ModelObject)) {
   
   # DataSets
   if(is.null(TestData) && file.exists(file.path(SourcePath, paste0(ModelID, "_ValidationData.csv")))) {
@@ -628,8 +220,8 @@ if(is.null(RemixOutput)) {
   if(is.list(FeatureColumnNames) || data.table::is.data.table(FeatureColumnNames)) {
     FeatureColumnNames <- FeatureColumnNames[[1L]]
   }
-  if(is.null(DateColumnName) && !is.null(RemixOutput[['ArgsList']][['PrimaryDateColumn']])) {
-    DateColumnName <- RemixOutput[['ArgsList']][['PrimaryDateColumn']]
+  if(is.null(DateColumnName) && !is.null(ModelObject[['ArgsList']][['PrimaryDateColumn']])) {
+    DateColumnName <- ModelObject[['ArgsList']][['PrimaryDateColumn']]
   } else {
     DateColumnName <- NULL
   }
@@ -637,7 +229,7 @@ if(is.null(RemixOutput)) {
 ```
 
 ```{r Generic_Global_Objects, echo = FALSE}
-if(is.null(RemixOutput)) {
+if(is.null(ModelObject)) {
 
   # Global (Output feeds into Scatterplot and Copula Plot Chunks) ----
 
@@ -668,7 +260,7 @@ if(is.null(RemixOutput)) {
 ```
 
 ```{r Generic_Model_MetaData, echo = FALSE}
-if(is.null(RemixOutput)) {
+if(is.null(ModelObject)) {
 
   # Model MetaData ----
 
@@ -695,7 +287,7 @@ if(is.null(RemixOutput)) {
 ```
   
 ```{r Generic_Evaluation_Metrics, echo = FALSE}  
-if(is.null(RemixOutput)) {
+if(is.null(ModelObject)) {
   
   # Evaluation Metrics ----
     
@@ -942,476 +534,635 @@ if(is.null(RemixOutput)) {
     } else {
       All_Interaction <- NULL
     }
-    
   }
 }
 ```
 
 ```{r Generic_Evaluation_Plots, echo = FALSE}
-if(is.null(RemixOutput)) {
+
+# Evaluation Plots ----
   
-  # Evaluation Plots ----
-    
-  ## EvaluationPlots_ResidualHistogram ----
-  
-  ### Test
-  if(!is.null(Test_ResidualPlot[['ResidualsHistogram']])) {
-    Test_ResidualHistogram <- Test_ResidualPlot[['ResidualsHistogram']]
-  } else if(!is.null(TestData)) {
-    Test_ResidualPlot <- AutoQuant::ResidualPlots(
-      TestData = TestData,
-      Target = TargetColumnName,
-      Predicted = 'Predict',
-      DateColumnName = NULL,
-      Gam_Fit = TRUE)
-    Test_ResidualHistogram <- Test_ResidualPlot[['ResidualsHistogram']]
-  } else {
-    Test_ResidualHistogram <- NULL
-  }
-  
-  ### Train
-  if(!is.null(Train_ResidualPlot[['ResidualsHistogram']])) {
-    Train_ResidualHistogram <- Train_ResidualPlot[['ResidualsHistogram']]
-  } else if(!is.null(TrainData)) {
-    Train_ResidualPlot <- AutoQuant::ResidualPlots(
-      TestData = TrainData,
-      Target = TargetColumnName,
-      Predicted = 'Predict',
-      DateColumnName = NULL,
-      Gam_Fit = TRUE)
-    Train_ResidualHistogram <- Train_ResidualPlot[['ResidualsHistogram']]
-  } else {
-    Train_ResidualHistogram <- NULL
-  }
+## EvaluationPlots_ResidualHistogram ----
 
-  ## EvaluationPlots_CalibrationPlot ----
-  
-  ### Test
-  if(!is.null(TestData)) {
-    Test_EvaluationPlot <- AutoQuant::EvalPlot(
-      data = data.table::copy(TestData), 
-      PredictionColName = 'Predict', 
-      TargetColName = TargetColumnName, 
-      GraphType = 'calibration',
-      PercentileBucket = 0.05, 
-      aggrfun = function(x) mean(x, na.rm = TRUE))
-  } else {
-    Test_EvaluationPlot <- NULL
-  }
+### Test
+Test_ResidualHistogram <- AutoPlots::Plot.Residuals.Histogram(
+  dt = TestData,
+  AggMethod = "mean",
+  SampleSize = 100000,
+  XVar = 'Predict',
+  YVar = TargetColumnName,
+  GroupVar = NULL,
+  YVarTrans = "Identity",
+  XVarTrans = "Identity",
+  FacetRows = 1,
+  FacetCols = 1,
+  FacetLevels = NULL,
+  NumberBins = 20,
+  Height = "600px",
+  Width = "1100px",
+  Title = "Residuals Histogram",
+  ShowLabels = FALSE,
+  Title.YAxis = NULL,
+  Title.XAxis = NULL,
+  Engine = "Echarts",
+  EchartsTheme = "dark",
+  TimeLine = FALSE,
+  X_Scroll = TRUE,
+  Y_Scroll = TRUE,
+  BackGroundColor = "#6a6969",
+  ChartColor = "#001534",
+  FillColor = "#0066ff",
+  FillColorReverse = "#97ff00",
+  GridColor = "white",
+  TextColor = "white",
+  ZeroLineColor = "#ffff",
+  ZeroLineWidth = 1.25,
+  title.fontSize = 22,
+  title.fontWeight = "bold",
+  title.textShadowColor = "#63aeff",
+  title.textShadowBlur = 3,
+  title.textShadowOffsetY = 1,
+  title.textShadowOffsetX = -1,
+  xaxis.fontSize = 14,
+  yaxis.fontSize = 14,
+  Debug = FALSE)
 
-  ### Train
-  if(!is.null(TrainData)) {
-    Train_EvaluationPlot <- AutoQuant::EvalPlot(
-      data = data.table::copy(TrainData), 
-      PredictionColName = 'Predict',
-      TargetColName = TargetColumnName, 
-      GraphType = 'calibration',
-      PercentileBucket = 0.05, 
-      aggrfun = function(x) mean(x, na.rm = TRUE))
-  } else {
-    Train_EvaluationPlot <- NULL
-  }
-  
-  ## EvaluationPlots_CalibrationBoxPlot ----
-
-  ### Test
-  if(!is.null(TestData)) {
-    Test_EvaluationBoxPlot <- AutoQuant::EvalPlot(
-      data = data.table::copy(TestData), 
-      PredictionColName = 'Predict', 
-      TargetColName = TargetColumnName, 
-      GraphType = 'boxplot', 
-      PercentileBucket = 0.05, 
-      aggrfun = function(x) mean(x, na.rm = TRUE))
-  } else {
-    Test_EvaluationBoxPlot <- NULL
-  }
-
-  ### Train
-  if(!is.null(TrainData)) {
-    Train_EvaluationBoxPlot <- AutoQuant::EvalPlot(
-      data = data.table::copy(TrainData),
-      PredictionColName = 'Predict',
-      TargetColName = TargetColumnName,
-      GraphType = "boxplot", 
-      PercentileBucket = 0.05,
-      aggrfun = function(x) mean(x, na.rm = TRUE))
-  } else {
-    Train_EvaluationBoxPlot <- NULL
-  }
-
-  ## EvaluationPlots_ResidualsScatterPlot (depends on ) ----
-  Test_ScatterPlot <- Test_ResidualPlot[['ScatterPlot']]
-  Train_ScatterPlot <- Train_ResidualPlot[['ScatterPlot']]
-
-  ## EvaluationPlots_ResidualsCopulaPlot ----
-  Test_CopulaPlot <- Test_ResidualPlot[['CopulaPlot']]
-  Train_CopulaPlot <- Train_ResidualPlot[['CopulaPlot']]
+### Train
+if(length(TrainData) > 0L) {
+  Train_ResidualHistogram <- AutoPlots::Plot.Residuals.Histogram(
+    dt = TrainData,
+    AggMethod = "mean",
+    SampleSize = 100000,
+    XVar = 'Predict',
+    YVar = TargetColumnName,
+    GroupVar = NULL,
+    YVarTrans = "Identity",
+    XVarTrans = "Identity",
+    FacetRows = 1,
+    FacetCols = 1,
+    FacetLevels = NULL,
+    NumberBins = 20,
+    Height = "600px",
+    Width = "1100px",
+    Title = "Residuals Histogram",
+    ShowLabels = FALSE,
+    Title.YAxis = NULL,
+    Title.XAxis = NULL,
+    Engine = "Echarts",
+    EchartsTheme = "dark",
+    TimeLine = FALSE,
+    X_Scroll = TRUE,
+    Y_Scroll = TRUE,
+    BackGroundColor = "#6a6969",
+    ChartColor = "#001534",
+    FillColor = "#0066ff",
+    FillColorReverse = "#97ff00",
+    GridColor = "white",
+    TextColor = "white",
+    ZeroLineColor = "#ffff",
+    ZeroLineWidth = 1.25,
+    title.fontSize = 22,
+    title.fontWeight = "bold",
+    title.textShadowColor = "#63aeff",
+    title.textShadowBlur = 3,
+    title.textShadowOffsetY = 1,
+    title.textShadowOffsetX = -1,
+    xaxis.fontSize = 14,
+    yaxis.fontSize = 14,
+    Debug = FALSE)
 }
+
+
+## EvaluationPlots_CalibrationPlot ----
+
+### Test
+Test_EvaluationPlot <- AutoPlots::Plot.Calibration.Line(
+  dt = TestData,
+  AggMethod = "mean",
+  XVar = 'Predict',
+  YVar = TargetColumnName,
+  GroupVar = NULL,
+  YVarTrans = "Identity",
+  XVarTrans = "Identity",
+  FacetRows = 1,
+  FacetCols = 1,
+  FacetLevels = NULL,
+  NumberBins = 21,
+  Height = "600px",
+  Width = "1100px",
+  Title = "Calibration Line Plot",
+  ShowLabels = FALSE,
+  Title.YAxis = NULL,
+  Title.XAxis = NULL,
+  Engine = "Echarts",
+  EchartsTheme = "dark",
+  TimeLine = FALSE,
+  X_Scroll = TRUE,
+  Y_Scroll = TRUE,
+  BackGroundColor = "#6a6969",
+  ChartColor = "#001534",
+  FillColor = "#0066ff",
+  FillColorReverse = "#97ff00",
+  GridColor = "white",
+  TextColor = "white",
+  ZeroLineColor = "#ffff",
+  ZeroLineWidth = 1.25,
+  Debug = FALSE)
+
+### Train
+if(!is.null(TrainData)) {
+  Train_EvaluationPlot <- AutoPlots::Plot.Calibration.Line(
+    dt = TrainData,
+    AggMethod = "mean",
+    XVar = 'Predict',
+    YVar = TargetColumnName,
+    GroupVar = NULL,
+    YVarTrans = "Identity",
+    XVarTrans = "Identity",
+    FacetRows = 1,
+    FacetCols = 1,
+    FacetLevels = NULL,
+    NumberBins = 21,
+    Height = "600px",
+    Width = "1100px",
+    Title = "Calibration Line Plot",
+    ShowLabels = FALSE,
+    Title.YAxis = NULL,
+    Title.XAxis = NULL,
+    Engine = "Echarts",
+    EchartsTheme = "dark",
+    TimeLine = FALSE,
+    X_Scroll = TRUE,
+    Y_Scroll = TRUE,
+    BackGroundColor = "#6a6969",
+    ChartColor = "#001534",
+    FillColor = "#0066ff",
+    FillColorReverse = "#97ff00",
+    GridColor = "white",
+    TextColor = "white",
+    ZeroLineColor = "#ffff",
+    ZeroLineWidth = 1.25,
+    Debug = FALSE)
+}
+
+## EvaluationPlots_CalibrationBoxPlot ----
+
+### Test
+Test_EvaluationBoxPlot <- AutoPlots::Plot.Calibration.Box(
+  dt = TestData,
+  SampleSize = 100000L,
+  AggMethod = "mean",
+  XVar = 'Predict',
+  YVar = TargetColumnName,
+  GroupVar = NULL,
+  YVarTrans = "Identity",
+  XVarTrans = "Identity",
+  FacetRows = 1,
+  FacetCols = 1,
+  FacetLevels = NULL,
+  NumberBins = 21,
+  Height = "600px",
+  Width = "1100px",
+  Title = "Calibration Plot",
+  ShowLabels = FALSE,
+  Title.YAxis = NULL,
+  Title.XAxis = NULL,
+  Engine = "Echarts",
+  EchartsTheme = "dark",
+  TimeLine = FALSE,
+  X_Scroll = TRUE,
+  Y_Scroll = TRUE,
+  BackGroundColor = "#6a6969",
+  ChartColor = "#001534",
+  FillColor = "#0066ff",
+  FillColorReverse = "#97ff00",
+  GridColor = "white",
+  TextColor = "white",
+  ZeroLineColor = "#ffff",
+  ZeroLineWidth = 1.25,
+  Debug = FALSE)
+
+### Train
+if(!is.null(TrainData)) {
+  Train_EvaluationBoxPlot <- AutoPlots::Plot.Calibration.Box(
+    dt = TrainData,
+    SampleSize = 100000L,
+    AggMethod = "mean",
+    XVar = 'Predict',
+    YVar = TargetColumnName,
+    GroupVar = NULL,
+    YVarTrans = "Identity",
+    XVarTrans = "Identity",
+    FacetRows = 1,
+    FacetCols = 1,
+    FacetLevels = NULL,
+    NumberBins = 21,
+    Height = "600px",
+    Width = "1100px",
+    Title = "Calibration Plot",
+    ShowLabels = FALSE,
+    Title.YAxis = NULL,
+    Title.XAxis = NULL,
+    Engine = "Echarts",
+    EchartsTheme = "dark",
+    TimeLine = FALSE,
+    X_Scroll = TRUE,
+    Y_Scroll = TRUE,
+    BackGroundColor = "#6a6969",
+    ChartColor = "#001534",
+    FillColor = "#0066ff",
+    FillColorReverse = "#97ff00",
+    GridColor = "white",
+    TextColor = "white",
+    ZeroLineColor = "#ffff",
+    ZeroLineWidth = 1.25,
+    Debug = FALSE)
+}
+
+## EvaluationPlots_ResidualsScatterPlot (depends on ) ----
+Test_ScatterPlot <- AutoPlots::Plot.Residuals.Scatter(
+  dt = TestData,
+  AggMethod = "mean",
+  SampleSize = 100000,
+  XVar = "Predict",
+  YVar = TargetColumnName,
+  GroupVar = NULL,
+  YVarTrans = "Identity",
+  XVarTrans = "Identity",
+  FacetRows = 1,
+  FacetCols = 1,
+  FacetLevels = NULL,
+  Height = "600px",
+  Width = "1100px",
+  Title = "Calibration Plot",
+  ShowLabels = FALSE,
+  Title.YAxis = NULL,
+  Title.XAxis = NULL,
+  Engine = "Echarts",
+  EchartsTheme = "dark",
+  TimeLine = FALSE,
+  X_Scroll = TRUE,
+  Y_Scroll = TRUE,
+  BackGroundColor = "#6a6969",
+  ChartColor = "#001534",
+  FillColor = "#0066ff",
+  FillColorReverse = "#97ff00",
+  GridColor = "white",
+  TextColor = "white",
+  ZeroLineColor = "#ffff",
+  ZeroLineWidth = 1.25,
+  Debug = FALSE)
+
+if(length(TrainData) > 0L) {
+  Train_ScatterPlot <- AutoPlots::Plot.Residuals.Scatter(
+    dt = TrainData,
+    AggMethod = "mean",
+    SampleSize = 100000,
+    XVar = "Predict",
+    YVar = TargetColumnName,
+    GroupVar = NULL,
+    YVarTrans = "Identity",
+    XVarTrans = "Identity",
+    FacetRows = 1,
+    FacetCols = 1,
+    FacetLevels = NULL,
+    Height = "600px",
+    Width = "1100px",
+    Title = "Residuals ScatterPlot",
+    ShowLabels = FALSE,
+    Title.YAxis = NULL,
+    Title.XAxis = NULL,
+    Engine = "Echarts",
+    EchartsTheme = "dark",
+    TimeLine = FALSE,
+    X_Scroll = TRUE,
+    Y_Scroll = TRUE,
+    BackGroundColor = "#6a6969",
+    ChartColor = "#001534",
+    FillColor = "#0066ff",
+    FillColorReverse = "#97ff00",
+    GridColor = "white",
+    TextColor = "white",
+    ZeroLineColor = "#ffff",
+    ZeroLineWidth = 1.25,
+    Debug = FALSE)
+}
+
 ```
 
-```{r Generic_Model_Interpretation, echo = FALSE}
-if(is.null(RemixOutput)) {
+```{r ModelObject_Model_Interpretation, echo = FALSE}
+
+# Model Interpretation ----
+
+## Model_Evaluation_Metrics_NumericVariables ----
+
+### TestData ----
+
+# Plots to Add and Remove
+
+# Starting batch of plots
+Test_ParDepPlots <- list()
   
-  # Model Interpretation ----
-  
-  ## Model_Evaluation_Metrics_NumericVariables ----
-  
-  ### Test ----
-
-  # Starting batch of plots
-  if(file.exists(file.path(SourcePath, paste0(ModelID, "_Test_ParDepPlots.Rdata")))) {
-    load(file = file.path(SourcePath, paste0(ModelID, "_Test_ParDepPlots.Rdata")))
-    Test_ParDepPlots <- ParDepPlots
-    rm(ParDepPlots)
-  } else {
-    Test_ParDepPlots <- list()
-  }
-  
-  # Name to keep and remove
-  # setdiff(x = c(1,2,3,4,5), y = c(3,4,5,6,7))
-
-  # Remove Names
-  A <- names(Test_ParDepPlots)
-  B <- FeatureColumnNames
-  RemovePDPList_Line <- setdiff(A, B)
-  if(identical(character(0), RemovePDPList_Line)) RemovePDPList_Line <- NULL
-  
-  # Add Names
-  AddPDPList_Line = setdiff(B, A)
-  if(identical(character(0), AddPDPList_Line)) AddPDPList_Line <- NULL
-
-  # Remove Plots
-  if(!is.null(A)) {
-    for(v in A) {
-
-      # Remove
-      if(!is.null(TestData) && (!is.numeric(TestData[[v]]) || v %in% RemovePDPList_Line)) {
-        Test_ParDepPlots[[v]] <- NULL
-      } else if(v %in% RemovePDPList_Line) {
-        Test_ParDepPlots[[v]] <- NULL
-      }
-    }
-  }
-  
-  # Add Plots
-  if(!is.null(TestData) && !is.null(AddPDPList_Line)) {
-    for(g in AddPDPList_Line) {
-      if(is.numeric(TestData[[g]])) {
-
-        # Add
-        Test_ParDepPlots[[g]] <- AutoQuant::ParDepCalPlots(
-          data = TestData, 
-          PredictionColName = 'Predict', 
-          TargetColName = TargetColumnName, 
-          IndepVar = g, 
-          GraphType = 'calibration', 
-          PercentileBucket = 0.05, 
-          FactLevels = 10, 
-          Function = function(x) mean(x, na.rm = TRUE), 
-          DateColumn = NULL, 
-          DateAgg_3D = FALSE)
-      }
-    }
-  }
-  
-  ### Train ----
-
-  # Starting batch of plots
-  if(file.exists(file.path(SourcePath, paste0(ModelID, "_Train_ParDepPlots.Rdata")))) {
-    load(file = file.path(SourcePath, paste0(ModelID, "_Train_ParDepPlots.Rdata")))
-    Train_ParDepPlots <- ParDepPlots
-    rm(ParDepPlots)
-  } else {
-    Train_ParDepPlots <- list()
-  }
-  
-  # Name to keep and remove
-  # setdiff(x = c(1,2,3,4,5), y = c(3,4,5,6,7))
-
-  # Remove Names
-  A <- names(Train_ParDepPlots)
-  B <- FeatureColumnNames
-  RemovePDPList_Line <- setdiff(A, B)
-  if(identical(character(0), RemovePDPList_Line)) RemovePDPList_Line <- NULL
-  
-  # Add Names
-  AddPDPList_Line = setdiff(B, A)
-  if(identical(character(0), AddPDPList_Line)) AddPDPList_Line <- NULL
-
-  # Remove Plots
-  if(!is.null(A)) {
-    for(v in A) {
-
-      # Remove
-      if(!is.null(TrainData) && (!is.numeric(TrainData[[v]]) || v %in% RemovePDPList_Line)) {
-        Train_ParDepPlots[[v]] <- NULL
-      } else if(v %in% RemovePDPList_Line) {
-        Train_ParDepPlots[[v]] <- NULL
-      }
-    }
-  }
-  
-  # Add Plots
-  if(!is.null(TrainData) && !is.null(AddPDPList_Line)) {
-    for(g in AddPDPList_Line) {
-      if(is.numeric(TrainData[[g]])) {
-
-        # Add
-        Train_ParDepPlots[[g]] <- AutoQuant::ParDepCalPlots(
-          data = TrainData, 
-          PredictionColName = 'Predict', 
-          TargetColName = TargetColumnName, 
-          IndepVar = g, 
-          GraphType = 'calibration', 
-          PercentileBucket = 0.05, 
-          FactLevels = 10, 
-          Function = function(x) mean(x, na.rm = TRUE), 
-          DateColumn = NULL, 
-          DateAgg_3D = FALSE)
-      }
-    }
-  }
-  
-  ## Model_Evaluation_Metrics_NumericVariables_Box ----
-    
-  ### Test ----
-
-  # Starting batch of plots
-  if(file.exists(file.path(SourcePath, paste0(ModelID, "_Test_ParDepBoxPlots.Rdata")))) {
-    load(file = file.path(SourcePath, paste0(ModelID, "_Test_ParDepBoxPlots.Rdata")))
-    Test_ParDepBoxPlots <- ParDepBoxPlots
-    rm(ParDepBoxPlots)
-  } else {
-    Test_ParDepBoxPlots <- list()
-  }
-  
-  # Name to keep and remove
-  # setdiff(x = c(1,2,3,4,5), y = c(3,4,5,6,7))
-
-  # Remove Names
-  A <- names(Test_ParDepBoxPlots)
-  B <- FeatureColumnNames
-  RemovePDPList_Box <- setdiff(A, B)
-  if(identical(character(0), RemovePDPList_Box)) RemovePDPList_Box <- NULL
-  
-  # Add Names
-  AddPDPList_Box <- setdiff(B, A)
-  if(identical(character(0), AddPDPList_Box)) AddPDPList_Box <- NULL
-
-  # Remove Plots
-  if(!is.null(A)) {
-    for(v in A) {
-
-      # Remove
-      if(!is.null(TestData) && (!is.numeric(TestData[[v]]) || v %in% RemovePDPList_Box)) {
-        Test_ParDepBoxPlots[[v]] <- NULL
-      } else if(v %in% RemovePDPList_Box) {
-        Test_ParDepBoxPlots[[v]] <- NULL
-      }
-    }
-  }
-
-  # Add Plots
-  if(!is.null(TestData) && !is.null(AddPDPList_Box)) {
-    for(g in AddPDPList_Box) {
-      if(is.numeric(TestData[[g]])) {
-
-        # Add
-        Test_ParDepBoxPlots[[g]] <- AutoQuant::ParDepCalPlots(
-          data = TestData, 
-          PredictionColName = 'Predict', 
-          TargetColName = TargetColumnName, 
-          IndepVar = g, 
-          GraphType = 'boxplot', 
-          PercentileBucket = 0.05, 
-          FactLevels = 10, 
-          Function = function(x) mean(x, na.rm = TRUE), 
-          DateColumn = NULL, 
-          DateAgg_3D = FALSE)
-      }
-    }
-  }
-  
-    
-  ### Train ----
-
-  # Starting batch of plots
-  if(file.exists(file.path(SourcePath, paste0(ModelID, "_Train_ParDepBoxPlots.Rdata")))) {
-    load(file = file.path(SourcePath, paste0(ModelID, "_Train_ParDepBoxPlots.Rdata")))
-    Train_ParDepBoxPlots <- ParDepBoxPlots
-    rm(ParDepBoxPlots)
-  } else {
-    Train_ParDepBoxPlots <- list()
-  }
-  
-  # Name to keep and remove
-  # setdiff(x = c(1,2,3,4,5), y = c(3,4,5,6,7))
-
-  # Remove Names
-  A <- names(Train_ParDepBoxPlots)
-  B <- FeatureColumnNames
-  RemovePDPList_Box <- setdiff(A, B)
-  if(identical(character(0), RemovePDPList_Box)) RemovePDPList_Box <- NULL
-  
-  # Add Names
-  AddPDPList_Box = setdiff(B, A)
-  if(identical(character(0), AddPDPList_Box)) AddPDPList_Box <- NULL
-
-  # Remove Plots
-  if(!is.null(A)) {
-    for(v in A) {
-
-      # Remove
-      if(!is.null(TrainData) && (!is.numeric(TrainData[[v]]) || v %in% RemovePDPList_Box)) {
-        Train_ParDepBoxPlots[[v]] <- NULL
-      } else if(v %in% RemovePDPList_Box) {
-        Train_ParDepBoxPlots[[v]] <- NULL
-      }
-    }
-  }
-
-  # Add Plots
-  if(!is.null(TrainData) && !is.null(AddPDPList_Box)) {
-    for(g in AddPDPList_Box) {
-      if(is.numeric(TrainData[[g]])) {
-
-        # Add
-        Train_ParDepBoxPlots[[g]] <- AutoQuant::ParDepCalPlots(
-          data = data.table::copy(TrainData),
-          PredictionColName = 'Predict', 
-          TargetColName = TargetColumnName, 
-          IndepVar = g, 
-          GraphType = 'boxplot', 
-          PercentileBucket = 0.05, 
-          FactLevels = 10, 
-          Function = function(x) mean(x, na.rm = TRUE), 
-          DateColumn = NULL, 
-          DateAgg_3D = FALSE)
-      }
-    }
-  }
-
-  ## Model_Evaluiation_Metrics_CategoricalVariables ----
-  
-  ### Test ----
-
-  # Starting batch of plots
-  if(file.exists(file.path(SourcePath, paste0(ModelID, "_Test_ParDepPlots.Rdata")))) {
-    load(file = file.path(SourcePath, paste0(ModelID, "_Test_ParDepPlots.Rdata")))
-    Test_ParDepCatPlots <- ParDepPlots
-    rm(ParDepPlots)
-  } else {
-    Test_ParDepCatPlots <- list()
-  }
-  
-  # Name to keep and remove
-  # setdiff(x = c(1,2,3,4,5), y = c(3,4,5,6,7))
-
-  # Remove Names
-  A <- names(Test_ParDepCatPlots)
-  B <- FeatureColumnNames
-  RemovePDPList_Bar <- setdiff(A, B)
-  if(identical(character(0), RemovePDPList_Bar)) RemovePDPList_Bar <- NULL
-  
-  # Add Names
-  AddPDPList_Bar = setdiff(B, A)
-  if(identical(character(0), AddPDPList_Bar)) AddPDPList_Bar <- NULL
-
-  # Remove Plots
-  if(!is.null(A)) {
-    for(v in A) {
-    
-      # Remove
-      if(!is.null(TestData) && (is.numeric(TestData[[v]]) || v %in% RemovePDPList_Bar)) {
-        Test_ParDepCatPlots[[v]] <- NULL
-      } else if(v %in% RemovePDPList_Bar) {
-        Test_ParDepCatPlots[[v]] <- NULL
-      }
-    }
-  }
-  
-  # Add Plots
-  if(!is.null(TestData) && !is.null(AddPDPList_Bar)) {
-    for(g in AddPDPList_Bar) {
-      if(!is.numeric(TestData[[g]])) {
-
-        # Add
-        Test_ParDepCatPlots[[g]] <- AutoQuant::ParDepCalPlots(
-          data = data.table::copy(TestData), 
-          PredictionColName = 'Predict', 
-          TargetColName = TargetColumnName, 
-          IndepVar = g, 
-          GraphType = 'calibration', 
-          PercentileBucket = 0.05, 
-          FactLevels = 10, 
-          Function = function(x) mean(x, na.rm = TRUE), 
-          DateColumn = NULL, 
-          DateAgg_3D = FALSE)
-      }
-    }
-  }
-
-  ### Train ----
-
-  # Starting batch of plots
-  if(file.exists(file.path(SourcePath, paste0(ModelID, "_Train_ParDepPlots.Rdata")))) {
-    load(file = file.path(SourcePath, paste0(ModelID, "_Train_ParDepPlots.Rdata")))
-    Train_ParDepCatPlots <- ParDepPlots
-    rm(ParDepPlots)
-  } else {
-    Train_ParDepCatPlots <- list()
-  }
-  
-  # Name to keep and remove
-  # setdiff(x = c(1,2,3,4,5), y = c(3,4,5,6,7))
-
-  # Remove Names
-  A <- names(Train_ParDepCatPlots)
-  B <- FeatureColumnNames
-  RemovePDPList_Bar <- setdiff(A, B)
-  if(identical(character(0), RemovePDPList_Bar)) RemovePDPList_Bar <- NULL
-  
-  # Add Names
-  AddPDPList_Bar <- setdiff(B, A)
-  if(identical(character(0), AddPDPList_Bar)) AddPDPList_Bar <- NULL
-
-  # Remove Plots
-  if(!is.null(AddPDPList_Bar)) {
-    for(v in A) {
-    
-      # Remove
-      if(!is.null(TrainData) && (is.numeric(TrainData[[v]]) || v %in% RemovePDPList_Bar)) {
-        Train_ParDepCatPlots[[v]] <- NULL
-      } else if(v %in% RemovePDPList_Bar) {
-        Train_ParDepCatPlots[[v]] <- NULL
-      }
-    }
-  }
-
-  # Add Plots
-  if(!is.null(TrainData) && !is.null(AddPDPList_Bar)) {
-    for(g in AddPDPList_Bar) {
-      if(!is.numeric(TrainData[[g]])) {
-
-        # Add
-        Train_ParDepCatPlots[[g]] <- AutoQuant::ParDepCalPlots(
-          data = TrainData, 
-          PredictionColName = 'Predict', 
-          TargetColName = TargetColumnName, 
-          IndepVar = g, 
-          GraphType = 'calibration', 
-          PercentileBucket = 0.05, 
-          FactLevels = 10, 
-          Function = function(x) mean(x, na.rm = TRUE), 
-          DateColumn = NULL, 
-          DateAgg_3D = FALSE)
-      }
+# Add Plots
+if(!is.null(TestData) && !is.null(FeatureColumnNames)) {
+  for(g in FeatureColumnNames) {
+    if(is.numeric(TestData[[g]])) {
+      
+      # Add
+      Test_ParDepPlots[[g]] <- AutoPlots::Plot.PartialDependence.Line(
+        dt = TestData,
+        XVar = g,
+        YVar = TargetColumnName,
+        ZVar = 'Predict',
+        YVarTrans = "Identity",
+        XVarTrans = "Identity",
+        ZVarTrans = "Identity",
+        FacetRows = 1,
+        FacetCols = 1,
+        FacetLevels = NULL,
+        GroupVar = NULL,
+        NumberBins = 20,
+        AggMethod = "mean",
+        Height = "600px",
+        Width = "1100px",
+        Title = "Partial Dependence Line",
+        ShowLabels = FALSE,
+        Title.YAxis = NULL,
+        Title.XAxis = NULL,
+        Engine = "Echarts",
+        EchartsTheme = "dark",
+        EchartsLabels = FALSE,
+        TimeLine = TRUE,
+        X_Scroll = TRUE,
+        Y_Scroll = TRUE,
+        BackGroundColor = "#6a6969",
+        ChartColor = "#001534",
+        FillColor = "#0066ff",
+        FillColorReverse = "#97ff00",
+        GridColor = "white",
+        TextColor = "white",
+        ZeroLineColor = "#ffff",
+        ZeroLineWidth = 1.25,
+        Debug = FALSE)
     }
   }
 }
-```
 
+### TrainData ----
+
+# Plots to Add and Remove
+
+# Starting batch of plots
+Train_ParDepPlots <- list() # ModelObject[['PlotList']][['Train_ParDepPlots']]
+
+# Add Plots
+if(!is.null(TrainData) && !is.null(FeatureColumnNames)) {
+  for(g in FeatureColumnNames) {
+    if(is.numeric(TrainData[[g]])) {
+
+      # Add
+      Train_ParDepPlots[[g]] <- AutoPlots::Plot.PartialDependence.Line(
+        dt = TrainData,
+        XVar = g,
+        YVar = TargetColumnName,
+        ZVar = 'Predict',
+        YVarTrans = "Identity",
+        XVarTrans = "Identity",
+        ZVarTrans = "Identity",
+        FacetRows = 1,
+        FacetCols = 1,
+        FacetLevels = NULL,
+        GroupVar = NULL,
+        NumberBins = 20,
+        AggMethod = "mean",
+        Height = "600px",
+        Width = "1100px",
+        Title = "Partial Dependence Line",
+        ShowLabels = FALSE,
+        Title.YAxis = NULL,
+        Title.XAxis = NULL,
+        Engine = "Echarts",
+        EchartsTheme = "dark",
+        EchartsLabels = FALSE,
+        TimeLine = TRUE,
+        X_Scroll = TRUE,
+        Y_Scroll = TRUE,
+        BackGroundColor = "#6a6969",
+        ChartColor = "#001534",
+        FillColor = "#0066ff",
+        FillColorReverse = "#97ff00",
+        GridColor = "white",
+        TextColor = "white",
+        ZeroLineColor = "#ffff",
+        ZeroLineWidth = 1.25,
+        Debug = FALSE)
+    }
+  }
+}
+
+## Model_Evaluation_Metrics_NumericVariables_Box ----
+  
+### Test Data ----
+  
+# Starting batch of plots
+Test_ParDepBoxPlots <- list()
+
+# Add Plots
+if(!is.null(TestData) && !is.null(FeatureColumnNames)) {
+  for(g in FeatureColumnNames) {
+    if(is.numeric(TestData[[g]])) {
+
+      # Add
+      Test_ParDepPlots[[g]] <- AutoPlots::Plot.PartialDependence.Box(
+        dt = TestData,
+        XVar = g,
+        YVar = TargetColumnName,
+        ZVar = 'Predict',
+        YVarTrans = "Identity",
+        XVarTrans = "Identity",
+        ZVarTrans = "Identity",
+        FacetRows = 1,
+        FacetCols = 1,
+        FacetLevels = NULL,
+        GroupVar = NULL,
+        NumberBins = 20,
+        AggMethod = "mean",
+        Height = "600px",
+        Width = "1100px",
+        Title = "Partial Dependence Line",
+        ShowLabels = FALSE,
+        Title.YAxis = NULL,
+        Title.XAxis = NULL,
+        Engine = "Echarts",
+        EchartsTheme = "dark",
+        EchartsLabels = FALSE,
+        TimeLine = TRUE,
+        X_Scroll = TRUE,
+        Y_Scroll = TRUE,
+        BackGroundColor = "#6a6969",
+        ChartColor = "#001534",
+        FillColor = "#0066ff",
+        FillColorReverse = "#97ff00",
+        GridColor = "white",
+        TextColor = "white",
+        ZeroLineColor = "#ffff",
+        ZeroLineWidth = 1.25,
+        Debug = FALSE)
+    }
+  }
+}
+  
+### Train Data ----
+
+# Starting batch of plots
+Train_ParDepBoxPlots <- list()
+
+# Add Plots
+if(!is.null(TrainData) && !is.null(FeatureColumnNames)) {
+  for(g in FeatureColumnNames) {
+    if(is.numeric(TrainData[[g]])) {
+
+      # Add
+      Train_ParDepPlots[[g]] <- AutoPlots::Plot.PartialDependence.Box(
+        dt = TrainData,
+        XVar = g,
+        YVar = TargetColumnName,
+        ZVar = 'Predict',
+        YVarTrans = "Identity",
+        XVarTrans = "Identity",
+        ZVarTrans = "Identity",
+        FacetRows = 1,
+        FacetCols = 1,
+        FacetLevels = NULL,
+        GroupVar = NULL,
+        NumberBins = 20,
+        AggMethod = "mean",
+        Height = "600px",
+        Width = "1100px",
+        Title = "Partial Dependence Line",
+        ShowLabels = FALSE,
+        Title.YAxis = NULL,
+        Title.XAxis = NULL,
+        Engine = "Echarts",
+        EchartsTheme = "dark",
+        EchartsLabels = FALSE,
+        TimeLine = TRUE,
+        X_Scroll = TRUE,
+        Y_Scroll = TRUE,
+        BackGroundColor = "#6a6969",
+        ChartColor = "#001534",
+        FillColor = "#0066ff",
+        FillColorReverse = "#97ff00",
+        GridColor = "white",
+        TextColor = "white",
+        ZeroLineColor = "#ffff",
+        ZeroLineWidth = 1.25,
+        Debug = FALSE)
+    }
+  }
+}
+  
+## Model_Evaluation_Metrics_CategoricalVariables ---- 
+
+### Test Data ----
+
+# Starting batch of plots
+Test_ParDepCatPlots <- list()
+  
+# Add Plots
+if(!is.null(TestData) && !is.null(FeatureColumnNames)) {
+  for(g in FeatureColumnNames) {
+    if(!is.numeric(TestData[[g]])) {
+      
+      Test_ParDepCatPlots[[g]] <- AutoPlots::Plot.PartialDependence.HeatMap(
+        dt = TestData,
+        XVar = g,
+        YVar = TargetColumnName,
+        ZVar = 'Predict',
+        YVarTrans = "Identity",
+        XVarTrans = "Identity",
+        ZVarTrans = "Identity",
+        FacetRows = 1,
+        FacetCols = 1,
+        FacetLevels = NULL,
+        GroupVar = NULL,
+        NumberBins = 20,
+        AggMethod = "mean",
+        Height = "600px",
+        Width = "1100px",
+        Title = "Partial Dependence Line",
+        ShowLabels = FALSE,
+        Title.YAxis = NULL,
+        Title.XAxis = NULL,
+        Engine = "Echarts",
+        EchartsTheme = "dark",
+        EchartsLabels = FALSE,
+        TimeLine = TRUE,
+        X_Scroll = TRUE,
+        Y_Scroll = TRUE,
+        BackGroundColor = "#6a6969",
+        ChartColor = "#001534",
+        FillColor = "#0066ff",
+        FillColorReverse = "#97ff00",
+        GridColor = "white",
+        TextColor = "white",
+        ZeroLineColor = "#ffff",
+        ZeroLineWidth = 1.25,
+        Debug = FALSE)
+    }
+  }
+}
+  
+### Train Data ----
+
+# Starting batch of plots
+Train_ParDepCatPlots <- list()
+
+# Add Plots
+if(!is.null(TrainData) && !is.null(FeatureColumnNames)) {
+  for(g in FeatureColumnNames) {
+    if(!is.numeric(TrainData[[g]])) {
+      
+      Train_ParDepCatPlots[[g]] <- AutoPlots::Plot.PartialDependence.HeatMap(
+        dt = TrainData,
+        XVar = g,
+        YVar = TargetColumnName,
+        ZVar = 'Predict',
+        YVarTrans = "Identity",
+        XVarTrans = "Identity",
+        ZVarTrans = "Identity",
+        FacetRows = 1,
+        FacetCols = 1,
+        FacetLevels = NULL,
+        GroupVar = NULL,
+        NumberBins = 20,
+        AggMethod = "mean",
+        Height = "600px",
+        Width = "1100px",
+        Title = "Partial Dependence Line",
+        ShowLabels = FALSE,
+        Title.YAxis = NULL,
+        Title.XAxis = NULL,
+        Engine = "Echarts",
+        EchartsTheme = "dark",
+        EchartsLabels = FALSE,
+        TimeLine = TRUE,
+        X_Scroll = TRUE,
+        Y_Scroll = TRUE,
+        BackGroundColor = "#6a6969",
+        ChartColor = "#001534",
+        FillColor = "#0066ff",
+        FillColorReverse = "#97ff00",
+        GridColor = "white",
+        TextColor = "white",
+        ZeroLineColor = "#ffff",
+        ZeroLineWidth = 1.25,
+        Debug = FALSE)
+    }
+  }
+}
+
+```
 
 Model Evaluation and Insights:
 
@@ -1501,7 +1252,7 @@ if(!is.null(All_Importance)) {
 
 
 ```{r Model_IntImportanceTable, echo=FALSE}
-if(!is.null(All_Interaction)) {
+if(exists("All_Interaction") && !is.null(All_Interaction)) {
   data.table::setorderv(x = All_Interaction, cols = names(All_Importance)[3L], order = -1L, na.last = TRUE)
   print(knitr::kable(All_Interaction))
 } else {
@@ -1539,24 +1290,142 @@ if(!is.null(All_Interaction)) {
 
 
 ```{r EvaluationPlots_VIPlot, echo=FALSE}
-print('Test Importance')
+print('Test Data Variable Importance')
 if(!is.null(Test_Importance)) {
-  data.table::setnames(Test_Importance, 'Test_Importance', 'Importance', skip_absent = TRUE)
-  eval(AutoQuant:::PlotlyConversion(AutoQuant:::VI_Plot(Type = 'catboost', VI_Data = Test_Importance, TopN = 15)))
+  if("Train_Importance" %in% names(Test_Importance)) data.table::setnames(Test_Importance, 'Train_Importance', 'Importance', skip_absent = TRUE)
+  if("Test_Importance" %in% names(Test_Importance)) data.table::setnames(Test_Importance, "Test_Importance", "Importance", skip_absent = TRUE)
+  AutoPlots::Plot.VariableImportance(
+    dt = Test_Importance,
+    XVar = "Importance",
+    YVar = "Variable",
+    GroupVar = NULL,
+    YVarTrans = "Identity",
+    XVarTrans = "Identity",
+    FacetRows = 1,
+    FacetCols = 1,
+    FacetLevels = NULL,
+    AggMethod = "mean",
+    Height = "600px",
+    Width = "1100px",
+    Title = "Variable Importance Plot",
+    ShowLabels = FALSE,
+    Title.YAxis = NULL,
+    Title.XAxis = NULL,
+    Engine = "Echarts",
+    EchartsTheme = "dark",
+    TimeLine = FALSE,
+    X_Scroll = TRUE,
+    Y_Scroll = TRUE,
+    BackGroundColor = "#6a6969",
+    ChartColor = "#001534",
+    FillColor = "#0066ff",
+    FillColorReverse = "#97ff00",
+    GridColor = "white",
+    TextColor = "white",
+    ZeroLineColor = "#ffff",
+    ZeroLineWidth = 1.25,
+    title.fontSize = 22,
+    title.fontWeight = "bold",
+    title.textShadowColor = "#63aeff",
+    title.textShadowBlur = 3,
+    title.textShadowOffsetY = 1,
+    title.textShadowOffsetX = -1,
+    xaxis.fontSize = 14,
+    yaxis.fontSize = 14,
+    Debug = FALSE)
 } else {
   print("Test_Importance is NULL")
 }
-print('Validation Importance')
+print('Validation Data Variable Importance')
 if(!is.null(Validation_Importance)) {
-  data.table::setnames(Validation_Importance, 'Validation_Importance', 'Importance', skip_absent = TRUE)
-  eval(AutoQuant:::PlotlyConversion(AutoQuant:::VI_Plot(Type = 'catboost', VI_Data = Validation_Importance, TopN = 15)))
+  if("Validation_Importance" %in% names(Validation_Importance)) data.table::setnames(Validation_Importance, 'Validation_Importance', 'Importance', skip_absent = TRUE)
+  if("Test_Importance" %in% names(Validation_Importance)) data.table::setnames(Validation_Importance, "Test_Importance", "Importance", skip_absent = TRUE)
+  AutoPlots::Plot.VariableImportance(
+    dt = Validation_Importance,
+    XVar = "Importance",
+    YVar = "Variable",
+    GroupVar = NULL,
+    YVarTrans = "Identity",
+    XVarTrans = "Identity",
+    FacetRows = 1,
+    FacetCols = 1,
+    FacetLevels = NULL,
+    AggMethod = "mean",
+    Height = "600px",
+    Width = "1100px",
+    Title = "Variable Importance Plot",
+    ShowLabels = FALSE,
+    Title.YAxis = NULL,
+    Title.XAxis = NULL,
+    Engine = "Echarts",
+    EchartsTheme = "dark",
+    TimeLine = FALSE,
+    X_Scroll = TRUE,
+    Y_Scroll = TRUE,
+    BackGroundColor = "#6a6969",
+    ChartColor = "#001534",
+    FillColor = "#0066ff",
+    FillColorReverse = "#97ff00",
+    GridColor = "white",
+    TextColor = "white",
+    ZeroLineColor = "#ffff",
+    ZeroLineWidth = 1.25,
+    title.fontSize = 22,
+    title.fontWeight = "bold",
+    title.textShadowColor = "#63aeff",
+    title.textShadowBlur = 3,
+    title.textShadowOffsetY = 1,
+    title.textShadowOffsetX = -1,
+    xaxis.fontSize = 14,
+    yaxis.fontSize = 14,
+    Debug = FALSE)
 } else {
   print("Validation_Importance is NULL")
 }
-print('Train Importance')
+print('Train Data Variable Importance')
 if(!is.null(Train_Importance)) {
-  data.table::setnames(Train_Importance, 'Train_Importance', 'Importance', skip_absent = TRUE)
-  eval(AutoQuant:::PlotlyConversion(AutoQuant:::VI_Plot(Type = 'catboost', VI_Data = Train_Importance, TopN = 15)))
+  if("Train_Importance" %in% names(Train_Importance)) data.table::setnames(Train_Importance, 'Train_Importance', 'Importance', skip_absent = TRUE)
+  if("Test_Importance" %in% names(Train_Importance)) data.table::setnames(Train_Importance, "Test_Importance", "Importance", skip_absent = TRUE)
+  AutoPlots::Plot.VariableImportance(
+    dt = Train_Importance,
+    XVar = "Importance",
+    YVar = "Variable",
+    GroupVar = NULL,
+    YVarTrans = "Identity",
+    XVarTrans = "Identity",
+    FacetRows = 1,
+    FacetCols = 1,
+    FacetLevels = NULL,
+    AggMethod = "mean",
+    Height = "600px",
+    Width = "1100px",
+    Title = "Variable Importance Plot",
+    ShowLabels = FALSE,
+    Title.YAxis = NULL,
+    Title.XAxis = NULL,
+    Engine = "Echarts",
+    EchartsTheme = "dark",
+    TimeLine = FALSE,
+    X_Scroll = TRUE,
+    Y_Scroll = TRUE,
+    BackGroundColor = "#6a6969",
+    ChartColor = "#001534",
+    FillColor = "#0066ff",
+    FillColorReverse = "#97ff00",
+    GridColor = "white",
+    TextColor = "white",
+    ZeroLineColor = "#ffff",
+    ZeroLineWidth = 1.25,
+    title.fontSize = 22,
+    title.fontWeight = "bold",
+    title.textShadowColor = "#63aeff",
+    title.textShadowBlur = 3,
+    title.textShadowOffsetY = 1,
+    title.textShadowOffsetX = -1,
+    xaxis.fontSize = 14,
+    yaxis.fontSize = 14,
+    Debug = FALSE)
+  
 } else {
   print("Train_Importance is NULL")
 }
@@ -1576,13 +1445,13 @@ if(!is.null(Train_Importance)) {
 ```{r EvaluationPlots_ResidualHistogram, echo=FALSE}
 print('Test Data')
 if(!is.null(Test_ResidualHistogram)) {
-  eval(AutoQuant:::PlotlyConversion(Test_ResidualHistogram))
+  eval(Test_ResidualHistogram)
 } else {
   print('Test_ResidualHistogram is NULL or TestData is NULL')
 }
 print('Train + Validation Data')
 if(!is.null(Train_ResidualHistogram)) {
-  eval(AutoQuant:::PlotlyConversion(Train_ResidualHistogram))
+  eval(Train_ResidualHistogram)
 } else {
   print('Train_ResidualHistogram is NULL or TrainData is NULL')
 }
@@ -1603,13 +1472,13 @@ if(!is.null(Train_ResidualHistogram)) {
 ```{r EvaluationPlots_CalibrationPlot, echo=FALSE}
 print('Test Data Evaluation Plots')
 if(!is.null(Test_EvaluationPlot)) {
-  eval(AutoQuant:::PlotlyConversion(Test_EvaluationPlot))
+  eval(Test_EvaluationPlot)
 } else {
   print('Test_EvaluationPlot is NULL or TestData is NULL')
 }
 print('Train + Validation Data Evaluation Plots')
 if(!is.null(Train_EvaluationPlot)) {
-  eval(AutoQuant:::PlotlyConversion(Train_EvaluationPlot))
+  eval(Train_EvaluationPlot)
 } else {
   print('Test_EvaluationPlot is NULL or TrainData is NULL')
 }
@@ -1631,13 +1500,13 @@ if(!is.null(Train_EvaluationPlot)) {
 ```{r EvaluationPlots_CalibrationBoxPlot, echo=FALSE}
 print('Test Data Evaluation Box Plots')
 if(!is.null(Test_EvaluationBoxPlot)) {
-  eval(AutoQuant:::PlotlyConversion(Test_EvaluationBoxPlot))
+  eval(Test_EvaluationBoxPlot)
 } else {
   print('Test_EvaluationBoxPlot is NULL or TestData is NULL')
 }
 print('Train + Validation Data Evaluation Box Plots')
 if(!is.null(Train_EvaluationBoxPlot)) {
-  eval(AutoQuant:::PlotlyConversion(Train_EvaluationBoxPlot))
+  eval(Train_EvaluationBoxPlot)
 } else {
   print('Train_EvaluationBoxPlot is NULL or TrainData is NULL')
 }
@@ -1659,43 +1528,15 @@ if(!is.null(Train_EvaluationBoxPlot)) {
 ```{r EvaluationPlots_ResidualsScatterPlot, echo=FALSE}
 print('Test Data Scatter Plot')
 if(!is.null(Test_ScatterPlot)) {
-  eval(AutoQuant:::PlotlyConversion(Test_ScatterPlot))
+  eval(Test_ScatterPlot)
 } else {
   print('Test_ScatterPlot is NULL or TestData is NULL')
 }
 print('Train + Validation Data Scatter Plot')
 if(!is.null(Train_ScatterPlot)) {
-  eval(AutoQuant:::PlotlyConversion(Train_ScatterPlot))
+  eval(Train_ScatterPlot)
 } else {
   print('Train_ScatterPlot is NULL or TrainData is NULL')
-}
-```
-
-</details>
-</p>
-
-
-
-
-
-## <font size="5">Residuals CopulaPlots</font>
-<p>
-
-<details><summary>Expand to view content</summary>
-<p>
-
-```{r EvaluationPlots_ResidualsCopulaPlot, echo=FALSE}
-print('Test Data Copula Plot')
-if(!is.null(Test_CopulaPlot)) {
-  eval(AutoQuant:::PlotlyConversion(Test_CopulaPlot))
-} else {
-  print('Test_CopulaPlot is NULL or TestData is NULL')
-}
-print('Train + Validation Data Copula Plot')
-if(!is.null(Train_CopulaPlot)) {
-  eval(AutoQuant:::PlotlyConversion(Train_CopulaPlot))
-} else {
-  print('Train_CopulaPlot is NULL or TrainData is NULL')
 }
 ```
 
@@ -1741,7 +1582,7 @@ if(!is.null(Train_CopulaPlot)) {
 ```{r Model_Evaluation_Metrics_NumericVariables, echo=FALSE}
 options(warn = -1)
 if(!is.null(Test_ParDepPlots) && length(Test_ParDepPlots) > 0) {
-  eval(Test_ParDepPlots)
+  echarts4r::e_arrange(Test_ParDepPlots)
 } else {
   print('Test_ParDepPlots is NULL and TestData is NULL')
 }
@@ -1761,7 +1602,7 @@ options(warn = 1)
 ```{r Model_Evaluation_Metrics_NumericVariables_Train, echo=FALSE}
 options(warn = -1)
 if(!is.null(Train_ParDepPlots) && length(Train_ParDepPlots) > 0) {
-  eval(Train_ParDepPlots)
+  echarts4r::e_arrange(Train_ParDepPlots)
 } else {
   print('Train_ParDepPlots is NULL and TrainData is NULL')
 }
@@ -1789,7 +1630,7 @@ options(warn = 1)
 ```{r Model_Evaluation_Metrics_NumericVariables_Box, echo=FALSE}
 options(warn = -1)
 if(!is.null(Test_ParDepBoxPlots) && length(Test_ParDepBoxPlots) > 0) {
-  eval(Test_ParDepBoxPlots)
+  echarts4r::e_arrange(Test_ParDepBoxPlots)
 } else {
   print('Test_ParDepBoxPlots is NULL and TestData is NULL')
 }
@@ -1809,7 +1650,7 @@ options(warn = 1)
 ```{r Model_Evaluation_Metrics_NumericVariables_Train_Box, echo=FALSE}
 options(warn = -1)
 if(!is.null(Train_ParDepBoxPlots) && length(Train_ParDepBoxPlots) > 0) {
-  eval(Train_ParDepBoxPlots)
+  echarts4r::e_arrange(Train_ParDepBoxPlots)
 } else {
   print('Train_ParDepBoxPlots is NULL and TestData is NULL')
 }
@@ -1837,7 +1678,7 @@ options(warn = 1)
 ```{r Model_Evaluation_Metrics_CategoricalVariables, echo=FALSE}
 options(warn = -1)
 if(!is.null(Test_ParDepCatPlots) && length(Test_ParDepCatPlots) > 0) {
-  eval(Test_ParDepCatPlots)
+  echarts4r::e_arrange(Test_ParDepCatPlots)
 } else {
   print('Test_ParDepCatPlots is NULL and TestData is NULL')
 }
@@ -1857,7 +1698,7 @@ options(warn = 1)
 ```{r Model_Evaluation_Metrics_CategoricalVariables_Train, echo=FALSE}
 options(warn = -1)
 if(!is.null(Train_ParDepCatPlots) && length(Train_ParDepCatPlots) > 0) {
-  eval(Train_ParDepCatPlots)
+  echarts4r::e_arrange(Train_ParDepCatPlots)
 } else {
   print('Train_ParDepCatPlots is NULL and TrainData is NULL')
 }
