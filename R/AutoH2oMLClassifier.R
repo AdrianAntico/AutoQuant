@@ -203,7 +203,7 @@ AutoH2oMLClassifier <- function(OutputSelection = c("EvalMetrics", "Score_TrainD
 
   # H2O Explain ValidationData ----
   if(DebugMode) print("H2O Explain ValidationData ----")
-  if(!TrainOnFull) {
+  if(!TrainOnFull && "h2o.explain" %chin% tolower(OutputSelection)) {
     ExplainList[["Test_Explain"]] <- h2o::h2o.explain(base_model, newdata = if(!is.null(TestData)) datatest else if(!is.null(ValidationData) && !TrainOnFull) datavalidate else datatrain)
   }
 

@@ -315,6 +315,10 @@ AutoH2oGLMClassifier <- function(OutputSelection = c("EvalMetrics", "Score_Train
   Predict <- data.table::as.data.table(h2o::h2o.predict(object = base_model, newdata = if(!is.null(TestData)) datatest else if(!TrainOnFull) datavalidate else datatrain))
   data.table::set(Predict, j = "p0", value = NULL)
 
+  # Create Validation Data ----
+  Output <- H2OValidationData(Predict.=Predict, TestData.=if(H2OArgs[['HGLM']]) NULL else TestData, dataTest.=dataTest, dataTrain.=dataTrain, TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID, TransformNumericColumns.=NULL, TransformationResults.=NULL, TargetColumnName.=NULL, data.=NULL)
+  ValidationData <- Output$ValidationData; rm(Output)
+
   # Variable Importance ----
   if(DebugMode) print("Variable Importance ----")
   VariableImportance <- H2OVariableImportance(TrainOnFull.=TrainOnFull, base_model.=base_model, SaveModelObjects.=SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID)
@@ -328,7 +332,7 @@ AutoH2oGLMClassifier <- function(OutputSelection = c("EvalMetrics", "Score_Train
 
   # H2O Explain ValidationData ----
   if(DebugMode) print("H2O Explain ValidationData ----")
-  if(!TrainOnFull) {
+  if(!TrainOnFull && "h2o.explain" %chin% tolower(OutputSelection)) {
     ExplainList[["Test_Explain"]] <- h2o::h2o.explain(base_model, newdata = if(!is.null(TestData)) datatest else if(!is.null(ValidationData) && !TrainOnFull) datavalidate else datatrain)
   }
 

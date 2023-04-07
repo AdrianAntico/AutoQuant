@@ -218,7 +218,7 @@ H2ODataPrep <- function(TargetType. = "classifier",
           NumDataSets = 3L,
           Ratios = c(0.70, 0.20, 0.10),
           PartitionType = "random",
-          StratifyColumnNames = TargetColumnName.,
+          StratifyColumnNames = NULL,
           TimeColumnName = NULL)
         dataTrain <- dataSets$TrainData
         dataTest <- dataSets$ValidationData
