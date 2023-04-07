@@ -535,7 +535,7 @@ MultiClassMetrics <- function(ModelClass = "catboost",
     for(i in as.character(TargetLevels.[['OriginalLevels']])) {
       pk <- ValidationData.[Predict == eval(i), .N]
       tk <- ValidationData.[get(TargetColumnName.) == eval(i), .N]
-      sumPkTk <- c(sumPkTk, pk * tk)
+      sumPkTk <- c(sumPkTk, pk/100 * tk*100)
     }
 
     # (s^2 - sum(pk^2))
@@ -543,7 +543,7 @@ MultiClassMetrics <- function(ModelClass = "catboost",
     sumPk2 <- c()
     for(i in as.character(TargetLevels.[['OriginalLevels']])) {
       pk <- ValidationData.[Predict == eval(i), .N]
-      sumPk2 <- c(sumPk2, pk * pk)
+      sumPk2 <- c(sumPk2, pk ^ 2)
     }
 
     # (s^2 - sum(tk^2))
@@ -551,7 +551,7 @@ MultiClassMetrics <- function(ModelClass = "catboost",
     sumTk2 <- c()
     for(i in as.character(TargetLevels.[['OriginalLevels']])) {
       tk <- ValidationData.[get(TargetColumnName.) == eval(i), .N]
-      sumTk2 <- c(sumTk2, tk * tk)
+      sumTk2 <- c(sumTk2, tk ^ 2)
     }
 
     # Result

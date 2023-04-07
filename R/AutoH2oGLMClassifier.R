@@ -271,7 +271,7 @@ AutoH2oGLMClassifier <- function(OutputSelection = c("EvalMetrics", "Score_Train
     H2OArgs[["y"]] <- TargetColumnName
     H2OArgs[["interactions"]] <- InteractionColNumbers
     H2OArgs[["weights_column"]] <- WeightsColumn
-    if(!is.null(RandomDistribution) & !is.null(RandomLink)) H2OArgs[["HGLM"]] <- TRUE else H2OArgs[["HGLM"]] <- FALSE
+    if(!is.null(RandomDistribution) && !is.null(RandomLink)) H2OArgs[["HGLM"]] <- TRUE else H2OArgs[["HGLM"]] <- FALSE
     H2OArgs[["training_frame"]] <- datatrain
     H2OArgs[["validation_frame"]] <- datavalidate
     H2OArgs[["family"]] <- Distribution
