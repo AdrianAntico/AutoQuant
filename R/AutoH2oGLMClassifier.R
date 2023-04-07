@@ -289,6 +289,7 @@ AutoH2oGLMClassifier <- function(OutputSelection = c("EvalMetrics", "Score_Train
     H2OArgs[["remove_collinear_columns"]] <- RemoveCollinearColumns
     H2OArgs[["intercept"]] <- InterceptInclude
     H2OArgs[["non_negative"]] <- NonNegativeCoefficients
+    H2OArgs[["balance_classes"]] <- FALSE
 
     # Build model ----
     base_model <- do.call(what = h2o::h2o.glm, args = H2OArgs)
