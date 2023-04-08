@@ -327,13 +327,11 @@ AutoH2oGBMMultiClass <- function(OutputSelection = c("EvalMetrics","Score_TrainD
   if(H2OShutdown) h2o::h2o.shutdown(prompt = FALSE)
 
   # Generate EvaluationMetrics ----
-  if(DebugMode) print("Running BinaryMetrics()")
-  EvalMetricsList <- list()
-  if("evalmetrics" %chin% tolower(OutputSelection)) {
-    if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull) {
-      EvalMetricsList[["TrainData"]] <- MultiClassMetrics(ModelClass="h2o", DataType = 'Test', SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, PredictData.=predict, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, TargetLevels.=TargetLevels, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
-    }
-    EvalMetricsList[["TestData"]] <- MultiClassMetrics(ModelClass="h2o", DataType = 'Train', SaveModelObjects.=SaveModelObjects, ValidationData.=TrainData, PredictData.=predict, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, TargetLevels.=TargetLevels, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
+  if(DebugMode) print("Running MultiClassMetrics()")
+  MultinomialMetrics <- list()
+  MultinomialMetrics[["TestData"]] <- MultiClassMetrics(ModelClass="h2o", DataType = 'Test', SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, PredictData.=predict, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, TargetLevels.=TargetLevels, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Debug = DebugMode)
+  if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull) {
+    MultinomialMetrics[["TrainData"]] <- MultiClassMetrics(ModelClass="h2o", DataType = 'Train', SaveModelObjects.=SaveModelObjects, ValidationData.=TrainData, PredictData.=predict, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, TargetLevels.=TargetLevels, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Debug = DebugMode)
   }
 
   # Generate EvaluationMetrics ----
