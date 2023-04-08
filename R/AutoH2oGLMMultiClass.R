@@ -319,13 +319,13 @@ AutoH2oGLMMultiClass <- function(OutputSelection = c("EvalMetrics", "Score_Train
   # H2O Explain TrainData ----
   if(DebugMode) print("H2O Explain TrainData ----")
   ExplainList <- list()
-  if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull) {
+  if(all(c("score_traindata","h2o.explain") %chin% tolower(OutputSelection)) && !TrainOnFull) {
     ExplainList[["Train_Explain"]] <- h2o::h2o.explain(base_model, newdata = datatrain)
   }
 
   # H2O Explain ValidationData ----
   if(DebugMode) print("H2O Explain ValidationData ----")
-  if(!TrainOnFull) {
+  if(!TrainOnFull && "h2o.explain" %chin% tolower(OutputSelection)) {
     ExplainList[["Test_Explain"]] <- h2o::h2o.explain(base_model, newdata = if(!is.null(TestData)) datatest else if(!is.null(ValidationData) && !TrainOnFull) datavalidate else datatrain)
   }
 
