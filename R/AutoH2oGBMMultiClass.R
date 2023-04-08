@@ -151,7 +151,7 @@ AutoH2oGBMMultiClass <- function(OutputSelection = c("EvalMetrics","Score_TrainD
                                  CategoricalEncoding = "AUTO") {
 
   # Args check ----
-  Decreasing <- H2OArgsCheck(ModelType="drf", TargetType = "multiclass", model_path.=model_path, metadata_path.=metadata_path, eval_metric.=eval_metric, MaxModelsInGrid.=MaxModelsInGrid, ModelID.=ModelID, NumOfParDepPlots.=0, ReturnModelObjects.=ReturnModelObjects, SaveModelObjects.=SaveModelObjects, GridTune.=GridTune, GridStrategy.=GridStrategy, CostMatrixWeights.=NULL, IfSaveModel.=IfSaveModel, Trees.=Trees, MaxDepth.=MaxDepth, SampleRate.=SampleRate, MTries.=MTries, ColSampleRatePerTree.=ColSampleRatePerTree, ColSampleRatePerTreeLevel.=ColSampleRatePerTreeLevel, MinRows.=MinRows, NBins.=NBins, NBinsCats.=NBinsCats, NBinsTopLevel.=NBinsTopLevel, HistogramType.=HistogramType, CategoricalEncoding.=CategoricalEncoding)
+  Decreasing <- H2OArgsCheck(ModelType="gbm", TargetType = "multiclass", model_path.=model_path, metadata_path.=metadata_path, eval_metric.=eval_metric, MaxModelsInGrid.=MaxModelsInGrid, ModelID.=ModelID, NumOfParDepPlots.=0, ReturnModelObjects.=ReturnModelObjects, SaveModelObjects.=SaveModelObjects, GridTune.=GridTune, GridStrategy.=GridStrategy, CostMatrixWeights.=NULL, IfSaveModel.=IfSaveModel, Trees.=Trees, MaxDepth.=MaxDepth, SampleRate.=SampleRate, MTries.=MTries, ColSampleRatePerTree.=ColSampleRatePerTree, ColSampleRatePerTreeLevel.=ColSampleRatePerTreeLevel, MinRows.=MinRows, NBins.=NBins, NBinsCats.=NBinsCats, NBinsTopLevel.=NBinsTopLevel, HistogramType.=HistogramType, CategoricalEncoding.=CategoricalEncoding)
 
   # Grab all official parameters and their evaluated arguments
   ArgsList <- c(as.list(environment()))
@@ -382,14 +382,5 @@ AutoH2oGBMMultiClass <- function(OutputSelection = c("EvalMetrics","Score_TrainD
     outputList[["ColNames"]] <- if(exists("Names")) Names else NULL
     outputList[["MultinomialMetrics"]] <- if(exists("MultinomialMetrics")) MultinomialMetrics else NULL
     return(outputList)
-    return(list(
-      Model = base_model,
-      TrainData = if(exists("TrainData")) TrainData else NULL,
-      TestData = if(exists("ValidationData") && !is.null(ValidationData)) ValidationData else NULL,
-      H2OExplain = if(exists("ExplainList") && !is.null(ExplainList)) ExplainList else NULL,
-      EvaluationMetrics = if(exists("EvalMetricsList") && !is.null(EvalMetricsList)) EvalMetricsList else NULL,
-      VariableImportance = if(exists("VariableImportance") && !is.null(VariableImportance)) VariableImportance else NULL,
-      ColNames = if(exists("Names") && !is.null(Names)) Names else NULL,
-      ArgsList = ArgsList))
   }
 }
