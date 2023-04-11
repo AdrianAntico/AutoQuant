@@ -183,18 +183,18 @@ CarmaMergeXREGS <- function(data. = NULL,
     if(length(GroupVariables.) > 1) {
       data.[, GroupVar := do.call(paste, c(.SD, sep = ' ')), .SDcols = GroupVariables.]
       data. <- merge(data., XREGS., by = c('GroupVar', eval(DateColumnName.)), all.x = TRUE)
-      data. <- ModelDataPrep(data = data., Impute = TRUE, CharToFactor = FALSE, FactorToChar = FALSE, IntToNumeric = FALSE, LogicalToBinary = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = '0', MissNum = -1, IgnoreCols = NULL)
+      data. <- Rodeo::ModelDataPrep(data = data., Impute = TRUE, CharToFactor = FALSE, FactorToChar = FALSE, IntToNumeric = FALSE, LogicalToBinary = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = '0', MissNum = -1, IgnoreCols = NULL)
     } else {
       if(class(data.[[GroupVariables.]])[1L] != class(XREGS.[['GroupVar']])[[1L]]) {
         data.table::set(data., j = GroupVariables., value = as.character(data.[[GroupVariables.]]))
         data.table::set(XREGS., j = 'GroupVar', value = as.character(XREGS.[['GroupVar']]))
       }
       data. <- merge(data., XREGS., by.x = c(eval(GroupVariables.), eval(DateColumnName.)), by.y = c('GroupVar', eval(DateColumnName.)), all.x = TRUE)
-      data. <- ModelDataPrep(data = data., Impute = TRUE, CharToFactor = FALSE, FactorToChar = FALSE, IntToNumeric = FALSE, LogicalToBinary = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = '0', MissNum = -1, IgnoreCols = NULL)
+      data. <- Rodeo::ModelDataPrep(data = data., Impute = TRUE, CharToFactor = FALSE, FactorToChar = FALSE, IntToNumeric = FALSE, LogicalToBinary = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = '0', MissNum = -1, IgnoreCols = NULL)
     }
   } else {
     data. <- merge(data., XREGS., by = c(eval(DateColumnName.)), all.x = TRUE)
-    data. <- ModelDataPrep(data = data., Impute = TRUE, CharToFactor = FALSE, FactorToChar = FALSE, IntToNumeric = FALSE, LogicalToBinary = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = '0', MissNum = -1, IgnoreCols = NULL)
+    data. <- Rodeo::ModelDataPrep(data = data., Impute = TRUE, CharToFactor = FALSE, FactorToChar = FALSE, IntToNumeric = FALSE, LogicalToBinary = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = '0', MissNum = -1, IgnoreCols = NULL)
   }
   if(any(eval(TargetColumnName.) %chin% names(XREGS.))) data.table::set(XREGS., j = eval(TargetColumnName.), value = NULL)
   return(list(data = data., XREGS = XREGS.))
@@ -334,7 +334,7 @@ CarmaDifferencing <- function(GroupVariables. = NULL,
     Train <- NULL
     DiffTrainOutput <- NULL
   } else if(Difference.) {
-    DiffTrainOutput <- DifferenceData(
+    DiffTrainOutput <- AutoQuant:::DifferenceData(
       data = data.,
       ColumnsToDiff = eval(TargetColumnName.),
       CARMA = TRUE,
@@ -499,9 +499,9 @@ CarmaPartition <- function(data. = data,
                            DateColumnName. = NULL,
                            TVT. = NULL) {
 
-  # Data Wrangling: Partition data with AutoDataPartition
+  # Data Wrangling: Partition data with Rodeo::AutoDataPartition
   if((!is.null(SplitRatios.) || !TrainOnFull.) && length(TVT.) == 0L) {
-    DataSets <- AutoDataPartition(
+    DataSets <- Rodeo::AutoDataPartition(
       data = data.,
       NumDataSets = NumSets.,
       Ratios = SplitRatios.,
@@ -1477,7 +1477,7 @@ UpdateFeatures <- function(UpdateData. = NULL,
     if(!is.null(XREGS.)) {
       if(!is.null(GroupVariables.)) {
         if(Debug) print('UpdateFeatures 4')
-        CalendarFeatures. <- ModelDataPrep(data = CalendarFeatures., Impute = FALSE, CharToFactor = FALSE, FactorToChar = TRUE, IntToNumeric = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = '0', MissNum = -1, IgnoreCols = NULL)
+        CalendarFeatures. <- Rodeo::ModelDataPrep(data = CalendarFeatures., Impute = FALSE, CharToFactor = FALSE, FactorToChar = TRUE, IntToNumeric = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = '0', MissNum = -1, IgnoreCols = NULL)
         CalendarFeatures. <- merge(CalendarFeatures., XREGS., by = c('GroupVar', eval(DateColumnName.)), all = FALSE)
       } else {
         if(Debug) print('UpdateFeatures 4.1')
@@ -1510,7 +1510,7 @@ UpdateFeatures <- function(UpdateData. = NULL,
     if(!is.null(CalendarVariables.)) {
 
       if(Debug) print('UpdateFeatures 9')
-      CalendarFeatures. <- CreateCalendarVariables(
+      CalendarFeatures. <- Rodeo::CreateCalendarVariables(
         data = CalendarFeatures.,
         DateCols = eval(DateColumnName.),
         AsFactor = FALSE,
@@ -1564,7 +1564,7 @@ UpdateFeatures <- function(UpdateData. = NULL,
 
         if(Debug) print('UpdateFeatures 20')
 
-        temp <- CreateHolidayVariables(
+        temp <- Rodeo::CreateHolidayVariables(
           temp,
           DateCols = eval(DateColumnName.),
           LookbackDays = if(!is.null(HolidayLookback.)) HolidayLookback. else LB(TimeUnit.),
@@ -1579,7 +1579,7 @@ UpdateFeatures <- function(UpdateData. = NULL,
 
       } else {
         if(Debug) print("Update Features 17.b holiday variables create")
-        UpdateData. <- CreateHolidayVariables(
+        UpdateData. <- Rodeo::CreateHolidayVariables(
           UpdateData.,
           DateCols = eval(DateColumnName.),
           LookbackDays = if(!is.null(HolidayLookback.)) HolidayLookback. else if(!is.null(TimeUnit.)) LB(TimeUnit.) else 1L,
@@ -1618,7 +1618,7 @@ UpdateFeatures <- function(UpdateData. = NULL,
     if(!is.null(XREGS.)) {
       if(!is.null(GroupVariables.)) {
         if(Debug) print('UpdateFeatures 4')
-        CalendarFeatures. <- ModelDataPrep(data = CalendarFeatures., Impute = FALSE, CharToFactor = FALSE, FactorToChar = TRUE, IntToNumeric = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = '0', MissNum = -1, IgnoreCols = NULL)
+        CalendarFeatures. <- Rodeo::ModelDataPrep(data = CalendarFeatures., Impute = FALSE, CharToFactor = FALSE, FactorToChar = TRUE, IntToNumeric = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = '0', MissNum = -1, IgnoreCols = NULL)
         CalendarFeatures. <- merge(CalendarFeatures., XREGS., by = c('GroupVar', eval(DateColumnName.)), all = FALSE)
       } else {
         if(Debug) print('UpdateFeatures 4.1')
@@ -1647,7 +1647,7 @@ UpdateFeatures <- function(UpdateData. = NULL,
     if(Debug) print('UpdateFeatures 8')
     if(!is.null(CalendarVariables.)) {
       if(Debug) print('UpdateFeatures 9')
-      CalendarFeatures. <- CreateCalendarVariables(
+      CalendarFeatures. <- Rodeo::CreateCalendarVariables(
         data = CalendarFeatures.,
         DateCols = eval(DateColumnName.),
         AsFactor = FALSE,
@@ -1697,7 +1697,7 @@ UpdateFeatures <- function(UpdateData. = NULL,
         UpdateData. <- UpdateData.[1:(.N-LBD-1)]
 
         if(Debug) print('UpdateFeatures 20')
-        temp <- CreateHolidayVariables(
+        temp <- Rodeo::CreateHolidayVariables(
           temp,
           DateCols = eval(DateColumnName.),
           LookbackDays = if(!is.null(HolidayLookback.)) HolidayLookback. else LB(TimeUnit.),
@@ -1709,7 +1709,7 @@ UpdateFeatures <- function(UpdateData. = NULL,
 
       } else {
         if(Debug) print("Update Features 17.b holiday variables create")
-        UpdateData. <- CreateHolidayVariables(
+        UpdateData. <- Rodeo::CreateHolidayVariables(
           UpdateData.,
           DateCols = eval(DateColumnName.),
           LookbackDays = if(!is.null(HolidayLookback.)) HolidayLookback. else if(!is.null(TimeUnit.)) LB(TimeUnit.) else 1L,
@@ -1839,7 +1839,7 @@ CarmaTimeSeriesFeatures <- function(data. = data,
       if(is.list(Lags.)) TimeGroups. <- names(Lags.)
 
       # Generate features----
-      data. <- AutoLagRollStats(
+      data. <- Rodeo::AutoLagRollStats(
 
         # Data
         data                 = data.,
@@ -1888,7 +1888,7 @@ CarmaTimeSeriesFeatures <- function(data. = data,
       if(is.list(Lags.)) TimeGroups. <- names(Lags.)
 
       # Generate features
-      data. <- AutoLagRollStats(
+      data. <- Rodeo::AutoLagRollStats(
 
         # Data
         data                 = data.,
@@ -1934,7 +1934,7 @@ CarmaTimeSeriesFeatures <- function(data. = data,
       if(is.list(Lags.)) TimeGroups. <- names(Lags.)
 
       # Generate features
-      data. <- AutoLagRollStats(
+      data. <- Rodeo::AutoLagRollStats(
 
         # Data
         data                 = data.,
@@ -1976,7 +1976,7 @@ CarmaTimeSeriesFeatures <- function(data. = data,
     if(!is.null(GroupVariables.)) {
 
       # Build Features----
-      data. <- DT_GDL_Feature_Engineering(
+      data. <- Rodeo::DT_GDL_Feature_Engineering(
         data            = data.,
         lags            = HolidayLags.,
         periods         = HolidayMovingAverages.[HolidayMovingAverages. > 0],
@@ -1996,7 +1996,7 @@ CarmaTimeSeriesFeatures <- function(data. = data,
 
     } else {
 
-      data. <- DT_GDL_Feature_Engineering(
+      data. <- Rodeo::DT_GDL_Feature_Engineering(
         data            = data.,
         lags            = HolidayLags.,
         periods         = HolidayMovingAverages.[HolidayMovingAverages. > 0],
@@ -2099,7 +2099,7 @@ CarmaRollingStatsUpdate <- function(ModelType = 'catboost',
     keep <- temp$keep; rm(temp)
 
     # Build Features
-    Temporary <- AutoLagRollStatsScoring(
+    Temporary <- Rodeo::AutoLagRollStatsScoring(
 
       # Data
       data                 = Temporary,
@@ -2137,7 +2137,7 @@ CarmaRollingStatsUpdate <- function(ModelType = 'catboost',
       if(!is.null(HolidayVariable.)) HolVar <- TRUE else HolVar <- FALSE
 
       # Create copy of data
-      temp <- CarmaTimeSeriesScorePrep(UpdateData..=UpdateData., GroupVariables..=GroupVariables., DateColumnName..=DateColumnName.)
+      temp <- AutoQuant:::CarmaTimeSeriesScorePrep(UpdateData..=UpdateData., GroupVariables..=GroupVariables., DateColumnName..=DateColumnName.)
       Temporary1 <- temp$data
       keep <- temp$keep; rm(temp)
 
@@ -2145,7 +2145,7 @@ CarmaRollingStatsUpdate <- function(ModelType = 'catboost',
       IndepVarPassTRUE. <- CARMA_Get_IndepentVariablesPass(HierarchGroups.)
 
       # Generate GDL Features for Updated Records
-      Temporary1 <- AutoLagRollStatsScoring(
+      Temporary1 <- Rodeo::AutoLagRollStatsScoring(
 
         # Data
         data                 = Temporary1,
@@ -2209,7 +2209,7 @@ CarmaRollingStatsUpdate <- function(ModelType = 'catboost',
     keep <- temp$keep; rm(temp)
 
     # Build Features
-    Temporary <- AutoLagRollStatsScoring(
+    Temporary <- Rodeo::AutoLagRollStatsScoring(
 
       # Data
       data                 = Temporary,
@@ -2255,7 +2255,7 @@ CarmaRollingStatsUpdate <- function(ModelType = 'catboost',
       keep <- temp$keep; rm(temp)
 
       # Generate GDL Features for Updated Records
-      Temporary1 <- AutoLagRollStatsScoring(
+      Temporary1 <- Rodeo::AutoLagRollStatsScoring(
 
         # Data
         data                 = Temporary1,
@@ -2332,7 +2332,7 @@ CarmaRollingStatsUpdate <- function(ModelType = 'catboost',
     if('GroupVar' %chin% keep) keep <- keep[!keep %chin% 'GroupVar']
 
     # Generate GDL Features for Updated Records
-    Temporary <- AutoLagRollStatsScoring(
+    Temporary <- Rodeo::AutoLagRollStatsScoring(
 
       # Data
       data                 = Temporary,
@@ -2375,7 +2375,7 @@ CarmaRollingStatsUpdate <- function(ModelType = 'catboost',
       keep <- temp$keep; rm(temp)
 
       # Generate GDL Features for Updated Records
-      Temporary1 <- AutoLagRollStatsScoring(
+      Temporary1 <- Rodeo::AutoLagRollStatsScoring(
 
         # Data
         data                 = Temporary1,
@@ -2486,7 +2486,7 @@ CarmaReturnDataPrep <- function(UpdateData. = NULL,
 
   # Reverse Difference
   if(is.null(GroupVariables.) && Difference.) {
-    UpdateData. <- DifferenceDataReverse(data = UpdateData., ScoreData = NULL, CARMA = TRUE, TargetCol = eval(TargetColumnName.), FirstRow = DiffTrainOutput.$FirstRow[[eval(TargetColumnName.)]], LastRow = NULL)
+    UpdateData. <- AutoQuant:::DifferenceDataReverse(data = UpdateData., ScoreData = NULL, CARMA = TRUE, TargetCol = eval(TargetColumnName.), FirstRow = DiffTrainOutput.$FirstRow[[eval(TargetColumnName.)]], LastRow = NULL)
   } else if(!is.null(GroupVariables.) && Difference.) {
     if(any(class(UpdateData.[[eval(DateColumnName.)]]) %chin% c('POSIXct','POSIXt')) && any(class(dataStart.[[eval(DateColumnName.)]]) == 'Date')) UpdateData.[, eval(DateColumnName.) := as.Date(get(DateColumnName.))]
     UpdateData. <- data.table::rbindlist(list(dataStart.,UpdateData.), fill = TRUE)
@@ -2528,7 +2528,7 @@ CarmaReturnDataPrep <- function(UpdateData. = NULL,
         if(Debug) print("CarmaReturnDataPrep 4.5")
 
         # Backtrans
-        UpdateData. <- AutoTransformationScore(
+        UpdateData. <- Rodeo::AutoTransformationScore(
           ScoringData = UpdateData.,
           FinalResults = TransformObject.,
           Type = 'Inverse',
@@ -2566,7 +2566,7 @@ CarmaReturnDataPrep <- function(UpdateData. = NULL,
         }
 
         # Backtrans----
-        UpdateData. <- AutoTransformationScore(
+        UpdateData. <- Rodeo::AutoTransformationScore(
           ScoringData = UpdateData.,
           FinalResults = TransformObjectTemp,
           Type = 'Inverse',

@@ -18,7 +18,7 @@
 #' @param TimeWeights Supply a value that will be multiplied by he time trend value
 #' @param FC_Periods Set the number of periods you want to have forecasts for. E.g. 52 for weekly data to forecast a year ahead
 #' @param SaveDataPath Path to save modeling data
-#' @param TargetTransformation Run AutoTransformationCreate() to find best transformation for the target variable. Tests YeoJohnson, BoxCox, and Asigh (also Asin and Logit for proportion target variables).
+#' @param TargetTransformation Run Rodeo::AutoTransformationCreate() to find best transformation for the target variable. Tests YeoJohnson, BoxCox, and Asigh (also Asin and Logit for proportion target variables).
 #' @param Methods Choose from 'YeoJohnson', 'BoxCox', 'Asinh', 'Log', 'LogPlus1', 'Sqrt', 'Asin', or 'Logit'. If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.
 #' @param EncodingMethod Choose from 'binary', 'm_estimator', 'credibility', 'woe', 'target_encoding', 'poly_encode', 'backward_difference', 'helmert'
 #' @param XREGS Additional data to use for model development and forecasting. Data needs to be a complete series which means both the historical and forward looking values over the specified forecast window needs to be supplied.
@@ -524,9 +524,9 @@ AutoLightGBMCARMA <- function(data = NULL,
   if(DebugMode) print('Feature Engineering: Add Zero Padding for missing dates----')
   if(data[, .N] != unique(data)[, .N]) {data <- unique(data); ZeroPadSeries <- 'maxmax'}
   if(!is.null(ZeroPadSeries) && length(GroupVariables) > 0L) {
-    data <- TimeSeriesFill(data, TargetColumn=TargetColumnName, DateColumnName=eval(DateColumnName), GroupVariables=GroupVariables, TimeUnit=TimeUnit, FillType=ZeroPadSeries, MaxMissingPercent=0.95, SimpleImpute=FALSE)
+    data <- Rodeo::TimeSeriesFill(data, TargetColumn=TargetColumnName, DateColumnName=eval(DateColumnName), GroupVariables=GroupVariables, TimeUnit=TimeUnit, FillType=ZeroPadSeries, MaxMissingPercent=0.95, SimpleImpute=FALSE)
   } else if(length(GroupVariables) > 0L) {
-    temp <- TimeSeriesFill(data, DateColumnName=eval(DateColumnName), GroupVariables=GroupVariables, TimeUnit=TimeUnit, FillType='maxmax', MaxMissingPercent=0.95, SimpleImpute=FALSE)
+    temp <- Rodeo::TimeSeriesFill(data, DateColumnName=eval(DateColumnName), GroupVariables=GroupVariables, TimeUnit=TimeUnit, FillType='maxmax', MaxMissingPercent=0.95, SimpleImpute=FALSE)
     if(temp[,.N] != data[,.N]) stop('There are missing dates in your series. You can utilize the ZeroPadSeries argument to handle this or manage it before running the function')
   }
 
@@ -640,7 +640,7 @@ AutoLightGBMCARMA <- function(data = NULL,
   # Feature Engineering: Add Target Transformation ----
   if(DebugMode) print('Feature Engineering: Add Target Transformation----')
   if(TargetTransformation) {
-    TransformResults <- AutoTransformationCreate(data, ColumnNames=TargetColumnName, Methods=Methods, Path=NULL, TransID='Trans', SaveOutput=FALSE)
+    TransformResults <- Rodeo::AutoTransformationCreate(data, ColumnNames=TargetColumnName, Methods=Methods, Path=NULL, TransID='Trans', SaveOutput=FALSE)
     data <- TransformResults$Data
     TransformObject <- TransformResults$FinalResults
   } else {
@@ -677,9 +677,9 @@ AutoLightGBMCARMA <- function(data = NULL,
   # Create GroupVar ----
   if(length(GroupVariables) > 0L) if(!'GroupVar' %chin% names(data)) data[, GroupVar := do.call(paste, c(.SD, sep = ' ')), .SDcols = GroupVariables]
 
-  # Data Wrangling: ModelDataPrep() to prepare data ----
-  if(DebugMode) print('Data Wrangling: ModelDataPrep() to prepare data ----')
-  data <- ModelDataPrep(data, Impute=TRUE, CharToFactor=TRUE, RemoveDates=FALSE, MissFactor='0', MissNum=-1)
+  # Data Wrangling: Rodeo::ModelDataPrep() to prepare data ----
+  if(DebugMode) print('Data Wrangling: Rodeo::ModelDataPrep() to prepare data ----')
+  data <- Rodeo::ModelDataPrep(data, Impute=TRUE, CharToFactor=TRUE, RemoveDates=FALSE, MissFactor='0', MissNum=-1)
 
   # Data Wrangling: Remove dates with imputed data from the DT_GDL_Feature_Engineering() features ----
   if(DebugMode) print('Data Wrangling: Remove dates with imputed data from the DT_GDL_Feature_Engineering() features ----')

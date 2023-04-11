@@ -293,9 +293,9 @@ AutoXGBoostCARMA <- function(data = NULL,
   if(DebugMode) print('Feature Engineering: Add Zero Padding for missing dates----')
   if(data[, .N] != unique(data)[, .N]) {data <- unique(data); ZeroPadSeries <- 'maxmax'}
   if(length(ZeroPadSeries) > 0L && length(GroupVariables) > 0L) {
-    data <- TimeSeriesFill(data, TargetColumn=TargetColumnName, DateColumnName=eval(DateColumnName), GroupVariables=GroupVariables, TimeUnit=TimeUnit, FillType=ZeroPadSeries, MaxMissingPercent=0.95, SimpleImpute=TRUE)
+    data <- Rodeo::TimeSeriesFill(data, TargetColumn=TargetColumnName, DateColumnName=eval(DateColumnName), GroupVariables=GroupVariables, TimeUnit=TimeUnit, FillType=ZeroPadSeries, MaxMissingPercent=0.95, SimpleImpute=TRUE)
   } else if(length(GroupVariables) > 0L) {
-    temp <- TimeSeriesFill(data, TargetColumn=TargetColumnName, DateColumnName=eval(DateColumnName), GroupVariables=GroupVariables, TimeUnit=TimeUnit, FillType='maxmax', MaxMissingPercent=0.95, SimpleImpute=TRUE)
+    temp <- Rodeo::TimeSeriesFill(data, TargetColumn=TargetColumnName, DateColumnName=eval(DateColumnName), GroupVariables=GroupVariables, TimeUnit=TimeUnit, FillType='maxmax', MaxMissingPercent=0.95, SimpleImpute=TRUE)
     if(temp[,.N] != data[,.N]) stop('There are missing dates in your series. You can utilize the ZeroPadSeries argument to handle this or manage it before running the function')
   }
 
@@ -405,7 +405,7 @@ AutoXGBoostCARMA <- function(data = NULL,
   # Feature Engineering: Add Target Transformation ----
   if(DebugMode) print('Feature Engineering: Add Target Transformation----')
   if(TargetTransformation) {
-    TransformResults <- AutoTransformationCreate(data, ColumnNames=TargetColumnName, Methods=Methods, Path=NULL, TransID='Trans', SaveOutput=FALSE)
+    TransformResults <- Rodeo::AutoTransformationCreate(data, ColumnNames=TargetColumnName, Methods=Methods, Path=NULL, TransID='Trans', SaveOutput=FALSE)
     data <- TransformResults$Data
     TransformObject <- TransformResults$FinalResults
   } else {
@@ -442,9 +442,9 @@ AutoXGBoostCARMA <- function(data = NULL,
   # Create GroupVar ----
   if(length(GroupVariables) > 0L) if(!'GroupVar' %chin% names(data)) data[, GroupVar := do.call(paste, c(.SD, sep = ' ')), .SDcols = GroupVariables]
 
-  # Data Wrangling: ModelDataPrep() to prepare data ----
-  if(DebugMode) print('Data Wrangling: ModelDataPrep() to prepare data ----')
-  data <- ModelDataPrep(data, Impute=TRUE, CharToFactor=TRUE, RemoveDates=FALSE, MissFactor='0', MissNum=-1)
+  # Data Wrangling: Rodeo::ModelDataPrep() to prepare data ----
+  if(DebugMode) print('Data Wrangling: Rodeo::ModelDataPrep() to prepare data ----')
+  data <- Rodeo::ModelDataPrep(data, Impute=TRUE, CharToFactor=TRUE, RemoveDates=FALSE, MissFactor='0', MissNum=-1)
 
   # Data Wrangling: Remove dates with imputed data from the DT_GDL_Feature_Engineering() features ----
   if(DebugMode) print('Data Wrangling: Remove dates with imputed data from the DT_GDL_Feature_Engineering() features ----')

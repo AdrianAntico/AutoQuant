@@ -26,7 +26,7 @@
 #' @param NThreads Set to the number of threads you want to dedicate to this function.
 #' @param Timer Set to FALSE to turn off the updating print statements for progress
 #' @param DebugMode Defaults to FALSE. Set to TRUE to get a print statement of each high level comment in function
-#' @param TargetTransformation Run AutoTransformationCreate() to find best transformation for the target variable. Tests YeoJohnson, BoxCox, and Asigh (also Asin and Logit for proportion target variables).
+#' @param TargetTransformation Run Rodeo::AutoTransformationCreate() to find best transformation for the target variable. Tests YeoJohnson, BoxCox, and Asigh (also Asin and Logit for proportion target variables).
 #' @param Methods Choose from "YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", or "Logit". If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.
 #' @param XREGS Additional data to use for model development and forecasting. Data needs to be a complete series which means both the historical and forward looking values over the specified forecast window needs to be supplied.
 #' @param Lags Select the periods for all lag variables you want to create. E.g. c(1:5,52) or list("day" = c(1:10), "weeks" = c(1:4))
@@ -351,10 +351,10 @@ AutoH2OCARMA <- function(AlgoType = "drf",
   if(DebugMode) print("Feature Engineering: Add Zero Padding for missing dates----")
   if(data[, .N] != unique(data)[, .N]) stop("There is duplicates in your data")
   if(!is.null(ZeroPadSeries) && length(GroupVariables) > 0L) {
-    data <- TimeSeriesFill(data, TargetColumn=TargetColumnName, DateColumnName=eval(DateColumnName), GroupVariables=GroupVariables, TimeUnit=TimeUnit, FillType=ZeroPadSeries, MaxMissingPercent=0.0, SimpleImpute=FALSE)
+    data <- Rodeo::TimeSeriesFill(data, TargetColumn=TargetColumnName, DateColumnName=eval(DateColumnName), GroupVariables=GroupVariables, TimeUnit=TimeUnit, FillType=ZeroPadSeries, MaxMissingPercent=0.0, SimpleImpute=FALSE)
     data <- ModelDataPrep(data=data, Impute=TRUE, CharToFactor=FALSE, FactorToChar=FALSE, IntToNumeric=FALSE, LogicalToBinary=FALSE, DateToChar=FALSE, RemoveDates=FALSE, MissFactor="0", MissNum=0, IgnoreCols=NULL)
   } else if(length(GroupVariables) > 0L) {
-    temp <- TimeSeriesFill(data, TargetColumn=TargetColumnName, DateColumnName=eval(DateColumnName), GroupVariables=GroupVariables, TimeUnit=TimeUnit, FillType="maxmax", MaxMissingPercent=0.25, SimpleImpute=FALSE)
+    temp <- Rodeo::TimeSeriesFill(data, TargetColumn=TargetColumnName, DateColumnName=eval(DateColumnName), GroupVariables=GroupVariables, TimeUnit=TimeUnit, FillType="maxmax", MaxMissingPercent=0.25, SimpleImpute=FALSE)
     if(temp[,.N] != data[,.N]) stop("There are missing dates in your series. You can utilize the ZeroPadSeries argument to handle this or manage it before running the function")
   }
 
@@ -481,7 +481,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
   # Feature Engineering: Add Target Transformation----
   if(DebugMode) print("Feature Engineering: Add Target Transformation ----")
   if(TargetTransformation) {
-    TransformResults <- AutoTransformationCreate(data, ColumnNames=TargetColumnName, Methods=Methods, Path=NULL, TransID="Trans", SaveOutput=FALSE)
+    TransformResults <- Rodeo::AutoTransformationCreate(data, ColumnNames=TargetColumnName, Methods=Methods, Path=NULL, TransID="Trans", SaveOutput=FALSE)
     data <- TransformResults$Data
     TransformObject <- TransformResults$FinalResults
   } else {
