@@ -101,9 +101,9 @@ AutoXGBoostScoring <- function(TargetType = NULL,
     if(!is.null(TransformationObject)) {
       tempTrans <- data.table::copy(TransformationObject)
       tempTrans <- tempTrans[ColumnName != eval(TargetColumnName)]
-      ScoringData <- AutoTransformationScore(ScoringData = ScoringData, FinalResults = tempTrans, Type = "Apply", TransID = TransID, Path = NULL)
+      ScoringData <- Rodeo::AutoTransformationScore(ScoringData = ScoringData, FinalResults = tempTrans, Type = "Apply", TransID = TransID, Path = NULL)
     } else {
-      ScoringData <- AutoTransformationScore(ScoringData = ScoringData, FinalResults = tempTrans, Type = "Apply", TransID = TransID, Path = TransPath)
+      ScoringData <- Rodeo::AutoTransformationScore(ScoringData = ScoringData, FinalResults = tempTrans, Type = "Apply", TransID = TransID, Path = TransPath)
     }
   }
 
@@ -128,13 +128,13 @@ AutoXGBoostScoring <- function(TargetType = NULL,
   # DummifyDT categorical columns ----
   if(!is.null(EncodingMethod) && EncodingMethod == "binary") {
     if(!is.null(FactorLevelsList)) {
-      ScoringData <- DummifyDT(data=ScoringData, cols=names(FactorLevelsList)[-length(names(FactorLevelsList))], KeepFactorCols=FALSE, OneHot=FALSE, SaveFactorLevels=FALSE, SavePath=ModelPath, ImportFactorLevels=FALSE, FactorLevelsList=FactorLevelsList, ReturnFactorLevels=FALSE, ClustScore=FALSE, GroupVar=TRUE)
+      ScoringData <- Rodeo::DummifyDT(data=ScoringData, cols=names(FactorLevelsList)[-length(names(FactorLevelsList))], KeepFactorCols=FALSE, OneHot=FALSE, SaveFactorLevels=FALSE, SavePath=ModelPath, ImportFactorLevels=FALSE, FactorLevelsList=FactorLevelsList, ReturnFactorLevels=FALSE, ClustScore=FALSE, GroupVar=TRUE)
     } else {
       CatFeatures <- sort(c(as.numeric(which(sapply(ScoringData, is.factor))), as.numeric(which(sapply(ScoringData, is.character)))))
       CatFeatures <- names(ScoringData)[CatFeatures]
       if(length(IDcols) > 0L) CatFeatures <- CatFeatures[!CatFeatures %in% IDcols]
       if(!identical(CatFeatures, character(0)) && !is.null(CatFeatures)) {
-        ScoringData <- DummifyDT(data=ScoringData, cols=CatFeatures, KeepFactorCols=FALSE, OneHot=FALSE, SaveFactorLevels=FALSE, SavePath=ModelPath, ImportFactorLevels=TRUE, ReturnFactorLevels=FALSE, ClustScore=FALSE, GroupVar=TRUE)
+        ScoringData <- Rodeo::DummifyDT(data=ScoringData, cols=CatFeatures, KeepFactorCols=FALSE, OneHot=FALSE, SaveFactorLevels=FALSE, SavePath=ModelPath, ImportFactorLevels=TRUE, ReturnFactorLevels=FALSE, ClustScore=FALSE, GroupVar=TRUE)
       }
     }
   } else if(length(EncodingMethod) > 0L && length(FactorLevelsList$EncodingMethod) > 0L) {
@@ -155,7 +155,7 @@ AutoXGBoostScoring <- function(TargetType = NULL,
     y <- names(ScoringData)[which(names(ScoringData) %like% paste0('_', x))]
     if(length(y) != 0) data.table::set(ScoringData, j = c(names(ScoringData)[which(names(ScoringData) %like% paste0('_', x))]), value = NULL)
     xx <- names(data.table::copy(ScoringData))
-    Output <- AutoQuant:::EncodeCharacterVariables(
+    Output <- Rodeo::EncodeCharacterVariables(
       RunMode = 'score',
       ModelType = TargetType,
       TrainData = ScoringData,
@@ -208,7 +208,7 @@ AutoXGBoostScoring <- function(TargetType = NULL,
   if(!is.null(ModelObject)) model <- ModelObject else model <- tryCatch({load(file.path(ModelPath, ModelID))}, error = function(x) stop(paste0("Model not found in ModelPath: " , file.path(ModelPath, ModelID))))
 
   # ModelDataPrep Check ----
-  ScoringData <- ModelDataPrep(data = ScoringData, Impute = MDP_Impute, CharToFactor = MDP_CharToFactor, RemoveDates = MDP_RemoveDates, MissFactor = MDP_MissFactor, MissNum = MDP_MissNum)
+  ScoringData <- Rodeo::ModelDataPrep(data = ScoringData, Impute = MDP_Impute, CharToFactor = MDP_CharToFactor, RemoveDates = MDP_RemoveDates, MissFactor = MDP_MissFactor, MissNum = MDP_MissNum)
   a <- which(!names(ScoringData) %in% model$feature_names)
   if(!identical(a, integer(0))) data.table::set(ScoringData, j = c(names(ScoringData)[which(!names(ScoringData) %in% model$feature_names)]), value = NULL)
 
@@ -272,7 +272,7 @@ AutoXGBoostScoring <- function(TargetType = NULL,
     grid_trans_results <- data.table::copy(TransformationObject)
     grid_trans_results <- grid_trans_results[ColumnName != eval(TargetColumnName)]
     data.table::set(grid_trans_results, i = which(grid_trans_results[["ColumnName"]] == eval(TargetColumnName)), j = "ColumnName", value = "Predictions")
-    predict <- AutoTransformationScore(ScoringData = predict, Type = "Inverse", FinalResults = grid_trans_results, TransID = NULL, Path = NULL)
+    predict <- Rodeo::AutoTransformationScore(ScoringData = predict, Type = "Inverse", FinalResults = grid_trans_results, TransID = NULL, Path = NULL)
   }
 
   # Return data ----

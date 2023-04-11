@@ -296,7 +296,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
     y <- names(ScoringData)[which(names(ScoringData) %like% paste0('_', x))]
     if(length(y) != 0) data.table::set(ScoringData, j = c(names(ScoringData)[which(names(ScoringData) %like% paste0('_', x))]), value = NULL)
     xx <- names(data.table::copy(ScoringData))
-    Output <- AutoQuant:::EncodeCharacterVariables(
+    Output <- Rodeo::EncodeCharacterVariables(
       RunMode = 'score',
       ModelType = TargetType,
       TrainData = ScoringData,
@@ -354,7 +354,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   # ModelDataPrep Check ----
   if(ReturnFeatures && TargetType != 'multiclass') ScoringMerge <- data.table::copy(ScoringData)
   if(any(c(MDP_Impute, MDP_CharToFactor, MDP_RemoveDates))) {
-    ScoringData <- ModelDataPrep(
+    ScoringData <- Rodeo::ModelDataPrep(
       data = ScoringData,
       Impute = MDP_Impute,
       CharToFactor = MDP_CharToFactor,
@@ -367,7 +367,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   if(TransformNumeric) {
     tempTrans <- data.table::copy(TransformationObject)
     tempTrans <- tempTrans[ColumnName != eval(TargetColumnName)]
-    ScoringData <- AutoTransformationScore(
+    ScoringData <- Rodeo::AutoTransformationScore(
       ScoringData = ScoringData,
       FinalResults = tempTrans,
       Type = 'Apply',
@@ -531,7 +531,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
     if(Debug) print('Scoring Here 12')
 
     # Run Back-Transform ----
-    predict <- AutoTransformationScore(
+    predict <- Rodeo::AutoTransformationScore(
       ScoringData = predict,
       Type = 'Inverse',
       FinalResults = grid_trans_results,
@@ -551,7 +551,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
     if(Debug) print('Scoring Here 12.b')
 
     # Back transform
-    predict <- AutoTransformationScore(
+    predict <- Rodeo::AutoTransformationScore(
       ScoringData = predict,
       Type = 'Inverse',
       FinalResults = TransformationObject,

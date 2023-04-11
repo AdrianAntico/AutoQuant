@@ -98,7 +98,7 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
     if(TransformNumeric || BackTransNumeric) {
       tempTrans <- data.table::copy(TransformationObject)
       tempTrans <- tempTrans[ColumnName != eval(TargetColumnName)]
-      ScoringData <- AutoTransformationScore(
+      ScoringData <- Rodeo::AutoTransformationScore(
         ScoringData = ScoringData,
         FinalResults = tempTrans,
         Type = "Apply",
@@ -111,7 +111,7 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
   if(H2OStartUp) localHost <- h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem, enable_assertions = FALSE)
 
   # ModelDataPrep Check ----
-  ScoringData <- ModelDataPrep(data = ScoringData, Impute = MDP_Impute, CharToFactor = MDP_CharToFactor, RemoveDates = MDP_RemoveDates, MissFactor = MDP_MissFactor, MissNum = MDP_MissNum)
+  ScoringData <- Rodeo::ModelDataPrep(data = ScoringData, Impute = MDP_Impute, CharToFactor = MDP_CharToFactor, RemoveDates = MDP_RemoveDates, MissFactor = MDP_MissFactor, MissNum = MDP_MissNum)
 
   # Initialize H2O Data Conversion ----
   if(!is.null(ModelType)) {
@@ -166,7 +166,7 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
     grid_trans_results <- grid_trans_results[ColumnName != eval(TargetColumnName)]
 
     # Run Back-Transform ----
-    predict <- AutoTransformationScore(
+    predict <- Rodeo::AutoTransformationScore(
       ScoringData = predict,
       Type = "Inverse",
       FinalResults = grid_trans_results,
