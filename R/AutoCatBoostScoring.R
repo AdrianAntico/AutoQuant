@@ -406,22 +406,32 @@ AutoCatBoostScoring <- function(TargetType = NULL,
 
   # Remove unnecessary columns
   if(Debug) print('Scoring Here 5')
+  if(Debug) print(!identical(setdiff(names(ScoringData), FeatureColumnNames), character(0)))
   if(!identical(setdiff(names(ScoringData), FeatureColumnNames), character(0)) && TargetType != 'multiregression') {
     if(Debug) {
       print('AutoCatBoostHurdleModelScoring QA Check 2')
       print(c(setdiff(names(ScoringData), FeatureColumnNames)))
       print(all(c(setdiff(names(ScoringData), FeatureColumnNames)) %in% names(ScoringData)))
     }
-    data.table::set(ScoringData, j = c(setdiff(names(ScoringData), FeatureColumnNames)), value = NULL)
+    if(length(setdiff(names(ScoringData), FeatureColumnNames)) > 0L) {
+      data.table::set(ScoringData, j = c(setdiff(names(ScoringData), FeatureColumnNames)), value = NULL)
+    }
   } else if(TargetType == 'multiregression') {
-    data.table::set(ScoringData, j = setdiff(names(ScoringData), FeatureColumnNames), value = NULL)
+    if(length(setdiff(names(ScoringData), FeatureColumnNames)) > 0L) {
+      if(Debug) print("Here 5.1")
+      if(Debug) print(length(setdiff(names(ScoringData), FeatureColumnNames)) > 0L)
+      tryCatch({data.table::set(ScoringData, j = setdiff(names(ScoringData), FeatureColumnNames), value = NULL)}, error = function(x) NULL)
+    }
   }
 
   # Initialize Catboost Data Conversion ----
   if(Debug) print('Scoring Here 6')
   if(!is.null(CatFeatures)) {
+    if(Debug) print("CatFeatures is NOT NULL")
     ScoringPool <- catboost::catboost.load_pool(ScoringData, cat_features = CatFeatures)
   } else {
+    if(Debug) print("CatFeatures is NULL")
+    print(ScoringData)
     ScoringPool <- catboost::catboost.load_pool(ScoringData)
   }
 

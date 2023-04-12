@@ -550,13 +550,13 @@ AutoCatBoostCARMA <- function(data,
   if(DebugMode) print('Feature Engineering: Add Create Calendar Variables ----')
   if(DebugMode) print(data)
   if(!is.null(CalendarVariables)) {
-    data <- CreateCalendarVariables(data=data, DateCols=eval(DateColumnName), AsFactor=FALSE, TimeUnits=CalendarVariables)
+    data <- Rodeo::CreateCalendarVariables(data=data, DateCols=eval(DateColumnName), AsFactor=FALSE, TimeUnits=CalendarVariables)
   }
 
   # Feature Engineering: Create Holiday Variables ----
   if(DebugMode) print('Feature Engineering: Add Create Holiday Variables ----')
   if(!is.null(HolidayVariable)) {
-    data <- CreateHolidayVariables(data, DateCols = eval(DateColumnName), LookbackDays = if(!is.null(HolidayLookback)) HolidayLookback else LB(TimeUnit), HolidayGroups = HolidayVariable, Holidays = NULL, Debug = DebugMode)
+    data <- Rodeo::CreateHolidayVariables(data, DateCols = eval(DateColumnName), LookbackDays = if(!is.null(HolidayLookback)) HolidayLookback else LB(TimeUnit), HolidayGroups = HolidayVariable, Holidays = NULL, Debug = DebugMode)
     if(!(tolower(TimeUnit) %chin% c('1min','5min','10min','15min','30min','hour'))) {
       data[, eval(DateColumnName) := lubridate::as_date(get(DateColumnName))]
     } else {
@@ -802,7 +802,8 @@ AutoCatBoostCARMA <- function(data,
       # Score model ----
       if(DebugMode) print('  - - Score model')
       if(i == 1L) UpdateData <- NULL
-      Output <- CarmaScore(Type = 'catboost', i.=i, N.=N, GroupVariables.=GroupVariables, ModelFeatures.=ModelFeatures, HierarchGroups.=HierarchGroups, DateColumnName.=DateColumnName, Difference.=Difference, TargetColumnName.=TargetColumnName, Step1SCore.=Step1SCore, Model.=Model, FutureDateData.=FutureDateData, NonNegativePred.=NonNegativePred, RoundPreds.=RoundPreds, UpdateData.=UpdateData, FactorList.=TestModel$FactorLevelsList, EncodingMethod.=EncodingMethod, dt = data)
+      Output <- CarmaScore(Debug = DebugMode, Type = 'catboost', i.=i, N.=N, GroupVariables.=GroupVariables, ModelFeatures.=ModelFeatures, HierarchGroups.=HierarchGroups, DateColumnName.=DateColumnName, Difference.=Difference, TargetColumnName.=TargetColumnName, Step1SCore.=Step1SCore, Model.=Model, FutureDateData.=FutureDateData, NonNegativePred.=NonNegativePred, RoundPreds.=RoundPreds, UpdateData.=UpdateData, FactorList.=TestModel$FactorLevelsList, EncodingMethod.=EncodingMethod, dt = data)
+      if(DebugMode) print("CarmaScoring Done")
       UpdateData <- Output$UpdateData; Output$UpdateData <- NULL
       Preds <- Output$Preds; Output$Preds <- NULL
       N <- Output$N; rm(Output)

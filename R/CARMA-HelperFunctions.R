@@ -782,9 +782,38 @@ CarmaScore <- function(Type = 'catboost',
     # Score model
     if(!is.null(GroupVariables.)) {
 
+      if(Debug) print("i == 1 && GroupVariables > 0")
+
       # Define IDcols
       if(Difference.) IDcols <- c('ModTarget','TargetDiffMidStep') else IDcols <- eval(TargetColumnName.)
-      IDcols <- IDcols[IDcols %chin% names(Step1SCore.)]
+      IDcols <- tryCatch({IDcols[IDcols %chin% names(Step1SCore.)]}, error = function(x) IDcols)
+
+      if(Debug) {
+        print('regression')
+        print(Step1SCore.)
+        print(ModelFeatures.)
+        print(FactorList.)
+        print(IDcols)
+        print(FALSE)
+        print(Model.)
+        print(getwd())
+        print(FALSE)
+        print(NULL)
+        print(FALSE)
+        print('ModelTest')
+        print(TRUE)
+        print(FALSE)
+        print(FALSE)
+        print(NULL)
+        print(NULL)
+        print(NULL)
+        print(NULL)
+        print(FALSE)
+        print(FALSE)
+        print(TRUE)
+        print('0')
+        print(-1)
+      }
 
       # Score Model With Group Variables
       if(Type == 'catboost') {
@@ -812,7 +841,8 @@ CarmaScore <- function(Type = 'catboost',
           MDP_CharToFactor = FALSE,
           MDP_RemoveDates = TRUE,
           MDP_MissFactor = '0',
-          MDP_MissNum = -1)
+          MDP_MissNum = -1,
+          Debug = Debug)
 
 
         # TargetType = 'regression'
@@ -1021,27 +1051,65 @@ CarmaScore <- function(Type = 'catboost',
     }
 
     # Data Wrangline: grab historical data and one more future record
+    if(Debug) print("Hereye 1")
     if(Difference.) if(eval(DateColumnName.) %chin% names(Preds)) data.table::set(Preds, j = eval(DateColumnName.), value = NULL)
+    if(Debug) print("Hereye 2")
     data.table::setnames(Preds, 'Predict', 'Predictions', skip_absent = TRUE)
+    if(Debug) print("Hereye 3")
     if(length(dt) > 0L && 'GroupVar' %in% names(dt)) {
-      gg <- dt[,.N, by = 'GroupVar']
+      if(Debug) print("Hereye 4")
+      gg <- dt[,.N, by = 'GroupVar'][order(-N)]
+      if(Debug) print("Hereye 5")
       ggg <- sort(gg[, unique(N)])
+      if(Debug) print("Hereye 6")
       l <- length(FutureDateData.)
+      if(Debug) print("Hereye 7")
+      if(Debug) {
+        print(gg)
+        print(ggg)
+        print(l)
+      }
       if(length(ggg) > 1L) {
         # gggg = ggg[1]
+        if(Debug) print("Hereye 8")
         max_ggg <- max(ggg)
+        if(Debug) {
+          print("Hereye 9")
+          print(max_ggg)
+        }
         Preds[, FutureDateData. := FutureDateData.[length(FutureDateData.)]]
+        if(Debug) print("Hereye 10")
         co <- ncol(Preds)
+        if(Debug) {
+          print("Hereye 11")
+          print(co)
+          print(head(Preds))
+        }
         data.table::setcolorder(Preds, neworder = c(co, 1L:(co-1L)))
-        for(gggg in ggg) {
+        if(Debug) print("Hereye 12")
+        for(gggg in ggg) {# gggg = 371
+          if(Debug) print("Hereye 13")
           gv <- as.character(gg[N == eval(gggg)][['GroupVar']])
+          if(Debug) {print("Hereye 14"); print(gv)}
           if(gggg == max_ggg) {
+            if(Debug) print("Hereye 15.a")
             data.table::set(Preds, i = which(Preds[['GroupVar']] %in% gv), j = 'FutureDateData.', value = rep(eval(FutureDateData.), length(gv)))
           } else {
+            if(Debug) {
+              print("Hereye 15.b")
+              print(which(Preds[['GroupVar']] %in% gv))
+              print(length(gv))
+              print(head(FutureDateData.))
+              print(FutureDateData.[,.N])
+              print(gggg)
+              print(l)
+              print(rep(eval(FutureDateData.[(l - gggg + 1L):l]), length(gv)))
+            }
             data.table::set(Preds, i = which(Preds[['GroupVar']] %in% gv), j = 'FutureDateData.', value = rep(eval(FutureDateData.[(l - gggg + 1L):l]), length(gv)))
           }
         }
 
+        if(Debug) print("Hereye 16")
         UpdateData. <- Preds
 
       } else {
@@ -1052,6 +1120,7 @@ CarmaScore <- function(Type = 'catboost',
     }
 
     # Update names
+    if(Debug) print("Hereye 17")
     data.table::setnames(UpdateData., 'FutureDateData.', eval(DateColumnName.))
 
   } else {
@@ -1279,6 +1348,7 @@ CarmaScore <- function(Type = 'catboost',
   }
 
   # Return
+  if(Debug) print("Hereye 18")
   return(list(UpdateData = UpdateData., Preds = Preds, N = N.))
 }
 
