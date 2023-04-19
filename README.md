@@ -35,7 +35,7 @@ Documentation + Code Examples
 ### Package Details
 > Supervised Learning - Currently, I'm utilizing CatBoost, LightGBM, XGBoost, and H2O for all of the automated Machine Learning related functions. GPU's can be utilized with CatBoost, LightGBM, and XGBoost, while those and the H2O models can all utilize 100% of CPU. Multi-armed bandit grid tuning is available for CatBoost, LightGBM, and XGBoost models, which utilize the concept of randomized probability matching, which is detailed in the R pacakge "bandit". My choice of included ML algorithms in the package is based on previous success when compared against other algorithms on real world use cases, the additional utilities these packages offer aside from accurate predictions, their ability to work on big data, and the fact that they're available in both R and Python which makes managing multiple languages a little more seamless in a professional setting.
 
-> Documentation - Each exported function in the package has a help file and can be viewed in your RStudio session, e.g. <code>?AutoQuant::ModelDataPrep</code>. Many of them come with examples coded up in the help files (at the bottom) that you can run to get a feel for how to set the parameters. There's also a listing of exported functions by category with code examples at the bottom of this readme. You can also jump into the R folder here to dig into the source code. 
+> Documentation - Each exported function in the package has a help file and can be viewed in your RStudio session, e.g. <code>?Rodeo::ModelDataPrep</code>. Many of them come with examples coded up in the help files (at the bottom) that you can run to get a feel for how to set the parameters. There's also a listing of exported functions by category with code examples at the bottom of this readme. You can also jump into the R folder here to dig into the source code. 
 
 > Overall process: Typically, I go to the warehouse to get all of my base features and then I run through all the relevant feature engineering functions in this package. Personally, I set up templates for features engineering, model training optimization, and model scoring (including feature engineering for scoring). I collect all relevant metdata in a list that is shared across templates and as a result, I never have to touch the model scoring template, which makes operationalize and maintenace a breeze. I can simply list out the columns of interest, which feature engineering functions I want to utilize, and then I simply kick off some command line scripts and everything else is automatically managed.
 
@@ -2269,7 +2269,7 @@ AutoQuant::ModelInsightsReport(
   ModelID = 'Test_Model_1',
   Algo = 'catboost',
   OutputPath = getwd(),
-  ModelOutput = TestModel)
+  ModelObject = TestModel)
 
 
 # Score data
@@ -2322,7 +2322,7 @@ data <- AutoQuant::FakeDataGenerator(
 data1 <- data.table::copy(data)
 
 # Partition Data
-Sets <- AutoQuant::AutoDataPartition(
+Sets <- Rodeo::AutoDataPartition(
   data = data,
   NumDataSets = 3,
   Ratios = c(0.7,0.2,0.1),
@@ -2341,7 +2341,7 @@ Features <- names(TTrainData)[!names(TTrainData) %in% c("IDcol_1", "IDcol_2","Da
 TestModel <- AutoQuant::AutoCatBoostClassifier(
   
   # GPU or CPU and the number of available GPUs
-  task_type = tasktypemode,
+  task_type = "CPU",
   NumGPUs = 1,
   
   # Metadata arguments
@@ -2349,13 +2349,13 @@ TestModel <- AutoQuant::AutoCatBoostClassifier(
   ModelID = "Test_Model_1",
   model_path = normalizePath("./"),
   metadata_path = normalizePath("./"),
-  SaveModelObjects = TRUE,
+  SaveModelObjects = FALSE,
   ReturnModelObjects = TRUE,
-  SaveInfoToPDF = TRUE,
+  SaveInfoToPDF = FALSE,
   
   # Data arguments
   data = TTrainData,
-  TrainOnFull = tof,
+  TrainOnFull = FALSE,
   ValidationData = VValidationData,
   TestData = TTestData,
   TargetColumnName = "Adrian",
@@ -2416,7 +2416,7 @@ AutoQuant::ModelInsightsReport(
   ModelID = 'Test_Model_1',
   Algo = 'catboost',
   OutputPath = getwd(),
-  ModelOutput = TestModel)
+  ModelObject = TestModel)
 
 
 # Score data
@@ -2469,7 +2469,7 @@ data <- AutoQuant::FakeDataGenerator(
 data1 <- data.table::copy(data)
 
 # Partition Data
-Sets <- AutoQuant::AutoDataPartition(
+Sets <- Rodeo::AutoDataPartition(
   data = data,
   NumDataSets = 3,
   Ratios = c(0.7,0.2,0.1),
@@ -2560,7 +2560,7 @@ AutoQuant::ModelInsightsReport(
   ModelID = 'Test_Model_1',
   Algo = 'catboost',
   OutputPath = getwd(),
-  ModelOutput = TestModel)
+  ModelObject = TestModel)
 
 
 # Score data
@@ -2594,102 +2594,6 @@ Preds <- AutoQuant::AutoCatBoostScoring(
 </p>
 </details>
 
-<details><summary>AutoCatBoostHurdleModel() Scoring Example</summary>
-<p>
-
-```r
-# Classify or Multiclass example
-Classify <- TRUE
-
-# Create data
-if(Classify) {
-  data <- AutoQuant::FakeDataGenerator(N = 15000, ZIP = 1)
-} else {
-  data <- AutoQuant::FakeDataGenerator(N = 15000, ZIP = 2)
-}
-
-# Partition Data
-Sets <- AutoQuant::AutoDataPartition(
-  data = data,
-  NumDataSets = 3,
-  Ratios = c(0.7,0.2,0.1),
-  PartitionType = "random",
-  StratifyColumnNames = "Adrian",
-  TimeColumnName = NULL)
-TTrainData <- Sets$TrainData
-VValidationData <- Sets$ValidationData
-TTestData <- Sets$TestData
-rm(Sets)
-
-# Run function
-TestModel <- AutoQuant::AutoCatBoostHurdleModel(
-  
-  # Operationalization
-  task_type = 'GPU',
-  ModelID = 'ModelTest',
-  SaveModelObjects = FALSE,
-  ReturnModelObjects = TRUE,
-  
-  # Data related args
-  data = data.table::copy(TTrainData),
-  ValidationData = VValidationData,
-  TestData = TTestData,
-  WeightsColumnName = NULL,
-  TrainOnFull = FALSE,
-  Buckets = if(Classify) 0L else c(0,2,3),
-  TargetColumnName = "Adrian",
-  FeatureColNames = names(TTrainData)[!names(data) %in% c("Adrian","IDcol_1","IDcol_2","IDcol_3","IDcol_4","IDcol_5","DateTime")],
-  PrimaryDateColumn = "DateTime",
-  IDcols = c("IDcol_1","IDcol_2","IDcol_3","IDcol_4","IDcol_5","DateTime"),
-  DebugMode = TRUE,
-  
-  # Metadata args
-  Paths = normalizePath('./'),
-  MetaDataPaths = NULL,
-  TransformNumericColumns = NULL,
-  Methods = c('Asinh', 'Asin', 'Log', 'LogPlus1', 'Logit'),
-  ClassWeights = NULL,
-  SplitRatios = NULL,
-  NumOfParDepPlots = 10L,
-  
-  # Grid tuning setup
-  PassInGrid = NULL,
-  GridTune = FALSE,
-  BaselineComparison = 'default',
-  MaxModelsInGrid = 1L,
-  MaxRunsWithoutNewWinner = 20L,
-  MaxRunMinutes = 60L*60L,
-  MetricPeriods = 25L,
-  
-  # Bandit grid args
-  Langevin = FALSE,
-  DiffusionTemperature = 10000,
-  Trees = list('classifier' = 50, 'regression' = 50),
-  Depth = list('classifier' = 4, 'regression' = 4),
-  RandomStrength = list('classifier' = 1, 'regression' = 1),
-  BorderCount = list('classifier' = 32, 'regression' = 32),
-  LearningRate = list('classifier' = 0.01, 'regression' = 0.01),
-  L2_Leaf_Reg = list('classifier' = 3.0, 'regression' = 1.0),
-  RSM = list('classifier' = 0.80, 'regression' = 0.80),
-  BootStrapType = list('classifier' = 'Bayesian', 'regression' = 'Bayesian'),
-  GrowPolicy = list('classifier' = 'SymmetricTree', 'regression' = 'SymmetricTree'))
-
-# Remove Target Variable
-TTrainData[, c("Target_Buckets", "Adrian") := NULL]
-
-# Score CatBoost Hurdle Model
-Output <- AutoQuant::AutoCatBoostHurdleModelScoring(
-  TestData = TTrainData,
-  Path = NULL,
-  ModelID = "ModelTest",
-  ModelList = TestModel$ModelList,
-  ArgsList = TestModel$ArgsList,
-  Threshold = NULL)
-```
-
-</p>
-</details>
-
 </p>
 </details>
 
@@ -2714,7 +2618,7 @@ data <- AutoQuant::FakeDataGenerator(
   MultiClass = FALSE)
 
 # Partition Data
-Sets <- AutoQuant::AutoDataPartition(
+Sets <- Rodeo::AutoDataPartition(
   data = data,
   NumDataSets = 3,
   Ratios = c(0.7,0.2,0.1),
@@ -2901,7 +2805,7 @@ data <- AutoQuant::FakeDataGenerator(
   MultiClass = FALSE)
 
 # Partition Data
-Sets <- AutoQuant::AutoDataPartition(
+Sets <- Rodeo::AutoDataPartition(
   data = data,
   NumDataSets = 3,
   Ratios = c(0.7,0.2,0.1),
@@ -3084,7 +2988,7 @@ data <- AutoQuant::FakeDataGenerator(
   MultiClass = TRUE)
 
 # Partition Data
-Sets <- AutoQuant::AutoDataPartition(
+Sets <- Rodeo::AutoDataPartition(
   data = data,
   NumDataSets = 3,
   Ratios = c(0.7,0.2,0.1),
@@ -3267,7 +3171,7 @@ if(Classify) {
 }
 
 # Partition Data
-Sets <- AutoQuant::AutoDataPartition(
+Sets <- Rodeo::AutoDataPartition(
   data = data,
   NumDataSets = 3,
   Ratios = c(0.7,0.2,0.1),
@@ -3437,7 +3341,7 @@ data <- AutoQuant::FakeDataGenerator(
 data1 <- data.table::copy(data)
 
 # Partition Data
-Sets <- AutoQuant::AutoDataPartition(
+Sets <- Rodeo::AutoDataPartition(
   data = data1,
   NumDataSets = 3,
   Ratios = c(0.7,0.2,0.1),
@@ -3548,7 +3452,7 @@ data <- AutoQuant::FakeDataGenerator(
   MultiClass = FALSE)
 
 # Partition Data
-Sets <- AutoQuant::AutoDataPartition(
+Sets <- Rodeo::AutoDataPartition(
   data = data,
   NumDataSets = 3,
   Ratios = c(0.7,0.2,0.1),
@@ -3659,7 +3563,7 @@ data <- AutoQuant::FakeDataGenerator(
   MultiClass = TRUE)
 
 # Partition Data
-Sets <- AutoQuant::AutoDataPartition(
+Sets <- Rodeo::AutoDataPartition(
   data = data,
   NumDataSets = 3,
   Ratios = c(0.7,0.2,0.1),
@@ -3766,7 +3670,7 @@ if(Classify) {
 }
 
 # Partition Data
-Sets <- AutoQuant::AutoDataPartition(
+Sets <- Rodeo::AutoDataPartition(
   data = data,
   NumDataSets = 3,
   Ratios = c(0.7,0.2,0.1),
@@ -3878,7 +3782,7 @@ data1 <- data.table::copy(data)
 Features <- c(names(data1)[!names(data1) %in% c('IDcol_1','IDcol_2','Adrian')])
 
 # Run function
-ModelOutput <- AutoQuant::AutoCatBoostRegression(
+ModelObject <- AutoQuant::AutoCatBoostRegression(
   
   # GPU or CPU and the number of available GPUs
   task_type = 'GPU',
@@ -3914,7 +3818,7 @@ AutoQuant::ModelInsightsReport(
   ModelID = 'Test_Model_1',
   Algo = 'catboost',
   OutputPath = getwd(),
-  ModelOutput = ModelOutput)
+  ModelObject = ModelObject)
 ```
 
 </p>
@@ -3942,7 +3846,7 @@ data1 <- data.table::copy(data)
 Features <- c(names(data1)[!names(data1) %in% c('IDcol_1','IDcol_2','Adrian')])
 
 # Run function
-ModelOutput <- AutoQuant::AutoCatBoostClassifier(
+ModelObject <- AutoQuant::AutoCatBoostClassifier(
   
   # GPU or CPU and the number of available GPUs
   task_type = 'GPU',
@@ -3976,7 +3880,7 @@ AutoQuant::ModelInsightsReport(
   ModelID = 'Test_Model_1',
   Algo = 'catboost',
   OutputPath = getwd(),
-  ModelOutput = ModelOutput)
+  ModelObject = ModelObject)
 ```
 
 </p>
@@ -4005,7 +3909,7 @@ data1 <- data.table::copy(data)
 Features <- c(names(data1)[!names(data1) %in% c('IDcol_1','IDcol_2','Adrian')])
 
 # Run function
-ModelOutput <- AutoQuant::AutoCatBoostMultiClass(
+ModelObject <- AutoQuant::AutoCatBoostMultiClass(
   
   # GPU or CPU and the number of available GPUs
   task_type = 'GPU',
@@ -4043,7 +3947,7 @@ AutoQuant::ModelInsightsReport(
   ModelID = 'Test_Model_1',
   Algo = 'catboost',
   OutputPath = getwd(),
-  ModelOutput = ModelOutput)
+  ModelObject = ModelObject)
 ```
 
 </p>
