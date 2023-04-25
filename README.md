@@ -12,6 +12,9 @@
 
 ![AutoQuant Reference Manual](https://github.com/AdrianAntico/AutoQuant/tree/master/vignette)
 
+Companion Packages:
+- Rodeo
+- AutoPlots
 
 Table of Contents
 - [Background](#background)
