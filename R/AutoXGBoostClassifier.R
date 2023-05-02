@@ -1,3 +1,19 @@
+# AutoQuant is a package for quickly creating high quality visualizations under a common and easy api.
+# Copyright (C) <year>  <name of author>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 #' @title AutoXGBoostClassifier
 #'
 #' @description AutoXGBoostClassifier is an automated XGBoost modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, a stratified sampling (by the target variable) is done to create train and validation sets. Then, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation boxplot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting.
@@ -272,7 +288,17 @@ AutoXGBoostClassifier <- function(OutputSelection = c('Importances','EvalPlots',
         }
       }
     }
-    EvalMetricsList[["TestData"]] <- BinaryMetrics(ClassWeights.=NULL, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=FALSE, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = "threshold")
+    EvalMetricsList[["TestData"]] <- BinaryMetrics(
+      ClassWeights.=NULL,
+      CostMatrixWeights.=CostMatrixWeights,
+      SaveModelObjects.=FALSE,
+      ValidationData.=ValidationData,
+      TrainOnFull.=TrainOnFull,
+      TargetColumnName.=TargetColumnName,
+      ModelID.=ModelID,
+      model_path.=model_path,
+      metadata_path.=metadata_path,
+      Method = "threshold")
     EvalMetrics2List[["TestData"]] <- BinaryMetrics(ClassWeights.=NULL, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=FALSE, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = "bins")
     if(SaveModelObjects) {
       if(!is.null(metadata_path)) {
