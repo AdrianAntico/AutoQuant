@@ -250,6 +250,7 @@ AutoCatBoostRegression <- function(OutputSelection = c('Importances', 'EvalPlots
   FeatureColNames <- Output$FeatureColNames; Output$FeatureColNames <- NULL
   UseBestModel <- Output$UseBestModel; Output$UseBestModel <- NULL
   TrainTarget <- Output$TrainTarget; Output$TrainTarget <- NULL
+  TrainTargetMerge <- Output$TrainTargetMerge; Output$TrainTargetMerge <- NULL
   CatFeatures <- Output$CatFeatures; Output$CatFeatures <- NULL
   if(length(CatFeatures) == 0) CatFeatures <- NULL
   TestTarget <- Output$TestTarget; Output$TestTarget <- NULL
@@ -283,7 +284,7 @@ AutoCatBoostRegression <- function(OutputSelection = c('Importances', 'EvalPlots
 
   # Regression Train Final Model ----
   if(DebugMode) print('Running catboost.train')
-  if(!TrainOnFull) {
+  if(!TrainOnFull && length(TestPool) > 0L) {
     model <- catboost::catboost.train(learn_pool = TrainPool, test_pool = TestPool, params = base_params)
   } else {
     model <- catboost::catboost.train(learn_pool = TrainPool, params = base_params)
@@ -306,7 +307,12 @@ AutoCatBoostRegression <- function(OutputSelection = c('Importances', 'EvalPlots
       }
       rm(predict_validate)
     }
-    TrainData <- CatBoostValidationData(ModelType='regression', TrainOnFull.=TRUE, TestDataCheck=FALSE, FinalTestTarget.=FinalTestTarget, TestTarget.=TestTarget, TrainTarget.=TrainTarget, TrainMerge.=TrainMerge, TestMerge.=TestMerge, dataTest.=NULL, data.=dataTrain, predict.=predict, TargetColumnName.=TargetColumnName, SaveModelObjects. = SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID, LossFunction.=NULL, TransformNumericColumns.=TransformNumericColumns, GridTune.=GridTune, TransformationResults.=TransformationResults, TargetLevels.=NULL)
+    if(!is.null(TestPool)) {
+      TrainData <- CatBoostValidationData(ModelType='regression', TrainOnFull.=TRUE, TestDataCheck=FALSE, FinalTestTarget.=FinalTestTarget, TestTarget.=TestTarget, TrainTarget.=TrainTarget, TrainMerge.=TrainMerge, TestMerge.=TestMerge, dataTest.=NULL, data.=dataTrain, predict.=predict, TargetColumnName.=TargetColumnName, SaveModelObjects. = SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID, LossFunction.=NULL, TransformNumericColumns.=TransformNumericColumns, GridTune.=GridTune, TransformationResults.=TransformationResults, TargetLevels.=NULL)
+    } else {
+      TrainData <- CatBoostValidationData(ModelType='regression', TrainOnFull.=TRUE, TestDataCheck=FALSE, FinalTestTarget.=FinalTestTarget, TestTarget.=TestTarget, TrainTarget.=TrainTargetMerge, TrainMerge.=TrainMerge, TestMerge.=TestMerge, dataTest.=NULL, data.=dataTrain, predict.=predict, TargetColumnName.=TargetColumnName, SaveModelObjects. = SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID, LossFunction.=NULL, TransformNumericColumns.=TransformNumericColumns, GridTune.=GridTune, TransformationResults.=TransformationResults, TargetLevels.=NULL)
+    }
+
     if(ncol(predict) > 1L) {
       if(!'Predict.V1' %chin% names(TrainData)) data.table::setnames(TrainData, c('V1','V2'), paste0('Predict', c('V1','V2')))
     } else {

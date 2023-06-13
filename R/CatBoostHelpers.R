@@ -406,6 +406,27 @@ CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
         SaveOutput = SaveModelObjects.)
       data. <- Output$Data
       TransformationResults <- Output$FinalResults
+
+      # Transform ValidationData----
+      if(length(ValidationData.) > 0L) {
+        ValidationData. <- Rodeo::AutoTransformationScore(
+          ScoringData = ValidationData.,
+          Type = "Apply",
+          FinalResults = TransformationResults,
+          TransID = NULL,
+          Path = NULL)
+      }
+
+      # Transform TestData----
+      if(!is.null(TestData.)) {
+        TestData. <- Rodeo::AutoTransformationScore(
+          ScoringData = TestData.,
+          Type = "Apply",
+          FinalResults = TransformationResults,
+          TransID = NULL,
+          Path = NULL)
+      }
+
     } else {
       TransformationResults <- NULL
     }
@@ -536,8 +557,8 @@ CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
   }
 
   # Remove cols
-  if(!is.null(keep)) data.table::set(data., j = c(keep[c(keep %in% names(data.))]), value = NULL)
-  if(!TrainOnFull. && !is.null(keep)) data.table::set(ValidationData., j = c(keep[c(keep %in% names(ValidationData.))]), value = NULL) else ValidationData. <- NULL
+  if(!is.null(keep) && any(keep %in% names(data.))) data.table::set(data., j = c(keep[c(keep %in% names(data.))]), value = NULL)
+  if(!TrainOnFull. && !is.null(keep) && any(keep %in% names(ValidationData.))) data.table::set(ValidationData., j = c(keep[c(keep %in% names(ValidationData.))]), value = NULL)
 
   # TestData Subset Columns Needed ----
   if(!is.null(TestData.)) {
@@ -550,44 +571,51 @@ CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
 
   # Train Rodeo::ModelDataPrep ----
   data. <- Rodeo::ModelDataPrep(data = data., Impute = TRUE, CharToFactor = TRUE, RemoveDates = TRUE, MissFactor = "0", MissNum = -1, IntToNumeric = TRUE, FactorToChar = FALSE, DateToChar = FALSE, IgnoreCols = NULL)
-  if(!TrainOnFull.) ValidationData. <- Rodeo::ModelDataPrep(data = ValidationData., Impute = TRUE, CharToFactor = TRUE, RemoveDates = TRUE, MissFactor = "0", MissNum = -1, FactorToChar = FALSE, IntToNumeric = TRUE, DateToChar = FALSE, IgnoreCols = NULL)
+  if(!TrainOnFull. && length(ValidationData.) > 0L) ValidationData. <- Rodeo::ModelDataPrep(data = ValidationData., Impute = TRUE, CharToFactor = TRUE, RemoveDates = TRUE, MissFactor = "0", MissNum = -1, FactorToChar = FALSE, IntToNumeric = TRUE, DateToChar = FALSE, IgnoreCols = NULL)
   if(!is.null(TestData.)) TestData. <- Rodeo::ModelDataPrep(data = TestData., Impute = TRUE, CharToFactor = TRUE, RemoveDates = TRUE, MissFactor = "0", MissNum = -1, FactorToChar = FALSE, IntToNumeric = TRUE, DateToChar = FALSE, IgnoreCols = NULL)
 
   # Save Names of data ----
   Names <- data.table::as.data.table(setdiff(names(data.), c(TargetColumnName., PrimaryDateColumn., IDcols.)))
   if(!"V1" %chin% names(Names)) data.table::setnames(Names, "FeatureColNames.", "ColNames", skip_absent = TRUE) else data.table::setnames(Names, "V1", "ColNames", skip_absent = TRUE)
   if(SaveModelObjects.) data.table::fwrite(Names, file.path(model_path., paste0(ModelID., "_ColNames.csv")))
-#
-  # Subset Target Variables----
+
+  # Subset Target Variables ----
   TrainTarget <- data.[, .SD, .SDcols = c(TargetColumnName.)]
-  if(ncol(TrainTarget) > 1L) TrainTarget <- as.matrix(TrainTarget) else TrainTarget <- TrainTarget[[1L]]
   data.table::set(data., j = TargetColumnName., value = NULL)
-  if(!TrainOnFull.) {
+
+  # Validation Data
+  if(length(ValidationData.) > 0L) {
     TestTarget <- ValidationData.[, .SD, .SDcols = c(TargetColumnName.)]
-    if(ncol(TestTarget) > 1L) TestTarget <- as.matrix(TestTarget) else TestTarget <- TestTarget[[1L]]
+    TrainTargetMerge <- data.table::rbindlist(list(TrainTarget, TestTarget))
     data.table::set(ValidationData., j = TargetColumnName., value = NULL)
-    if(!is.null(TestData.)) {
-      FinalTestTarget <- TestData.[, .SD, .SDcols = c(TargetColumnName.)]
-      if(ncol(FinalTestTarget) > 1L) FinalTestTarget <- as.matrix(FinalTestTarget) else FinalTestTarget <- FinalTestTarget[[1L]]
-      data.table::set(TestData., j = TargetColumnName., value = NULL)
-    } else {
-      FinalTestTarget <- NULL
-    }
   } else {
     TestTarget <- NULL
+    TrainTargetMerge <- NULL
+  }
+
+  # Test Data
+  if(length(TestData.) > 0L) {
+    FinalTestTarget <- TestData.[, .SD, .SDcols = c(TargetColumnName.)]
+    data.table::set(TestData., j = TargetColumnName., value = NULL)
+  } else {
     FinalTestTarget <- NULL
   }
+
+  if(ncol(TrainTarget) > 1L) TrainTarget <- as.matrix(TrainTarget) else TrainTarget <- TrainTarget[[1L]]
+  if(length(ValidationData.) > 0L && length(TestTarget) > 0L && ncol(TestTarget) > 1L) TestTarget <- as.matrix(TestTarget) else TestTarget <- TestTarget[[1L]]
+  if(length(TestData.) > 0L && ncol(FinalTestTarget) > 1L) FinalTestTarget <- as.matrix(FinalTestTarget) else FinalTestTarget <- FinalTestTarget[[1L]]
 
   # Convert CatFeatures to 1-indexed----
   if(length(CatFeatures) > 0L) CatFeatures <- CatFeatures - 1L
 
-  # Return
+  # Return ----
   return(list(dataTrain = data.,
               TrainMerge = TrainMerge,
               dataTest = ValidationData.,
               TestData = TestData.,
               TestMerge = TestMerge,
               TrainTarget = TrainTarget,
+              TrainTargetMerge = TrainTargetMerge,
               TestTarget = TestTarget,
               FinalTestTarget = FinalTestTarget,
               CatFeatures = CatFeatures,
@@ -596,7 +624,8 @@ CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
               TransformationResults = TransformationResults,
               TargetLevels = TargetLevels,
               FactorLevelsList = MetaData,
-              FeatureColNames = FeatureColNames.))
+              FeatureColNames = FeatureColNames.)
+         )
 }
 
 #' @title CatBoostDataConversion
@@ -669,7 +698,7 @@ CatBoostDataConversion <- function(CatFeatures. = CatFeatures,
       }
     } else {
       TrainPool <- catboost::catboost.load_pool(dataTrain., label = TrainTarget., weight = TrainWeightVector)
-      if(!TrainOnFull.) TestPool <- catboost::catboost.load_pool(dataTest., label = TestTarget., weight = ValidationWeightVector)
+      if(!TrainOnFull. && length(TestTarget.) > 0L) TestPool <- catboost::catboost.load_pool(dataTest., label = TestTarget., weight = ValidationWeightVector) else TestPool <- NULL
     }
   }
 

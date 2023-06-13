@@ -713,7 +713,7 @@ AutoCatBoostCARMA <- function(data,
       # GPU or CPU and the number of available GPUs
       task_type = TaskType,
       NumGPUs = NumGPU,
-      OutputSelection = if(TrainOnFull) NULL else c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData'),
+      OutputSelection = if(TrainOnFull) NULL else c('Importances', 'EvalMetrics', 'Score_TrainData'),
       ReturnShap = ReturnShap,
 
       # Metadata arguments
@@ -834,9 +834,12 @@ AutoCatBoostCARMA <- function(data,
       # Score model ----
       if(DebugMode) print('  - - Score model')
       if(i == 1L) UpdateData <- NULL
-      Output <- CarmaScore(Debug = DebugMode, Type = 'catboost', i.=i, N.=N, GroupVariables.=GroupVariables, ModelFeatures.=ModelFeatures, HierarchGroups.=HierarchGroups, DateColumnName.=DateColumnName, Difference.=Difference, TargetColumnName.=TargetColumnName, Step1SCore.=Step1SCore, Model.=Model, FutureDateData.=FutureDateData, NonNegativePred.=NonNegativePred, RoundPreds.=RoundPreds, UpdateData.=UpdateData, FactorList.=TestModel$FactorLevelsList, EncodingMethod.=EncodingMethod, dt = data)
+      Output <- CarmaScore(Step1SCore.=Step1SCore, Debug = DebugMode, Type = 'catboost', i.=i, N.=N, GroupVariables.=GroupVariables, ModelFeatures.=ModelFeatures, HierarchGroups.=HierarchGroups, DateColumnName.=DateColumnName, Difference.=Difference, TargetColumnName.=TargetColumnName, Model.=Model, FutureDateData.=FutureDateData, NonNegativePred.=NonNegativePred, RoundPreds.=RoundPreds, UpdateData.=UpdateData, FactorList.=TestModel$FactorLevelsList, EncodingMethod.=EncodingMethod, dt = data)
       if(DebugMode) print("CarmaScoring Done")
       UpdateData <- Output$UpdateData; Output$UpdateData <- NULL
+
+      # If DateColumnName shows up twice in UpdateData then remove the second one
+      if(sum(names(UpdateData) %in% DateColumnName) == 2L) UpdateData[, eval(which(names(UpdateData) %in% DateColumnName)[2]) := NULL]
       Preds <- Output$Preds; Output$Preds <- NULL
       N <- Output$N; rm(Output)
 

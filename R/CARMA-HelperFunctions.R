@@ -995,7 +995,7 @@ CarmaScore <- function(Type = 'catboost',
       if(Type == 'catboost') {
         Preds <- AutoCatBoostScoring(
           TargetType = 'regression',
-          ScoringData = Step1SCore.,
+          ScoringData = data.table::copy(Step1SCore.),
           FeatureColumnNames = ModelFeatures.,
           FactorLevelsList = EncodingMethod.,
           IDcols = IDcols,
@@ -1332,7 +1332,7 @@ CarmaScore <- function(Type = 'catboost',
         if("Weights" %chin% ModelFeatures. && !"Weights" %chin% names(UpdateData.)) UpdateData.[, Weights := 1]
         Preds <- AutoLightGBMScoring(
           TargetType = 'regression',
-          ScoringData = UpdateData.[.N, ],
+          ScoringData = UpdateData.[.N],
           FeatureColumnNames = ModelFeatures.,
           OneHot = FALSE,
           IDcols = NULL,
@@ -1547,7 +1547,7 @@ UpdateFeatures <- function(UpdateData. = NULL,
     if(Debug) print('UpdateFeatures 1')
 
     # Merge groups vars
-    if(!is.null(GroupVariables.)) CalendarFeatures. <- cbind(unique(GroupVarVector.), CalendarFeatures.)
+    if(length(GroupVariables.) > 0L) CalendarFeatures. <- cbind(unique(GroupVarVector.), CalendarFeatures.)
 
     if(Debug) print('UpdateFeatures 2')
 
@@ -1557,7 +1557,7 @@ UpdateFeatures <- function(UpdateData. = NULL,
     if(Debug) print('UpdateFeatures 3')
 
     # Merge XREGS if not null
-    if(!is.null(XREGS.)) {
+    if(length(XREGS.) > 0L) {
       if(!is.null(GroupVariables.)) {
         if(Debug) print('UpdateFeatures 4')
         CalendarFeatures. <- Rodeo::ModelDataPrep(data = CalendarFeatures., Impute = FALSE, CharToFactor = FALSE, FactorToChar = TRUE, IntToNumeric = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = '0', MissNum = -1, IgnoreCols = NULL)
@@ -1571,10 +1571,10 @@ UpdateFeatures <- function(UpdateData. = NULL,
     if(Debug) print('UpdateFeatures 5')
 
     # Add fouier terms
-    if(is.null(GroupVariables.) && FourierTerms. > 0) {
+    if(length(GroupVariables.) > 0L && FourierTerms. > 0) {
       if(Debug) print('UpdateFeatures 6')
       CalendarFeatures. <- merge(CalendarFeatures., FourierFC., by = DateColumnName., all = FALSE)
-    } else if(FourierTerms. > 0) {
+    } else if(FourierTerms. > 0L) {
       if(Debug) print('UpdateFeatures 6.1')
       if(!is.null(FourierFC.)) {
         if(Debug) print('UpdateFeatures 6.2')
@@ -1590,7 +1590,7 @@ UpdateFeatures <- function(UpdateData. = NULL,
     if(Debug) print('UpdateFeatures 8')
 
     # Update calendar variables
-    if(!is.null(CalendarVariables.)) {
+    if(length(CalendarVariables.) > 0L) {
 
       if(Debug) print('UpdateFeatures 9')
       CalendarFeatures. <- Rodeo::CreateCalendarVariables(
@@ -1608,7 +1608,7 @@ UpdateFeatures <- function(UpdateData. = NULL,
     if(Debug) print('UpdateFeatures 11')
 
     # Prepare data for scoring
-    for(zz in seq_along(TargetColumnName.)) {
+    for(zz in seq_along(TargetColumnName.)) {# zz = 1
       if(Debug) print('UpdateFeatures 12')
       if(zz == 1) temp <- cbind(CalendarFeatures., 1) else temp <- cbind(temp, 1)
       if(Debug) print('UpdateFeatures 12.1')
@@ -1680,8 +1680,6 @@ UpdateFeatures <- function(UpdateData. = NULL,
     }
 
     if(Debug) print('UpdateFeatures done')
-
-    # if(Debug) print(UpdateData.)
 
     # Return
     return(UpdateData = UpdateData.)
@@ -1938,15 +1936,16 @@ CarmaTimeSeriesFeatures <- function(data. = data,
         RollOnLag1           = TRUE,
         Type                 = 'Lag',
         SimpleImpute         = TRUE,
+        ShortName            = TRUE,
 
         # Calculated Columns
-        Lags                  = Lags.,
-        MA_RollWindows        = MA_Periods.,
-        SD_RollWindows        = SD_Periods.,
-        Skew_RollWindows      = Skew_Periods.,
-        Kurt_RollWindows      = Kurt_Periods.,
-        Quantile_RollWindows  = Quantile_Periods.,
-        Quantiles_Selected    = Quantiles_Selected.)
+        Lags                 = Lags.,
+        MA_RollWindows       = MA_Periods.,
+        SD_RollWindows       = SD_Periods.,
+        Skew_RollWindows     = Skew_Periods.,
+        Kurt_RollWindows     = Kurt_Periods.,
+        Quantile_RollWindows = Quantile_Periods.,
+        Quantiles_Selected   = Quantiles_Selected.)
 
       # Keep interaction group as GroupVar
       if(length(GroupVariables.) > 1) {
@@ -2168,7 +2167,7 @@ CarmaRollingStatsUpdate <- function(ModelType = 'catboost',
                                     HolidayLags. = NULL,
                                     HolidayMovingAverages. = NULL) {
 
-  # Group with or No Diff
+  # Group with or Diff
   if(!is.null(Lags.) && !is.null(GroupVariables.) && Difference.) {
 
     # Calendar and Holiday----
@@ -2278,7 +2277,7 @@ CarmaRollingStatsUpdate <- function(ModelType = 'catboost',
     CarmaTimeSeriesScorePrep(UpdateData..=UpdateData., GroupVariables..=GroupVariables., DateColumnName..=DateColumnName.)
   }
 
-  # Group and Diff
+  # Group and No Diff
   if(!is.null(Lags.) && !is.null(GroupVariables.) && !Difference.) {
 
     # Calendar and Holiday
@@ -2437,12 +2436,15 @@ CarmaRollingStatsUpdate <- function(ModelType = 'catboost',
       # Calculated Columns
       Lags                 = Lags.,
       MA_RollWindows       = MA_Periods.,
+      ShortName            = TRUE,
       SD_RollWindows       = SD_Periods.,
       Skew_RollWindows     = Skew_Periods.,
       Kurt_RollWindows     = Kurt_Periods.,
       Quantile_RollWindows = Quantile_Periods.,
       Quantiles_Selected   = Quantiles_Selected.,
       Debug                = DebugMode.)
+
+    Temporary <- Temporary[.N]
 
     # Lag / Lead, MA Holiday Variables
     if(length(HolidayVariable.) > 0L && length(HolidayLags.) > 0L && length(HolidayMovingAverages.) > 0L) {
