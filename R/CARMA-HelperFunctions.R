@@ -1103,7 +1103,7 @@ CarmaScore <- function(Type = 'catboost',
         }
         data.table::setcolorder(Preds, neworder = c(co, 1L:(co-1L)))
         if(Debug) print("Hereye 12")
-        for(gggg in ggg) {# gggg = 371
+        for(gggg in ggg) {# gggg = ggg[1]
           if(Debug) print("Hereye 13")
           gv <- as.character(gg[N == eval(gggg)][['GroupVar']])
           if(Debug) {print("Hereye 14"); print(gv)}
@@ -1116,7 +1116,6 @@ CarmaScore <- function(Type = 'catboost',
               print(which(Preds[['GroupVar']] %in% gv))
               print(length(gv))
               print(head(FutureDateData.))
-              print(FutureDateData.[,.N])
               print(gggg)
               print(l)
               print(rep(eval(FutureDateData.[(l - gggg + 1L):l]), length(gv)))

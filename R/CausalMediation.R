@@ -108,7 +108,6 @@ CausalMediation <- function(data,
                             RemoveNA = FALSE) {                        # na_omit = FALSE
 
   print("Causaul Mediation 1")
-
   print(data)
   print(OutcomeTargetVariable)
   print(TreatmentVariable)

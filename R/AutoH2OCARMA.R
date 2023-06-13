@@ -363,6 +363,10 @@ AutoH2OCARMA <- function(AlgoType = "drf",
   if(DebugMode) print("Convert data to data.table----")
   if(!data.table::is.data.table(data)) data.table::setDT(data)
 
+  # Aggregate data to ensure it's on the proper aggregation level
+  data <- data[, list(temp___ = mean(get(TargetColumnName), na.rm = TRUE)), by = c(DateColumnName, GroupVariables)]
+  data.table::setnames(data, "temp___", TargetColumnName)
+
   # Feature Engineering: Add Zero Padding for missing dates ----
   if(DebugMode) print("Feature Engineering: Add Zero Padding for missing dates----")
   if(data[, .N] != unique(data)[, .N]) stop("There is duplicates in your data")
