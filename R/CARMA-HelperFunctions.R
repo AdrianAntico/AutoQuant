@@ -2541,7 +2541,8 @@ CarmaRollingStatsUpdate <- function(ModelType = 'catboost',
 #' @param Debug = FALSE
 #'
 #' @noRd
-CarmaReturnDataPrep <- function(UpdateData. = NULL,
+CarmaReturnDataPrep <- function(MaxDate. = NULL,
+                                UpdateData. = NULL,
                                 FutureDateData. = NULL,
                                 dataStart. = NULL,
                                 DateColumnName. = NULL,
@@ -2578,6 +2579,7 @@ CarmaReturnDataPrep <- function(UpdateData. = NULL,
     UpdateData. <- UpdateData.[, .SD, .SDcols = c(eval(DateColumnName.),eval(TargetColumnName.),'Predictions','GroupVar')]
     data.table::set(UpdateData., i = which(is.na(UpdateData.[['Predictions']])), j = 'Predictions', value = UpdateData.[which(is.na(UpdateData.[['Predictions']]))][[eval(TargetColumnName.)]])
     UpdateData.[, Predictionss := cumsum(Predictions), by = 'GroupVar']
+    UpdateData.[, Predictions := Predictionss][, Predictionss := NULL]
     if(NonNegativePred.) UpdateData.[, Predictions := data.table::fifelse(Predictions < 0.5, 0, Predictions)]
   }
 
@@ -2619,15 +2621,11 @@ CarmaReturnDataPrep <- function(UpdateData. = NULL,
           Type = 'Inverse',
           TransID = NULL,
           Path = NULL)
-
         if(Debug) print("CarmaReturnDataPrep 4.6")
 
       } else {
-
         if(Debug) print("CarmaReturnDataPrep 4.3b")
-
         UpdateData. <- AutoQuant::StandardizeScoring(UpdateData., TransformObject., Apply = 'backtransform', GroupVars = GroupVariables.)
-
       }
 
     } else {
@@ -2664,7 +2662,7 @@ CarmaReturnDataPrep <- function(UpdateData. = NULL,
   if(Debug) print("CarmaReturnDataPrep 4.7")
 
   # Remove target variables values on FC periods
-  data.table::set(x = UpdateData., i = which(!UpdateData.[[DateColumnName.]] %in% FutureDateData.), j = eval(TargetColumnName.), value = NA)
+  UpdateData. <- UpdateData.[get(DateColumnName.) > eval(MaxDate.), eval(TargetColumnName.) := NA]
 
   if(Debug) print("CarmaReturnDataPrep 4.8")
 
@@ -2675,31 +2673,23 @@ CarmaReturnDataPrep <- function(UpdateData. = NULL,
 
     if(length(MergeGroupVariablesBack.) > 0L) {
 
-
       if(length(GroupVariables.) > 1L) {
         UpdateData.[MergeGroupVariablesBack., on = .(GroupVar), paste0(GroupVariables.) := mget(paste0('i.', GroupVariables.))]
       } else {
         UpdateData.[MergeGroupVariablesBack., on = .(GroupVar), paste0(GroupVariables.) := get(paste0('i.', GroupVariables.))]
       }
 
-
     } else {
-
 
       if(length(GroupVariables.) > 1L) {
         UpdateData.[, eval(GroupVariables.) := data.table::tstrsplit(GroupVar, ' ')][, GroupVar := NULL]
       } else {
         UpdateData.[, eval(GroupVariables.) := GroupVar][, GroupVar := NULL]
       }
-
-
     }
   }
 
   if(Debug) print("CarmaReturnDataPrep 4.9")
-
-  print(TransformObject.)
-  print(UpdateData.[1])
 
   # Return data
   return(list(UpdateData = UpdateData., TransformObject = TransformObject.))

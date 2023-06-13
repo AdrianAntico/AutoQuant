@@ -643,6 +643,7 @@ AutoCatBoostCARMA <- function(data,
   FC_Periods <- Output$FC_Periods; Output$FC_Periods <- NULL
   DiffTrainOutput <- Output$DiffTrainOutput
   Train <- Output$Train; rm(Output)
+  MaxDate <- data[, max(get(DateColumnName))]
   if(Difference && length(GroupVariables) > 0L) IDcols <- c(IDcols, 'TargetDiffMidStep')
 
   # Feature Engineering: Lags and Rolling Stats ----
@@ -887,7 +888,7 @@ AutoCatBoostCARMA <- function(data,
 
   # Return data prep ----
   if(DebugMode) print('Return data prep ----')
-  Output <- CarmaReturnDataPrep(UpdateData.=UpdateData, FutureDateData.=FutureDateData, dataStart.=dataStart, DateColumnName.=DateColumnName, TargetColumnName.=TargetColumnName, GroupVariables.=GroupVariables, Difference.=Difference, TargetTransformation.=TargetTransformation, TransformObject.=TransformObject, NonNegativePred.=NonNegativePred, DiffTrainOutput.=DiffTrainOutput, MergeGroupVariablesBack.=MergeGroupVariablesBack, Debug = DebugMode)
+  Output <- CarmaReturnDataPrep(MaxDate. = MaxDate, UpdateData.=UpdateData, FutureDateData.=FutureDateData, dataStart.=dataStart, DateColumnName.=DateColumnName, TargetColumnName.=TargetColumnName, GroupVariables.=GroupVariables, Difference.=Difference, TargetTransformation.=TargetTransformation, TransformObject.=TransformObject, NonNegativePred.=NonNegativePred, DiffTrainOutput.=DiffTrainOutput, MergeGroupVariablesBack.=MergeGroupVariablesBack, Debug = DebugMode)
   UpdateData <- Output$UpdateData; Output$UpdateData <- NULL
   TransformObject <- Output$TransformObject; rm(Output)
 
