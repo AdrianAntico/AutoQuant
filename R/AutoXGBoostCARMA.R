@@ -310,9 +310,20 @@ AutoXGBoostCARMA <- function(data = NULL,
   data.table::setnames(data, "temp___", TargetColumnName)
 
   # Feature Engineering: Add Zero Padding for missing dates ----
-  if(DebugMode) print('Feature Engineering: Add Zero Padding for missing dates----')
-  if(data[, .N] != unique(data)[, .N]) {data <- unique(data); ZeroPadSeries <- 'maxmax'}
-  if(length(ZeroPadSeries) > 0L && length(GroupVariables) > 0L) {
+  if(length(ZeroPadSeries) > 0L && ZeroPadSeries %in% c("dynamic:meow","dynamic:credibility","dynamic:target_encoding") && length(GroupVariables) > 0) {
+    data <- Rodeo::TimeSeriesFillRoll(
+      data = data,
+      RollVars = TargetColumnName,
+      NonRollVars = NULL,
+      RollDirection = "backward",
+      DateColumnName = DateColumnName,
+      GroupVariables = GroupVariables,
+      TimeUnit = TimeUnit,
+      SimpleImpute = TRUE)
+  } else if(length(ZeroPadSeries) > 0L && length(GroupVariables) > 0L) {
+    data <- Rodeo::TimeSeriesFill(data, TargetColumn=TargetColumnName, DateColumnName=eval(DateColumnName), GroupVariables=GroupVariables, TimeUnit=TimeUnit, FillType=ZeroPadSeries, MaxMissingPercent=0.95, SimpleImpute=TRUE)
+  } else if(data[, .N] != unique(data)[, .N]) {
+    data <- unique(data); ZeroPadSeries <- 'maxmax'
     data <- Rodeo::TimeSeriesFill(data, TargetColumn=TargetColumnName, DateColumnName=eval(DateColumnName), GroupVariables=GroupVariables, TimeUnit=TimeUnit, FillType=ZeroPadSeries, MaxMissingPercent=0.95, SimpleImpute=TRUE)
   } else if(length(GroupVariables) > 0L) {
     temp <- Rodeo::TimeSeriesFill(data, TargetColumn=TargetColumnName, DateColumnName=eval(DateColumnName), GroupVariables=GroupVariables, TimeUnit=TimeUnit, FillType='maxmax', MaxMissingPercent=0.95, SimpleImpute=TRUE)

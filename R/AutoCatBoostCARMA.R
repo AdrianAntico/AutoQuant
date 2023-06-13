@@ -473,7 +473,7 @@ AutoCatBoostCARMA <- function(data,
 
   # Feature Engineering: Add Zero Padding for missing dates ----
   if(DebugMode) print('Feature Engineering: Add Zero Padding for missing dates----')
-  if(length(ZeroPadSeries) > 0L && ZeroPadSeries %in% c("dynamic:meow","dynamic:credibility","dynamic:target_encoding")) {
+  if(length(ZeroPadSeries) > 0L && ZeroPadSeries %in% c("dynamic:meow","dynamic:credibility","dynamic:target_encoding") && length(GroupVariables) > 0) {
     data <- Rodeo::TimeSeriesFillRoll(
       data = data,
       RollVars = TargetColumnName,
