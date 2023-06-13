@@ -1542,8 +1542,6 @@ UpdateFeatures <- function(UpdateData. = NULL,
                            RollingVars. = TRUE,
                            Debug = FALSE) {
 
-  if(Debug) print(UpdateData.)
-
   if(RollingVars.) {
 
     if(Debug) print('UpdateFeatures 1')
@@ -1683,7 +1681,7 @@ UpdateFeatures <- function(UpdateData. = NULL,
 
     if(Debug) print('UpdateFeatures done')
 
-    if(Debug) print(UpdateData.)
+    # if(Debug) print(UpdateData.)
 
     # Return
     return(UpdateData = UpdateData.)
@@ -1812,7 +1810,6 @@ UpdateFeatures <- function(UpdateData. = NULL,
 
     # Return
     if(Debug) print('UpdateFeatures done')
-    if(Debug) print(UpdateData.)
     return(UpdateData.)
   }
 }
@@ -2524,6 +2521,7 @@ CarmaRollingStatsUpdate <- function(ModelType = 'catboost',
   }
 
   # Return
+  if(DebugMode.) print(UpdateData.)
   return(UpdateData.)
 }
 
