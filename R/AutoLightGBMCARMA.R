@@ -644,12 +644,12 @@ AutoLightGBMCARMA <- function(data = NULL,
 
   # Feature Engineering: Add Create Calendar Variables ----
   if(DebugMode) print('Feature Engineering: Add Create Calendar Variables----')
-  if(!is.null(CalendarVariables)) data <- CreateCalendarVariables(data=data, DateCols=eval(DateColumnName), AsFactor=FALSE, TimeUnits=CalendarVariables)
+  if(!is.null(CalendarVariables)) data <- Rodeo::CreateCalendarVariables(data=data, DateCols=eval(DateColumnName), AsFactor=FALSE, TimeUnits=CalendarVariables)
 
   # Feature Engineering: Add Create Holiday Variables ----
   if(DebugMode) print('Feature Engineering: Add Create Holiday Variables ----')
   if(!is.null(HolidayVariable)) {
-    data <- CreateHolidayVariables(data, DateCols = eval(DateColumnName), LookbackDays = if(!is.null(HolidayLookback)) HolidayLookback else LB(TimeUnit), HolidayGroups = HolidayVariable, Holidays = NULL)
+    data <- Rodeo::CreateHolidayVariables(data, DateCols = eval(DateColumnName), LookbackDays = if(!is.null(HolidayLookback)) HolidayLookback else LB(TimeUnit), HolidayGroups = HolidayVariable, Holidays = NULL)
     if(!(tolower(TimeUnit) %chin% c('1min','5min','10min','15min','30min','hour'))) {
       data[, eval(DateColumnName) := lubridate::as_date(get(DateColumnName))]
     } else {
@@ -693,7 +693,9 @@ AutoLightGBMCARMA <- function(data = NULL,
   data <- Output$data; Output$data <- NULL
   dataStart <- Output$dataStart; Output$dataStart <- NULL
   FC_Periods <- Output$FC_Periods; Output$FC_Periods <- NULL
+  DiffTrainOutput <- Output$DiffTrainOutput
   Train <- Output$Train; rm(Output)
+  MaxDate <- data[, max(get(DateColumnName))]
   if(Difference) IDcols <- c(IDcols, 'TargetDiffMidStep')
 
   # Feature Engineering: Lags and Rolling Stats ----
@@ -995,7 +997,7 @@ AutoLightGBMCARMA <- function(data = NULL,
 
   # Return data prep ----
   if(DebugMode) print('Return data prep ----')
-  Output <- CarmaReturnDataPrep(UpdateData.=UpdateData, FutureDateData.=FutureDateData, dataStart.=dataStart, DateColumnName.=DateColumnName, TargetColumnName.=TargetColumnName, GroupVariables.=GroupVariables, Difference.=Difference, TargetTransformation.=TargetTransformation, TransformObject.=TransformObject, NonNegativePred.=NonNegativePred, MergeGroupVariablesBack.=MergeGroupVariablesBack, Debug = DebugMode)
+  Output <- CarmaReturnDataPrep(MaxDate. = MaxDate, DiffTrainOutput. = DiffTrainOutput, UpdateData.=UpdateData, FutureDateData.=FutureDateData, dataStart.=dataStart, DateColumnName.=DateColumnName, TargetColumnName.=TargetColumnName, GroupVariables.=GroupVariables, Difference.=Difference, TargetTransformation.=TargetTransformation, TransformObject.=TransformObject, NonNegativePred.=NonNegativePred, MergeGroupVariablesBack.=MergeGroupVariablesBack, Debug = DebugMode)
   UpdateData <- Output$UpdateData; Output$UpdateData <- NULL
   TransformObject <- Output$TransformObject; rm(Output)
 

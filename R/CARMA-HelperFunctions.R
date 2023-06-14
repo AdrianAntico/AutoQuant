@@ -2557,7 +2557,6 @@ CarmaReturnDataPrep <- function(MaxDate. = NULL,
                                 Debug = FALSE) {
 
   if(Debug) print("CarmaReturnDataPrep 1")
-  if(Debug) print(head(UpdateData.))
 
   # Remove duplicate columns
   if(sum(names(UpdateData.) %chin% eval(DateColumnName.)) > 1) data.table::set(UpdateData., j = which(names(UpdateData.) %chin% eval(DateColumnName.))[2L], value = NULL)
@@ -2568,23 +2567,35 @@ CarmaReturnDataPrep <- function(MaxDate. = NULL,
   }
 
   if(Debug) print("CarmaReturnDataPrep 2")
-  if(Debug) print(head(UpdateData.))
 
   # Reverse Difference
   if(is.null(GroupVariables.) && Difference.) {
-    UpdateData. <- AutoQuant:::DifferenceDataReverse(data = UpdateData., ScoreData = NULL, CARMA = TRUE, TargetCol = eval(TargetColumnName.), FirstRow = DiffTrainOutput.$FirstRow[[eval(TargetColumnName.)]], LastRow = NULL)
+
+    print("UpdateData. before DifferenceDataReverse")
+    print(UpdateData.)
+
+    UpdateData. <- AutoQuant:::DifferenceDataReverse(
+      UpdateData.,
+      ScoreData = NULL,
+      CARMA = TRUE,
+      TargetCol = eval(TargetColumnName.),
+      FirstRow = DiffTrainOutput.$FirstRow[[eval(TargetColumnName.)]],
+      LastRow = NULL)
+
+    print("UpdateData. after DifferenceDataReverse")
+    print(UpdateData.)
+
   } else if(!is.null(GroupVariables.) && Difference.) {
     if(any(class(UpdateData.[[eval(DateColumnName.)]]) %chin% c('POSIXct','POSIXt')) && any(class(dataStart.[[eval(DateColumnName.)]]) == 'Date')) UpdateData.[, eval(DateColumnName.) := as.Date(get(DateColumnName.))]
     UpdateData. <- data.table::rbindlist(list(dataStart.,UpdateData.), fill = TRUE)
     UpdateData. <- UpdateData.[, .SD, .SDcols = c(eval(DateColumnName.),eval(TargetColumnName.),'Predictions','GroupVar')]
-    data.table::set(UpdateData., i = which(is.na(UpdateData.[['Predictions']])), j = 'Predictions', value = UpdateData.[which(is.na(UpdateData.[['Predictions']]))][[eval(TargetColumnName.)]])
+    data.table::set(UpdateData., i = c(which(is.na(UpdateData.[['Predictions']]))), j = 'Predictions', value = UpdateData.[which(is.na(UpdateData.[['Predictions']]))][[eval(TargetColumnName.)]])
     UpdateData.[, Predictionss := cumsum(Predictions), by = 'GroupVar']
     UpdateData.[, Predictions := Predictionss][, Predictionss := NULL]
     if(NonNegativePred.) UpdateData.[, Predictions := data.table::fifelse(Predictions < 0.5, 0, Predictions)]
   }
 
   if(Debug) print("CarmaReturnDataPrep 3")
-  if(Debug) print(head(UpdateData.))
 
   # BackTransform
   if(TargetTransformation.) {
@@ -2609,7 +2620,7 @@ CarmaReturnDataPrep <- function(MaxDate. = NULL,
 
         # Ensure positive values in case transformation method requires that
         if(Difference. && !is.null(GroupVariables.)) {
-          UpdateData.[!get(DateColumnName.) %in% FutureDateData., eval(TargetColumnName.) := 1, by = 'GroupVar']
+          UpdateData. <- UpdateData.[get(DateColumnName.) > eval(MaxDate.), eval(TargetColumnName.) := 1, by = 'GroupVar']
         }
 
         if(Debug) print("CarmaReturnDataPrep 4.5")
@@ -2754,12 +2765,12 @@ DifferenceData <- function(data,
   if(!is.null(GroupingVariable)) {
     DiffData <- cbind(data[seq_len(data[, .I[.N-1], get(GroupingVariable)]$V1),1],data[, lapply(.SD,diff), by = eval(GroupingVariable), .SDcols = ColumnsToDiff])
   } else {
-    DiffData <- cbind(data[seq_len(nrow(data)-1),.SD, .SDcols = c(setdiff(names(data),ColumnsToDiff))],data[, lapply(.SD,diff), .SDcols = ColumnsToDiff])
+    DiffData <- cbind(data[2L:nrow(data),.SD, .SDcols = c(setdiff(names(data),ColumnsToDiff))],data[, lapply(.SD,diff), .SDcols = ColumnsToDiff])
   }
 
   # Return data
   if(!CARMA) {
-    return(list(DiffData = DiffData, FirstRow = FirstRow, LastRow = data[nrow(data),]))
+    return(list(DiffData = DiffData, FirstRow = FirstRow, LastRow = data[nrow(data)]))
   } else {
     if(!is.null(GroupingVariable)) {
       FirstRow <- FirstRow[, get(TargetVariable), by = eval(GroupingVariable)]
@@ -2795,17 +2806,25 @@ DifferenceDataReverse <- function(data,
                                   FirstRow = NULL,
                                   GroupingVariables = NULL) {
 
-  ModifiedData <- data.table::copy(data)
   if(!CARMA) {
     if(is.null(GroupingVariables)) {
-      return(ModifiedData[, Predictions := cumsum(c(LastRow,ScoreData))])
+      return(data[, Predictions := cumsum(c(LastRow,ScoreData))])
     }
   } else {
     if(is.null(GroupingVariables)) {
-      x <- cumsum(c(FirstRow,ModifiedData[[eval(TargetCol)]]))
+
+      print("FirstRow")
+      print(FirstRow)
+
+      x <- cumsum(c(FirstRow,data[[eval(TargetCol)]]))
+
+      print("cumsum")
+      print(x)
+
       # XGBoostCARMA matches, catboostCARMA is off by 1
-      if(length(x) != ModifiedData[,.N]) x <- x[-1L]
-      return(ModifiedData[, eval(TargetCol) := x][, Predictions := x])
+      if(length(x) != data[,.N]) x <- x[-1L]
+      data[, eval(TargetCol) := x][, Predictions := x]
+      return(data)
     }
   }
 }

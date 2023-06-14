@@ -263,7 +263,7 @@ AutoXGBoostCARMA <- function(data = NULL,
   # if(): length(ArgsList) > 0L
   # If I want to retrain + forecast, I supply ArgsList w/o model to
   #    update the args based on the model configuration but then
-  #    train the model anyways
+  #    train the model anyways ----
   if(length(ArgsList) > 0L) {
     if(length(ArgsList$Model) > 0L) {
       if(DebugMode) for(i in 1:10) print('ArgsList$Model > 0')
@@ -409,12 +409,12 @@ AutoXGBoostCARMA <- function(data = NULL,
 
   # Feature Engineering: Add Create Calendar Variables ----
   if(DebugMode) print('Feature Engineering: Add Create Calendar Variables----')
-  if(!is.null(CalendarVariables)) data <- CreateCalendarVariables(data=data, DateCols=eval(DateColumnName), AsFactor=FALSE, TimeUnits=CalendarVariables)
+  if(!is.null(CalendarVariables)) data <- Rodeo::CreateCalendarVariables(data=data, DateCols=eval(DateColumnName), AsFactor=FALSE, TimeUnits=CalendarVariables)
 
   # Feature Engineering: Add Create Holiday Variables ----
   if(DebugMode) print('Feature Engineering: Add Create Holiday Variables ----')
   if(!is.null(HolidayVariable)) {
-    data <- CreateHolidayVariables(data, DateCols = eval(DateColumnName), LookbackDays = if(!is.null(HolidayLookback)) HolidayLookback else LB(TimeUnit), HolidayGroups = HolidayVariable, Holidays = NULL)
+    data <- Rodeo::CreateHolidayVariables(data, DateCols = eval(DateColumnName), LookbackDays = if(!is.null(HolidayLookback)) HolidayLookback else LB(TimeUnit), HolidayGroups = HolidayVariable, Holidays = NULL)
     if(!(tolower(TimeUnit) %chin% c('1min','5min','10min','15min','30min','hour'))) {
       data[, eval(DateColumnName) := lubridate::as_date(get(DateColumnName))]
     } else {
@@ -424,7 +424,7 @@ AutoXGBoostCARMA <- function(data = NULL,
 
   # Anomaly detection by Group and Calendar Vars ----
   if(!is.null(AnomalyDetection)) {
-    data <- GenTSAnomVars(
+    data <- AutoQuant::GenTSAnomVars(
       data = data, ValueCol = eval(TargetColumnName),
       GroupVars = if(!is.null(CalendarVariables) && length(GroupVariables) > 0L) c('GroupVar', paste0(DateColumnName, '_', CalendarVariables[1])) else if(length(GroupVariables) > 0L) 'GroupVar' else NULL,
       DateVar = eval(DateColumnName), KeepAllCols = TRUE, IsDataScaled = FALSE,
@@ -458,7 +458,9 @@ AutoXGBoostCARMA <- function(data = NULL,
   data <- Output$data; Output$data <- NULL
   dataStart <- Output$dataStart; Output$dataStart <- NULL
   FC_Periods <- Output$FC_Periods; Output$FC_Periods <- NULL
+  DiffTrainOutput <- Output$DiffTrainOutput
   Train <- Output$Train; rm(Output)
+  MaxDate <- data[, max(get(DateColumnName))]
   if(Difference) IDcols <- c(IDcols, 'TargetDiffMidStep')
 
   # Feature Engineering: Lags and Rolling Stats ----
@@ -550,6 +552,7 @@ AutoXGBoostCARMA <- function(data = NULL,
       ModelID = 'XGBoost',
       ReturnFactorLevels = TRUE,
       ReturnModelObjects = TRUE,
+      PrimaryDateColumn = NULL,
       SaveModelObjects = FALSE,
       SaveInfoToPDF = FALSE,
 
@@ -642,6 +645,7 @@ AutoXGBoostCARMA <- function(data = NULL,
   # i = 1
   # i = 2
   # i = 3
+  # i = 4
   if(length(Lags) > 0L && all(Lags != 0) || (length(MA_Periods) > 0L && all(MA_Periods != 0))) {
 
     for(i in seq_len(FC_Periods+1L)) {
@@ -722,7 +726,21 @@ AutoXGBoostCARMA <- function(data = NULL,
 
   # Return data prep ----
   if(DebugMode) print('Return data prep ----')
-  Output <- CarmaReturnDataPrep(UpdateData.=UpdateData, FutureDateData.=FutureDateData, dataStart.=dataStart, DateColumnName.=DateColumnName, TargetColumnName.=TargetColumnName, GroupVariables.=GroupVariables, Difference.=Difference, TargetTransformation.=TargetTransformation, TransformObject.=TransformObject, NonNegativePred.=NonNegativePred, MergeGroupVariablesBack.=MergeGroupVariablesBack, Debug = DebugMode)
+  Output <- CarmaReturnDataPrep(
+    MaxDate. = MaxDate,
+    UpdateData.= UpdateData,
+    FutureDateData.= FutureDateData,
+    dataStart.= dataStart,
+    DateColumnName.= DateColumnName,
+    TargetColumnName.= TargetColumnName,
+    GroupVariables.=GroupVariables,
+    Difference.= Difference,
+    DiffTrainOutput. = DiffTrainOutput,
+    TargetTransformation.= TargetTransformation,
+    TransformObject.= TransformObject,
+    NonNegativePred.= NonNegativePred,
+    MergeGroupVariablesBack.= MergeGroupVariablesBack,
+    Debug = DebugMode)
   UpdateData <- Output$UpdateData; Output$UpdateData <- NULL
   TransformObject <- Output$TransformObject; rm(Output)
 
