@@ -771,7 +771,7 @@ AutoLightGBMCARMA <- function(data = NULL,
       NThreads = parallel::detectCores(),
 
       # Metadata args
-      OutputSelection = if(TrainOnFull) NULL else c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData'),
+      OutputSelection = if(TrainOnFull) NULL else c('Importances', 'EvalMetrics'),
       model_path = getwd(),
       metadata_path = getwd(),
       ModelID = 'LightGBM',

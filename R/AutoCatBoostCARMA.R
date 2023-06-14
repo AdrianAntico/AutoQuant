@@ -714,7 +714,7 @@ AutoCatBoostCARMA <- function(data,
       # GPU or CPU and the number of available GPUs
       task_type = TaskType,
       NumGPUs = NumGPU,
-      OutputSelection = if(TrainOnFull) NULL else c('Importances', 'EvalMetrics', 'Score_TrainData'),
+      OutputSelection = if(TrainOnFull) NULL else c('Importances', 'EvalMetrics'),
       ReturnShap = ReturnShap,
 
       # Metadata arguments
