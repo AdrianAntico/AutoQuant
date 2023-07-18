@@ -160,9 +160,6 @@ Regular_Performance <- function(Model = NULL,
                                 ValidationData = ValidationData,
                                 HoldOutPeriods = HoldOutPeriods) {
 
-  # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
-
   # Train Performance----
   if(!is.null(Results)) {
     if(run == 1L) {
@@ -347,9 +344,6 @@ RL_Performance <- function(Results = Results,
                            ValidationData = ValidationData,
                            HoldOutPeriods = HoldOutPeriods,
                            FinalScore = FALSE) {
-
-  # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
 
   # Train Performance----
   if(!FinalScore) {
@@ -565,9 +559,6 @@ GenerateParameterGrids <- function(Model = NULL,
                                    MovingAverages = NULL,
                                    Lags = NULL) {
 
-  # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
-
   # Select Model----
   if(tolower(Model) == "arima") {
 
@@ -639,8 +630,8 @@ GenerateParameterGrids <- function(Model = NULL,
     }
 
     # Add evaluation metrics columns and fill with dummy values----
-    for(trainvalidate in c("Train_","Validate_","Blended_")) {
-      for(tseval in c("MSE","MAE","MAPE")) {
+    for(tseval in c("MAPE","MAE","MSE")) {
+      for(trainvalidate in c("Train_","Validate_","Blended_")) {
         data.table::set(GridClusters[["ParsimonousGrid"]], j = paste0(trainvalidate,tseval), value = -10)
         data.table::set(GridClusters[["RandomGrid"]], j = paste0(trainvalidate,tseval), value = -10)
         data.table::set(Grid, j = paste0(trainvalidate,tseval), value = -10)
@@ -672,7 +663,9 @@ GenerateParameterGrids <- function(Model = NULL,
       GridClusters = GridClusters,
       ExperimentGrid = ExperimentGrid))
 
-  } else if(tolower(Model) == "ets") {
+  }
+
+  if(tolower(Model) == "ets") {
 
     # ETS Grid----
     if(MinVal < 0) {
@@ -701,8 +694,8 @@ GenerateParameterGrids <- function(Model = NULL,
     GridList <- as.list(Grid)
 
     # Add evaluation metrics columns and fill with dummy values----
-    for(trainvalidate in c("Train_","Validate_","Blended_")) {
-      for(tseval in c("MSE","MAE","MAPE")) data.table::set(Grid, j = paste0(trainvalidate,tseval), value = -10)
+    for(tseval in c("MAPE","MAE","MSE")) {
+      for(trainvalidate in c("Train_","Validate_","Blended_")) data.table::set(Grid, j = paste0(trainvalidate,tseval), value = -10)
     }
 
     # Set up results grid to collect parameters tested and results----
@@ -731,7 +724,9 @@ GenerateParameterGrids <- function(Model = NULL,
       GridList = GridList,
       ExperimentGrid = ExperimentGrid,
       ValidationData = ValidationData))
-  } else if(tolower(Model) == "tbats") {
+  }
+
+  if(tolower(Model) == "tbats") {
 
     # TBATS Grid----
     if(MinVal < 0) {
@@ -740,7 +735,7 @@ GenerateParameterGrids <- function(Model = NULL,
         Lambda = c(FALSE),
         Trend = c(TRUE,FALSE),
         Damped = c(TRUE,FALSE),
-        SeasonalPeriods = c(0,1,2),
+        SeasonalPeriods = c(0,1),
         UseARMAErrors = c(TRUE,FALSE),
         Lags = c(0L, Lags),
         MovingAverages = c(0L, MovingAverages))
@@ -767,8 +762,8 @@ GenerateParameterGrids <- function(Model = NULL,
     GridList <- as.list(Grid)
 
     # Add evaluation metrics columns and fill with dummy values----
-    for(trainvalidate in c("Train_","Validate_","Blended_")) {
-      for(tseval in c("MSE","MAE","MAPE")) {
+    for(tseval in c("MAPE","MAE","MSE")) {
+      for(trainvalidate in c("Train_","Validate_","Blended_")) {
         data.table::set(Grid, j = paste0(trainvalidate,tseval), value = -10)
       }
     }
@@ -799,7 +794,9 @@ GenerateParameterGrids <- function(Model = NULL,
       GridList = GridList,
       ExperimentGrid = ExperimentGrid,
       ValidationData = ValidationData))
-  } else if(tolower(Model) == "nnet") {
+  }
+
+  if(tolower(Model) == "nnet") {
 
     # NNET Grid----
     if(MinVal < 0L) {
@@ -867,8 +864,8 @@ GenerateParameterGrids <- function(Model = NULL,
     }
 
     # Add evaluation metrics columns and fill with dummy values----
-    for(trainvalidate in c("Train_","Validate_","Blended_")) {
-      for(tseval in c("MSE","MAE","MAPE")) {
+    for(tseval in c("MAPE","MAE","MSE")) {
+      for(trainvalidate in c("Train_","Validate_","Blended_")) {
         data.table::set(GridClusters[["ParsimonousGrid"]], j = paste0(trainvalidate,tseval), value = -10)
         data.table::set(GridClusters[["RandomGrid"]], j = paste0(trainvalidate,tseval), value = -10)
         data.table::set(Grid, j = paste0(trainvalidate,tseval), value = -10)
@@ -899,7 +896,9 @@ GenerateParameterGrids <- function(Model = NULL,
       list(Grid = Grid,
            GridClusters = GridClusters,
            ExperimentGrid = ExperimentGrid))
-  } else if(tolower(Model) == "arfima") {
+  }
+
+  if(tolower(Model) == "arfima") {
 
     # ARFIMA Grid----
     if(MinVal < 0) {
@@ -926,8 +925,8 @@ GenerateParameterGrids <- function(Model = NULL,
     GridList <- as.list(Grid)
 
     # Add evaluation metrics columns and fill with dummy values----
-    for(trainvalidate in c("Train_","Validate_","Blended_")) {
-      for(tseval in c("MSE","MAE","MAPE")) {
+    for(tseval in c("MAPE","MAE","MSE")) {
+      for(trainvalidate in c("Train_","Validate_","Blended_")) {
         data.table::set(Grid, j = paste0(trainvalidate,tseval), value = -10)
       }
     }
@@ -959,7 +958,9 @@ GenerateParameterGrids <- function(Model = NULL,
         GridList = GridList,
         ExperimentGrid = ExperimentGrid,
         ValidationData = ValidationData))
-  } else if(tolower(Model) == "tslm") {
+  }
+
+  if(tolower(Model) == "tslm") {
 
     # TSLM Grid----
     if(MinVal < 0L) {
@@ -980,8 +981,8 @@ GenerateParameterGrids <- function(Model = NULL,
     GridList <- as.list(Grid)
 
     # Add evaluation metrics columns and fill with dummy values----
-    for(trainvalidate in c("Train_","Validate_","Blended_")) {
-      for(tseval in c("MSE","MAE","MAPE")) {
+    for(tseval in c("MAPE","MAE","MSE")) {
+      for(trainvalidate in c("Train_","Validate_","Blended_")) {
         data.table::set(Grid, j = paste0(trainvalidate,tseval), value = -10)
       }
     }
@@ -1073,9 +1074,6 @@ TimeSeriesDataPrepare <- function(data,
                                   ModelFreq = TRUE,
                                   FinalBuild = FALSE) {
 
-  # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
-
   # Turn off warnings----
   options(warn = -1L)
 
@@ -1083,17 +1081,16 @@ TimeSeriesDataPrepare <- function(data,
   if(!data.table::is.data.table(data)) data.table::setDT(data)
 
   # Ensure correct ordering and subsetting of data
-  keep <- c(DateName, TargetName)
-  data <- data[, ..keep]
+  data <- data[, .SD, .SDcols = c(DateName, TargetName)]
 
   # Time series fill----
-  data <- TimeSeriesFill(
+  data <- Rodeo::TimeSeriesFill(
     data = data,
     DateColumnName = DateName,
     GroupVariables = NULL,
     TimeUnit = TimeUnit,
     MaxMissingPercent = 0.05,
-    SimpleImpute = FALSE,
+    SimpleImpute = TRUE,
     FillType = "maxmax")
 
   # Convert to lubridate as_date() or POSIXct----
@@ -1336,9 +1333,6 @@ OptimizeArima <- function(Output,
                           MaxRunMinutes = NULL,
                           FinalGrid = NULL,
                           DebugMode = FALSE) {
-
-  # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
 
   # Go to scoring model if FinalGrid is supplied----
   if(is.null(FinalGrid)) {
@@ -1768,9 +1762,6 @@ OptimizeETS <- function(Output,
                         TrainValidateShare = NULL,
                         FinalGrid = NULL) {
 
-  # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
-
   # Go to scoring model if FinalGrid is supplied----
   if(is.null(FinalGrid)) {
 
@@ -2001,9 +1992,6 @@ OptimizeTBATS <- function(Output,
                           DateName = NULL,
                           TrainValidateShare = NULL,
                           FinalGrid = NULL) {
-
-  # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2))
 
   # Go to scoring model if FinalGrid is supplied----
   if(is.null(FinalGrid)) {
@@ -2248,9 +2236,6 @@ OptimizeNNET <- function(Output,
                          MaxNumberModels = NULL,
                          MaxRunMinutes = NULL,
                          FinalGrid = NULL) {
-
-  # Turn on full speed ahead ----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
 
   # Go to scoring model if FinalGrid is supplied ----
   if(is.null(FinalGrid)) {
@@ -2632,9 +2617,6 @@ OptimizeArfima <- function(Output,
                            TrainValidateShare = NULL,
                            FinalGrid = NULL) {
 
-  # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
-
   # Go to scoring model if FinalGrid is supplied----
   if(is.null(FinalGrid)) {
 
@@ -2848,9 +2830,6 @@ OptimizeTSLM <- function(Output,
                          TrainValidateShare = NULL,
                          FinalGrid = NULL) {
 
-  # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
-
   # Go to scoring model if FinalGrid is supplied----
   if(is.null(FinalGrid)) {
 
@@ -3013,9 +2992,6 @@ ParallelAutoARIMA <- function(
   MaxRunsWithoutNewWinner = 12,
   NumCores = max(1L, min(4L, parallel::detectCores()))) {
 
-  # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2))
-
   # Define Modeling Artifacts----
   TrainArtifacts = list(
     UserSupplied = list(
@@ -3117,7 +3093,7 @@ ParallelAutoETS <- function(
   TrainValidateShare = c(0.50, 0.50),
   NumCores = max(1L, min(4L, parallel::detectCores()-2L))) {
 
-  # Turn on full speed ahead----
+
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
 
   # Define Modeling Artifacts----
@@ -3209,9 +3185,6 @@ ParallelAutoTBATS <- function(
   MetricSelection = "MAE",
   TrainValidateShare = c(0.50, 0.50),
   NumCores = max(1L, min(4L, parallel::detectCores()-2L))) {
-
-  # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2))
 
   # Define Modeling Artifacts----
   TrainArtifacts = list(
@@ -3313,9 +3286,6 @@ ParallelAutoNNET <- function(
   MaxRunsWithoutNewWinner = 12,
   NumCores = max(1L, min(4L, parallel::detectCores()-2L))) {
 
-  # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2))
-
   # Define Modeling Artifacts----
   TrainArtifacts = list(
     UserSupplied = list(
@@ -3411,9 +3381,6 @@ ParallelAutoArfima <- function(
   TrainValidateShare = c(0.50,0.50),
   NumCores = max(1L, min(4L, parallel::detectCores()-2L))) {
 
-  # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2))
-
   # Define Modeling Artifacts----
   TrainArtifacts = list(
     UserSupplied = list(
@@ -3501,9 +3468,6 @@ ParallelAutoTSLM <- function(
   MetricSelection = "MAE",
   TrainValidateShare = c(0.50, 0.50),
   NumCores = max(1L, min(4L, parallel::detectCores()-2L))) {
-
-  # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
 
   # Define Modeling Artifacts----
   TrainArtifacts = list(
@@ -3603,9 +3567,6 @@ FinalBuildArima <- function(
   NumberModelsScore = 1,
   ByDataType = FALSE,
   DebugMode = FALSE) {
-
-  # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2))
 
   # Subset ModelOutputGrid-----
   if(ByDataType) {
@@ -3737,14 +3698,16 @@ FinalBuildArima <- function(
 
     # Combine----
     if(Successs == 1L) {
-      if(Forecasts[,.N] != 0) {
+      print("here 1ab")
+      if(!is.na(Forecasts[,.N])) {
         FinalFC <<- data.table::copy(Forecasts)
         Successs <<- Successs + 1L
       } else {
         stop("No suitable model was found")
       }
     } else {
-      if(Forecasts[,.N] != 0) {
+      print("here 1abc")
+      if(!is.na(Forecasts[,.N])) {
         temp <- data.table::copy(Forecasts)
         Successs <<- Successs + 1L
         FinalFC <<- data.table::rbindlist(list(FinalFC, temp), use.names = TRUE, fill = TRUE)
@@ -3798,9 +3761,6 @@ FinalBuildETS <- function(
   NumberModelsScore = 12,
   ByDataType = FALSE,
   DebugMode = FALSE) {
-
-  # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2))
 
   # Subset ModelOutputGrid-----
   if(ByDataType) {
@@ -3976,9 +3936,6 @@ FinalBuildTBATS <- function(
   ByDataType = FALSE,
   DebugMode = FALSE) {
 
-  # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2))
-
   # Subset ModelOutputGrid-----
   if(ByDataType) {
     if(toupper(MetricSelection) == "MAE") {
@@ -4152,9 +4109,6 @@ FinalBuildNNET <- function(
   NumberModelsScore = 1,
   ByDataType = FALSE,
   DebugMode = FALSE) {
-
-  # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2))
 
   # Subset ModelOutputGrid-----
   if(ByDataType) {
@@ -4339,9 +4293,6 @@ FinalBuildArfima <- function(
   ByDataType = FALSE,
   DebugMode = FALSE) {
 
-  # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
-
   # Subset ModelOutputGrid-----
   if(ByDataType) {
     if(toupper(MetricSelection) == "MAE") {
@@ -4515,9 +4466,6 @@ FinalBuildTSLM <- function(
   ByDataType = FALSE,
   DebugMode = FALSE) {
 
-  # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2))
-
   # Subset ModelOutputGrid-----
   if(ByDataType) {
     if(toupper(MetricSelection) == "MAE") {
@@ -4686,9 +4634,6 @@ StackedTimeSeriesEnsembleForecast <- function(TS_Models = c("arima","tbats","nne
                                               GridTune = FALSE,
                                               FCPeriods = 5,
                                               MaxNumberModels = 5) {
-
-  # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2))
 
   # Pull in time series models forecast files----
   i = 1L
@@ -5217,9 +5162,6 @@ WideTimeSeriesEnsembleForecast <- function(TS_Models = c("arima","tbats","nnet")
                                            GridTune = FALSE,
                                            MaxNumberModels = 5) {
 
-  # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2))
-
   # Pull in time series models forecast files----
   i = 1L
   for(tsf in c(TS_Models)) {
@@ -5610,9 +5552,6 @@ AutoFourierFeatures <- function(data,
                                 GroupVariable = NULL,
                                 xregs = NonGroupDateNames) {
 
-  # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
-
   # Build features----
   if(!is.null(GroupVariable)) {
 
@@ -5815,9 +5754,6 @@ AutoHierarchicalFourier <- function(datax = data,
                                     DateColumN = DateColumnName,
                                     HierarchGroups = NULL,
                                     IndependentGroups = NULL) {
-
-  # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
 
   # Convert to Date
   if(!all(class(datax[[eval(DateColumN)]]) == "Date")) datax[, eval(DateColumN) := as.Date(get(DateColumN))]

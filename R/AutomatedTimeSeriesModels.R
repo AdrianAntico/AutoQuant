@@ -174,7 +174,7 @@ AutoBanditSarima <- function(data,
   if(DebugMode) print("here")
 
   # 1. Create time series artifacts----
-  Arima_Artifacts_Build <- TimeSeriesDataPrepare(
+  Arima_Artifacts_Build <- AutoQuant:::TimeSeriesDataPrepare(
     data = data,
     TargetName = TargetVariableName,
     DateName = DateColumnName,
@@ -190,15 +190,17 @@ AutoBanditSarima <- function(data,
     FinalBuild = FALSE)
 
   # 2. Find Best ARIMA Models----
-  Arima_ExperimentGrid <- tryCatch({ParallelAutoARIMA(
-    MetricSelection = EvaluationMetric,
-    Output = Arima_Artifacts_Build,
-    MaxFourierTerms = ARIMA_MaxFourierTerms,
-    TrainValidateShare = c(ARIMA_TrainShareEvaluate, 1-ARIMA_TrainShareEvaluate),
-    MaxNumberModels = ARIMA_MaxNumberModels,
-    MaxRunMinutes = ARIMA_MaxRunTime,
-    MaxRunsWithoutNewWinner = ARIMA_RunsWithoutWinner,
-    NumCores = NumberCores)}, error = function(x) NULL)
+  Arima_ExperimentGrid <- tryCatch({
+    AutoQuant:::ParallelAutoARIMA(
+      MetricSelection = EvaluationMetric,
+      Output = Arima_Artifacts_Build,
+      MaxFourierTerms = ARIMA_MaxFourierTerms,
+      TrainValidateShare = c(ARIMA_TrainShareEvaluate, 1-ARIMA_TrainShareEvaluate),
+      MaxNumberModels = ARIMA_MaxNumberModels,
+      MaxRunMinutes = ARIMA_MaxRunTime,
+      MaxRunsWithoutNewWinner = ARIMA_RunsWithoutWinner,
+      NumCores = NumberCores)
+    }, error = function(x) NULL)
 
   # Debugging ----
   if(DebugMode && !is.null(Arima_ExperimentGrid)) {
