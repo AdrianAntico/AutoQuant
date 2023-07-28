@@ -220,6 +220,9 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalPlots
   ArgsList[['data']] <- NULL
   ArgsList[['ValidationData']] <- NULL
   ArgsList[['TestData']] <- NULL
+  ArgsList[['Algo']] <- "CatBoost"
+  ArgsList[['TargetType']] <- "MultiClass"
+  ArgsList[['PredictionColumnName']] <- "Predict"
 
   # Data Prep (model data prep, dummify, create sets) ----
   if(DebugMode) print('Running CatBoostDataPrep()')

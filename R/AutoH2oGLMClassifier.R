@@ -200,6 +200,9 @@ AutoH2oGLMClassifier <- function(OutputSelection = c("EvalMetrics", "Score_Train
   ArgsList[['data']] <- NULL
   ArgsList[['ValidationData']] <- NULL
   ArgsList[['TestData']] <- NULL
+  ArgsList[['Algo']] <- "H2OGLM"
+  ArgsList[['TargetType']] <- "Binary Classification"
+  ArgsList[['PredictionColumnName']] <- "p1"
   if(SaveModelObjects) {
     if(!is.null(metadata_path)) {
       save(ArgsList, file = file.path(metadata_path, paste0(ModelID, "_ArgsList.Rdata")))

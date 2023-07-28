@@ -174,6 +174,9 @@ AutoH2oGBMMultiClass <- function(OutputSelection = c("EvalMetrics","Score_TrainD
   ArgsList[['data']] <- NULL
   ArgsList[['ValidationData']] <- NULL
   ArgsList[['TestData']] <- NULL
+  ArgsList[['Algo']] <- "H2OGBM"
+  ArgsList[['TargetType']] <- "MultiClass"
+  ArgsList[['PredictionColumnName']] <- "Predict"
   if(SaveModelObjects) {
     if(!is.null(metadata_path)) {
       save(ArgsList, file = file.path(metadata_path, paste0(ModelID, "_ArgsList.Rdata")))

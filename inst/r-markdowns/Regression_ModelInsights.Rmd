@@ -228,37 +228,6 @@ if(is.null(ModelObject)) {
 }
 ```
 
-```{r Generic_Global_Objects, echo = FALSE}
-if(is.null(ModelObject)) {
-
-  # Global (Output feeds into Scatterplot and Copula Plot Chunks) ----
-
-  ## Test_ResidualsPlots ----
-  if(!is.null(TestData)) {
-    Test_ResidualPlot <- AutoQuant::ResidualPlots(
-      TestData = data.table::copy(TestData), 
-      Target = TargetColumnName,
-      Predicted = 'Predict',
-      DateColumnName = NULL,
-      Gam_Fit = FALSE)
-  } else {
-    Test_ResidualPlot <- NULL
-  }
-
-  ## Train_ResidualsPlots ----
-  if(!is.null(TrainData)) {
-    Train_ResidualPlot <- AutoQuant::ResidualPlots(
-      TestData = data.table::copy(TrainData),
-      Target = TargetColumnName,
-      Predicted = 'Predict',
-      DateColumnName = NULL,
-      Gam_Fit = FALSE)
-  } else {
-    Train_ResidualPlot <- NULL
-  }
-}
-```
-
 ```{r Generic_Model_MetaData, echo = FALSE}
 if(is.null(ModelObject)) {
 
@@ -412,28 +381,6 @@ if(is.null(ModelObject)) {
     if(!is.null(Validation_Importance)) data.table::setnames(Validation_Importance, old = 'Importance', new = 'Validation_Importance', skip_absent = TRUE)
     if(!is.null(Train_Importance)) data.table::setnames(Train_Importance, old = 'Importance', new = 'Train_Importance', skip_absent = TRUE)
 
-    # CatBoost only
-    if(is.null(Test_Importance) && is.null(Validation_Importance) && is.null(Train_Importance)) {
-      All_Importance <- NULL
-    } else if(!is.null(Test_Importance) && !is.null(Validation_Importance) && !is.null(Train_Importance)) {
-      All_Importance <- merge(Test_Importance, Validation_Importance, by = 'Variable', all = TRUE)
-      All_Importance <- merge(All_Importance, Train_Importance, by = 'Variable', all = TRUE)
-    } else if(!is.null(Test_Importance) && !is.null(Validation_Importance) && is.null(Train_Importance)) {
-      All_Importance <- merge(Test_Importance, Validation_Importance, by = 'Variable', all = TRUE)
-    } else if(!is.null(Test_Importance) && is.null(Validation_Importance) && !is.null(Train_Importance)) {
-      All_Importance <- merge(Test_Importance, Train_Importance, by = 'Variable', all = TRUE)
-    } else if(is.null(Test_Importance) && !is.null(Validation_Importance) && !is.null(Train_Importance)) {
-      All_Importance <- merge(Validation_Importance, Train_Importance, by = 'Variable', all = TRUE)
-    } else if(is.null(Test_Importance) && is.null(Validation_Importance) && !is.null(Train_Importance)) {
-      All_Importance <- Train_Importance
-    } else if(is.null(Test_Importance) && !is.null(Validation_Importance) && is.null(Train_Importance)) {
-      All_Importance <- Validation_Importance
-    } else if(!is.null(Test_Importance) && is.null(Validation_Importance) && is.null(Train_Importance)) {
-      All_Importance <- Test_Importance
-    } else {
-      All_Importance <- NULL
-    }
-    
   }
   
   ## Model_IntImportanceTable ----
@@ -639,7 +586,7 @@ Test_EvaluationPlot <- AutoPlots::Plot.Calibration.Line(
   Title.YAxis = TargetColumnName,
   Title.XAxis = "Predict",
   EchartsTheme = "dark",
-  EchartsLabels = FALSE,
+  
   TimeLine = TRUE,
   X_Scroll = TRUE,
   Y_Scroll = TRUE,
@@ -666,7 +613,7 @@ if(!is.null(TrainData)) {
     Title.YAxis = TargetColumnName,
     Title.XAxis = "Predict",
     EchartsTheme = "dark",
-    EchartsLabels = FALSE,
+    
     TimeLine = TRUE,
     X_Scroll = TRUE,
     Y_Scroll = TRUE,
@@ -697,7 +644,7 @@ Test_EvaluationBoxPlot <- AutoPlots::Plot.Calibration.Box(
   Title.YAxis = TargetColumnName,
   Title.XAxis = "Predict",
   EchartsTheme = "dark",
-  EchartsLabels = FALSE,
+  
   TimeLine = TRUE,
   X_Scroll = TRUE,
   Y_Scroll = TRUE,
@@ -726,7 +673,7 @@ if(!is.null(TrainData)) {
     Title.YAxis = TargetColumnName,
     Title.XAxis = "Predict",
     EchartsTheme = "dark",
-    EchartsLabels = FALSE,
+    
     TimeLine = TRUE,
     X_Scroll = TRUE,
     Y_Scroll = TRUE,
@@ -754,7 +701,7 @@ Test_ScatterPlot <- AutoPlots::Plot.Residuals.Scatter(
   Title.YAxis = TargetColumnName,
   Title.XAxis = g,
   EchartsTheme = "dark",
-  EchartsLabels = FALSE,
+  
   TimeLine = TRUE,
   X_Scroll = TRUE,
   Y_Scroll = TRUE,
@@ -781,7 +728,7 @@ if(length(TrainData) > 0L) {
     Title.YAxis = TargetColumnName,
     Title.XAxis = g,
     EchartsTheme = "dark",
-    EchartsLabels = FALSE,
+    
     TimeLine = TRUE,
     X_Scroll = TRUE,
     Y_Scroll = TRUE,
@@ -831,7 +778,7 @@ if(!is.null(TestData) && !is.null(FeatureColumnNames)) {
         Title.YAxis = TargetColumnName,
         Title.XAxis = g,
         EchartsTheme = "dark",
-        EchartsLabels = FALSE,
+        
         TimeLine = TRUE,
         X_Scroll = TRUE,
         Y_Scroll = TRUE,
@@ -875,7 +822,7 @@ if(!is.null(TrainData) && !is.null(FeatureColumnNames)) {
         Title.YAxis = TargetColumnName,
         Title.XAxis = g,
         EchartsTheme = "dark",
-        EchartsLabels = FALSE,
+        
         TimeLine = TRUE,
         X_Scroll = TRUE,
         Y_Scroll = TRUE,
@@ -919,7 +866,7 @@ if(!is.null(TestData) && !is.null(FeatureColumnNames)) {
         Title.YAxis = TargetColumnName,
         Title.XAxis = g,
         EchartsTheme = "dark",
-        EchartsLabels = FALSE,
+        
         TimeLine = TRUE,
         X_Scroll = TRUE,
         Y_Scroll = TRUE,
@@ -961,7 +908,7 @@ if(!is.null(TrainData) && !is.null(FeatureColumnNames)) {
         Title.YAxis = TargetColumnName,
         Title.XAxis = g,
         EchartsTheme = "dark",
-        EchartsLabels = FALSE,
+        
         TimeLine = TRUE,
         X_Scroll = TRUE,
         Y_Scroll = TRUE,
@@ -1004,7 +951,7 @@ if(!is.null(TestData) && !is.null(FeatureColumnNames)) {
         Title.YAxis = TargetColumnName,
         Title.XAxis = g,
         EchartsTheme = "dark",
-        EchartsLabels = FALSE,
+        
         TimeLine = TRUE,
         X_Scroll = TRUE,
         Y_Scroll = TRUE,
@@ -1045,7 +992,7 @@ if(!is.null(TrainData) && !is.null(FeatureColumnNames)) {
         Title.YAxis = TargetColumnName,
         Title.XAxis = g,
         EchartsTheme = "dark",
-        EchartsLabels = FALSE,
+        
         TimeLine = TRUE,
         X_Scroll = TRUE,
         Y_Scroll = TRUE,
@@ -1204,7 +1151,7 @@ if(!is.null(Test_Importance)) {
     ShowLabels = FALSE,
     Title.YAxis = NULL,
     Title.XAxis = NULL,
-    Engine = "Echarts",
+    
     EchartsTheme = "dark",
     TimeLine = FALSE,
     X_Scroll = TRUE,
@@ -1250,7 +1197,7 @@ if(!is.null(Validation_Importance)) {
     ShowLabels = FALSE,
     Title.YAxis = NULL,
     Title.XAxis = NULL,
-    Engine = "Echarts",
+    
     EchartsTheme = "dark",
     TimeLine = FALSE,
     X_Scroll = TRUE,
@@ -1296,7 +1243,7 @@ if(!is.null(Train_Importance)) {
     ShowLabels = FALSE,
     Title.YAxis = NULL,
     Title.XAxis = NULL,
-    Engine = "Echarts",
+    
     EchartsTheme = "dark",
     TimeLine = FALSE,
     X_Scroll = TRUE,

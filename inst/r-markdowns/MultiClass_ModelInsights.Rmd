@@ -543,7 +543,7 @@ if(!is.null(TestData)) {
     Title.YAxis = TargetColumnName,
     Title.XAxis = "Predict",
     EchartsTheme = "dark",
-    EchartsLabels = FALSE,
+    
     TimeLine = TRUE,
     X_Scroll = TRUE,
     Y_Scroll = TRUE,
@@ -575,7 +575,7 @@ if(!is.null(TrainData)) {
     Title.YAxis = TargetColumnName,
     Title.XAxis = "Predict",
     EchartsTheme = "dark",
-    EchartsLabels = FALSE,
+    
     TimeLine = TRUE,
     X_Scroll = TRUE,
     Y_Scroll = TRUE,
@@ -609,7 +609,7 @@ if(!is.null(TestData)) {
     Title.YAxis = TargetColumnName,
     Title.XAxis = "Predict",
     EchartsTheme = "dark",
-    EchartsLabels = FALSE,
+    
     TimeLine = TRUE,
     X_Scroll = TRUE,
     Y_Scroll = TRUE,
@@ -641,7 +641,7 @@ if(!is.null(TrainData)) {
     Title.YAxis = TargetColumnName,
     Title.XAxis = "Predict",
     EchartsTheme = "dark",
-    EchartsLabels = FALSE,
+    
     TimeLine = TRUE,
     X_Scroll = TRUE,
     Y_Scroll = TRUE,
@@ -674,7 +674,7 @@ if(!is.null(TestData)) {
     Title.YAxis = TargetColumnName,
     Title.XAxis = "Predict",
     EchartsTheme = "dark",
-    EchartsLabels = FALSE,
+    
     TimeLine = TRUE,
     X_Scroll = TRUE,
     Y_Scroll = TRUE,
@@ -707,7 +707,7 @@ if(!is.null(TrainData)) {
     Title.YAxis = TargetColumnName,
     Title.XAxis = "Predict",
     EchartsTheme = "dark",
-    EchartsLabels = FALSE,
+    
     TimeLine = TRUE,
     X_Scroll = TRUE,
     Y_Scroll = TRUE,
@@ -761,7 +761,7 @@ if(!is.null(TestData) && !is.null(FeatureColumnNames)) {
         Title.YAxis = TargetColumnName,
         Title.XAxis = g,
         EchartsTheme = "dark",
-        EchartsLabels = FALSE,
+        
         TimeLine = TRUE,
         X_Scroll = TRUE,
         Y_Scroll = TRUE,
@@ -807,7 +807,7 @@ if(!is.null(TrainData) && !is.null(FeatureColumnNames)) {
         Title.YAxis = TargetColumnName,
         Title.XAxis = g,
         EchartsTheme = "dark",
-        EchartsLabels = FALSE,
+        
         TimeLine = TRUE,
         X_Scroll = TRUE,
         Y_Scroll = TRUE,
@@ -850,7 +850,7 @@ if(!is.null(TestData) && !is.null(FeatureColumnNames)) {
         Title.YAxis = TargetColumnName,
         Title.XAxis = g,
         EchartsTheme = "dark",
-        EchartsLabels = FALSE,
+        
         TimeLine = TRUE,
         X_Scroll = TRUE,
         Y_Scroll = TRUE,
@@ -891,7 +891,7 @@ if(!is.null(TrainData) && !is.null(FeatureColumnNames)) {
         Title.YAxis = TargetColumnName,
         Title.XAxis = g,
         EchartsTheme = "dark",
-        EchartsLabels = FALSE,
+        
         TimeLine = TRUE,
         X_Scroll = TRUE,
         Y_Scroll = TRUE,
@@ -1075,7 +1075,7 @@ if(!is.null(Test_Importance)) {
     ShowLabels = FALSE,
     Title.YAxis = NULL,
     Title.XAxis = NULL,
-    Engine = "Echarts",
+    
     EchartsTheme = "dark",
     TimeLine = FALSE,
     X_Scroll = TRUE,
@@ -1121,7 +1121,7 @@ if(!is.null(Validation_Importance)) {
     ShowLabels = FALSE,
     Title.YAxis = NULL,
     Title.XAxis = NULL,
-    Engine = "Echarts",
+    
     EchartsTheme = "dark",
     TimeLine = FALSE,
     X_Scroll = TRUE,
@@ -1167,7 +1167,7 @@ if(!is.null(Train_Importance)) {
     ShowLabels = FALSE,
     Title.YAxis = NULL,
     Title.XAxis = NULL,
-    Engine = "Echarts",
+    
     EchartsTheme = "dark",
     TimeLine = FALSE,
     X_Scroll = TRUE,
