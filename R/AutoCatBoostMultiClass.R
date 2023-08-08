@@ -244,7 +244,7 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalMetri
   Names <- Output$Names; rm(Output)
 
   # Need TargetLevels from CatBoostDataPrep() so this code block is here instead of before CatBoostDataPrep()
-  ArgsList[['TargetLevels']] <- sort(as.character(TargetLevels))
+  ArgsList[['TargetLevels']] <- TargetLevels
   if(SaveModelObjects) {
     if(!is.null(metadata_path)) {
       save(ArgsList, file = file.path(metadata_path, paste0(ModelID, "_ArgsList.Rdata")))
