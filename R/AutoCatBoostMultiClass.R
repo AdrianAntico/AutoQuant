@@ -148,7 +148,7 @@
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model (the model), ValidationData.csv, EvaluationMetrics.csv, GridCollect, and GridList
 #' @export
-AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData'),
+AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalMetrics', 'Score_TrainData'),
                                    data = NULL,
                                    ValidationData = NULL,
                                    TestData = NULL,

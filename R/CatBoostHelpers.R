@@ -480,7 +480,7 @@ CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
     } else {
       temp <- data.
     }
-    TargetLevels <- data.table::as.data.table(sort(unique(temp[[eval(TargetColumnName.)]])))
+    TargetLevels <- data.table::as.data.table(sort(unique(as.character(temp[[eval(TargetColumnName.)]]))))
     data.table::setnames(TargetLevels, "V1", "OriginalLevels")
     TargetLevels[, NewLevels := seq_len(.N)]
     if(SaveModelObjects.) data.table::fwrite(TargetLevels, file = file.path(model_path., paste0(ModelID., "_TargetLevels.csv")))
