@@ -456,6 +456,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
 
   # Score model ----
   if(Debug) print('Scoring Here 7')
+  print(TargetType)
   if(TargetType %chin% c('regression', 'multiregression')) {
     predict <- data.table::as.data.table(
       catboost::catboost.predict(
@@ -470,6 +471,8 @@ AutoCatBoostScoring <- function(TargetType = NULL,
         pool = ScoringPool,
         prediction_type = 'Probability',
         thread_count = -1L))
+    print("predict creation")
+    print(predict)
   } else if(TargetType == 'multiclass') {
     predict <- data.table::as.data.table(cbind(
       1 + catboost::catboost.predict(
@@ -525,11 +528,15 @@ AutoCatBoostScoring <- function(TargetType = NULL,
     if(Debug) {
       print('Scoring Here 10')
       print(predict[, .N])
+      print('HERE 0')
       print(ScoringMerge[, .N])
-      print(ReturnFeatures && TargetType != 'multiclass')
-      print(predict)
-      print(ScoringMerge)
       print('HERE 1')
+      print(ReturnFeatures && TargetType != 'multiclass')
+      print('HERE 2')
+      print(predict)
+      print('HERE 3')
+      print(ScoringMerge)
+      print('HERE 4')
       print(length(predict[[1L]]))
     }
     if(tolower(TargetType) == 'classification') {
@@ -598,6 +605,9 @@ AutoCatBoostScoring <- function(TargetType = NULL,
     }
     return(cbind(predict, ShapValues))
   } else {
+    if(TargetType == "multiclass" && ReturnFeatures) {
+      predict <- cbind(predict, ScoringData)
+    }
     return(predict)
   }
 }
