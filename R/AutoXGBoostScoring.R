@@ -265,7 +265,9 @@ AutoXGBoostScoring <- function(TargetType = NULL,
   }
 
   # Change Output Predictions Column Name ----
-  if(tolower(TargetType) != "multiclass") {
+  if(tolower(TargetType) == "classification") {
+    data.table::setnames(predict, "V1", "p1")
+  } else if(tolower(TargetType) == "regression") {
     data.table::setnames(predict, "V1", "Predictions")
   } else if(tolower(TargetType) == "multiclass") {
     if(is.null(TargetLevels)) TargetLevels <- data.table::fread(file.path(ModelPath, paste0(ModelID, "_TargetLevels.csv")))
