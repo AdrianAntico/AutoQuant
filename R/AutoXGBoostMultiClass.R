@@ -127,7 +127,7 @@
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvaluationMetrics.csv, GridCollect, GridList, and TargetLevels
 #' @export
-AutoXGBoostMultiClass <- function(OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "Score_TrainData"),
+AutoXGBoostMultiClass <- function(OutputSelection = c("Importances", "EvalMetrics", "Score_TrainData"),
                                   data = NULL,
                                   TrainOnFull = FALSE,
                                   ValidationData = NULL,
@@ -168,6 +168,9 @@ AutoXGBoostMultiClass <- function(OutputSelection = c("Importances", "EvalPlots"
                                   alpha = 0,
                                   lambda = 1) {
 
+  print("AutoXGBoostMultiClass 1")
+  print(EncodingMethod)
+
   # ----
 
   # ----
@@ -198,7 +201,7 @@ AutoXGBoostMultiClass <- function(OutputSelection = c("Importances", "EvalPlots"
 
   # Data prep
   if(DebugMode) print("Data prep ----")
-  if(EncodingMethod %chin% c("target_encode", "credibility", "m_estimator", "woe")) EncodingMethod <- "poly_encode"
+  #if(EncodingMethod %chin% c("target_encode", "credibility", "m_estimator", "woe")) EncodingMethod <- "poly_encode"
   Output <- XGBoostDataPrep(Algo="xgboost", ModelType="multiclass", data.=data, ValidationData.=ValidationData, TestData.=TestData, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, WeightsColumnName.=WeightsColumnName, IDcols.=IDcols, TransformNumericColumns.=NULL, Methods.=NULL, ModelID.=ModelID, model_path.=model_path, TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, ReturnFactorLevels.=ReturnFactorLevels, EncodingMethod.=EncodingMethod, DebugMode.=DebugMode)
   FactorLevelsList <- Output$FactorLevelsList; Output$FactorLevelsList <- NULL
   FinalTestTarget <- Output$FinalTestTarget; Output$FinalTestTarget <- NULL
@@ -219,6 +222,16 @@ AutoXGBoostMultiClass <- function(OutputSelection = c("Importances", "EvalPlots"
   dataTest <- Output$dataTest; Output$dataTest <- NULL
   IDcols <- Output$IDcols; Output$IDcols <- NULL
   Names <- Output$Names; rm(Output)
+
+  # Need TargetLevels from CatBoostDataPrep() so this code block is here instead of before CatBoostDataPrep()
+  ArgsList[['TargetLevels']] <- TargetLevels
+  if(SaveModelObjects) {
+    if(!is.null(metadata_path)) {
+      save(ArgsList, file = file.path(metadata_path, paste0(ModelID, "_ArgsList.Rdata")))
+    } else if(!is.null(model_path)) {
+      save(ArgsList, file = file.path(model_path, paste0(ModelID, "_ArgsList.Rdata")))
+    }
+  }
 
   # ----
 

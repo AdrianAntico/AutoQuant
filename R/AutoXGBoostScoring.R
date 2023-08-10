@@ -96,7 +96,10 @@ AutoXGBoostScoring <- function(TargetType = NULL,
                                MDP_CharToFactor = TRUE,
                                MDP_RemoveDates = TRUE,
                                MDP_MissFactor = "0",
-                               MDP_MissNum = -1) {
+                               MDP_MissNum = -1,
+                               Debug = FALSE) {
+
+  if(Debug) print("XGBoost Scoring 1")
 
   # Check arguments ----
   if(is.null(ScoringData)) stop("ScoringData cannot be NULL")
@@ -109,10 +112,12 @@ AutoXGBoostScoring <- function(TargetType = NULL,
   if(!is.numeric(MDP_MissNum)) stop("MDP_MissNum should be a numeric or integer value")
 
   # IDcols conversion ----
+  if(Debug) print("XGBoost Scoring 2")
   if(is.numeric(IDcols)) IDcols <- names(data)[IDcols]
   if('ID_Factorizer' %in% names(ScoringData)) data.table::set(ScoringData, j = 'ID_Factorizer', value = NULL)
 
   # Apply Transform Numeric Variables----
+  if(Debug) print("XGBoost Scoring 3")
   if(TransformNumeric) {
     if(!is.null(TransformationObject)) {
       tempTrans <- data.table::copy(TransformationObject)
@@ -124,6 +129,7 @@ AutoXGBoostScoring <- function(TargetType = NULL,
   }
 
   # Subset Columns Needed----
+  if(Debug) print("XGBoost Scoring 4")
   if(is.numeric(FeatureColumnNames) || is.integer(FeatureColumnNames)) {
     keep1 <- names(ScoringData)[c(FeatureColumnNames)]
     if(!is.null(IDcols)) keep <- c(IDcols, keep1) else keep <- c(keep1)
@@ -142,6 +148,7 @@ AutoXGBoostScoring <- function(TargetType = NULL,
   }
 
   # DummifyDT categorical columns ----
+  if(Debug) print("XGBoost Scoring 5")
   if(!is.null(EncodingMethod) && EncodingMethod == "binary") {
     if(!is.null(FactorLevelsList)) {
       ScoringData <- Rodeo::DummifyDT(data=ScoringData, cols=names(FactorLevelsList)[-length(names(FactorLevelsList))], KeepFactorCols=FALSE, OneHot=FALSE, SaveFactorLevels=FALSE, SavePath=ModelPath, ImportFactorLevels=FALSE, FactorLevelsList=FactorLevelsList, ReturnFactorLevels=FALSE, ClustScore=FALSE, GroupVar=TRUE)
@@ -221,9 +228,11 @@ AutoXGBoostScoring <- function(TargetType = NULL,
   }
 
   # Load model ----
+  if(Debug) print("XGBoost Scoring 6")
   if(!is.null(ModelObject)) model <- ModelObject else model <- tryCatch({load(file.path(ModelPath, ModelID))}, error = function(x) stop(paste0("Model not found in ModelPath: " , file.path(ModelPath, ModelID))))
 
   # ModelDataPrep Check ----
+  if(Debug) print("XGBoost Scoring 7")
   ScoringData <- Rodeo::ModelDataPrep(data = ScoringData, Impute = MDP_Impute, CharToFactor = MDP_CharToFactor, RemoveDates = MDP_RemoveDates, MissFactor = MDP_MissFactor, MissNum = MDP_MissNum)
   a <- which(!names(ScoringData) %in% model$feature_names)
   if(!identical(a, integer(0))) data.table::set(ScoringData, j = c(names(ScoringData)[which(!names(ScoringData) %in% model$feature_names)]), value = NULL)
@@ -256,15 +265,18 @@ AutoXGBoostScoring <- function(TargetType = NULL,
 
 
   # Initialize XGBoost Data Conversion ----
+  if(Debug) print("XGBoost Scoring 8")
   ScoringMatrix <- xgboost::xgb.DMatrix(as.matrix(ScoringData))
 
   # Score model ----
+  if(Debug) print("XGBoost Scoring 9")
   if(tolower(TargetType) != "multiclass") {
     predict <- data.table::as.data.table(stats::predict(model, ScoringMatrix))
     if(ReturnShapValues) ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(ScoringData), model = ModelObject, features = names(ScoringData))$shap_contrib)
   }
 
   # Change Output Predictions Column Name ----
+  if(Debug) print("XGBoost Scoring 10")
   if(tolower(TargetType) == "classification") {
     data.table::setnames(predict, "V1", "p1")
   } else if(tolower(TargetType) == "regression") {
@@ -277,6 +289,7 @@ AutoXGBoostScoring <- function(TargetType = NULL,
   }
 
   # Merge features back ----
+  if(Debug) print("XGBoost Scoring 11")
   if(ReturnFeatures && ReturnShapValues) {
     predict <- cbind(predict, ScoringMerge, ShapValues)
   } else if(ReturnFeatures) {
@@ -286,6 +299,7 @@ AutoXGBoostScoring <- function(TargetType = NULL,
   }
 
   # Back Transform Numeric Variables ----
+  if(Debug) print("XGBoost Scoring 12")
   if(BackTransNumeric) {
     grid_trans_results <- data.table::copy(TransformationObject)
     grid_trans_results <- grid_trans_results[ColumnName != eval(TargetColumnName)]
@@ -294,5 +308,6 @@ AutoXGBoostScoring <- function(TargetType = NULL,
   }
 
   # Return data ----
+  if(Debug) print("XGBoost Scoring 13")
   return(predict)
 }
