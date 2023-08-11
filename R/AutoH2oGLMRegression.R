@@ -217,14 +217,12 @@ AutoH2oGLMRegression <- function(OutputSelection = c("EvalMetrics", "Score_Train
   if(SaveModelObjects) {
     if(!is.null(metadata_path)) {
       save(ArgsList, file = file.path(metadata_path, paste0(ModelID, "_ArgsList.Rdata")))
-    } else if(!is.null(model_path)) {
-      save(ArgsList, file = file.path(model_path, paste0(ModelID, "_ArgsList.Rdata")))
     }
   }
 
   # Data Prepare ----
   if(DebugMode) print("Data Prepare ----")
-  Output <- H2ODataPrep(TargetType.="regression", TargetColumnName.=TargetColumnName, data.=data, ValidationData.=ValidationData, TestData.=TestData, TrainOnFull.=TrainOnFull, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, model_path.=model_path, ModelID.=ModelID, TransformNumericColumns.=TransformNumericColumns, Methods.=Methods)
+  Output <- H2ODataPrep(TargetType.="regression", TargetColumnName.=TargetColumnName, data.=data, ValidationData.=ValidationData, TestData.=TestData, TrainOnFull.=TrainOnFull, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, model_path.=metadata_path, ModelID.=ModelID, TransformNumericColumns.=TransformNumericColumns, Methods.=Methods)
   TransformationResults <- Output$TransformationResults; Output$TransformationResults <- NULL
   dataTrain <- Output$dataTrain; Output$dataTrain <- NULL
   dataTest <- Output$dataTest; Output$dataTest <- NULL
@@ -348,7 +346,7 @@ AutoH2oGLMRegression <- function(OutputSelection = c("EvalMetrics", "Score_Train
   # Create Train Validation Data ----
   if(DebugMode) print("Create Validation Data ----")
   if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull) {
-    Output <- H2OValidationData(Predict.=Predict, TestData.=NULL, dataTest.=NULL, dataTrain.=dataTrain, TrainOnFull.=TRUE, SaveModelObjects.=SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID, TransformNumericColumns.=NULL, TransformationResults.=NULL, TargetColumnName.=NULL, data.=NULL)
+    Output <- H2OValidationData(Predict.=Predict, TestData.=NULL, dataTest.=NULL, dataTrain.=dataTrain, TrainOnFull.=TRUE, SaveModelObjects.=SaveModelObjects, metadata_path.=metadata_path, model_path.=metadata_path, ModelID.=ModelID, TransformNumericColumns.=NULL, TransformationResults.=NULL, TargetColumnName.=NULL, data.=NULL)
     TrainData <- Output$ValidationData; rm(Output)
   }
 
@@ -356,12 +354,12 @@ AutoH2oGLMRegression <- function(OutputSelection = c("EvalMetrics", "Score_Train
   Predict <- data.table::as.data.table(h2o::h2o.predict(object = base_model, newdata = if(!is.null(TestData)) datatest else if(!TrainOnFull) datavalidate else datatrain))
 
   # Create Validation Data ----
-  Output <- H2OValidationData(Predict.=Predict, TestData.=if(H2OArgs[['HGLM']]) NULL else TestData, dataTest.=dataTest, dataTrain.=dataTrain, TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID, TransformNumericColumns.=NULL, TransformationResults.=NULL, TargetColumnName.=NULL, data.=NULL)
+  Output <- H2OValidationData(Predict.=Predict, TestData.=if(H2OArgs[['HGLM']]) NULL else TestData, dataTest.=dataTest, dataTrain.=dataTrain, TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, metadata_path.=metadata_path, model_path.=metadata_path, ModelID.=ModelID, TransformNumericColumns.=NULL, TransformationResults.=NULL, TargetColumnName.=NULL, data.=NULL)
   ValidationData <- Output$ValidationData; rm(Output)
 
   # Variable Importance ----
   if(DebugMode) print("Variable Importance ----")
-  VariableImportance <- H2OVariableImportance(TrainOnFull.=TrainOnFull, base_model.=base_model, SaveModelObjects.=SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID)
+  VariableImportance <- H2OVariableImportance(TrainOnFull.=TrainOnFull, base_model.=base_model, SaveModelObjects.=SaveModelObjects, metadata_path.=metadata_path, model_path.=metadata_path, ModelID.=ModelID)
 
   # H2O Explain TrainData ----
   if(DebugMode) print("H2O Explain TrainData ----")
@@ -385,9 +383,9 @@ AutoH2oGLMRegression <- function(OutputSelection = c("EvalMetrics", "Score_Train
   EvalMetricsList <- list()
   if("evalmetrics" %chin% tolower(OutputSelection)) {
     if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull) {
-      EvalMetricsList[["TrainData"]] <- RegressionMetrics(SaveModelObjects.=SaveModelObjects, data.=data, ValidationData.=TrainData, TrainOnFull.=TrainOnFull, LossFunction.=eval_metric, EvalMetric.=eval_metric, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
+      EvalMetricsList[["TrainData"]] <- RegressionMetrics(SaveModelObjects.=SaveModelObjects, data.=data, ValidationData.=TrainData, TrainOnFull.=TrainOnFull, LossFunction.=eval_metric, EvalMetric.=eval_metric, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=metadata_path, metadata_path.=metadata_path)
     }
-    EvalMetricsList[["TestData"]] <- RegressionMetrics(SaveModelObjects.=SaveModelObjects, data.=data, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, LossFunction.=eval_metric, EvalMetric.=eval_metric, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
+    EvalMetricsList[["TestData"]] <- RegressionMetrics(SaveModelObjects.=SaveModelObjects, data.=data, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, LossFunction.=eval_metric, EvalMetric.=eval_metric, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=metadata_path, metadata_path.=metadata_path)
   }
 
   # Subset Transformation Object ----

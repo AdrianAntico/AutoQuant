@@ -224,7 +224,6 @@ AutoXGBoostScoring <- function(TargetType = NULL,
     FeatureColumnNames <- unique(FeatureColumnNames[!FeatureColumnNames %in% zz])
     FeatureColumnNames <- unique(c(FeatureColumnNames, setdiff(yy,xx)))
     CatFeatures <- NULL
-
   }
 
   # Load model ----

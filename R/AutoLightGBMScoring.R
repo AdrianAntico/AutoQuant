@@ -96,7 +96,8 @@ AutoLightGBMScoring <- function(TargetType = NULL,
                                 MDP_CharToFactor = TRUE,
                                 MDP_RemoveDates = TRUE,
                                 MDP_MissFactor = '0',
-                                MDP_MissNum = -1) {
+                                MDP_MissNum = -1,
+                                Debug = FALSE) {
 
   # Check arguments ----
   if(is.null(ScoringData)) stop('ScoringData cannot be NULL')

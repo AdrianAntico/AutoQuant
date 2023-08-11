@@ -163,7 +163,7 @@ FeatureStore <- function(dataTrain. = NULL,
       data.table::setnames(Names, "V1", "ColNames")
     }
   }
-  if(SaveModelObjects.) data.table::fwrite(Names, file = file.path(model_path., paste0(ModelID., "_ColNames.csv")))
+  if(SaveModelObjects. && length(model_path.) > 0L) data.table::fwrite(Names, file = file.path(model_path., paste0(ModelID., "_ColNames.csv")))
   return(Names)
 }
 
@@ -385,6 +385,7 @@ H2OSaveModel <- function(SaveModelObjects. = SaveModelObjects,
                          model_path. = model_path,
                          ModelID. = ModelID) {
   if(SaveModelObjects.) {
+    for(i in 1:10) print(IfSaveModel.)
     if(tolower(IfSaveModel.) == "mojo") {
       h2o::h2o.save_mojo(object = base_model., path = model_path., force = TRUE)
       h2o::h2o.download_mojo(model = base_model., path = model_path., get_genmodel_jar = TRUE, genmodel_path = model_path., genmodel_name = ModelID.)
@@ -457,10 +458,9 @@ H2OValidationData <- function(Predict. = Predict,
 
   # Save validation data
   if(SaveModelObjects.) {
+    for(aaa in 1:10) print(metadata_path.)
     if(!is.null(metadata_path.)) {
       data.table::fwrite(ValidationData, file = file.path(metadata_path., paste0(ModelID., "_ValidationData.csv")))
-    } else {
-      data.table::fwrite(ValidationData, file = file.path(model_path., paste0(ModelID., "_ValidationData.csv")))
     }
   }
 
@@ -492,8 +492,6 @@ H2OVariableImportance <- function(TrainOnFull. = TrainOnFull,
     if(SaveModelObjects.) {
       if(!is.null(metadata_path.)) {
         data.table::fwrite(VariableImportance, file = file.path(metadata_path., paste0(ModelID., "_VariableImportance.csv")))
-      } else {
-        data.table::fwrite(VariableImportance, file = file.path(model_path., paste0(ModelID., "_VariableImportance.csv")))
       }
     }
   } else {

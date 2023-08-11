@@ -482,8 +482,8 @@ MultiClassMetrics <- function(ModelClass = "catboost",
                               TargetColumnName. = TargetColumnName,
                               TargetLevels. = TargetLevels,
                               ModelID. = ModelID,
-                              model_path. = model_path,
-                              metadata_path. = metadata_path,
+                              model_path. = NULL,
+                              metadata_path. = NULL,
                               Debug = FALSE) {
 
   # Convert Target Variable back to Categorical
@@ -585,9 +585,6 @@ MultiClassMetrics <- function(ModelClass = "catboost",
     if(!is.null(metadata_path.)) {
       if(tolower(DataType) == "train") data.table::fwrite(EvaluationMetrics, file = file.path(metadata_path., paste0(ModelID., "_Train_EvaluationMetrics.csv")))
       if(tolower(DataType) == "test") data.table::fwrite(EvaluationMetrics, file = file.path(metadata_path., paste0(ModelID., "_Test_EvaluationMetrics.csv")))
-    } else {
-      if(tolower(DataType) == "train") data.table::fwrite(EvaluationMetrics, file = file.path(model_path., paste0(ModelID., "_Train_EvaluationMetrics.csv")))
-      if(tolower(DataType) == "test") data.table::fwrite(EvaluationMetrics, file = file.path(model_path., paste0(ModelID., "_Test_EvaluationMetrics.csv")))
     }
   }
   if(Debug) print("# Return")

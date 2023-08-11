@@ -424,6 +424,16 @@ AutoLightGBMMultiClass <- function(data = NULL,
   IDcols <- Output$IDcols; Output$IDcols <- NULL
   Names <- Output$Names; rm(Output)
 
+  # Need TargetLevels from CatBoostDataPrep() so this code block is here instead of before CatBoostDataPrep()
+  ArgsList[['TargetLevels']] <- TargetLevels
+  if(SaveModelObjects) {
+    if(!is.null(metadata_path)) {
+      save(ArgsList, file = file.path(metadata_path, paste0(ModelID, "_ArgsList.Rdata")))
+    } else if(!is.null(model_path)) {
+      save(ArgsList, file = file.path(model_path, paste0(ModelID, "_ArgsList.Rdata")))
+    }
+  }
+
   # Weights Column
   if(!is.null(WeightsColumnName)) {
     params[["weight_column"]] <- which(WeightsColumnName %chin% names(dataTrain)) - 1L

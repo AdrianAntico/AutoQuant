@@ -92,7 +92,8 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
                              MDP_CharToFactor = TRUE,
                              MDP_RemoveDates = TRUE,
                              MDP_MissFactor = "0",
-                             MDP_MissNum = -1) {
+                             MDP_MissNum = -1,
+                             Debug = FALSE) {
 
   # Check arguments ----
   if(is.null(ScoringData)) stop("ScoringData cannot be NULL")
@@ -124,7 +125,7 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
   }
 
   # Initialize H2O ----
-  if(H2OStartUp) localHost <- h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem, enable_assertions = FALSE)
+  if(H2OStartUp && ModelType != "mojo") localHost <- h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem, enable_assertions = FALSE)
 
   # ModelDataPrep Check ----
   ScoringData <- Rodeo::ModelDataPrep(data = ScoringData, Impute = MDP_Impute, CharToFactor = MDP_CharToFactor, RemoveDates = MDP_RemoveDates, MissFactor = MDP_MissFactor, MissNum = MDP_MissNum)
@@ -140,18 +141,24 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
 
   # Make Predictions ----
   if(!is.null(ModelObject)) {
+    if(Debug) {
+      print("!is.null(ModelObject)")
+      print(ModelObject)
+    }
     predict <- data.table::as.data.table(h2o::h2o.predict(object = ModelObject, newdata = ScoreData))
   } else {
     if(tolower(ModelType) == "mojo") {
+      print("H2O Mojo Scoring Here")
+      print(file.path(ModelPath, paste0(ModelID, ".zip")))
       predict <- data.table::as.data.table(
         h2o::h2o.mojo_predict_df(
           frame = ScoreData,
-          mojo_zip_path = file.path(normalizePath(ModelPath), paste0(ModelID, ".zip")),
-          genmodel_jar_path = file.path(normalizePath(ModelPath), ModelID),
+          mojo_zip_path = file.path(ModelPath, paste0(ModelID, ".zip")),
+          genmodel_jar_path = file.path(ModelPath, ModelID),
           java_options = JavaOptions))
 
     } else if(tolower(ModelType) == "standard") {
-      model <- h2o::h2o.loadModel(path = file.path(normalizePath(ModelPath), ModelID))
+      model <- h2o::h2o.loadModel(path = file.path(ModelPath, ModelID))
       predict <- data.table::as.data.table(h2o::h2o.predict(object = model, newdata = ScoreData))
     }
   }
