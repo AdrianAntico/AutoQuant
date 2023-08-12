@@ -408,6 +408,7 @@ AutoH2oGLMRegression <- function(OutputSelection = c("EvalMetrics", "Score_Train
       EvaluationMetrics = if(exists("EvalMetricsList")) EvalMetricsList else NULL,
       VariableImportance = if(exists("VariableImportance")) VariableImportance else NULL,
       TransformationResults = if(exists("TransformationResults")) TransformationResults else NULL,
-      ColNames = if(exists("Names")) Names else NULL))
+      ColNames = if(exists("Names")) Names else NULL,
+      ArgsList = ArgsList))
   }
 }
