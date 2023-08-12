@@ -378,8 +378,6 @@ AutoH2oGBMClassifier <- function(OutputSelection = c("EvalMetrics","Score_TrainD
     if(SaveModelObjects) {
       if(!is.null(metadata_path)) {
         data.table::fwrite(EvalMetricsList[['TestData']], file = file.path(metadata_path, paste0(ModelID, "_Test_EvaluationMetrics.csv")))
-      } else if(!is.null(model_path)) {
-        data.table::fwrite(EvalMetricsList[['TestData']], file = file.path(model_path, paste0(ModelID, "_Test_EvaluationMetrics.csv")))
       }
     }
   }
