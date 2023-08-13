@@ -107,7 +107,6 @@
 #'   Trees = 50,
 #'   LearnRate = 0.10,
 #'   LearnRateAnnealing = 1,
-#'   eval_metric = "RMSE",
 #'   Distribution = "multinomial",
 #'   MaxDepth = 20,
 #'   SampleRate = 0.632,

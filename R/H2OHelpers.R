@@ -218,7 +218,10 @@ H2ODataPrep <- function(TargetType. = "classifier",
     # Target levels
     if(TargetType. == "multiclass") {
       if(!is.null(TestData.)) {
-        TargetLevels <- unique(c(unique(as.character(data.[[eval(TargetColumnName.)]])), unique(as.character(ValidationData.[[eval(TargetColumnName.)]])), unique(as.character(TestData.[[eval(TargetColumnName.)]]))))
+        TargetLevels <- unique(
+          as.character(data.[[eval(TargetColumnName.)]]),
+          as.character(ValidationData.[[eval(TargetColumnName.)]]),
+          as.character(TestData.[[eval(TargetColumnName.)]]))
       } else {
         TargetLevels <- unique(as.character(data.[[eval(TargetColumnName.)]]))
       }
