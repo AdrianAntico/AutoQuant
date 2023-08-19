@@ -237,10 +237,9 @@ Run_ModelInsightsReport <- function(# Meta info
 
   # Regression Markdown
   if(tolower(TargetType) == 'regression') {
-    quarto::quarto_render(
-      input = file.path(appDir, 'Regression.qmd'),#'Regression_ModelInsights.Rmd'),
-      #input = file.path('C:/Users/Bizon/Documents/GitHub/AutoQuant/inst/r-markdowns/Regression_ModelInsights.Rmd'),
-      output_format = "html",
+    rmarkdown::render(
+      input = file.path(appDir, 'Regression.Rmd'),#'Regression_ModelInsights.Rmd'),
+      # input = file.path('C:/Users/Bizon/Documents/GitHub/AutoQuant/inst/r-markdowns/Regression_ModelInsights.Rmd'),
       output_file = paste0('ModelInsights-', ModelID, '-', TargetType))
       #output_file = file.path(OutputPathName))
   }
