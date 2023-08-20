@@ -296,7 +296,7 @@ AutoCatBoostClassifier <- function(OutputSelection = c('Importances','EvalPlots'
       data.table::setnames(predict, names(predict), 'p1')
       rm(predict_validate)
     }
-    TrainData <- CatBoostValidationData(ModelType='classification', TrainOnFull.=TRUE, TestDataCheck=FALSE, FinalTestTarget.=FinalTestTarget, TestTarget.=TestTarget, TrainTarget.=TrainTarget, TrainMerge.=TrainMerge, TestMerge.=TestMerge, dataTest.=dataTest, data.=dataTrain, predict.=predict, TargetColumnName.=TargetColumnName, SaveModelObjects. = SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID, LossFunction.=NULL, TransformNumericColumns.=NULL, GridTune.=GridTune, TransformationResults.=NULL, TargetLevels.=NULL)
+    TrainData <- CatBoostValidationData(ModelType='classification', TrainOnFull.=TRUE, TestDataCheck=FALSE, FinalTestTarget.=FinalTestTarget, TestTarget.=TestTarget, TrainTarget.=TrainTarget, TrainMerge.=TrainMerge, TestMerge.=TestMerge, dataTest.=dataTest, data.=dataTrain, predict.=predict, TargetColumnName.=TargetColumnName, SaveModelObjects. = SaveModelObjects, metadata_path.=metadata_path, model_path.=metadata_path, ModelID.=ModelID, LossFunction.=NULL, TransformNumericColumns.=NULL, GridTune.=GridTune, TransformationResults.=NULL, TargetLevels.=NULL)
     if(!'p1' %chin% names(TrainData)) data.table::setnames(TrainData, 'V1', 'p1')
   } else {
     TrainData <- NULL
@@ -308,12 +308,12 @@ AutoCatBoostClassifier <- function(OutputSelection = c('Importances','EvalPlots'
 
   # Validation Data (generate validation data, back transform, save to file) ----
   if(DebugMode) print('Running CatBoostValidationData()')
-  ValidationData <- CatBoostValidationData(ModelType='classification', TrainOnFull.=TrainOnFull, TestDataCheck=!is.null(TestData), FinalTestTarget.=FinalTestTarget, TestTarget.=TestTarget, TrainTarget.=TrainTarget, TestMerge.=TestMerge, dataTest.=dataTest, data.=data, predict.=predict, TargetColumnName.=TargetColumnName, SaveModelObjects. = SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID, LossFunction.=NULL, TransformNumericColumns.=NULL, GridTune.=GridTune, TransformationResults.=NULL, TargetLevels.=NULL)
+  ValidationData <- CatBoostValidationData(ModelType='classification', TrainOnFull.=TrainOnFull, TestDataCheck=!is.null(TestData), FinalTestTarget.=FinalTestTarget, TestTarget.=TestTarget, TrainTarget.=TrainTarget, TestMerge.=TestMerge, dataTest.=dataTest, data.=data, predict.=predict, TargetColumnName.=TargetColumnName, SaveModelObjects. = SaveModelObjects, metadata_path.=metadata_path, model_path.=metadata_path, ModelID.=ModelID, LossFunction.=NULL, TransformNumericColumns.=NULL, GridTune.=GridTune, TransformationResults.=NULL, TargetLevels.=NULL)
 
   # Gather importance and shap values ----
   if(DebugMode) print('Running CatBoostImportances()')
   if(any(c('importances','importance') %chin% tolower(OutputSelection))) {
-    Output <- tryCatch({CatBoostImportances(ModelType='classification', TargetColumnName.=TargetColumnName, TrainPool.=TrainPool, TestPool.=TestPool, FinalTestPool.=FinalTestPool, TrainData.=TrainData, ValidationData.=ValidationData, SaveModelObjects.=SaveModelObjects, model.=model, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, GrowPolicy.=GrowPolicy)}, error = function(x) list(Interaction = NULL, VariableImportance = NULL, ShapValues = NULL))
+    Output <- tryCatch({CatBoostImportances(ModelType='classification', TargetColumnName.=TargetColumnName, TrainPool.=TrainPool, TestPool.=TestPool, FinalTestPool.=FinalTestPool, TrainData.=TrainData, ValidationData.=ValidationData, SaveModelObjects.=SaveModelObjects, model.=model, ModelID.=ModelID, model_path.=metadata_path, metadata_path.=metadata_path, GrowPolicy.=GrowPolicy)}, error = function(x) list(Interaction = NULL, VariableImportance = NULL, ShapValues = NULL))
     VariableImportance <- Output$VariableImportance; Output$VariableImportance <- NULL
     Interaction <- Output$Interaction; Output$Interaction <- NULL
     ShapValues <- Output$ShapValues; rm(Output)
@@ -325,8 +325,8 @@ AutoCatBoostClassifier <- function(OutputSelection = c('Importances','EvalPlots'
   EvalMetrics2List <- list()
   if('evalmetrics' %chin% tolower(OutputSelection)) {
     if('score_traindata' %chin% tolower(OutputSelection) && !TrainOnFull) {
-      EvalMetricsList[['TrainData']] <- BinaryMetrics(ClassWeights.=ClassWeights, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=TrainData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = 'threshold')
-      EvalMetrics2List[['TrainData']] <- BinaryMetrics(ClassWeights.=ClassWeights, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=TrainData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = 'bins')
+      EvalMetricsList[['TrainData']] <- BinaryMetrics(ClassWeights.=ClassWeights, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=TrainData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=metadata_path, metadata_path.=metadata_path, Method = 'threshold')
+      EvalMetrics2List[['TrainData']] <- BinaryMetrics(ClassWeights.=ClassWeights, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=TrainData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=metadata_path, metadata_path.=metadata_path, Method = 'bins')
       if(SaveModelObjects) {
         if(!is.null(metadata_path)) {
           data.table::fwrite(EvalMetricsList[['TrainData']], file = file.path(metadata_path, paste0(ModelID, "_Train_EvaluationMetrics.csv")))
@@ -335,8 +335,8 @@ AutoCatBoostClassifier <- function(OutputSelection = c('Importances','EvalPlots'
         }
       }
     }
-    EvalMetricsList[['TestData']] <- BinaryMetrics(ClassWeights.=ClassWeights, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = 'threshold')
-    EvalMetrics2List[['TestData']] <- BinaryMetrics(ClassWeights.=ClassWeights, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = 'bins')
+    EvalMetricsList[['TestData']] <- BinaryMetrics(ClassWeights.=ClassWeights, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=metadata_path, metadata_path.=metadata_path, Method = 'threshold')
+    EvalMetrics2List[['TestData']] <- BinaryMetrics(ClassWeights.=ClassWeights, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=metadata_path, metadata_path.=metadata_path, Method = 'bins')
     if(SaveModelObjects) {
       if(!is.null(metadata_path)) {
         data.table::fwrite(EvalMetricsList[['TestData']], file = file.path(metadata_path, paste0(ModelID, "_Test_EvaluationMetrics.csv")))
@@ -351,7 +351,7 @@ AutoCatBoostClassifier <- function(OutputSelection = c('Importances','EvalPlots'
   PlotList <- list()
   if('evalplots' %chin% tolower(OutputSelection)) {
     if('score_traindata' %chin% tolower(OutputSelection) && !TrainOnFull) {
-      Output <- tryCatch({ML_EvalPlots(ModelType='classification', DataType = 'Train', TrainOnFull.=TrainOnFull, ValidationData.=TrainData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL)}, error = function(x) NULL)
+      Output <- tryCatch({ML_EvalPlots(ModelType='classification', DataType = 'Train', TrainOnFull.=TrainOnFull, ValidationData.=TrainData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=metadata_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL)}, error = function(x) NULL)
       if(length(Output) > 0L) {
         PlotList[['Train_EvaluationPlot']] <- Output$EvaluationPlot; Output$EvaluationPlot <- NULL
         PlotList[['Train_ParDepPlots']] <- Output$ParDepPlots; Output$ParDepPlots <- NULL
@@ -362,7 +362,7 @@ AutoCatBoostClassifier <- function(OutputSelection = c('Importances','EvalPlots'
         if(!is.null(VariableImportance$Validation_Importance) && "plotly" %chin% installed.packages()) PlotList[['Validation_VariableImportance']] <- plotly::ggplotly(VI_Plot(Type = 'catboost', VariableImportance$Validation_Importance)) else if(!is.null(VariableImportance$Validation_Importance)) PlotList[['Validation_VariableImportance']] <- VI_Plot(Type = 'catboost', VariableImportance$Validation_Importance)
       }
     }
-    Output <- tryCatch({ML_EvalPlots(ModelType='classification', DataType = 'Test', TrainOnFull.=TrainOnFull, ValidationData.=ValidationData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL)}, error = function(x) NULL)
+    Output <- tryCatch({ML_EvalPlots(ModelType='classification', DataType = 'Test', TrainOnFull.=TrainOnFull, ValidationData.=ValidationData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=metadata_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL)}, error = function(x) NULL)
     if(length(Output) > 0L) {
       PlotList[['Test_EvaluationPlot']] <- Output$EvaluationPlot; Output$EvaluationPlot <- NULL
       PlotList[['Test_ParDepPlots']] <- Output$ParDepPlots; Output$ParDepPlots <- NULL

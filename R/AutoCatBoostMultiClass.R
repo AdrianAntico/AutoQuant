@@ -312,7 +312,7 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalMetri
       predict <- data.table::rbindlist(list(predict, predict_validate))
       rm(predict_validate)
     }
-    TrainData <- CatBoostValidationData(ModelType='multiclass', TrainOnFull.=TRUE, TestDataCheck=FALSE, FinalTestTarget.=FinalTestTarget, TestTarget.=TestTarget, TrainTarget.=TrainTarget, TrainMerge.=TrainMerge, TestMerge.=TestMerge, dataTest.=dataTest, data.= TrainMerge, predict.=predict, TargetColumnName.=TargetColumnName, SaveModelObjects. = SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID, LossFunction.=NULL, TransformNumericColumns.=NULL, GridTune.=GridTune, TransformationResults.=NULL, TargetLevels.=TargetLevels, Debug = DebugMode)
+    TrainData <- CatBoostValidationData(ModelType='multiclass', TrainOnFull.=TRUE, TestDataCheck=FALSE, FinalTestTarget.=FinalTestTarget, TestTarget.=TestTarget, TrainTarget.=TrainTarget, TrainMerge.=TrainMerge, TestMerge.=TestMerge, dataTest.=dataTest, data.= TrainMerge, predict.=predict, TargetColumnName.=TargetColumnName, SaveModelObjects. = SaveModelObjects, metadata_path.=metadata_path, model_path.=metadata_path, ModelID.=ModelID, LossFunction.=NULL, TransformNumericColumns.=NULL, GridTune.=GridTune, TransformationResults.=NULL, TargetLevels.=TargetLevels, Debug = DebugMode)
   } else {
     TrainData <- NULL
   }
@@ -330,12 +330,12 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalMetri
 
   # MultiClass Validation Data (generate validation data, save to file) ----
   if(DebugMode) print('Running CatBoostValidationData()')
-  ValidationData <- CatBoostValidationData(ModelType='multiclass', TrainOnFull.=TrainOnFull, TestDataCheck=!is.null(TestData), FinalTestTarget.=FinalTestTarget, TestTarget.=TestTarget, TrainMerge.=NULL, TrainTarget.=TrainTarget, TestMerge.=TestMerge, dataTest.=dataTest, data.=data, predict.=predict, TargetColumnName.=TargetColumnName, SaveModelObjects. = SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID, LossFunction.=NULL, TransformNumericColumns.=NULL, GridTune. = GridTune, TransformationResults. = NULL, TargetLevels.=TargetLevels, Debug = DebugMode)
+  ValidationData <- CatBoostValidationData(ModelType='multiclass', TrainOnFull.=TrainOnFull, TestDataCheck=!is.null(TestData), FinalTestTarget.=FinalTestTarget, TestTarget.=TestTarget, TrainMerge.=NULL, TrainTarget.=TrainTarget, TestMerge.=TestMerge, dataTest.=dataTest, data.=data, predict.=predict, TargetColumnName.=TargetColumnName, SaveModelObjects. = SaveModelObjects, metadata_path.=metadata_path, model_path.=metadata_path, ModelID.=ModelID, LossFunction.=NULL, TransformNumericColumns.=NULL, GridTune. = GridTune, TransformationResults. = NULL, TargetLevels.=TargetLevels, Debug = DebugMode)
 
   # Gather importance and shap values ----
   if(DebugMode) print('Running CatBoostImportances()')
   if(any(c('importances','importance') %chin% tolower(OutputSelection))) {
-    Output <- tryCatch({CatBoostImportances(ModelType='multiclass', TargetColumnName.=TargetColumnName, TrainPool.=TrainPool, TestPool.=TestPool, FinalTestPool.=FinalTestPool, ValidationData.=ValidationData, SaveModelObjects.=SaveModelObjects, model.=model, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, GrowPolicy.=GrowPolicy)}, error = function(x) list(Interaction = NULL, VariableImportance = NULL, ShapValues = NULL))
+    Output <- tryCatch({CatBoostImportances(ModelType='multiclass', TargetColumnName.=TargetColumnName, TrainPool.=TrainPool, TestPool.=TestPool, FinalTestPool.=FinalTestPool, ValidationData.=ValidationData, SaveModelObjects.=SaveModelObjects, model.=model, ModelID.=ModelID, model_path.=metadata_path, metadata_path.=metadata_path, GrowPolicy.=GrowPolicy)}, error = function(x) list(Interaction = NULL, VariableImportance = NULL, ShapValues = NULL))
     VariableImportance <- Output$VariableImportance; Output$VariableImportance <- NULL
     Interaction <- Output$Interaction; Output$Interaction <- NULL
   }
@@ -343,9 +343,9 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalMetri
   # Generate EvaluationMetrics ----
   if(DebugMode) print('Running MultiClassMetrics()')
   MultinomialMetrics <- list()
-  MultinomialMetrics[['TestData']] <- MultiClassMetrics(ModelClass='catboost', DataType = 'Test', SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, PredictData.=predict, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, TargetLevels.=TargetLevels, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Debug = DebugMode)
+  MultinomialMetrics[['TestData']] <- MultiClassMetrics(ModelClass='catboost', DataType = 'Test', SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, PredictData.=predict, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, TargetLevels.=TargetLevels, ModelID.=ModelID, model_path.=metadata_path, metadata_path.=metadata_path, Debug = DebugMode)
   if('score_traindata' %chin% tolower(OutputSelection) && !TrainOnFull) {
-    MultinomialMetrics[['TrainData']] <- MultiClassMetrics(ModelClass='catboost', DataType = 'Train', SaveModelObjects.=SaveModelObjects, ValidationData.=TrainData, PredictData.=predict, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, TargetLevels.=TargetLevels, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Debug = DebugMode)
+    MultinomialMetrics[['TrainData']] <- MultiClassMetrics(ModelClass='catboost', DataType = 'Train', SaveModelObjects.=SaveModelObjects, ValidationData.=TrainData, PredictData.=predict, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, TargetLevels.=TargetLevels, ModelID.=ModelID, model_path.=metadata_path, metadata_path.=metadata_path, Debug = DebugMode)
   }
 
   # Confusion Martix
@@ -362,23 +362,21 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalMetri
       for(tarlevel in as.character(unique(TargetLevels[['OriginalLevels']]))) {
         TrainData[, p1 := get(tarlevel)]
         TrainData[, paste0('Temp_',tarlevel) := data.table::fifelse(get(TargetColumnName) == eval(tarlevel), 1, 0)]
-        EvalMetricsList[[paste0('TrainData_',tarlevel)]] <- BinaryMetrics(ClassWeights.=c(1,1), CostMatrixWeights.=c(1,0,0,1), SaveModelObjects.=SaveModelObjects, ValidationData.=TrainData, TrainOnFull.=TrainOnFull, TargetColumnName.=paste0('Temp_',tarlevel), ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = 'threshold')
-        EvalMetrics2List[[paste0('TrainData_',tarlevel)]] <- BinaryMetrics(ClassWeights.=c(1,1), CostMatrixWeights.=c(1,0,0,1), SaveModelObjects.=SaveModelObjects, ValidationData.=TrainData, TrainOnFull.=TrainOnFull, TargetColumnName.=paste0('Temp_',tarlevel), ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = 'bins')
+        EvalMetricsList[[paste0('TrainData_',tarlevel)]] <- BinaryMetrics(ClassWeights.=c(1,1), CostMatrixWeights.=c(1,0,0,1), SaveModelObjects.=SaveModelObjects, ValidationData.=TrainData, TrainOnFull.=TrainOnFull, TargetColumnName.=paste0('Temp_',tarlevel), ModelID.=ModelID, model_path.=metadata_path, metadata_path.=metadata_path, Method = 'threshold')
+        EvalMetrics2List[[paste0('TrainData_',tarlevel)]] <- BinaryMetrics(ClassWeights.=c(1,1), CostMatrixWeights.=c(1,0,0,1), SaveModelObjects.=SaveModelObjects, ValidationData.=TrainData, TrainOnFull.=TrainOnFull, TargetColumnName.=paste0('Temp_',tarlevel), ModelID.=ModelID, model_path.=metadata_path, metadata_path.=metadata_path, Method = 'bins')
         data.table::set(TrainData, j = c('p1',paste0('Temp_',tarlevel)), value = NULL)
       }
     }
     for(tarlevel in as.character(unique(TargetLevels[['OriginalLevels']]))) {
       ValidationData[, p1 := get(tarlevel)]
       ValidationData[, paste0('Temp_',tarlevel) := data.table::fifelse(get(TargetColumnName) == eval(tarlevel), 1, 0)]
-      EvalMetricsList[[paste0('TestData_',tarlevel)]] <- BinaryMetrics(ClassWeights.=c(1,1), CostMatrixWeights.=c(1,0,0,1), SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=paste0('Temp_',tarlevel), ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = 'threshold')
-      EvalMetrics2List[[paste0('TestData_',tarlevel)]] <- BinaryMetrics(ClassWeights.=c(1,1), CostMatrixWeights.=c(1,0,0,1), SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=paste0('Temp_',tarlevel), ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = 'bins')
+      EvalMetricsList[[paste0('TestData_',tarlevel)]] <- BinaryMetrics(ClassWeights.=c(1,1), CostMatrixWeights.=c(1,0,0,1), SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=paste0('Temp_',tarlevel), ModelID.=ModelID, model_path.=metadata_path, metadata_path.=metadata_path, Method = 'threshold')
+      EvalMetrics2List[[paste0('TestData_',tarlevel)]] <- BinaryMetrics(ClassWeights.=c(1,1), CostMatrixWeights.=c(1,0,0,1), SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=paste0('Temp_',tarlevel), ModelID.=ModelID, model_path.=metadata_path, metadata_path.=metadata_path, Method = 'bins')
       data.table::set(ValidationData, j = c('p1',paste0('Temp_',tarlevel)), value = NULL)
     }
     if(SaveModelObjects) {
       if(!is.null(metadata_path)) {
         save(EvalMetricsList, file = file.path(metadata_path, paste0(ModelID, "_EvaluationMetrics.Rdata")))
-      } else if(!is.null(model_path)) {
-        save(EvalMetricsList, file = file.path(model_path, paste0(ModelID, "_EvaluationMetrics.Rdata")))
       }
     }
   }
@@ -395,7 +393,7 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalMetri
         TrainData[, p1 := get(tarlevel)]
         TrainData[, paste0('Temp_',tarlevel) := data.table::fifelse(get(TargetColumnName) == eval(tarlevel), 1, 0)]
         if(length(unique(TrainData[[paste0('Temp_',tarlevel)]])) == 1) next
-        Output <- tryCatch({ML_EvalPlots(ModelType='multiclass', DataType = 'Train', TrainOnFull.=TrainOnFull, ValidationData.=TrainData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=paste0('Temp_',tarlevel), FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL, TargetLevel = tarlevel)}, error = function(x) NULL)
+        Output <- tryCatch({ML_EvalPlots(ModelType='multiclass', DataType = 'Train', TrainOnFull.=TrainOnFull, ValidationData.=TrainData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=paste0('Temp_',tarlevel), FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=metadata_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL, TargetLevel = tarlevel)}, error = function(x) NULL)
         if(length(Output) > 0L) {
           PlotList[[paste0('Train_EvaluationPlot_',tarlevel)]] <- Output[['EvaluationPlot']]; Output[['EvaluationPlot']] <- NULL
           PlotList[[paste0('Train_ParDepPlots_',tarlevel)]] <- Output[['ParDepPlots']]; Output[['ParDepPlots']] <- NULL
@@ -411,7 +409,7 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalMetri
       ValidationData[, p1 := get(tarlevel)]
       ValidationData[, paste0('Temp_',tarlevel) := data.table::fifelse(get(TargetColumnName) == eval(tarlevel), 1, 0)]
       if(length(unique(ValidationData[[paste0('Temp_',tarlevel)]])) == 1) next
-      Output <- tryCatch({ML_EvalPlots(ModelType='multiclass', DataType = 'Test', TrainOnFull.=TrainOnFull, ValidationData.=ValidationData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=paste0('Temp_',tarlevel), FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL, TargetLevel = tarlevel)}, error = function(x) NULL)
+      Output <- tryCatch({ML_EvalPlots(ModelType='multiclass', DataType = 'Test', TrainOnFull.=TrainOnFull, ValidationData.=ValidationData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=paste0('Temp_',tarlevel), FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=metadata_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL, TargetLevel = tarlevel)}, error = function(x) NULL)
       if(length(Output) > 0L) {
         PlotList[[paste0('Test_EvaluationPlot_',tarlevel)]] <- Output[['EvaluationPlot']]; Output[['EvaluationPlot']] <- NULL
         PlotList[[paste0('Test_ParDepPlots_',tarlevel)]] <- Output[['ParDepPlots']]; Output[['ParDepPlots']] <- NULL
