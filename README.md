@@ -3761,6 +3761,8 @@ Output <- AutoQuant::AutoXGBoostHurdleModelScoring(
 <details><summary>Expand to view content</summary>
 <p>
 
+<img src="https://github.com/AdrianAntico/AutoQuant/blob/master/Images/MLReports.png?raw=true" align="center" width="800" />
+
 <details><summary>Regression ModelInsightsReport() Example</summary>
 <p>
 
