@@ -3956,41 +3956,8 @@ AutoQuant::ModelInsightsReport(
 </details>
 
 
-
-<details><summary>AutoShapeShap() Example</summary>
-<p>
-
-```r
-ShapTable <- AutoShapeShap(
-  ScoringData = TestData,
-  Threads = max(1L, parallel::detectCores()-2L),
-  DateColumnName = "Date",
-  ByVariableName = "GroupVariable")
-```
-
-</p>
-</details>
-
-<details><summary>SingleRowShapeShap() Example</summary>
-<p>
-
-```r
-ShapTable <- SingleRowShapeShap(
-  ShapData = SinglePrediction, 
-  EntityID = "UserID", 
-  DateColumnName = "DateTime")
-```
-
-</p>
-</details>
-
-
 <details><summary>Functions Description</summary>
 <p>
-
-<code>AutoShapeShap()</code> will take your CatBoost or XGBoost TestData or TrainData returned from one of the supervised learning functions and build out a table. The table will have columns, 'Date', 'EntityID', 'Variable', 'AbsShapValue', 'ShapValue', 'CurrentValue', 'DiffValue', 'PreviousValue' which can be used to analyze variable importance for any slice of the data. A few interesting areas to investigate include varible importance by records associated with a classifier label of 1 vs 0, for different grouping levels, and for different time slices. Further, if you analyze the ShapeValue column you will get a directional variable importance instead of a magnitute importance. You can further analyze the data by looking at standard deviation of ShapValues or any other aggregations method of interest. The function runs row by row so I set it up to run in parallel. You can specify the number of cores to utilize in case you have other processes running on your computer. The function calls the SingleRowShapeShap() function repeatedly. If you want to return information from the Shap Table for a single record you can run SingleRowShapeShap().
-
-<code>SingleRowShapeShap()</code> Generate a table of shap values, current value, and diff values if diff variables are present, for a single predicted value.
 
 <code>ParDepCalPlots()</code> is for visualizing the relationships of features and the reliability of the model in predicting those effects. Build a partial dependence calibration line plot, box plot or bar plot for the case of categorical variables. For numeric variables, if you have a date variable you can supply the name of that column and a time aggregation to return a heatmap as well, which captures the relationship over time.
 
