@@ -1,10 +1,10 @@
 ---
-title: "MultiClass Evaluation & Insights"
+title: "MultiClass ML Report"
 author: "Provided by AutoQuant"
 date: "`r format(Sys.time(), '%Y-%m-%d')`"
 output:
   prettydoc::html_pretty:
-    theme: RemixAutoML
+    theme: cayman
     toc: yes
     toc_depth: 2
     fig_caption: yes
@@ -169,7 +169,7 @@ a:hover {
 .main-content code {
   padding: 2px 4px;
   font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
-  color: #222222;
+  color: #2c2c2d;
   background-color: #f3f6fa;
   border-radius: 0.3rem;
 }
@@ -178,7 +178,7 @@ a:hover {
   margin-top: 0;
   margin-bottom: 1rem;
   font: 1rem Consolas, "Liberation Mono", Menlo, Courier, monospace;
-  color: #222222;
+  color: #2c2c2d;
   word-wrap: normal;
   background-color: #e9edf9c9;
   border: solid 1px #001a35;
@@ -194,7 +194,7 @@ a:hover {
 .main-content pre > code {
   padding: 0;
   margin: 0;
-  color: #567482;
+  color: #2c2c2d;
   word-break: normal;
   white-space: pre;
   background: transparent;
@@ -229,7 +229,7 @@ a:hover {
 .main-content blockquote {
   padding: 0 1rem;
   margin-left: 0;
-  color: #819198;
+  color: #2c2c2d;
   border-left: 0.3rem solid #dce6f0;
   font-size: 1.2rem;
 }
@@ -340,7 +340,7 @@ if(!is.null(ModelObject)) {
   if(!is.null(Test_MultiClassMetrics)) Test_MultiClassMetrics[, Data_Source := 'Test']
   if(!is.null(Train_MultiClassMetrics)) Train_MultiClassMetrics[, Data_Source := 'Train']
 
-  # CatBoost only
+  # Metrics
   if(is.null(Test_MultiClassMetrics) && is.null(Train_MultiClassMetrics)) {
     All_MultiClassMetrics <- NULL
   } else if(!is.null(Test_MultiClassMetrics) && !is.null(Train_MultiClassMetrics)) {
@@ -366,6 +366,8 @@ if(!is.null(ModelObject)) {
   
   ## Model_VarImportanceTable ----
   if(tolower(Algo) == 'catboost') {
+    
+    # Store data
     Test_Importance <- ModelObject[['VariableImportance']][['Test_Importance']]
     Validation_Importance <- ModelObject[['VariableImportance']][['Validation_Importance']]
     Train_Importance <- ModelObject[['VariableImportance']][['Train_Importance']]
@@ -396,91 +398,32 @@ if(!is.null(ModelObject)) {
     } else {
       All_Importance <- NULL
     }
-    
+
   } else {
-    
-    #### Encoding-Based Models
-    if(is.null(Test_Importance_dt)) {
-      Test_Importance <- NULL
-    } else {
-      Test_Importance <- Test_Importance_dt
-    }
-    if(is.null(Validation_Importance_dt)) {
-      Validation_Importance <- NULL
-    } else {
-      Validation_Importance <- Validation_Importance_dt
-    }
-    if(is.null(Train_Importance_dt)) {
-      Train_Importance <- ModelObject[['VariableImportance']]
-    } else {
-      Train_Importance <- Train_Importance_dt
-    }
+
+    # Store data (xgb check, )
+    Test_Importance <- ModelObject[['VariableImportance']]
+    Validation_Importance <- NULL
+    Train_Importance <- NULL
     
     # Update Colnames
-    if(!is.null(Test_Importance)) data.table::setnames(Test_Importance, old = 'Importance', new = 'Test_Importance', skip_absent = TRUE)
-    if(!is.null(Validation_Importance)) data.table::setnames(Validation_Importance, old = 'Importance', new = 'Validation_Importance', skip_absent = TRUE)
-    if(!is.null(Train_Importance)) data.table::setnames(Train_Importance, old = 'Importance', new = 'Train_Importance', skip_absent = TRUE)
-
-    # CatBoost only
-    if(is.null(Test_Importance) && is.null(Validation_Importance) && is.null(Train_Importance)) {
-      All_Importance <- NULL
-    } else if(!is.null(Test_Importance) && !is.null(Validation_Importance) && !is.null(Train_Importance)) {
-      All_Importance <- merge(Test_Importance, Validation_Importance, by = 'Variable', all = TRUE)
-      All_Importance <- merge(All_Importance, Train_Importance, by = 'Variable', all = TRUE)
-    } else if(!is.null(Test_Importance) && !is.null(Validation_Importance) && is.null(Train_Importance)) {
-      All_Importance <- merge(Test_Importance, Validation_Importance, by = 'Variable', all = TRUE)
-    } else if(!is.null(Test_Importance) && is.null(Validation_Importance) && !is.null(Train_Importance)) {
-      All_Importance <- merge(Test_Importance, Train_Importance, by = 'Variable', all = TRUE)
-    } else if(is.null(Test_Importance) && !is.null(Validation_Importance) && !is.null(Train_Importance)) {
-      All_Importance <- merge(Validation_Importance, Train_Importance, by = 'Variable', all = TRUE)
-    } else if(is.null(Test_Importance) && is.null(Validation_Importance) && !is.null(Train_Importance)) {
-      All_Importance <- Train_Importance
-    } else if(is.null(Test_Importance) && !is.null(Validation_Importance) && is.null(Train_Importance)) {
-      All_Importance <- Validation_Importance
-    } else if(!is.null(Test_Importance) && is.null(Validation_Importance) && is.null(Train_Importance)) {
+    if(Algo %in% c("xgboost","lightgbm")) {
+      if(!is.null(Test_Importance)) data.table::setnames(Test_Importance, old = names(Test_Importance)[2], new = 'Test_Importance', skip_absent = TRUE)
+    } else {
+      # h2o col 3 is scaled importance which is preferred
+      if(!is.null(Test_Importance)) data.table::setnames(Test_Importance, old = names(Test_Importance)[3], new = 'Test_Importance', skip_absent = TRUE)
+    }
+    
+    # Non CatBoost only
+    if(!is.null(Test_Importance)) {
       All_Importance <- Test_Importance
     } else {
       All_Importance <- NULL
     }
+    
   }
   
-  ## Model_IntImportanceTable ----
-  if(tolower(Algo) == 'catboost') {
-    Test_Interaction <- ModelObject[['InteractionImportance']][['Test_Interaction']]
-    Validation_Interaction <- ModelObject[['InteractionImportance']][['Validation_Interaction']]
-    Train_Interaction <- ModelObject[['InteractionImportance']][['Train_Interaction']]
-    
-    # Update Colnames
-    if(!is.null(Test_Interaction)) data.table::setnames(Test_Interaction, old = 'score', new = 'Test_Importance', skip_absent = TRUE)
-    if(!is.null(Validation_Interaction)) data.table::setnames(Validation_Interaction, old = 'score', new = 'Validation_Importance', skip_absent = TRUE)
-    if(!is.null(Train_Interaction)) data.table::setnames(Train_Interaction, old = 'score', new = 'Train_Importance', skip_absent = TRUE)
-
-    # CatBoost only
-    if(is.null(Test_Interaction) && is.null(Validation_Interaction) && is.null(Train_Interaction)) {
-      All_Interaction <- NULL
-    } else if(!is.null(Test_Interaction) && !is.null(Validation_Interaction) && !is.null(Train_Interaction)) {
-      All_Interaction <- merge(Test_Interaction, Validation_Interaction, by = c('Features1','Features2'), all = TRUE)
-      All_Interaction <- merge(All_Interaction, Train_Interaction, by = c('Features1','Features2'), all = TRUE)
-      data.table::setorderv(x = All_Interaction, cols = names(All_Interaction)[3L], order = -1)
-    } else if(!is.null(Test_Interaction) && !is.null(Validation_Interaction) && is.null(Train_Interaction)) {
-      All_Interaction <- merge(Test_Interaction, Validation_Interaction, by = c('Features1','Features2'), all = TRUE)
-      data.table::setorderv(x = All_Interaction, cols = names(All_Interaction)[3L], order = -1)
-    } else if(!is.null(Test_Interaction) && is.null(Validation_Interaction) && !is.null(Train_Interaction)) {
-      All_Interaction <- merge(Test_Interaction, Train_Interaction, by = c('Features1','Features2'), all = TRUE)
-      data.table::setorderv(x = All_Interaction, cols = names(All_Interaction)[3L], order = -1)
-    } else if(is.null(Test_Interaction) && !is.null(Validation_Interaction) && !is.null(Train_Interaction)) {
-      All_Interaction <- merge(Validation_Interaction, Train_Interaction, by = c('Features1','Features2'), all = TRUE)
-      data.table::setorderv(x = All_Interaction, cols = names(All_Interaction)[3L], order = -1)
-    } else if(is.null(Test_Interaction) && is.null(Validation_Interaction) && !is.null(Train_Interaction)) {
-      All_Interaction <- Train_Interaction
-    } else if(is.null(Test_Interaction) && !is.null(Validation_Interaction) && is.null(Train_Interaction)) {
-      All_Interaction <- Validation_Interaction
-    } else if(!is.null(Test_Interaction) && is.null(Validation_Interaction) && is.null(Train_Interaction)) {
-      All_Interaction <- Test_Interaction
-    } else {
-      All_Interaction <- NULL
-    }
-  }
+  All_Interaction <- NULL
 }
 ``` 
 
@@ -1202,6 +1145,7 @@ if(!is.null(All_MultiClassMetrics)) {
   All_MultiClassMetrics <- All_MultiClassMetrics[Data_Source != 'Train']
   data.table::setcolorder(All_MultiClassMetrics, c(3L, 1L, 2L))
   reactable::reactable(
+    width = 1075,
     data = All_MultiClassMetrics,
     compact = TRUE,
     defaultPageSize = 10,
@@ -1257,6 +1201,7 @@ if(!is.null(Test_EvalMetrics)) {
   for(nam in names(Test_EvalMetrics)) {
     print(nam)
     reactable::reactable(
+      width = 1075,
       data = Test_EvalMetrics[[nam]],
       compact = TRUE,
       defaultPageSize = 10,
@@ -1307,6 +1252,7 @@ if(!is.null(Train_EvalMetrics)) {
   for(nam in names(Train_EvalMetrics)) {
     print(nam)
     reactable::reactable(
+      width = 1075,
       data = Train_EvalMetrics[[nam]],
       compact = TRUE,
       defaultPageSize = 10,
@@ -1359,6 +1305,7 @@ if(!is.null(Train_EvalMetrics)) {
 if(!is.null(All_Importance)) {
   data.table::setorderv(x = All_Importance, cols = names(All_Importance)[2L], order = -1L, na.last = TRUE)
   reactable::reactable(
+    width = 1075,
     data = All_Importance,
     compact = TRUE,
     defaultPageSize = 10,
@@ -1407,6 +1354,7 @@ if(!is.null(All_Importance)) {
 if(exists("All_Interaction") && !is.null(All_Interaction)) {
   data.table::setorderv(x = All_Interaction, cols = names(All_Interaction)[3L], order = -1L, na.last = TRUE)
   reactable::reactable(
+    width = 1075,
     data = All_Interaction,
     compact = TRUE,
     defaultPageSize = 10,
@@ -1437,7 +1385,7 @@ if(exists("All_Interaction") && !is.null(All_Interaction)) {
     )
   )
 } else {
-  print('No interaction importance data was provided')
+  print('Interaction importance is only available with CatBoost')
 }
 ```
 
@@ -1445,14 +1393,8 @@ if(exists("All_Interaction") && !is.null(All_Interaction)) {
 </p>
 
 
-
 </details>
 </p>
-
-
-
-
-
 
 
 # <font size="6">Evaluation Plots</font>
@@ -1873,6 +1815,7 @@ if(!is.null(ArgsList)) {
 ```{r Model_MetaData_GridMetrics, echo=FALSE}
 if(!is.null(GridMetrics)) {
   reactable::reactable(
+    width = 1075,
     data = GridMetrics[order(-MetricValue)],
     compact = TRUE,
     defaultPageSize = 10,

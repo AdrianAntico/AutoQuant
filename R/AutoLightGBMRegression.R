@@ -148,7 +148,7 @@
 #' TestModel <- AutoQuant::AutoLightGBMRegression(
 #'
 #'   # Metadata args
-#'   OutputSelection = c('Importances','EvalPlots','EvalMetrics','Score_TrainData'),
+#'   OutputSelection = c('Importances','EvalMetrics','Score_TrainData'),
 #'   model_path = normalizePath('./'),
 #'   metadata_path = NULL,
 #'   ModelID = 'Test_Model_1',
@@ -413,7 +413,7 @@ AutoLightGBMRegression <- function(# data parameters
 
   # Data prep ----
   if(DebugMode) print('Data prep ----')
-  Output <- XGBoostDataPrep(Algo='lightgbm', ModelType='regression', data.=data, ValidationData.=ValidationData, TestData.=TestData, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, WeightsColumnName.=WeightsColumnName, IDcols.=IDcols, TransformNumericColumns.=TransformNumericColumns, Methods.=Methods, ModelID.=ModelID, model_path.=model_path, TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, ReturnFactorLevels.=ReturnFactorLevels, EncodingMethod.=EncodingMethod)
+  Output <- XGBoostDataPrep(Algo='lightgbm', ModelType='regression', data.=data, ValidationData.=ValidationData, TestData.=TestData, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, WeightsColumnName.=WeightsColumnName, IDcols.=IDcols, TransformNumericColumns.=TransformNumericColumns, Methods.=Methods, ModelID.=ModelID, model_path.=metadata_path, TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, ReturnFactorLevels.=ReturnFactorLevels, EncodingMethod.=EncodingMethod)
   TransformNumericColumns <- Output$TransformNumericColumns; Output$TransformNumericColumns <- NULL
   TransformationResults <- Output$TransformationResults; Output$TransformationResults <- NULL
   FactorLevelsList <- Output$FactorLevelsList; Output$FactorLevelsList <- NULL
