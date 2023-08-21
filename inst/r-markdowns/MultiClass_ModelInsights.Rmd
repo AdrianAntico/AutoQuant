@@ -36,7 +36,7 @@ body {
   font-size: 16px;
   line-height: 1.5;
   color: #000000;
-  background-color: #9da9e7;
+  background: linear-gradient(180deg, #787989, #b7b8cf);
 }
 
 a {
@@ -169,7 +169,7 @@ a:hover {
 .main-content code {
   padding: 2px 4px;
   font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
-  color: #567482;
+  color: #222222;
   background-color: #f3f6fa;
   border-radius: 0.3rem;
 }
@@ -178,10 +178,10 @@ a:hover {
   margin-top: 0;
   margin-bottom: 1rem;
   font: 1rem Consolas, "Liberation Mono", Menlo, Courier, monospace;
-  color: #567482;
+  color: #222222;
   word-wrap: normal;
-  background-color: #f3f6fa;
-  border: solid 1px #dce6f0;
+  background-color: #e9edf9c9;
+  border: solid 1px #001a35;
   border-radius: 0.3rem;
   line-height: 1.45;
   overflow: auto;
@@ -795,7 +795,7 @@ if(!is.null(TestData)) {
   Test_EvaluationPlot <- AutoPlots::Plot.Calibration.Line(
     dt = TestData,
     AggMethod = "mean",
-    XVar = "Predict",
+    XVar = PredictionColumnName,
     YVar = TargetColumnName,
     GroupVar = NULL,
     YVarTrans = "Identity",
@@ -805,7 +805,7 @@ if(!is.null(TestData)) {
     FacetLevels = NULL,
     NumberBins = 21,
     Height = "600px",
-    Width = "1000px",
+    Width = "975px",
     Title = "Calibration Plot",
     ShowLabels = FALSE,
     Title.YAxis = TargetColumnName,
@@ -827,7 +827,7 @@ if(!is.null(TrainData)) {
   Train_EvaluationPlot <- AutoPlots::Plot.Calibration.Line(
     dt = TrainData,
     AggMethod = "mean",
-    XVar = "Predict",
+    XVar = PredictionColumnName,
     YVar = TargetColumnName,
     GroupVar = NULL,
     YVarTrans = "Identity",
@@ -837,7 +837,7 @@ if(!is.null(TrainData)) {
     FacetLevels = NULL,
     NumberBins = 21,
     Height = "600px",
-    Width = "1000px",
+    Width = "975px",
     Title = "Calibration Plot",
     ShowLabels = FALSE,
     Title.YAxis = TargetColumnName,
@@ -861,7 +861,7 @@ if(!is.null(TestData)) {
   Test_ROCPlot <- AutoPlots::Plot.ROC(
     dt = TestData,
     SampleSize = 10000,
-    XVar = "Predict",
+    XVar = PredictionColumnName,
     YVar = TargetColumnName,
     GroupVar = NULL,
     YVarTrans = "Identity",
@@ -871,7 +871,7 @@ if(!is.null(TestData)) {
     FacetLevels = NULL,
     AggMethod = "mean",
     Height = "600px",
-    Width = "1000px",
+    Width = "975px",
     Title = "Calibration Plot",
     ShowLabels = FALSE,
     Title.YAxis = TargetColumnName,
@@ -893,7 +893,7 @@ if(!is.null(TrainData)) {
   Train_ROCPlot <- AutoPlots::Plot.ROC(
     dt = TrainData,
     SampleSize = 10000,
-    XVar = "Predict",
+    XVar = PredictionColumnName,
     YVar = TargetColumnName,
     GroupVar = NULL,
     YVarTrans = "Identity",
@@ -903,7 +903,7 @@ if(!is.null(TrainData)) {
     FacetLevels = NULL,
     AggMethod = "mean",
     Height = "600px",
-    Width = "1000px",
+    Width = "975px",
     Title = "Calibration Plot",
     ShowLabels = FALSE,
     Title.YAxis = TargetColumnName,
@@ -924,7 +924,7 @@ if(!is.null(TestData)) {
   Test_CumGainsChart <- AutoPlots::Plot.Gains(
     dt = TestData,
     PreAgg = FALSE,
-    XVar = "Predict",
+    XVar = PredictionColumnName,
     YVar = TargetColumnName,
     ZVar = "N",
     GroupVar = NULL,
@@ -936,7 +936,7 @@ if(!is.null(TestData)) {
     FacetLevels = NULL,
     NumberBins = 20,
     Height = "600px",
-    Width = "1000px",
+    Width = "975px",
     Title = "Gains Plot",
     ShowLabels = FALSE,
     Title.YAxis = TargetColumnName,
@@ -957,7 +957,7 @@ if(!is.null(TrainData)) {
   Train_CumGainsChart <- AutoPlots::Plot.Gains(
     dt = TrainData,
     PreAgg = FALSE,
-    XVar = "Predict",
+    XVar = PredictionColumnName,
     YVar = TargetColumnName,
     ZVar = "N",
     GroupVar = NULL,
@@ -969,7 +969,7 @@ if(!is.null(TrainData)) {
     FacetLevels = NULL,
     NumberBins = 20,
     Height = "600px",
-    Width = "1000px",
+    Width = "975px",
     Title = "Gains Plot",
     ShowLabels = FALSE,
     Title.YAxis = TargetColumnName,
@@ -1023,7 +1023,7 @@ if(!is.null(TestData) && !is.null(FeatureColumnNames)) {
         NumberBins = 20,
         AggMethod = "mean",
         Height = "600px",
-        Width = "1000px",
+        Width = "975px",
         Title = "Partial Dependence Line",
         ShowLabels = FALSE,
         Title.YAxis = TargetColumnName,
@@ -1069,7 +1069,7 @@ if(!is.null(TrainData) && !is.null(FeatureColumnNames)) {
         NumberBins = 20,
         AggMethod = "mean",
         Height = "600px",
-        Width = "1000px",
+        Width = "975px",
         Title = "Partial Dependence Line",
         ShowLabels = FALSE,
         Title.YAxis = TargetColumnName,
@@ -1112,7 +1112,7 @@ if(!is.null(TestData) && !is.null(FeatureColumnNames)) {
         NumberBins = 20,
         AggMethod = "mean",
         Height = "600px",
-        Width = "1000px",
+        Width = "975px",
         Title = "Partial Dependence Line",
         ShowLabels = FALSE,
         Title.YAxis = TargetColumnName,
@@ -1153,7 +1153,7 @@ if(!is.null(TrainData) && !is.null(FeatureColumnNames)) {
         NumberBins = 20,
         AggMethod = "mean",
         Height = "600px",
-        Width = "1000px",
+        Width = "975px",
         Title = "Partial Dependence Line",
         ShowLabels = FALSE,
         Title.YAxis = TargetColumnName,
@@ -1187,7 +1187,7 @@ These contains visualizations intended to open up the black box of your algorith
 # <font size="6">Evaluation Metrics</font>
 <p>
 
-<details><summary>Expand to view content</summary>
+<details><summary>Expand</summary>
 <p>
 
 
@@ -1458,7 +1458,7 @@ if(exists("All_Interaction") && !is.null(All_Interaction)) {
 # <font size="6">Evaluation Plots</font>
 <p>
 
-<details><summary>Expand to view content</summary>
+<details><summary>Expand</summary>
 <p>
 
 
@@ -1466,7 +1466,7 @@ if(exists("All_Interaction") && !is.null(All_Interaction)) {
 ## <font size="5">Variable Importance Plots</font>
 <p>
 
-<details><summary>Expand to view content</summary>
+<details><summary>Expand</summary>
 <p>
 
 ```{r EvaluationPlots_VIPlot, echo=FALSE}
@@ -1485,7 +1485,7 @@ if(!is.null(Test_Importance)) {
     FacetLevels = NULL,
     AggMethod = "mean",
     Height = "600px",
-    Width = "1000px",
+    Width = "975px",
     Title = "Variable Importance Plot",
     ShowLabels = FALSE,
     Title.YAxis = NULL,
@@ -1522,7 +1522,7 @@ if(!is.null(Validation_Importance)) {
     FacetLevels = NULL,
     AggMethod = "mean",
     Height = "600px",
-    Width = "1000px",
+    Width = "975px",
     Title = "Variable Importance Plot",
     ShowLabels = FALSE,
     Title.YAxis = NULL,
@@ -1559,7 +1559,7 @@ if(!is.null(Train_Importance)) {
     FacetLevels = NULL,
     AggMethod = "mean",
     Height = "600px",
-    Width = "1000px",
+    Width = "975px",
     Title = "Variable Importance Plot",
     ShowLabels = FALSE,
     Title.YAxis = NULL,
@@ -1591,7 +1591,7 @@ if(!is.null(Train_Importance)) {
 ## <font size="5">Calibration Plots</font>
 <p>
 
-<details><summary>Expand to view content</summary>
+<details><summary>Expand</summary>
 <p>
 
 ### **TestData**
@@ -1634,7 +1634,7 @@ if(!is.null(Train_EvaluationPlot)) {
 ## <font size="5">ROC Plots</font>
 <p>
 
-<details><summary>Expand to view content</summary>
+<details><summary>Expand</summary>
 <p>
 
 ### **TestData**
@@ -1657,7 +1657,7 @@ if(!is.null(Test_ROCPlot)) {
 ### **TrainData** + **ValidationData**
 <p>
 
-<details><summary>Expand to view content</summary>
+<details><summary>Expand</summary>
 <p>
 
 ```{r ROC_Plot_Train, echo=FALSE}
@@ -1677,7 +1677,7 @@ if(!is.null(Train_EvaluationPlot)) {
 ## <font size="5">Lift & Gains Plots</font>
 <p>
 
-<details><summary>Expand to view content</summary>
+<details><summary>Expand</summary>
 <p>
 
 ### **TestData**
@@ -1700,7 +1700,7 @@ if(!is.null(Test_CumGainsChart)) {
 ### **TrainData** + **ValidationData**
 <p>
 
-<details><summary>Expand to view content</summary>
+<details><summary>Expand</summary>
 <p>
 
 ```{r Lift and Gains_Train, echo=FALSE}
@@ -1722,7 +1722,7 @@ if(!is.null(Test_CumGainsChart)) {
 # <font size="6">Model Interpretation</font>
 <p>
 
-<details><summary>Expand to view content</summary>
+<details><summary>Expand</summary>
 <p>
 
 
@@ -1730,14 +1730,14 @@ if(!is.null(Test_CumGainsChart)) {
 ## <font size="5">Partial Dependence Plots: Numeric-Features</font> 
 <p>
 
-<details><summary>Expand to view content</summary>
+<details><summary>Expand</summary>
 <p>
 
 
 ### Partial Dependence Line Plots
 <p>
 
-<details><summary>Expand to view content</summary>
+<details><summary>Expand</summary>
 <p>
 
 
@@ -1785,7 +1785,7 @@ options(warn = 1)
 ## <font size="5">Partial Partial Dependence Plots: Categorical-Features</font>
 <p>
 
-<details><summary>Expand to view content</summary>
+<details><summary>Expand</summary>
 <p>
 
 
@@ -1845,7 +1845,7 @@ options(warn = 1)
 # <font size="6">Model MetaData</font>
 <p>
 
-<details><summary>Expand to view content</summary>
+<details><summary>Expand</summary>
 <p>
 
 

@@ -12,13 +12,271 @@ output:
 classoption: landscape
 ---
 
-```{r Environment, include=FALSE}
-# theme options up top: hpstr, cayman, architect, AutoQuant
-knitr::opts_chunk$set(echo = TRUE)
-temp <- globalenv()
-TempNames <- names(temp)
-for(nam in TempNames) {
-  assign(x = nam, value = eval(temp[[nam]]), envir = .GlobalEnv)
+```{css, echo=FALSE}
+@import url('https://fonts.googleapis.com/css2?family=Yusei+Magic&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  padding: 0;
+  margin: 0;
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #000000;
+  background: linear-gradient(180deg, #787989, #b7b8cf);
+}
+
+a {
+  color: #b1c5d8;
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+.page-header {
+  color: #fff;
+  text-align: center;
+  background-color: #152399;
+  background-image: linear-gradient(120deg,#000121,#152399);
+  padding: 1.5rem 2rem;
+}
+.page-header :last-child {
+  margin-bottom: 0.5rem;
+}
+@media screen and (max-width: 42em) {
+  .page-header {
+    padding: 1rem 1rem;
+  }
+}
+
+.project-name {
+  margin-top: 0;
+  margin-bottom: 0.1rem;
+  font-size: 2rem;
+}
+@media screen and (max-width: 42em) {
+  .project-name {
+    font-size: 1.75rem;
+  }
+}
+
+.project-tagline {
+  margin-bottom: 2rem;
+  font-weight: normal;
+  opacity: 0.7;
+  font-size: 1.5rem;
+}
+@media screen and (max-width: 42em) {
+  .project-tagline {
+    font-size: 1.2rem;
+  }
+}
+
+.project-author, .project-date {
+  font-weight: normal;
+  opacity: 0.7;
+  font-size: 1.2rem;
+}
+@media screen and (max-width: 42em) {
+  .project-author, .project-date {
+    font-size: 1rem;
+  }
+}
+
+.main-content, .toc {
+  max-width: 64rem;
+  padding: 2rem 4rem;
+  margin: 0 auto;
+  font-size: 1.1rem;
+}
+
+.toc {
+  padding-bottom: 0;
+}
+.toc .toc-box {
+  padding: 55px;
+  background: linear-gradient(90deg, #00052b, #00198a);
+  border: solid 3px #000000;
+  border-radius: 70px;
+  color: white;
+  box-shadow: 8px 5px 10px 0px #000000;
+}
+.toc .toc-box .toc-title {
+  margin: 0 0 0.5rem;
+  text-align: center;
+}
+.toc .toc-box > ul {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+@media screen and (min-width: 42em) and (max-width: 64em) {
+  .toc {
+    padding: 2rem 2rem 0;
+  }
+}
+@media screen and (max-width: 42em) {
+  .toc {
+    padding: 2rem 1rem 0;
+    font-size: 1rem;
+  }
+}
+
+.main-content :first-child {
+  margin-top: 0;
+}
+@media screen and (min-width: 42em) and (max-width: 64em) {
+  .main-content {
+    padding: 2rem;
+  }
+}
+@media screen and (max-width: 42em) {
+  .main-content {
+    padding: 2rem 1rem;
+    font-size: 1rem;
+  }
+}
+.main-content img {
+  max-width: 100%;
+}
+.main-content h1,
+.main-content h2,
+.main-content h3,
+.main-content h4,
+.main-content h5,
+.main-content h6 {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  font-weight: normal;
+  color: #000000;
+}
+.main-content p {
+  margin-bottom: 1em;
+}
+.main-content code {
+  padding: 2px 4px;
+  font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  color: #222222;
+  background-color: #f3f6fa;
+  border-radius: 0.3rem;
+}
+.main-content pre {
+  padding: 0.8rem;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font: 1rem Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  color: #222222;
+  word-wrap: normal;
+  background-color: #e9edf9c9;
+  border: solid 1px #001a35;
+  border-radius: 0.3rem;
+  line-height: 1.45;
+  overflow: auto;
+}
+@media screen and (max-width: 42em) {
+  .main-content pre {
+    font-size: 0.9rem;
+  }
+}
+.main-content pre > code {
+  padding: 0;
+  margin: 0;
+  color: #567482;
+  word-break: normal;
+  white-space: pre;
+  background: transparent;
+  border: 0;
+}
+@media screen and (max-width: 42em) {
+  .main-content pre > code {
+    font-size: 0.9rem;
+  }
+}
+.main-content pre code,
+.main-content pre tt {
+  display: inline;
+  max-width: initial;
+  padding: 0;
+  margin: 0;
+  overflow: initial;
+  line-height: inherit;
+  word-wrap: normal;
+  background-color: transparent;
+  border: 0;
+}
+.main-content pre code:before, .main-content pre code:after,
+.main-content pre tt:before,
+.main-content pre tt:after {
+  content: normal;
+}
+.main-content ul,
+.main-content ol {
+  margin-top: 0;
+}
+.main-content blockquote {
+  padding: 0 1rem;
+  margin-left: 0;
+  color: #819198;
+  border-left: 0.3rem solid #dce6f0;
+  font-size: 1.2rem;
+}
+.main-content blockquote > :first-child {
+  margin-top: 0;
+}
+.main-content blockquote > :last-child {
+  margin-bottom: 0;
+}
+@media screen and (max-width: 42em) {
+  .main-content blockquote {
+    font-size: 1.1rem;
+  }
+}
+.main-content table {
+  width: 100%;
+  overflow: auto;
+  word-break: normal;
+  word-break: keep-all;
+  -webkit-overflow-scrolling: touch;
+  border-collapse: collapse;
+  border-spacing: 0;
+  margin: 1rem 0;
+}
+.main-content table th {
+  font-weight: bold;
+  background-color: #159957;
+  color: #fff;
+}
+.main-content table th,
+.main-content table td {
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid #e9ebec;
+  text-align: left;
+}
+.main-content table tr:nth-child(odd) {
+  background-color: #f2f2f2;
+}
+.main-content dl {
+  padding: 0;
+}
+.main-content dl dt {
+  padding: 0;
+  margin-top: 1rem;
+  font-size: 1rem;
+  font-weight: bold;
+}
+.main-content dl dd {
+  padding: 0;
+  margin-bottom: 1rem;
+}
+.main-content hr {
+  height: 2px;
+  padding: 0;
+  margin: 1rem 0;
+  background-color: #eff0f1;
+  border: 0;
 }
 ```
 
@@ -705,7 +963,7 @@ if(!is.null(TestData)) {
   Test_EvaluationPlot <- AutoPlots::Plot.Calibration.Line(
     dt = TestData,
     AggMethod = "mean",
-    XVar = "p1",
+    XVar = PredictionColumnName,
     YVar = TargetColumnName,
     GroupVar = NULL,
     YVarTrans = "Identity",
@@ -715,12 +973,11 @@ if(!is.null(TestData)) {
     FacetLevels = NULL,
     NumberBins = 21,
     Height = "600px",
-    Width = "1000px",
+    Width = "975px",
     Title = "Calibration Plot",
     ShowLabels = FALSE,
     Title.YAxis = TargetColumnName,
     Title.XAxis = "p1",
-    
     EchartsTheme = "wef",
     TimeLine = TRUE,
     X_Scroll = TRUE,
@@ -736,7 +993,7 @@ if(!is.null(TrainData)) {
   Train_EvaluationPlot <- AutoPlots::Plot.Calibration.Line(
     dt = TrainData,
     AggMethod = "mean",
-    XVar = "p1",
+    XVar = PredictionColumnName,
     YVar = TargetColumnName,
     GroupVar = NULL,
     YVarTrans = "Identity",
@@ -746,7 +1003,7 @@ if(!is.null(TrainData)) {
     FacetLevels = NULL,
     NumberBins = 21,
     Height = "600px",
-    Width = "1000px",
+    Width = "975px",
     Title = "Calibration Plot",
     ShowLabels = FALSE,
     Title.YAxis = TargetColumnName,
@@ -769,7 +1026,7 @@ if(!is.null(TestData)) {
   Test_ROCPlot <- AutoPlots::Plot.ROC(
     dt = TestData,
     SampleSize = 500000,
-    XVar = "p1",
+    XVar = PredictionColumnName,
     YVar = TargetColumnName,
     GroupVar = NULL,
     YVarTrans = "Identity",
@@ -779,7 +1036,7 @@ if(!is.null(TestData)) {
     FacetLevels = NULL,
     AggMethod = "mean",
     Height = "600px",
-    Width = "1000px",
+    Width = "975px",
     Title = "Calibration Plot",
     ShowLabels = FALSE,
     Title.YAxis = TargetColumnName,
@@ -800,7 +1057,7 @@ if(!is.null(TrainData)) {
   Train_ROCPlot <- AutoPlots::Plot.ROC(
     dt = TrainData,
     SampleSize = 500000,
-    XVar = "p1",
+    XVar = PredictionColumnName,
     YVar = TargetColumnName,
     GroupVar = NULL,
     YVarTrans = "Identity",
@@ -810,7 +1067,7 @@ if(!is.null(TrainData)) {
     FacetLevels = NULL,
     AggMethod = "mean",
     Height = "600px",
-    Width = "1000px",
+    Width = "975px",
     Title = "Calibration Plot",
     ShowLabels = FALSE,
     Title.YAxis = TargetColumnName,
@@ -831,7 +1088,7 @@ if(!is.null(TestData)) {
   Test_CumGainsChart <- AutoPlots::Plot.Gains(
     dt = TestData,
     PreAgg = FALSE,
-    XVar = "p1",
+    XVar = PredictionColumnName,
     YVar = TargetColumnName,
     ZVar = "N",
     GroupVar = NULL,
@@ -843,7 +1100,7 @@ if(!is.null(TestData)) {
     FacetLevels = NULL,
     NumberBins = 20,
     Height = "600px",
-    Width = "1000px",
+    Width = "975px",
     Title = "Gains Plot",
     ShowLabels = FALSE,
     Title.YAxis = TargetColumnName,
@@ -864,7 +1121,7 @@ if(!is.null(TrainData)) {
   Train_CumGainsChart <- AutoPlots::Plot.Gains(
     dt = TrainData,
     PreAgg = FALSE,
-    XVar = "p1",
+    XVar = PredictionColumnName,
     YVar = TargetColumnName,
     ZVar = "N",
     GroupVar = NULL,
@@ -876,7 +1133,7 @@ if(!is.null(TrainData)) {
     FacetLevels = NULL,
     NumberBins = 20,
     Height = "600px",
-    Width = "1000px",
+    Width = "975px",
     Title = "Gains Plot",
     ShowLabels = FALSE,
     Title.YAxis = TargetColumnName,
@@ -928,7 +1185,7 @@ if(!is.null(TestData) && !is.null(FeatureColumnNames)) {
         NumberBins = 20,
         AggMethod = "mean",
         Height = "600px",
-        Width = "1000px",
+        Width = "975px",
         Title = "Partial Dependence Line",
         ShowLabels = FALSE,
         Title.YAxis = TargetColumnName,
@@ -972,7 +1229,7 @@ if(!is.null(TrainData) && !is.null(FeatureColumnNames)) {
         NumberBins = 20,
         AggMethod = "mean",
         Height = "600px",
-        Width = "1000px",
+        Width = "975px",
         Title = "Partial Dependence Line",
         ShowLabels = FALSE,
         Title.YAxis = TargetColumnName,
@@ -1016,7 +1273,7 @@ if(!is.null(TestData) && !is.null(FeatureColumnNames)) {
         NumberBins = 20,
         AggMethod = "mean",
         Height = "600px",
-        Width = "1000px",
+        Width = "975px",
         Title = "Partial Dependence Line",
         ShowLabels = FALSE,
         Title.YAxis = TargetColumnName,
@@ -1058,7 +1315,7 @@ if(!is.null(TrainData) && !is.null(FeatureColumnNames)) {
         NumberBins = 20,
         AggMethod = "mean",
         Height = "600px",
-        Width = "1000px",
+        Width = "975px",
         Title = "Partial Dependence Line",
         ShowLabels = FALSE,
         Title.YAxis = TargetColumnName,
@@ -1101,7 +1358,7 @@ if(!is.null(TestData) && !is.null(FeatureColumnNames)) {
         NumberBins = 20,
         AggMethod = "mean",
         Height = "600px",
-        Width = "1000px",
+        Width = "975px",
         Title = "Partial Dependence Line",
         ShowLabels = FALSE,
         Title.YAxis = TargetColumnName,
@@ -1142,7 +1399,7 @@ if(!is.null(TrainData) && !is.null(FeatureColumnNames)) {
         NumberBins = 20,
         AggMethod = "mean",
         Height = "600px",
-        Width = "1000px",
+        Width = "975px",
         Title = "Partial Dependence Line",
         ShowLabels = FALSE,
         Title.YAxis = TargetColumnName,
@@ -1177,7 +1434,7 @@ These contains visualizations intended to open up the black box of your algorith
 # <font size="6">Evaluation Metrics</font>
 <p>
 
-<details><summary>Expand to view content</summary>
+<details><summary>Expand</summary>
 <p>
 
 
@@ -1396,7 +1653,7 @@ if(exists("All_Interaction") && !is.null(All_Interaction)) {
 # <font size="6">Evaluation Plots</font>
 <p>
 
-<details><summary>Expand to view content</summary>
+<details><summary>Expand</summary>
 <p>
 
 
@@ -1404,7 +1661,7 @@ if(exists("All_Interaction") && !is.null(All_Interaction)) {
 ## <font size="5">Variable Importance Plots</font>
 <p>
 
-<details><summary>Expand to view content</summary>
+<details><summary>Expand</summary>
 <p>
 
 ```{r EvaluationPlots_VIPlot, echo=FALSE}
@@ -1423,7 +1680,7 @@ if(!is.null(Test_Importance)) {
     FacetLevels = NULL,
     AggMethod = "mean",
     Height = "600px",
-    Width = "1000px",
+    Width = "975px",
     Title = "Variable Importance Plot",
     ShowLabels = FALSE,
     Title.YAxis = NULL,
@@ -1460,7 +1717,7 @@ if(!is.null(Validation_Importance)) {
     FacetLevels = NULL,
     AggMethod = "mean",
     Height = "600px",
-    Width = "1000px",
+    Width = "975px",
     Title = "Variable Importance Plot",
     ShowLabels = FALSE,
     Title.YAxis = NULL,
@@ -1497,7 +1754,7 @@ if(!is.null(Train_Importance)) {
     FacetLevels = NULL,
     AggMethod = "mean",
     Height = "600px",
-    Width = "1000px",
+    Width = "975px",
     Title = "Variable Importance Plot",
     ShowLabels = FALSE,
     Title.YAxis = NULL,
@@ -1556,7 +1813,7 @@ if(!is.null(Train_EvaluationPlot)) {
 ## <font size="5">ROC Plots</font>
 <p>
 
-<details><summary>Expand to view content</summary>
+<details><summary>Expand</summary>
 <p>
 
 ```{r ROC_Plot, echo=FALSE}
@@ -1580,7 +1837,7 @@ if(!is.null(Train_EvaluationPlot)) {
 ## <font size="5">Lift & Gains Plots</font>
 <p>
 
-<details><summary>Expand to view content</summary>
+<details><summary>Expand</summary>
 <p>
 
 ```{r Lift and Gains, echo=FALSE}
@@ -1615,7 +1872,7 @@ if(!is.null(Test_CumGainsChart)) {
 # <font size="6">Model Interpretation</font>
 <p>
 
-<details><summary>Expand to view content</summary>
+<details><summary>Expand</summary>
 <p>
 
 
@@ -1623,14 +1880,14 @@ if(!is.null(Test_CumGainsChart)) {
 ## <font size="5">Partial Dependence Plots: Numeric-Features</font>
 <p>
 
-<details><summary>Expand to view content</summary>
+<details><summary>Expand</summary>
 <p>
 
 
 ### Partial Dependence Line Plots
 <p>
 
-<details><summary>Expand to view content</summary>
+<details><summary>Expand</summary>
 <p>
 
 
@@ -1678,7 +1935,7 @@ options(warn = 1)
 ## <font size="5">Partial Partial Dependence Plots: Categorical-Features</font>
 <p>
 
-<details><summary>Expand to view content</summary>
+<details><summary>Expand</summary>
 <p>
 
 
@@ -1736,7 +1993,7 @@ options(warn = 1)
 # <font size="6">Model MetaData</font>
 <p>
 
-<details><summary>Expand to view content</summary>
+<details><summary>Expand</summary>
 <p>
 
 
