@@ -4,11 +4,11 @@ author: "Provided by AutoQuant"
 date: "`r format(Sys.time(), '%Y-%m-%d')`"
 output:
   prettydoc::html_pretty:
-    theme: AutoQuant
+    theme: RemixAutoML
     toc: yes
     toc_depth: 2
     fig_caption: yes
-    number_sections: yes
+    number_sections: no
 classoption: landscape
 ---
 
@@ -19,6 +19,274 @@ temp <- globalenv()
 TempNames <- names(temp)
 for(nam in TempNames) {
   assign(x = nam, value = eval(temp[[nam]]), envir = .GlobalEnv)
+}
+```
+
+```{css, echo=FALSE}
+@import url('https://fonts.googleapis.com/css2?family=Yusei+Magic&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  padding: 0;
+  margin: 0;
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #000000;
+  background-color: #9da9e7;
+}
+
+a {
+  color: #b1c5d8;
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+.page-header {
+  color: #fff;
+  text-align: center;
+  background-color: #152399;
+  background-image: linear-gradient(120deg,#000121,#152399);
+  padding: 1.5rem 2rem;
+}
+.page-header :last-child {
+  margin-bottom: 0.5rem;
+}
+@media screen and (max-width: 42em) {
+  .page-header {
+    padding: 1rem 1rem;
+  }
+}
+
+.project-name {
+  margin-top: 0;
+  margin-bottom: 0.1rem;
+  font-size: 2rem;
+}
+@media screen and (max-width: 42em) {
+  .project-name {
+    font-size: 1.75rem;
+  }
+}
+
+.project-tagline {
+  margin-bottom: 2rem;
+  font-weight: normal;
+  opacity: 0.7;
+  font-size: 1.5rem;
+}
+@media screen and (max-width: 42em) {
+  .project-tagline {
+    font-size: 1.2rem;
+  }
+}
+
+.project-author, .project-date {
+  font-weight: normal;
+  opacity: 0.7;
+  font-size: 1.2rem;
+}
+@media screen and (max-width: 42em) {
+  .project-author, .project-date {
+    font-size: 1rem;
+  }
+}
+
+.main-content, .toc {
+  max-width: 64rem;
+  padding: 2rem 4rem;
+  margin: 0 auto;
+  font-size: 1.1rem;
+}
+
+.toc {
+  padding-bottom: 0;
+}
+.toc .toc-box {
+  padding: 55px;
+  background: linear-gradient(90deg, #00052b, #00198a);
+  border: solid 3px #000000;
+  border-radius: 70px;
+  color: white;
+  box-shadow: 8px 5px 10px 0px #000000;
+}
+.toc .toc-box .toc-title {
+  margin: 0 0 0.5rem;
+  text-align: center;
+}
+.toc .toc-box > ul {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+@media screen and (min-width: 42em) and (max-width: 64em) {
+  .toc {
+    padding: 2rem 2rem 0;
+  }
+}
+@media screen and (max-width: 42em) {
+  .toc {
+    padding: 2rem 1rem 0;
+    font-size: 1rem;
+  }
+}
+
+.main-content :first-child {
+  margin-top: 0;
+}
+@media screen and (min-width: 42em) and (max-width: 64em) {
+  .main-content {
+    padding: 2rem;
+  }
+}
+@media screen and (max-width: 42em) {
+  .main-content {
+    padding: 2rem 1rem;
+    font-size: 1rem;
+  }
+}
+.main-content img {
+  max-width: 100%;
+}
+.main-content h1,
+.main-content h2,
+.main-content h3,
+.main-content h4,
+.main-content h5,
+.main-content h6 {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  font-weight: normal;
+  color: #000000;
+}
+.main-content p {
+  margin-bottom: 1em;
+}
+.main-content code {
+  padding: 2px 4px;
+  font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  color: #567482;
+  background-color: #f3f6fa;
+  border-radius: 0.3rem;
+}
+.main-content pre {
+  padding: 0.8rem;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font: 1rem Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  color: #567482;
+  word-wrap: normal;
+  background-color: #f3f6fa;
+  border: solid 1px #dce6f0;
+  border-radius: 0.3rem;
+  line-height: 1.45;
+  overflow: auto;
+}
+@media screen and (max-width: 42em) {
+  .main-content pre {
+    font-size: 0.9rem;
+  }
+}
+.main-content pre > code {
+  padding: 0;
+  margin: 0;
+  color: #567482;
+  word-break: normal;
+  white-space: pre;
+  background: transparent;
+  border: 0;
+}
+@media screen and (max-width: 42em) {
+  .main-content pre > code {
+    font-size: 0.9rem;
+  }
+}
+.main-content pre code,
+.main-content pre tt {
+  display: inline;
+  max-width: initial;
+  padding: 0;
+  margin: 0;
+  overflow: initial;
+  line-height: inherit;
+  word-wrap: normal;
+  background-color: transparent;
+  border: 0;
+}
+.main-content pre code:before, .main-content pre code:after,
+.main-content pre tt:before,
+.main-content pre tt:after {
+  content: normal;
+}
+.main-content ul,
+.main-content ol {
+  margin-top: 0;
+}
+.main-content blockquote {
+  padding: 0 1rem;
+  margin-left: 0;
+  color: #819198;
+  border-left: 0.3rem solid #dce6f0;
+  font-size: 1.2rem;
+}
+.main-content blockquote > :first-child {
+  margin-top: 0;
+}
+.main-content blockquote > :last-child {
+  margin-bottom: 0;
+}
+@media screen and (max-width: 42em) {
+  .main-content blockquote {
+    font-size: 1.1rem;
+  }
+}
+.main-content table {
+  width: 100%;
+  overflow: auto;
+  word-break: normal;
+  word-break: keep-all;
+  -webkit-overflow-scrolling: touch;
+  border-collapse: collapse;
+  border-spacing: 0;
+  margin: 1rem 0;
+}
+.main-content table th {
+  font-weight: bold;
+  background-color: #159957;
+  color: #fff;
+}
+.main-content table th,
+.main-content table td {
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid #e9ebec;
+  text-align: left;
+}
+.main-content table tr:nth-child(odd) {
+  background-color: #f2f2f2;
+}
+.main-content dl {
+  padding: 0;
+}
+.main-content dl dt {
+  padding: 0;
+  margin-top: 1rem;
+  font-size: 1rem;
+  font-weight: bold;
+}
+.main-content dl dd {
+  padding: 0;
+  margin-bottom: 1rem;
+}
+.main-content hr {
+  height: 2px;
+  padding: 0;
+  margin: 1rem 0;
+  background-color: #eff0f1;
+  border: 0;
 }
 ```
 
@@ -537,12 +805,12 @@ if(!is.null(TestData)) {
     FacetLevels = NULL,
     NumberBins = 21,
     Height = "600px",
-    Width = "1100px",
+    Width = "1000px",
     Title = "Calibration Plot",
     ShowLabels = FALSE,
     Title.YAxis = TargetColumnName,
     Title.XAxis = "Predict",
-    EchartsTheme = "dark",
+    EchartsTheme = "wef",
     
     TimeLine = TRUE,
     X_Scroll = TRUE,
@@ -569,12 +837,12 @@ if(!is.null(TrainData)) {
     FacetLevels = NULL,
     NumberBins = 21,
     Height = "600px",
-    Width = "1100px",
+    Width = "1000px",
     Title = "Calibration Plot",
     ShowLabels = FALSE,
     Title.YAxis = TargetColumnName,
     Title.XAxis = "Predict",
-    EchartsTheme = "dark",
+    EchartsTheme = "wef",
     
     TimeLine = TRUE,
     X_Scroll = TRUE,
@@ -603,12 +871,12 @@ if(!is.null(TestData)) {
     FacetLevels = NULL,
     AggMethod = "mean",
     Height = "600px",
-    Width = "1100px",
+    Width = "1000px",
     Title = "Calibration Plot",
     ShowLabels = FALSE,
     Title.YAxis = TargetColumnName,
     Title.XAxis = "Predict",
-    EchartsTheme = "dark",
+    EchartsTheme = "wef",
     
     TimeLine = TRUE,
     X_Scroll = TRUE,
@@ -635,12 +903,12 @@ if(!is.null(TrainData)) {
     FacetLevels = NULL,
     AggMethod = "mean",
     Height = "600px",
-    Width = "1100px",
+    Width = "1000px",
     Title = "Calibration Plot",
     ShowLabels = FALSE,
     Title.YAxis = TargetColumnName,
     Title.XAxis = "Predict",
-    EchartsTheme = "dark",
+    EchartsTheme = "wef",
     
     TimeLine = TRUE,
     X_Scroll = TRUE,
@@ -668,12 +936,12 @@ if(!is.null(TestData)) {
     FacetLevels = NULL,
     NumberBins = 20,
     Height = "600px",
-    Width = "1100px",
+    Width = "1000px",
     Title = "Gains Plot",
     ShowLabels = FALSE,
     Title.YAxis = TargetColumnName,
     Title.XAxis = "Predict",
-    EchartsTheme = "dark",
+    EchartsTheme = "wef",
     
     TimeLine = TRUE,
     X_Scroll = TRUE,
@@ -701,12 +969,12 @@ if(!is.null(TrainData)) {
     FacetLevels = NULL,
     NumberBins = 20,
     Height = "600px",
-    Width = "1100px",
+    Width = "1000px",
     Title = "Gains Plot",
     ShowLabels = FALSE,
     Title.YAxis = TargetColumnName,
     Title.XAxis = "Predict",
-    EchartsTheme = "dark",
+    EchartsTheme = "wef",
     
     TimeLine = TRUE,
     X_Scroll = TRUE,
@@ -755,12 +1023,12 @@ if(!is.null(TestData) && !is.null(FeatureColumnNames)) {
         NumberBins = 20,
         AggMethod = "mean",
         Height = "600px",
-        Width = "1100px",
+        Width = "1000px",
         Title = "Partial Dependence Line",
         ShowLabels = FALSE,
         Title.YAxis = TargetColumnName,
         Title.XAxis = g,
-        EchartsTheme = "dark",
+        EchartsTheme = "wef",
         
         TimeLine = TRUE,
         X_Scroll = TRUE,
@@ -801,12 +1069,12 @@ if(!is.null(TrainData) && !is.null(FeatureColumnNames)) {
         NumberBins = 20,
         AggMethod = "mean",
         Height = "600px",
-        Width = "1100px",
+        Width = "1000px",
         Title = "Partial Dependence Line",
         ShowLabels = FALSE,
         Title.YAxis = TargetColumnName,
         Title.XAxis = g,
-        EchartsTheme = "dark",
+        EchartsTheme = "wef",
         
         TimeLine = TRUE,
         X_Scroll = TRUE,
@@ -844,12 +1112,12 @@ if(!is.null(TestData) && !is.null(FeatureColumnNames)) {
         NumberBins = 20,
         AggMethod = "mean",
         Height = "600px",
-        Width = "1100px",
+        Width = "1000px",
         Title = "Partial Dependence Line",
         ShowLabels = FALSE,
         Title.YAxis = TargetColumnName,
         Title.XAxis = g,
-        EchartsTheme = "dark",
+        EchartsTheme = "wef",
         
         TimeLine = TRUE,
         X_Scroll = TRUE,
@@ -885,12 +1153,12 @@ if(!is.null(TrainData) && !is.null(FeatureColumnNames)) {
         NumberBins = 20,
         AggMethod = "mean",
         Height = "600px",
-        Width = "1100px",
+        Width = "1000px",
         Title = "Partial Dependence Line",
         ShowLabels = FALSE,
         Title.YAxis = TargetColumnName,
         Title.XAxis = g,
-        EchartsTheme = "dark",
+        EchartsTheme = "wef",
         
         TimeLine = TRUE,
         X_Scroll = TRUE,
@@ -903,13 +1171,18 @@ if(!is.null(TrainData) && !is.null(FeatureColumnNames)) {
 
 ```
 
-Model Evaluation and Insights:
+# <font size="6">Model Evaluation and Insights:</font>
 
-- Provide a wide range of output to investigate high level performance and insights
+The two main goals with this document are to provide a wide range of output to investigate high level performance and insights and to deliver a high quality report design layout to increase user experience. The metrics provided are intended to be semi-comprehensive. One can always dig deeper into results to gain further insights. In light of that, the results are intended to provide one what they need to come to a reasonable conclusion about their model or to find the area where they need to dig a deeper. 
 
-- Deliver high quality report design layout to reduce time to delivery of info
+## Evaluation Metrics
+This section contains statistics and variable importance measures to help the user understand model performance at a high level. If the user chose to include Train Data results then these can be used to compare against the Test Data results to identify over / under fitting of models.
 
-This report is for investigating model performance from a variety of perspectives. Each section has its own content that can be viewed if expanded. Output exists for both TestData (out of sample) and TrainData (some cases can have ValidationData results as well) for comparison purposes.
+## Evaluation Plots 
+This section contains visualizations that span the range of predicted values and the associated accuracies across that range. The predicted values range are broken up into every 5th percentile to provide a solid range for evaluation.
+
+## Model Interpretation sections 
+These contains visualizations intended to open up the black box of your algorithm. When one inspects coefficients from a regression model, the insights they gain are two-fold: they get an understanding about statistics significance, and they gain an understanding of the variable's effect on the target variable. However, not all relationships are linear and sometimes the user doesn't specifiy an appropriate model structure to fully capture the nature of the relationship, which can lead to incorrect conclusions about statistical signifance along with incorrect conclusions about the nature of the relationship. These visualizations provide a way to understand what the exact nature of those relationships are and if the user chooses, they can attempt to fit the relationship better with an appropriate statistical model to gain a better understanding of statistical significance.
 
 # <font size="6">Evaluation Metrics</font>
 <p>
@@ -928,7 +1201,36 @@ This report is for investigating model performance from a variety of perspective
 if(!is.null(All_MultiClassMetrics)) {
   All_MultiClassMetrics <- All_MultiClassMetrics[Data_Source != 'Train']
   data.table::setcolorder(All_MultiClassMetrics, c(3L, 1L, 2L))
-  print(knitr::kable(All_MultiClassMetrics))
+  reactable::reactable(
+    data = All_MultiClassMetrics,
+    compact = TRUE,
+    defaultPageSize = 10,
+    wrap = FALSE,
+    filterable = TRUE,
+    fullWidth = FALSE,
+    highlight = TRUE,
+    pagination = TRUE,
+    resizable = TRUE,
+    searchable = TRUE,
+    selection = "multiple",
+    showPagination = TRUE,
+    showSortable = TRUE,
+    showSortIcon = TRUE,
+    sortable = TRUE,
+    striped = TRUE,
+    theme = reactable::reactableTheme(
+      color = 'black',
+      backgroundColor = "#4f4f4f26",
+      borderColor = "#dfe2e5",
+      stripedColor = "#4f4f4f8f",
+      highlightColor = "#8989898f",
+      cellPadding = "8px 12px",
+      style = list(
+        fontFamily = "-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif"
+      ),
+      searchInputStyle = list(width = "100%")
+    )
+  )
 } else {
   print('All_MultiClassMetrics is NULL')
 }
@@ -936,8 +1238,6 @@ if(!is.null(All_MultiClassMetrics)) {
 
 </details>
 </p>
-
-
 
 
 ##  <font size="5">Binary Metrics 1 vs All Tables</font>
@@ -956,7 +1256,36 @@ if(!is.null(All_MultiClassMetrics)) {
 if(!is.null(Test_EvalMetrics)) {
   for(nam in names(Test_EvalMetrics)) {
     print(nam)
-    print(knitr::kable(Test_EvalMetrics[[nam]]))
+    reactable::reactable(
+      data = Test_EvalMetrics[[nam]],
+      compact = TRUE,
+      defaultPageSize = 10,
+      wrap = FALSE,
+      filterable = TRUE,
+      fullWidth = FALSE,
+      highlight = TRUE,
+      pagination = TRUE,
+      resizable = TRUE,
+      searchable = TRUE,
+      selection = "multiple",
+      showPagination = TRUE,
+      showSortable = TRUE,
+      showSortIcon = TRUE,
+      sortable = TRUE,
+      striped = TRUE,
+      theme = reactable::reactableTheme(
+        color = 'black',
+        backgroundColor = "#4f4f4f26",
+        borderColor = "#dfe2e5",
+        stripedColor = "#4f4f4f8f",
+        highlightColor = "#8989898f",
+        cellPadding = "8px 12px",
+        style = list(
+          fontFamily = "-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif"
+        ),
+        searchInputStyle = list(width = "100%")
+      )
+    )
   }
 } else {
   print('Test_EvalMetrics is NULL')
@@ -977,7 +1306,36 @@ if(!is.null(Test_EvalMetrics)) {
 if(!is.null(Train_EvalMetrics)) {
   for(nam in names(Train_EvalMetrics)) {
     print(nam)
-    print(knitr::kable(Train_EvalMetrics[[nam]]))
+    reactable::reactable(
+      data = Train_EvalMetrics[[nam]],
+      compact = TRUE,
+      defaultPageSize = 10,
+      wrap = FALSE,
+      filterable = TRUE,
+      fullWidth = FALSE,
+      highlight = TRUE,
+      pagination = TRUE,
+      resizable = TRUE,
+      searchable = TRUE,
+      selection = "multiple",
+      showPagination = TRUE,
+      showSortable = TRUE,
+      showSortIcon = TRUE,
+      sortable = TRUE,
+      striped = TRUE,
+      theme = reactable::reactableTheme(
+        color = 'black',
+        backgroundColor = "#4f4f4f26",
+        borderColor = "#dfe2e5",
+        stripedColor = "#4f4f4f8f",
+        highlightColor = "#8989898f",
+        cellPadding = "8px 12px",
+        style = list(
+          fontFamily = "-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif"
+        ),
+        searchInputStyle = list(width = "100%")
+      )
+    )
   }
 } else {
   print('Train_EvalMetrics is NULL')
@@ -1000,7 +1358,36 @@ if(!is.null(Train_EvalMetrics)) {
 ```{r Model_VarImportanceTable, echo=FALSE}
 if(!is.null(All_Importance)) {
   data.table::setorderv(x = All_Importance, cols = names(All_Importance)[2L], order = -1L, na.last = TRUE)
-  print(knitr::kable(All_Importance))
+  reactable::reactable(
+    data = All_Importance,
+    compact = TRUE,
+    defaultPageSize = 10,
+    wrap = FALSE,
+    filterable = TRUE,
+    fullWidth = FALSE,
+    highlight = TRUE,
+    pagination = TRUE,
+    resizable = TRUE,
+    searchable = TRUE,
+    selection = "multiple",
+    showPagination = TRUE,
+    showSortable = TRUE,
+    showSortIcon = TRUE,
+    sortable = TRUE,
+    striped = TRUE,
+    theme = reactable::reactableTheme(
+      color = 'black',
+      backgroundColor = "#4f4f4f26",
+      borderColor = "#dfe2e5",
+      stripedColor = "#4f4f4f8f",
+      highlightColor = "#8989898f",
+      cellPadding = "8px 12px",
+      style = list(
+        fontFamily = "-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif"
+      ),
+      searchInputStyle = list(width = "100%")
+    )
+  )
 } else {
   print("No Importance data was provided")
 }
@@ -1019,7 +1406,36 @@ if(!is.null(All_Importance)) {
 ```{r Model_IntImportanceTable, echo=FALSE}
 if(exists("All_Interaction") && !is.null(All_Interaction)) {
   data.table::setorderv(x = All_Interaction, cols = names(All_Interaction)[3L], order = -1L, na.last = TRUE)
-  print(knitr::kable(All_Interaction))
+  reactable::reactable(
+    data = All_Interaction,
+    compact = TRUE,
+    defaultPageSize = 10,
+    wrap = FALSE,
+    filterable = TRUE,
+    fullWidth = FALSE,
+    highlight = TRUE,
+    pagination = TRUE,
+    resizable = TRUE,
+    searchable = TRUE,
+    selection = "multiple",
+    showPagination = TRUE,
+    showSortable = TRUE,
+    showSortIcon = TRUE,
+    sortable = TRUE,
+    striped = TRUE,
+    theme = reactable::reactableTheme(
+      color = 'black',
+      backgroundColor = "#4f4f4f26",
+      borderColor = "#dfe2e5",
+      stripedColor = "#4f4f4f8f",
+      highlightColor = "#8989898f",
+      cellPadding = "8px 12px",
+      style = list(
+        fontFamily = "-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif"
+      ),
+      searchInputStyle = list(width = "100%")
+    )
+  )
 } else {
   print('No interaction importance data was provided')
 }
@@ -1054,7 +1470,6 @@ if(exists("All_Interaction") && !is.null(All_Interaction)) {
 <p>
 
 ```{r EvaluationPlots_VIPlot, echo=FALSE}
-print('Test Data Variable Importance')
 if(!is.null(Test_Importance)) {
   if("Train_Importance" %in% names(Test_Importance)) data.table::setnames(Test_Importance, 'Train_Importance', 'Importance', skip_absent = TRUE)
   if("Test_Importance" %in% names(Test_Importance)) data.table::setnames(Test_Importance, "Test_Importance", "Importance", skip_absent = TRUE)
@@ -1070,24 +1485,16 @@ if(!is.null(Test_Importance)) {
     FacetLevels = NULL,
     AggMethod = "mean",
     Height = "600px",
-    Width = "1100px",
+    Width = "1000px",
     Title = "Variable Importance Plot",
     ShowLabels = FALSE,
     Title.YAxis = NULL,
     Title.XAxis = NULL,
-    
-    EchartsTheme = "dark",
+    EchartsTheme = "wef",
     TimeLine = FALSE,
     X_Scroll = TRUE,
     Y_Scroll = TRUE,
-    BackGroundColor = "#6a6969",
-    ChartColor = "#001534",
-    FillColor = "#0066ff",
-    FillColorReverse = "#97ff00",
-    GridColor = "white",
     TextColor = "white",
-    ZeroLineColor = "#ffff",
-    ZeroLineWidth = 1.25,
     title.fontSize = 22,
     title.fontWeight = "bold",
     title.textShadowColor = "#63aeff",
@@ -1100,7 +1507,6 @@ if(!is.null(Test_Importance)) {
 } else {
   print("Test_Importance is NULL")
 }
-print('Validation Data Variable Importance')
 if(!is.null(Validation_Importance)) {
   if("Validation_Importance" %in% names(Validation_Importance)) data.table::setnames(Validation_Importance, 'Validation_Importance', 'Importance', skip_absent = TRUE)
   if("Test_Importance" %in% names(Validation_Importance)) data.table::setnames(Validation_Importance, "Test_Importance", "Importance", skip_absent = TRUE)
@@ -1116,24 +1522,16 @@ if(!is.null(Validation_Importance)) {
     FacetLevels = NULL,
     AggMethod = "mean",
     Height = "600px",
-    Width = "1100px",
+    Width = "1000px",
     Title = "Variable Importance Plot",
     ShowLabels = FALSE,
     Title.YAxis = NULL,
     Title.XAxis = NULL,
-    
-    EchartsTheme = "dark",
+    EchartsTheme = "wef",
     TimeLine = FALSE,
     X_Scroll = TRUE,
     Y_Scroll = TRUE,
-    BackGroundColor = "#6a6969",
-    ChartColor = "#001534",
-    FillColor = "#0066ff",
-    FillColorReverse = "#97ff00",
-    GridColor = "white",
     TextColor = "white",
-    ZeroLineColor = "#ffff",
-    ZeroLineWidth = 1.25,
     title.fontSize = 22,
     title.fontWeight = "bold",
     title.textShadowColor = "#63aeff",
@@ -1146,7 +1544,6 @@ if(!is.null(Validation_Importance)) {
 } else {
   print("Validation_Importance is NULL")
 }
-print('Train Data Variable Importance')
 if(!is.null(Train_Importance)) {
   if("Train_Importance" %in% names(Train_Importance)) data.table::setnames(Train_Importance, 'Train_Importance', 'Importance', skip_absent = TRUE)
   if("Test_Importance" %in% names(Train_Importance)) data.table::setnames(Train_Importance, "Test_Importance", "Importance", skip_absent = TRUE)
@@ -1162,24 +1559,16 @@ if(!is.null(Train_Importance)) {
     FacetLevels = NULL,
     AggMethod = "mean",
     Height = "600px",
-    Width = "1100px",
+    Width = "1000px",
     Title = "Variable Importance Plot",
     ShowLabels = FALSE,
     Title.YAxis = NULL,
     Title.XAxis = NULL,
-    
-    EchartsTheme = "dark",
+    EchartsTheme = "wef",
     TimeLine = FALSE,
     X_Scroll = TRUE,
     Y_Scroll = TRUE,
-    BackGroundColor = "#6a6969",
-    ChartColor = "#001534",
-    FillColor = "#0066ff",
-    FillColorReverse = "#97ff00",
-    GridColor = "white",
     TextColor = "white",
-    ZeroLineColor = "#ffff",
-    ZeroLineWidth = 1.25,
     title.fontSize = 22,
     title.fontWeight = "bold",
     title.textShadowColor = "#63aeff",
@@ -1483,7 +1872,37 @@ if(!is.null(ArgsList)) {
 
 ```{r Model_MetaData_GridMetrics, echo=FALSE}
 if(!is.null(GridMetrics)) {
-  print(knitr::kable(GridMetrics[order(-MetricValue)]))
+  reactable::reactable(
+    data = GridMetrics[order(-MetricValue)],
+    compact = TRUE,
+    defaultPageSize = 10,
+    wrap = FALSE,
+    filterable = TRUE,
+    fullWidth = TRUE,
+    highlight = TRUE,
+    pagination = TRUE,
+    resizable = TRUE,
+    searchable = TRUE,
+    selection = "multiple",
+    showPagination = TRUE,
+    showSortable = TRUE,
+    showSortIcon = TRUE,
+    sortable = TRUE,
+    striped = TRUE,
+    theme = reactable::reactableTheme(
+      color = 'black',
+      backgroundColor = "#4f4f4f26",
+      borderColor = "#dfe2e5",
+      stripedColor = "#4f4f4f8f",
+      highlightColor = "#8989898f",
+      cellPadding = "8px 12px",
+      style = list(
+        fontFamily = "-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif"
+      ),
+      searchInputStyle = list(width = "100%")
+    )
+  )
+  
 } else {
   print("GridTuning was not conducted")
 }

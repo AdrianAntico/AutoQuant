@@ -226,7 +226,7 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalMetri
 
   # Data Prep (model data prep, dummify, create sets) ----
   if(DebugMode) print('Running CatBoostDataPrep()')
-  Output <- CatBoostDataPrep(OutputSelection.=OutputSelection, EncodeMethod. = EncodeMethod, ModelType='multiclass', data.=data, ValidationData.=ValidationData, TestData.=TestData, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, PrimaryDateColumn.=PrimaryDateColumn, WeightsColumnName.=WeightsColumnName, IDcols.=IDcols,TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, TransformNumericColumns.=NULL, Methods.=NULL, model_path.=model_path, ModelID.=ModelID, LossFunction.=NULL, EvalMetric.=NULL)
+  Output <- CatBoostDataPrep(OutputSelection.=OutputSelection, EncodeMethod. = EncodeMethod, ModelType='multiclass', data.=data, ValidationData.=ValidationData, TestData.=TestData, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, PrimaryDateColumn.=PrimaryDateColumn, WeightsColumnName.=WeightsColumnName, IDcols.=IDcols,TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, TransformNumericColumns.=NULL, Methods.=NULL, model_path.=metadata_path, ModelID.=ModelID, LossFunction.=NULL, EvalMetric.=NULL)
   FactorLevelsList <- Output$FactorLevelsList; Output$FactorLevelsList <- NULL
   FinalTestTarget <- Output$FinalTestTarget; Output$FinalTestTarget <- NULL
   FeatureColNames <- Output$FeatureColNames; Output$FeatureColNames <- NULL

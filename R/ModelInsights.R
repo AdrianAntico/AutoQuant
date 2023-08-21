@@ -164,8 +164,7 @@ Run_ModelInsightsReport <- function(# Meta info
   Algo <- Algo
   SourcePath <- SourcePath
   OutputPath <- OutputPath
-  OutputPathName <- file.path(OutputPath, paste0('ModelInsights-', ModelID, '-', TargetType, '.html'))
-
+  OutputPathName <- file.path(OutputPath, paste0('MLReport-', ModelID, '-', TargetType, '.html'))
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
   # Validitity Check to Run the Rmarkdown file
@@ -238,17 +237,14 @@ Run_ModelInsightsReport <- function(# Meta info
   # Regression Markdown
   if(tolower(TargetType) == 'regression') {
     rmarkdown::render(
-      input = file.path(appDir, 'Regression.Rmd'),#'Regression_ModelInsights.Rmd'),
-      # input = file.path('C:/Users/Bizon/Documents/GitHub/AutoQuant/inst/r-markdowns/Regression_ModelInsights.Rmd'),
-      output_file = paste0('ModelInsights-', ModelID, '-', TargetType))
-      #output_file = file.path(OutputPathName))
+      input = file.path(appDir, 'Regression_ModelInsights.Rmd'),
+      output_file = file.path(OutputPathName))
   }
 
   # Classification Markdown
   if(tolower(TargetType) == 'classification') {
     rmarkdown::render(
       input = file.path(appDir, 'Classification_ModelInsights.Rmd'),
-      #input = file.path('C:/Users/Bizon/Documents/GitHub/AutoQuant/inst/r-markdowns/Classification_ModelInsights.Rmd'),
       output_file = file.path(OutputPathName))
   }
 
@@ -256,7 +252,6 @@ Run_ModelInsightsReport <- function(# Meta info
   if(tolower(TargetType) == 'multiclass') {
     rmarkdown::render(
       input = file.path(appDir, 'MultiClass_ModelInsights.Rmd'),
-      #input = file.path('C:/Users/Bizon/Documents/GitHub/AutoQuant/inst/r-markdowns/MultiClass_ModelInsights.Rmd'),
       output_file = file.path(OutputPathName))
   }
 }

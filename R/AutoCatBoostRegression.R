@@ -246,7 +246,7 @@ AutoCatBoostRegression <- function(OutputSelection = c('Importances', 'EvalPlots
 
   # Data Prep (model data prep, dummify, create sets) ----
   if(DebugMode) print('Running CatBoostDataPrep()')
-  Output <- CatBoostDataPrep(OutputSelection.=OutputSelection, EncodeMethod. = EncodeMethod, ModelType='regression', data.=data, ValidationData.=ValidationData, TestData.=TestData, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, PrimaryDateColumn.=PrimaryDateColumn, WeightsColumnName.=WeightsColumnName, IDcols.=IDcols,TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, TransformNumericColumns.=TransformNumericColumns, Methods.=Methods, model_path.=model_path, ModelID.=ModelID, LossFunction.=LossFunction, EvalMetric.=EvalMetric)
+  Output <- CatBoostDataPrep(OutputSelection.=OutputSelection, EncodeMethod. = EncodeMethod, ModelType='regression', data.=data, ValidationData.=ValidationData, TestData.=TestData, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, PrimaryDateColumn.=PrimaryDateColumn, WeightsColumnName.=WeightsColumnName, IDcols.=IDcols,TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, TransformNumericColumns.=TransformNumericColumns, Methods.=Methods, model_path.=metadata_path, ModelID.=ModelID, LossFunction.=LossFunction, EvalMetric.=EvalMetric)
   TransformationResults <- Output$TransformationResults; Output$TransformationResults <- NULL
   FactorLevelsList <- Output$FactorLevelsList; Output$FactorLevelsList <- NULL
   FinalTestTarget <- Output$FinalTestTarget; Output$FinalTestTarget <- NULL
