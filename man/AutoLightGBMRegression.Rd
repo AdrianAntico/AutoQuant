@@ -328,7 +328,7 @@ data <- AutoQuant::FakeDataGenerator(
 TestModel <- AutoQuant::AutoLightGBMRegression(
 
   # Metadata args
-  OutputSelection = c('Importances','EvalPlots','EvalMetrics','Score_TrainData'),
+  OutputSelection = c('Importances','EvalMetrics','Score_TrainData'),
   model_path = normalizePath('./'),
   metadata_path = NULL,
   ModelID = 'Test_Model_1',

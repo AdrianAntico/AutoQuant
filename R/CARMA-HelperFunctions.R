@@ -385,7 +385,7 @@ CarmaDateStandardize <- function(data. = NULL,
   if(is.character(data.[[eval(DateColumnName.)]])) {
     if(!(tolower(TimeUnit.) %chin% c('1min','5min','10min','15min','30min','hour'))) {
       x <- data.[1L, get(DateColumnName.)]
-      x1 <- lubridate::guess_formats(x, orders = c('mdY', 'BdY', 'Bdy', 'bdY', 'bdy', 'mdy', 'dby', 'Ymd', 'Ydm'))
+      x1 <- lubridate::guess_formats(x, orders = c('mdY', 'BdY', 'Bdy', 'bdY', 'bdy', 'mdy', 'dby', 'Ymd', 'Ydm', 'dmy'))
       data.[, eval(DateColumnName.) := as.Date(get(DateColumnName.), tryFormats = x1)]
     } else {
       data.[, eval(DateColumnName.) := as.POSIXct(get(DateColumnName.))]
@@ -394,7 +394,7 @@ CarmaDateStandardize <- function(data. = NULL,
   if(!is.null(XREGS.) && is.character(XREGS.[[eval(DateColumnName.)]])) {
     if(!(tolower(TimeUnit.) %chin% c('1min','5min','10min','15min','30min','hour'))) {
       x <- XREGS.[1L, get(DateColumnName.)]
-      x1 <- lubridate::guess_formats(x, orders = c('mdY', 'BdY', 'Bdy', 'bdY', 'bdy', 'mdy', 'dby', 'Ymd', 'Ydm'))
+      x1 <- lubridate::guess_formats(x, orders = c('mdY', 'BdY', 'Bdy', 'bdY', 'bdy', 'mdy', 'dby', 'Ymd', 'Ydm', 'dmy'))
       XREGS.[, eval(DateColumnName.) := as.Date(get(DateColumnName.), tryFormats = x1)]
     } else {
       XREGS.[, eval(DateColumnName.) := as.POSIXct(get(DateColumnName.))]

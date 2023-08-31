@@ -5,7 +5,7 @@
 \title{AutoXGBoostRegression}
 \usage{
 AutoXGBoostRegression(
-  OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "Score_TrainData"),
+  OutputSelection = c("Importances", "EvalMetrics", "Score_TrainData"),
   data = NULL,
   TrainOnFull = FALSE,
   ValidationData = NULL,

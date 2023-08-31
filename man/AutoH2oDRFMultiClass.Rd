@@ -26,7 +26,7 @@ AutoH2oDRFMultiClass(
   model_path = NULL,
   metadata_path = NULL,
   ModelID = "FirstModel",
-  H2OShutdown = FALSE,
+  H2OShutdown = TRUE,
   H2OStartUp = TRUE,
   DebugMode = FALSE,
   eval_metric = "logloss",
