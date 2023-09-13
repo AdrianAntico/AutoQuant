@@ -85,7 +85,7 @@ if(!("devtools" %in% rownames(installed.packages()))) install.packages("devtools
 
 # Core pacakges
 if(!("data.table" %in% rownames(installed.packages()))) install.packages("data.table"); print("data.table")
-if(!("collapse" %in% rownames(install.packages()))) install.packages("collapse"); print("collapse")
+if(!("collapse" %in% rownames(installed.packages()))) install.packages("collapse"); print("collapse")
 if(!("bit64" %in% rownames(installed.packages()))) install.packages("bit64"); print("bit64")
 if(!("devtools" %in% rownames(installed.packages()))) install.packages("devtools"); print("devtools")
 if(!("doParallel" %in% rownames(installed.packages()))) install.packages("doParallel"); print("doParallel")
@@ -94,8 +94,8 @@ if(!("lubridate" %in% rownames(installed.packages()))) install.packages("lubrida
 if(!("timeDate" %in% rownames(installed.packages()))) install.packages("timeDate"); print("timeDate")
 
 # Additional dependencies for specific use cases
-if(!("combinat" %in% rownames(install.packages()))) install.packages("combinat"); print("combinat")
-if(!("DBI" %in% rownames(install.packages()))) install.packages("DBI"); print("DBI")
+if(!("combinat" %in% rownames(installed.packages()))) install.packages("combinat"); print("combinat")
+if(!("DBI" %in% rownames(installed.packages()))) install.packages("DBI"); print("DBI")
 if(!("e1071" %in% rownames(installed.packages()))) install.packages("e1071"); print("e1071")
 if(!("fBasics" %in% rownames(installed.packages()))) install.packages("fBasics"); print("fBasics")
 if(!("forecast" %in% rownames(installed.packages()))) install.packages("forecast"); print("forecast")
@@ -108,7 +108,7 @@ if(!("nortest" %in% rownames(installed.packages()))) install.packages("nortest")
 if(!("pROC" %in% rownames(installed.packages()))) install.packages("pROC"); print("pROC")
 if(!("RColorBrewer" %in% rownames(installed.packages()))) install.packages("RColorBrewer"); print("RColorBrewer")
 if(!("recommenderlab" %in% rownames(installed.packages()))) install.packages("recommenderlab"); print("recommenderlab")
-if(!("RPostgres" %in% rownames(install.packages()))) install.packages("RPostgres"); print("RPostgres")
+if(!("RPostgres" %in% rownames(installed.packages()))) install.packages("RPostgres"); print("RPostgres")
 if(!("Rfast" %in% rownames(installed.packages()))) install.packages("Rfast"); print("Rfast")
 if(!("scatterplot3d" %in% rownames(installed.packages()))) install.packages("scatterplot3d"); print("scatterplot3d")
 if(!("stringr" %in% rownames(installed.packages()))) install.packages("stringr"); print("stringr")
