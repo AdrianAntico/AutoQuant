@@ -69,16 +69,16 @@ CARMA_Define_Args <- function(TimeUnit = NULL,
   if(any(tolower(c('hours','hour','hr','hrs','hourly')) %chin% tolower(TimeUnit))) {
     TimeUnit <- 'hour'
   }
-  if(any(tolower(c('days','day','dy','dd','d')) %chin% tolower(TimeGroups))) {
+  if(any(tolower(c('days','day','dy','dd','d','daily')) %chin% tolower(TimeGroups))) {
     TimeGroupPlaceHolder <- c(TimeGroupPlaceHolder, 'day')
   }
-  if(any(tolower(c('days','day','dy','dd','d')) %chin% tolower(TimeUnit))) {
+  if(any(tolower(c('days','day','dy','dd','d','daily')) %chin% tolower(TimeUnit))) {
     TimeUnit <- 'day'
   }
-  if(any(tolower(c('weeks','week','weaks','weak','wk','wkly','wks')) %chin% tolower(TimeGroups))) {
+  if(any(tolower(c('weeks','week','weaks','weak','wk','wkly','wks','weekly')) %chin% tolower(TimeGroups))) {
     TimeGroupPlaceHolder <- c(TimeGroupPlaceHolder, 'weeks')
   }
-  if(any(tolower(c('weeks','week','weaks','weak','wk','wkly','wks')) %chin% tolower(TimeUnit))) {
+  if(any(tolower(c('weeks','week','weaks','weak','wk','wkly','wks','weekly')) %chin% tolower(TimeUnit))) {
     TimeUnit <- 'week'
   }
   if(any(tolower(c('months','month','mth','mnth','monthly','mnthly')) %chin% tolower(TimeGroups))) {

@@ -297,7 +297,9 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   if(length(CatFeatures) > 0L) {
 
     # Encode
+    if(Debug) print('Scoring Here 2.001')
     x <- FactorLevelsList$EncodingMethod
+    if(Debug) print(x)
     if(x == 'target_encoding') {
       x <- 'TargetEncode'
     } else if(x == 'credibility') {
@@ -309,9 +311,27 @@ AutoCatBoostScoring <- function(TargetType = NULL,
     } else if(tolower(x) == 'meow') {
       x <- 'MEOW'
     }
+
+    if(Debug) print('Scoring Here 2.01')
+
     y <- names(ScoringData)[which(names(ScoringData) %like% paste0('_', x))]
+
+    if(Debug) {
+      print('Scoring Here 2.02')
+      print(y)
+    }
     if(length(y) != 0) data.table::set(ScoringData, j = c(names(ScoringData)[which(names(ScoringData) %like% paste0('_', x))]), value = NULL)
+
+    if(Debug) print('Scoring Here 2.03')
+
     xx <- names(data.table::copy(ScoringData))
+
+    if(Debug) {
+      print('Scoring Here 2.04')
+      print(ScoringData)
+      print(TargetType)
+      print(FactorLevelsList$EncodingMethod)
+    }
     Output <- Rodeo::EncodeCharacterVariables(
       RunMode = 'score',
       ModelType = TargetType,
@@ -328,6 +348,8 @@ AutoCatBoostScoring <- function(TargetType = NULL,
       ImputeMissingValue = 0)
     ScoringData <- Output$TrainData
     MetaData <- Output$MetaData
+
+    if(Debug) print('Scoring Here 2.1')
 
     # # Args to step through
     # RunMode = 'score'
@@ -354,6 +376,9 @@ AutoCatBoostScoring <- function(TargetType = NULL,
     } else if(tolower(FactorLevelsList$EncodingMethod) == 'target_encoding') {
       FeatureColumnNames <- unique(c(FeatureColumnNames, paste0(names(FactorLevelsList)[-length(FactorLevelsList)], '_TargetEncode')))
     }
+
+    if(Debug) print('Scoring Here 2.2')
+
     yy <- names(data.table::copy(ScoringData))
     FeatureColumnNames <- FeatureColumnNames[!FeatureColumnNames %in% zz]
     FeatureColumnNames <- c(FeatureColumnNames, setdiff(yy,xx))
@@ -368,6 +393,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   if(!is.null(CatFeatures)) CatFeatures <- CatFeatures - 1L
 
   # ModelDataPrep Check ----
+  if(Debug) print('Scoring Here 2.3')
   if(ReturnFeatures && TargetType != 'multiclass') ScoringMerge <- data.table::copy(ScoringData)
   if(any(c(MDP_Impute, MDP_CharToFactor, MDP_RemoveDates))) {
     ScoringData <- Rodeo::ModelDataPrep(
@@ -380,6 +406,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   }
 
   # Apply Transform Numeric Variables ----
+  if(Debug) print('Scoring Here 2.4')
   if(TransformNumeric) {
     tempTrans <- data.table::copy(TransformationObject)
     tempTrans <- tempTrans[ColumnName != eval(TargetColumnName)]
@@ -446,8 +473,10 @@ AutoCatBoostScoring <- function(TargetType = NULL,
     if(Debug) print("CatFeatures is NOT NULL")
     ScoringPool <- catboost::catboost.load_pool(ScoringData, cat_features = CatFeatures)
   } else {
-    if(Debug) print("CatFeatures is NULL")
-    print(ScoringData)
+    if(Debug) {
+      print("CatFeatures is NULL")
+      print(ScoringData)
+    }
     ScoringPool <- catboost::catboost.load_pool(ScoringData)
   }
 
@@ -455,8 +484,10 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   if(is.null(ModelObject)) ModelObject <- catboost::catboost.load_model(file.path(ModelPath, ModelID))
 
   # Score model ----
-  if(Debug) print('Scoring Here 7')
-  print(TargetType)
+  if(Debug) {
+    print('Scoring Here 7')
+    print(TargetType)
+  }
   if(TargetType %chin% c('regression', 'multiregression')) {
     predict <- data.table::as.data.table(
       catboost::catboost.predict(
@@ -471,8 +502,10 @@ AutoCatBoostScoring <- function(TargetType = NULL,
         pool = ScoringPool,
         prediction_type = 'Probability',
         thread_count = -1L))
-    print("predict creation")
-    print(predict)
+    if(Debug) {
+      print("predict creation")
+      print(predict)
+    }
   } else if(TargetType == 'multiclass') {
     predict <- data.table::as.data.table(cbind(
       1 + catboost::catboost.predict(
@@ -571,7 +604,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
       TransID = NULL,
       Path = NULL)
 
-    print('Scoring Here 13')
+    if(Debug) print('Scoring Here 13')
 
   } else if(BackTransNumeric && TargetType == 'multiregression') {
 

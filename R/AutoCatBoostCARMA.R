@@ -474,6 +474,8 @@ AutoCatBoostCARMA <- function(data,
   # Feature Engineering: Add Zero Padding for missing dates ----
   if(DebugMode) print('Feature Engineering: Add Zero Padding for missing dates----')
   if(length(ZeroPadSeries) > 0L && ZeroPadSeries %in% c("dynamic:meow","dynamic:credibility","dynamic:target_encoding") && length(GroupVariables) > 0) {
+    print("Rodeo::TimeSeriesFillRoll 1")
+    print(data)
     data <- Rodeo::TimeSeriesFillRoll(
       data = data,
       RollVars = TargetColumnName,
@@ -484,11 +486,23 @@ AutoCatBoostCARMA <- function(data,
       TimeUnit = TimeUnit,
       SimpleImpute = TRUE)
   } else if(length(ZeroPadSeries) > 0L && length(GroupVariables) > 0L) {
+    print("Rodeo::TimeSeriesFillRoll 2")
+    print(data)
+    print(TargetColumnName)
+    print(DateColumnName)
+    print(GroupVariables)
+    print(TimeUnit)
+    print(ZeroPadSeries)
     data <- Rodeo::TimeSeriesFill(data, TargetColumn=TargetColumnName, DateColumnName=eval(DateColumnName), GroupVariables=GroupVariables, TimeUnit=TimeUnit, FillType=ZeroPadSeries, MaxMissingPercent=0.95, SimpleImpute=TRUE)
+    print("Rodeo::TimeSeriesFillRoll 2.1")
   } else if(data[, .N] != unique(data)[, .N]) {
+    print("Rodeo::TimeSeriesFillRoll 3")
+    print(data)
     data <- unique(data); ZeroPadSeries <- 'maxmax'
     data <- Rodeo::TimeSeriesFill(data, TargetColumn=TargetColumnName, DateColumnName=eval(DateColumnName), GroupVariables=GroupVariables, TimeUnit=TimeUnit, FillType=ZeroPadSeries, MaxMissingPercent=0.95, SimpleImpute=TRUE)
   } else if(length(GroupVariables) > 0L) {
+    print("Rodeo::TimeSeriesFillRoll 4")
+    print(data)
     temp <- Rodeo::TimeSeriesFill(data, TargetColumn=TargetColumnName, DateColumnName=eval(DateColumnName), GroupVariables=GroupVariables, TimeUnit=TimeUnit, FillType='maxmax', MaxMissingPercent=0.95, SimpleImpute=TRUE)
     if(temp[,.N] != data[,.N]) stop('There are missing dates in your series. You can utilize the ZeroPadSeries argument to handle this or manage it before running the function')
   }
