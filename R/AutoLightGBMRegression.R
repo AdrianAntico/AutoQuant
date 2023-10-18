@@ -283,7 +283,7 @@ AutoLightGBMRegression <- function(# data parameters
                                    IDcols = NULL,
 
                                    # Metadata parameters
-                                   OutputSelection = c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData'),
+                                   OutputSelection = c('Importances', 'EvalMetrics', 'Score_TrainData'),
                                    model_path = NULL,
                                    metadata_path = NULL,
                                    DebugMode = FALSE,

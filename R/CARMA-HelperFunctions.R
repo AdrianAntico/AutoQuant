@@ -1625,7 +1625,10 @@ UpdateFeatures <- function(UpdateData. = NULL,
 
     if(Debug) print('UpdateFeatures 15')
 
-    UpdateData. <- data.table::rbindlist(list(UpdateData., temp), fill = TRUE)
+    #print(UpdateData.)
+    #print("------------------------")
+    #print(temp)
+    UpdateData. <- data.table::rbindlist(list(UpdateData., temp), fill = TRUE, use.names = TRUE)
 
     if(Debug) print('UpdateFeatures 16')
 
@@ -1761,7 +1764,7 @@ UpdateFeatures <- function(UpdateData. = NULL,
     if(any(class(temp[[eval(DateColumnName.)]]) %chin% c('POSIXct','POSIXt','IDate'))) temp[, eval(DateColumnName.) := as.Date(get(DateColumnName.))]
 
     if(Debug) print('UpdateFeatures 15')
-    UpdateData. <- data.table::rbindlist(list(UpdateData., temp), fill = TRUE)
+    UpdateData. <- data.table::rbindlist(list(UpdateData., temp), fill = TRUE, use.names = TRUE)
 
     # Update holiday feature
     if(Debug) print('UpdateFeatures 16')

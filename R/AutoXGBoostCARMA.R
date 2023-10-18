@@ -305,6 +305,19 @@ AutoXGBoostCARMA <- function(data = NULL,
   if(!data.table::is.data.table(data)) data.table::setDT(data)
   if(!is.null(XREGS)) if(!data.table::is.data.table(XREGS)) data.table::setDT(XREGS)
 
+  date_class <- tolower(class(data[[DateColumnName]])[1L])
+  if(!date_class %in% c("date","posixct")) {
+    if(date_class %in% c("idate")) {
+      data[, eval(DateColumnName) := as.Date(get(DateColumnName))]
+    } else if(date_class %in% c("idatetime")) {
+      data[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
+    } else if(date_class %in% c("character","factor") && TimeUnit %in% c('day', 'week', 'month', 'quarter', 'year')) {
+      data[, eval(DateColumnName) := as.Date(get(DateColumnName))]
+    } else {
+      data[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
+    }
+  }
+
   # Aggregate data to ensure it's on the proper aggregation level
   data <- data[, list(temp___ = mean(get(TargetColumnName), na.rm = TRUE)), by = c(DateColumnName, GroupVariables)]
   data.table::setnames(data, "temp___", TargetColumnName)
@@ -548,7 +561,7 @@ AutoXGBoostCARMA <- function(data = NULL,
 
       # Metadata arguments
       model_path = getwd(),
-      metadata_path = getwd(),
+      metadata_path = NULL,
       ModelID = 'XGBoost',
       ReturnFactorLevels = TRUE,
       ReturnModelObjects = TRUE,
