@@ -1076,6 +1076,7 @@ TimeSeriesDataPrepare <- function(data,
 
   # Turn off warnings----
   options(warn = -1L)
+  library(lubridate)
 
   # Convert to data.table if not already
   if(!data.table::is.data.table(data)) data.table::setDT(data)
@@ -1129,41 +1130,42 @@ TimeSeriesDataPrepare <- function(data,
   # Check for different time aggregations----
   MaxDate <- data[, max(get(DateName))]
   FC_Data <- data.table::data.table(Date = seq_len(FCPeriods))
+  data.table::setnames(FC_Data, "Date", DateName)
 
   # Define TS Frequency----
   if(tolower(TimeUnit) %chin% c("hour","hours","hr","hrs")) {
     UserSuppliedFreq <- 24
-    FC_Data[, Date := MaxDate + lubridate::hours(Date)]
+    FC_Data[, eval(DateName) := MaxDate + lubridate::hours(get(DateName))]
   } else if(tolower(TimeUnit) %chin% c("1min","1mins")) {
     UserSuppliedFreq <- 60
-    FC_Data[, Date := MaxDate + lubridate::minutes(Date)]
+    FC_Data[, eval(DateName) := MaxDate + lubridate::minutes(get(DateName))]
   } else if(tolower(TimeUnit) %chin% c("5min","5mins")) {
     UserSuppliedFreq <- 12
-    FC_Data[, Date := MaxDate + lubridate::minutes(5 * Date)]
+    FC_Data[, eval(DateName) := MaxDate + lubridate::minutes(5 * get(DateName))]
   } else if(tolower(TimeUnit) %chin% c("10min","10mins")) {
     UserSuppliedFreq <- 6
-    FC_Data[, Date := MaxDate + lubridate::minutes(10 * Date)]
+    FC_Data[, eval(DateName) := MaxDate + lubridate::minutes(10 * get(DateName))]
   } else if(tolower(TimeUnit) %chin% c("15min","15mins")) {
     UserSuppliedFreq <- 4
-    FC_Data[, Date := MaxDate + lubridate::minutes(15 * Date)]
+    FC_Data[, eval(DateName) := MaxDate + lubridate::minutes(15 * get(DateName))]
   } else if(tolower(TimeUnit) %chin% c("30min","30mins")) {
     UserSuppliedFreq <- 2
-    FC_Data[, Date := MaxDate + lubridate::minutes(30 * Date)]
+    FC_Data[, eval(DateName) := MaxDate + lubridate::minutes(30 * get(DateName))]
   } else if (tolower(TimeUnit) %chin% c("day","days","dy","dys")) {
     UserSuppliedFreq <- 365
-    FC_Data[, Date := MaxDate + lubridate::days(Date)]
+    FC_Data[, eval(DateName) := MaxDate + lubridate::days(get(DateName))]
   } else if (tolower(TimeUnit) %chin% c("week","weeks","wk","wks")) {
     UserSuppliedFreq <- 52
-    FC_Data[, Date := MaxDate + lubridate::weeks(Date)]
+    FC_Data[, eval(DateName) := MaxDate + lubridate::weeks(get(DateName))]
   } else if (tolower(TimeUnit) %chin% c("month","months","mth","mths")) {
     UserSuppliedFreq <- 12
-    FC_Data[, Date := as.Date(MaxDate) %m+% months(Date)]
+    FC_Data[, eval(DateName) := MaxDate %m+% months(get(DateName))]
   } else if (tolower(TimeUnit) %chin% c("quarter","quarters","qtr","qtrs")) {
     UserSuppliedFreq <- 4
-    FC_Data[, Date := as.Date(MaxDate)  %m+% months(3 * Date)]
+    FC_Data[, eval(DateName) := as.Date(MaxDate)  %m+% months(3 * get(DateName))]
   } else if (tolower(TimeUnit) %chin% c("year","years","yr","yrs")) {
     UserSuppliedFreq <- 1
-    FC_Data[, Date := MaxDate + lubridate::years(Date)]
+    FC_Data[, eval(DateName) := MaxDate + lubridate::years(get(DateName))]
   } else {
     stop("TimeUnit is not an approved value to supply")
   }
