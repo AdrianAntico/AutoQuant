@@ -711,8 +711,8 @@ Test_ResidualHistogram <- AutoPlots::Plot.Residuals.Histogram(
   Title.XAxis = PredictionColumnName,
   EchartsTheme = "wef",
   TimeLine = FALSE,
-  X_Scroll = TRUE,
-  Y_Scroll = TRUE,
+  
+  
   TextColor = "white",
   title.fontSize = 22,
   title.fontWeight = "bold",
@@ -747,8 +747,8 @@ if(length(TrainData) > 0L) {
     Title.XAxis = 'Predict',
     EchartsTheme = "wef",
     TimeLine = FALSE,
-    X_Scroll = TRUE,
-    Y_Scroll = TRUE,
+    
+    
     TextColor = "white",
     title.fontSize = 22,
     title.fontWeight = "bold",
@@ -786,8 +786,8 @@ Test_EvaluationPlot <- AutoPlots::Plot.Calibration.Line(
   EchartsTheme = "wef",
   
   TimeLine = TRUE,
-  X_Scroll = TRUE,
-  Y_Scroll = TRUE,
+  
+  
   TextColor = "white",
   Debug = FALSE)
 
@@ -813,8 +813,8 @@ if(!is.null(TrainData)) {
     EchartsTheme = "wef",
     
     TimeLine = TRUE,
-    X_Scroll = TRUE,
-    Y_Scroll = TRUE,
+    
+    
     TextColor = "white",
     Debug = FALSE)
 }
@@ -844,8 +844,8 @@ Test_EvaluationBoxPlot <- AutoPlots::Plot.Calibration.Box(
   EchartsTheme = "wef",
   
   TimeLine = TRUE,
-  X_Scroll = TRUE,
-  Y_Scroll = TRUE,
+  
+  
   TextColor = "white",
   Debug = FALSE)
 
@@ -873,8 +873,8 @@ if(!is.null(TrainData)) {
     EchartsTheme = "wef",
     
     TimeLine = TRUE,
-    X_Scroll = TRUE,
-    Y_Scroll = TRUE,
+    
+    
     TextColor = "white",
     Debug = FALSE)
 }
@@ -901,8 +901,8 @@ Test_ScatterPlot <- AutoPlots::Plot.Residuals.Scatter(
   EchartsTheme = "wef",
   
   TimeLine = TRUE,
-  X_Scroll = TRUE,
-  Y_Scroll = TRUE,
+  
+  
   TextColor = "white",
   Debug = FALSE)
 
@@ -928,8 +928,8 @@ if(length(TrainData) > 0L) {
     EchartsTheme = "wef",
     
     TimeLine = TRUE,
-    X_Scroll = TRUE,
-    Y_Scroll = TRUE,
+    
+    
     TextColor = "white",
     Debug = FALSE)
 }
@@ -978,8 +978,8 @@ if(!is.null(TestData) && !is.null(FeatureColumnNames)) {
         EchartsTheme = "wef",
         
         TimeLine = TRUE,
-        X_Scroll = TRUE,
-        Y_Scroll = TRUE,
+        
+        
         TextColor = "white",
         Debug = FALSE)
     }
@@ -1022,8 +1022,8 @@ if(!is.null(TrainData) && !is.null(FeatureColumnNames)) {
         EchartsTheme = "wef",
         
         TimeLine = TRUE,
-        X_Scroll = TRUE,
-        Y_Scroll = TRUE,
+        
+        
         TextColor = "white",
         Debug = FALSE)
     }
@@ -1066,8 +1066,8 @@ if(!is.null(TestData) && !is.null(FeatureColumnNames)) {
         EchartsTheme = "wef",
         
         TimeLine = TRUE,
-        X_Scroll = TRUE,
-        Y_Scroll = TRUE,
+        
+        
         TextColor = "white",
         Debug = FALSE)
     }
@@ -1108,8 +1108,8 @@ if(!is.null(TrainData) && !is.null(FeatureColumnNames)) {
         EchartsTheme = "wef",
         
         TimeLine = TRUE,
-        X_Scroll = TRUE,
-        Y_Scroll = TRUE,
+        
+        
         TextColor = "white",
         Debug = FALSE)
     }
@@ -1151,8 +1151,8 @@ if(!is.null(TestData) && !is.null(FeatureColumnNames)) {
         EchartsTheme = "wef",
         
         TimeLine = TRUE,
-        X_Scroll = TRUE,
-        Y_Scroll = TRUE,
+        
+        
         TextColor = "white",
         Debug = FALSE)
     }
@@ -1192,8 +1192,8 @@ if(!is.null(TrainData) && !is.null(FeatureColumnNames)) {
         EchartsTheme = "wef",
         
         TimeLine = TRUE,
-        X_Scroll = TRUE,
-        Y_Scroll = TRUE,
+        
+        
         TextColor = "white",
         Debug = FALSE)
     }
@@ -1475,8 +1475,8 @@ if(!is.null(Test_Importance)) {
     Title.XAxis = NULL,
     EchartsTheme = "wef",
     TimeLine = FALSE,
-    X_Scroll = TRUE,
-    Y_Scroll = TRUE,
+    
+    
     TextColor = "white",
     title.fontSize = 22,
     title.fontWeight = "bold",
@@ -1512,8 +1512,8 @@ if(!is.null(Validation_Importance)) {
     Title.XAxis = NULL,
     EchartsTheme = "wef",
     TimeLine = FALSE,
-    X_Scroll = TRUE,
-    Y_Scroll = TRUE,
+    
+    
     TextColor = "white",
     title.fontSize = 22,
     title.fontWeight = "bold",
@@ -1549,8 +1549,8 @@ if(!is.null(Train_Importance)) {
     Title.XAxis = NULL,
     EchartsTheme = "wef",
     TimeLine = FALSE,
-    X_Scroll = TRUE,
-    Y_Scroll = TRUE,
+    
+    
     TextColor = "white",
     title.fontSize = 22,
     title.fontWeight = "bold",
