@@ -12,6 +12,7 @@
 ![AutoQuant Reference Manual](https://github.com/AdrianAntico/AutoQuant/tree/master/vignette)
 
 Companion Packages:
+- ![Quantico](https://github.com/AdrianAntico/Quantico)
 - ![Rodeo](https://github.com/AdrianAntico/Rodeo)
 - ![AutoPlots](https://github.com/AdrianAntico/AutoPlots)
 
