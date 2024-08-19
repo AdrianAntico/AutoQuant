@@ -3987,7 +3987,7 @@ data.table::setDTthreads(percent = max(1L, parallel::detectCores()-2L))
 data <- data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
 
 # Ensure series have no missing dates (also remove series with more than 25% missing values)
-data <- AutoQuant::TimeSeriesFill(
+data <- Rodeo::TimeSeriesFill(
   data,
   DateColumnName = "Date",
   GroupVariables = c("Store","Dept"),
@@ -4224,7 +4224,7 @@ for(Run in seq_len(TotalRuns)) {
 data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
 
 # Ensure series have no missing dates (also remove series with more than 25% missing values)
-data <- AutoQuant::TimeSeriesFill(
+data <- Rodeo::TimeSeriesFill(
   data,
   DateColumnName = "Date",
   GroupVariables = c("Store","Dept"),
@@ -4334,7 +4334,7 @@ XGBoostResults <- AutoXGBoostCARMA(
 data <- data.table::fread('https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1')
 
 # Ensure series have no missing dates (also remove series with more than 25% missing values)
-data <- AutoQuant::TimeSeriesFill(
+data <- Rodeo::TimeSeriesFill(
   data,
   DateColumnName = 'Date',
   GroupVariables = c('Store','Dept'),
@@ -4522,7 +4522,7 @@ Results <- AutoLightGBMCARMA(
 data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
 
 # Ensure series have no missing dates (also remove series with more than 25% missing values)
-data <- AutoQuant::TimeSeriesFill(
+data <- Rodeo::TimeSeriesFill(
   data,
   DateColumnName = "Date",
   GroupVariables = c("Store","Dept"),
