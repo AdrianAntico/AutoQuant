@@ -40,8 +40,8 @@ a:hover {
 .page-header {
   color: #fff;
   text-align: center;
-  background-color: #152399;
-  background-image: linear-gradient(120deg,#000121,#152399);
+  background-color: #000121;
+  background-image: linear-gradient(120deg,#000121,#696b76);
   padding: 1.5rem 2rem;
 }
 .page-header :last-child {
@@ -99,8 +99,8 @@ a:hover {
 }
 .toc .toc-box {
   padding: 55px;
-  background: linear-gradient(90deg, #00052b, #00198a);
-  border: solid 3px #000000;
+  background: linear-gradient(90deg, #000121, #696b76);
+  border: solid 1px #000000;
   border-radius: 70px;
   color: white;
   box-shadow: 8px 5px 10px 0px #000000;
@@ -142,24 +142,52 @@ a:hover {
 .main-content img {
   max-width: 100%;
 }
-.main-content h1,
-.main-content h2,
-.main-content h3,
-.main-content h4,
-.main-content h5,
+
+.main-content h1  {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  font-weight: bold;
+  color: #070e56;
+}
+
+.main-content h2 {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  font-weight: normal;
+  color: #121e94;
+}
+.main-content h3 {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  font-weight: normal;
+  color: #3745d1;
+}
+.main-content h4 {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  font-weight: normal;
+  color: #374995;
+}
+.main-content h5 {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  font-weight: normal;
+  color: #000000;
+}
 .main-content h6 {
   margin-top: 2rem;
   margin-bottom: 1rem;
   font-weight: normal;
   color: #000000;
 }
+
 .main-content p {
   margin-bottom: 1em;
 }
 .main-content code {
   padding: 2px 4px;
   font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
-  color: #222222;
+  color: #2c2c2d;
   background-color: #f3f6fa;
   border-radius: 0.3rem;
 }
@@ -280,274 +308,6 @@ a:hover {
 }
 ```
 
-```{css, echo=FALSE}
-@import url('https://fonts.googleapis.com/css2?family=Yusei+Magic&display=swap');
-
-* {
-  box-sizing: border-box;
-}
-
-body {
-  padding: 0;
-  margin: 0;
-  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 16px;
-  line-height: 1.5;
-  color: #000000;
-  background-color: #9da9e7;
-}
-
-a {
-  color: #b1c5d8;
-  text-decoration: none;
-}
-a:hover {
-  text-decoration: underline;
-}
-
-.page-header {
-  color: #fff;
-  text-align: center;
-  background-color: #152399;
-  background-image: linear-gradient(120deg,#000121,#152399);
-  padding: 1.5rem 2rem;
-}
-.page-header :last-child {
-  margin-bottom: 0.5rem;
-}
-@media screen and (max-width: 42em) {
-  .page-header {
-    padding: 1rem 1rem;
-  }
-}
-
-.project-name {
-  margin-top: 0;
-  margin-bottom: 0.1rem;
-  font-size: 2rem;
-}
-@media screen and (max-width: 42em) {
-  .project-name {
-    font-size: 1.75rem;
-  }
-}
-
-.project-tagline {
-  margin-bottom: 2rem;
-  font-weight: normal;
-  opacity: 0.7;
-  font-size: 1.5rem;
-}
-@media screen and (max-width: 42em) {
-  .project-tagline {
-    font-size: 1.2rem;
-  }
-}
-
-.project-author, .project-date {
-  font-weight: normal;
-  opacity: 0.7;
-  font-size: 1.2rem;
-}
-@media screen and (max-width: 42em) {
-  .project-author, .project-date {
-    font-size: 1rem;
-  }
-}
-
-.main-content, .toc {
-  max-width: 64rem;
-  padding: 2rem 4rem;
-  margin: 0 auto;
-  font-size: 1.1rem;
-}
-
-.toc {
-  padding-bottom: 0;
-}
-.toc .toc-box {
-  padding: 55px;
-  background: linear-gradient(90deg, #00052b, #00198a);
-  border: solid 3px #000000;
-  border-radius: 70px;
-  color: white;
-  box-shadow: 8px 5px 10px 0px #000000;
-}
-.toc .toc-box .toc-title {
-  margin: 0 0 0.5rem;
-  text-align: center;
-}
-.toc .toc-box > ul {
-  margin: 0;
-  padding-left: 1.5rem;
-}
-@media screen and (min-width: 42em) and (max-width: 64em) {
-  .toc {
-    padding: 2rem 2rem 0;
-  }
-}
-@media screen and (max-width: 42em) {
-  .toc {
-    padding: 2rem 1rem 0;
-    font-size: 1rem;
-  }
-}
-
-.main-content :first-child {
-  margin-top: 0;
-}
-@media screen and (min-width: 42em) and (max-width: 64em) {
-  .main-content {
-    padding: 2rem;
-  }
-}
-@media screen and (max-width: 42em) {
-  .main-content {
-    padding: 2rem 1rem;
-    font-size: 1rem;
-  }
-}
-.main-content img {
-  max-width: 100%;
-}
-.main-content h1,
-.main-content h2,
-.main-content h3,
-.main-content h4,
-.main-content h5,
-.main-content h6 {
-  margin-top: 2rem;
-  margin-bottom: 1rem;
-  font-weight: normal;
-  color: #000000;
-}
-.main-content p {
-  margin-bottom: 1em;
-}
-.main-content code {
-  padding: 2px 4px;
-  font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
-  color: #567482;
-  background-color: #f3f6fa;
-  border-radius: 0.3rem;
-}
-.main-content pre {
-  padding: 0.8rem;
-  margin-top: 0;
-  margin-bottom: 1rem;
-  font: 1rem Consolas, "Liberation Mono", Menlo, Courier, monospace;
-  color: #567482;
-  word-wrap: normal;
-  background-color: #f3f6fa;
-  border: solid 1px #dce6f0;
-  border-radius: 0.3rem;
-  line-height: 1.45;
-  overflow: auto;
-}
-@media screen and (max-width: 42em) {
-  .main-content pre {
-    font-size: 0.9rem;
-  }
-}
-.main-content pre > code {
-  padding: 0;
-  margin: 0;
-  color: #567482;
-  word-break: normal;
-  white-space: pre;
-  background: transparent;
-  border: 0;
-}
-@media screen and (max-width: 42em) {
-  .main-content pre > code {
-    font-size: 0.9rem;
-  }
-}
-.main-content pre code,
-.main-content pre tt {
-  display: inline;
-  max-width: initial;
-  padding: 0;
-  margin: 0;
-  overflow: initial;
-  line-height: inherit;
-  word-wrap: normal;
-  background-color: transparent;
-  border: 0;
-}
-.main-content pre code:before, .main-content pre code:after,
-.main-content pre tt:before,
-.main-content pre tt:after {
-  content: normal;
-}
-.main-content ul,
-.main-content ol {
-  margin-top: 0;
-}
-.main-content blockquote {
-  padding: 0 1rem;
-  margin-left: 0;
-  color: #819198;
-  border-left: 0.3rem solid #dce6f0;
-  font-size: 1.2rem;
-}
-.main-content blockquote > :first-child {
-  margin-top: 0;
-}
-.main-content blockquote > :last-child {
-  margin-bottom: 0;
-}
-@media screen and (max-width: 42em) {
-  .main-content blockquote {
-    font-size: 1.1rem;
-  }
-}
-.main-content table {
-  width: 100%;
-  overflow: auto;
-  word-break: normal;
-  word-break: keep-all;
-  -webkit-overflow-scrolling: touch;
-  border-collapse: collapse;
-  border-spacing: 0;
-  margin: 1rem 0;
-}
-.main-content table th {
-  font-weight: bold;
-  background-color: #159957;
-  color: #fff;
-}
-.main-content table th,
-.main-content table td {
-  padding: 0.5rem 1rem;
-  border-bottom: 1px solid #e9ebec;
-  text-align: left;
-}
-.main-content table tr:nth-child(odd) {
-  background-color: #f2f2f2;
-}
-.main-content dl {
-  padding: 0;
-}
-.main-content dl dt {
-  padding: 0;
-  margin-top: 1rem;
-  font-size: 1rem;
-  font-weight: bold;
-}
-.main-content dl dd {
-  padding: 0;
-  margin-bottom: 1rem;
-}
-.main-content hr {
-  height: 2px;
-  padding: 0;
-  margin: 1rem 0;
-  background-color: #eff0f1;
-  border: 0;
-}
-```
-
 ```{r ModelObject_Model_MetaData, echo = FALSE}
 if(!is.null(ModelObject)) {
   
@@ -575,11 +335,6 @@ if(!is.null(ModelObject)) {
   PredictionColumnName <- PredictionColumnName
   if(is.null(PredictionColumnName)) {
     PredictionColumnName <- ModelObject[['ColNames']][[1L]]
-  }
-  if(is.null(DateColumnName) && !is.null(ModelObject[['ArgsList']][['PrimaryDateColumn']])) {
-    DateColumnName <- ModelObject[['ArgsList']][['PrimaryDateColumn']]
-  } else {
-    DateColumnName <- NULL
   }
 }
 ```
@@ -694,256 +449,6 @@ if(!is.null(ModelObject)) {
 }
 ``` 
 
-```{r Generic_DataSets_And_MetaData, echo = FALSE}
-if(is.null(ModelObject)) {
-  
-  # DataSets
-  if(is.null(TestData) && file.exists(file.path(SourcePath, paste0(ModelID, "_ValidationData.csv")))) {
-    TestData <- data.table::fread(file = file.path(SourcePath, paste0(ModelID, "_ValidationData.csv")))
-  }
-  # Validate
-  if(is.null(ValidationData) && file.exists(file.path(SourcePath, paste0(ModelID, "_ValData.csv")))) {
-    ValidationDataData <- data.table::fread(file = file.path(SourcePath, paste0(ModelID, "_ValData.csv")))
-  }
-  # Train
-  if(is.null(TrainData) && file.exists(file.path(SourcePath, paste0(ModelID, "_TrainData.csv")))) {
-    TrainData <- data.table::fread(file = file.path(SourcePath, paste0(ModelID, "_TrainData.csv")))
-  }
-  
-  # Meta info
-  TargetColumnName <- TargetColumnName
-  PredictionColumnName <- PredictionColumnName
-  if(is.null(PredictionColumnName) && !is.null(TestData)) {
-    PredictionColumnName <- names(TestData)[!names(TestData) %in% c(TargetColumnName, PredictionColumnName)]
-  }
-  if(is.null(PredictionColumnName) && !is.null(ValidationData)) {
-    PredictionColumnName <- names(ValidationData)[!names(ValidationData) %in% c(TargetColumnName, PredictionColumnName)]
-  }
-  if(is.null(PredictionColumnName) && !is.null(TrainData)) {
-    PredictionColumnName <- names(TrainData)[!names(TrainData) %in% c(TargetColumnName, PredictionColumnName)]
-  }
-  if(is.list(PredictionColumnName) || data.table::is.data.table(PredictionColumnName)) {
-    PredictionColumnName <- PredictionColumnName[[1L]]
-  }
-  if(is.null(DateColumnName) && !is.null(ModelObject[['ArgsList']][['PrimaryDateColumn']])) {
-    DateColumnName <- ModelObject[['ArgsList']][['PrimaryDateColumn']]
-  } else {
-    DateColumnName <- NULL
-  }
-}
-```
-
-```{r Generic_Model_MetaData, echo = FALSE}
-if(is.null(ModelObject)) {
-
-  # Model MetaData ----
-
-  ## Model_MetaData_Parameters ----
-  if(!is.null(SourcePath) && !is.null(ModelID)) {
-    if(file.exists(file.path(SourcePath, paste0(ModelID, "_ArgsList.Rdata")))) {
-      load(file.path(SourcePath, paste0(ModelID, "_ArgsList.Rdata")))
-    }
-  } else {
-    ArgsList <- NULL
-  }
-
-  ## Model_MetaData_GridMetrics ----
-  if(!is.null(SourcePath) && !is.null(ModelID)) {
-    if(file.exists(file.path(SourcePath, paste0(ModelID, "_GridMetrics.csv")))) {
-      GridMetrics <- data.table::fread(file = file.path(SourcePath, paste0(ModelID, "_GridMetrics.csv")))
-    } else {
-      GridMetrics <- NULL
-    }
-  } else {
-    GridMetrics <- NULL
-  }
-}
-```
-  
-```{r Generic_Evaluation_Metrics, echo = FALSE}
-if(is.null(ModelObject)) {
-  
-  # Evaluation Metrics ----
-    
-  ## Model_Evaluation_Metrics ----
-  
-  ### Test
-  if(!is.null(TestData) && !file.exists(file.path(SourcePath, paste0(ModelID, "_Test_EvaluationMetrics.csv")))) {
-    Test_EvalMetrics <- AutoQuant:::ClassificationMetrics(
-      TestData = TestData,
-      Thresholds = seq(0,1,0.01),
-      Target = TargetColumnName,
-      PredictColumnName = 'p1',
-      PositiveOutcome = 1,
-      NegativeOutcome = 0,
-      CostMatrix = c(0,1,1,0))
-  } else if(file.exists(file.path(SourcePath, paste0(ModelID, "_Test_EvaluationMetrics.csv")))) {
-    Test_EvalMetrics <- data.table::fread(file = file.path(SourcePath, paste0(ModelID, "_Test_EvaluationMetrics.csv")))
-  } else {
-    Test_EvalMetrics <- NULL
-  }
-
-  ### Train
-  if(!is.null(TrainData) && !file.exists(file.path(SourcePath, paste0(ModelID, "_Train_EvaluationMetrics.csv")))) {
-    Train_EvalMetrics <- AutoQuant:::ClassificationMetrics(
-      TestData = TrainData,
-      Thresholds = seq(0,1,0.01),
-      Target = TargetColumnName,
-      PredictColumnName = 'p1',
-      PositiveOutcome = 1,
-      NegativeOutcome = 0,
-      CostMatrix = c(0,1,1,0))
-  } else if(file.exists(file.path(SourcePath, paste0(ModelID, "_Train_EvaluationMetrics.csv")))) {
-    Train_EvalMetrics <- data.table::fread(file = file.path(SourcePath, paste0(ModelID, "_Train_EvaluationMetrics.csv")))
-  } else {
-    Train_EvalMetrics <- NULL
-  }
-  
-  ## Model_VarImportanceTable ----
-  if(tolower(Algo) == 'catboost') {
-    if(file.exists(file.path(SourcePath, paste0(ModelID, "_Test_Importance_VariableImportance.csv")))) {
-      Test_Importance <- data.table::fread(file = file.path(SourcePath, paste0(ModelID, "_Test_Importance_VariableImportance.csv")))
-    } else {
-      Test_Importance <- NULL
-    }
-    if(file.exists(file.path(SourcePath, paste0(ModelID, "_Validation_Importance_VariableImportance.csv")))) {
-      Validation_Importance <- data.table::fread(file = file.path(SourcePath, paste0(ModelID, "_Validation_Importance_VariableImportance.csv")))
-    } else {
-      Validation_Importance <- NULL
-    }
-    if(file.exists(file.path(SourcePath, paste0(ModelID, "_Train_Importance_VariableImportance.csv")))) {
-      Train_Importance <- data.table::fread(file = file.path(SourcePath, paste0(ModelID, "_Train_Importance_VariableImportance.csv")))
-    } else {
-      Train_Importance <- NULL
-    }
-    
-    # Update Colnames
-    if(!is.null(Test_Importance)) data.table::setnames(Test_Importance, old = 'Importance', new = 'Test_Importance', skip_absent = TRUE)
-    if(!is.null(Validation_Importance)) data.table::setnames(Validation_Importance, old = 'Importance', new = 'Validation_Importance', skip_absent = TRUE)
-    if(!is.null(Train_Importance)) data.table::setnames(Train_Importance, old = 'Importance', new = 'Train_Importance', skip_absent = TRUE)
-
-    # CatBoost only
-    if(is.null(Test_Importance) && is.null(Validation_Importance) && is.null(Train_Importance)) {
-      All_Importance <- NULL
-    } else if(!is.null(Test_Importance) && !is.null(Validation_Importance) && !is.null(Train_Importance)) {
-      All_Importance <- merge(Test_Importance, Validation_Importance, by = 'Variable', all = TRUE)
-      All_Importance <- merge(All_Importance, Train_Importance, by = 'Variable', all = TRUE)
-    } else if(!is.null(Test_Importance) && !is.null(Validation_Importance) && is.null(Train_Importance)) {
-      All_Importance <- merge(Test_Importance, Validation_Importance, by = 'Variable', all = TRUE)
-    } else if(!is.null(Test_Importance) && is.null(Validation_Importance) && !is.null(Train_Importance)) {
-      All_Importance <- merge(Test_Importance, Train_Importance, by = 'Variable', all = TRUE)
-    } else if(is.null(Test_Importance) && !is.null(Validation_Importance) && !is.null(Train_Importance)) {
-      All_Importance <- merge(Validation_Importance, Train_Importance, by = 'Variable', all = TRUE)
-    } else if(is.null(Test_Importance) && is.null(Validation_Importance) && !is.null(Train_Importance)) {
-      All_Importance <- Train_Importance
-    } else if(is.null(Test_Importance) && !is.null(Validation_Importance) && is.null(Train_Importance)) {
-      All_Importance <- Validation_Importance
-    } else if(!is.null(Test_Importance) && is.null(Validation_Importance) && is.null(Train_Importance)) {
-      All_Importance <- Test_Importance
-    } else {
-      All_Importance <- NULL
-    }
-    
-  } else {
-    
-    # Encoding-based Models + Generic Connector
-    if(is.null(Test_Importance)) {
-      Test_Importance <- NULL
-    } else {
-      Test_Importance <- Test_Importance
-    }
-    if(is.null(Validation_Importance_dt)) {
-      Validation_Importance <- NULL
-    } else {
-      Validation_Importance <- Validation_Importance_dt
-    }
-    if(is.null(Train_Importance_dt)) {
-      Train_Importance <- NULL
-    } else {
-      Train_Importance <- Train_Importance_dt
-    }
-    
-    # Update Colnames
-    if(!is.null(Test_Importance)) data.table::setnames(Test_Importance, old = 'Importance', new = 'Test_Importance', skip_absent = TRUE)
-    if(!is.null(Validation_Importance)) data.table::setnames(Validation_Importance, old = 'Importance', new = 'Validation_Importance', skip_absent = TRUE)
-    if(!is.null(Train_Importance)) data.table::setnames(Train_Importance, old = 'Importance', new = 'Train_Importance', skip_absent = TRUE)
-
-    # CatBoost only
-    if(is.null(Test_Importance) && is.null(Validation_Importance) && is.null(Train_Importance)) {
-      All_Importance <- NULL
-    } else if(!is.null(Test_Importance) && !is.null(Validation_Importance) && !is.null(Train_Importance)) {
-      All_Importance <- merge(Test_Importance, Validation_Importance, by = 'Variable', all = TRUE)
-      All_Importance <- merge(All_Importance, Train_Importance, by = 'Variable', all = TRUE)
-    } else if(!is.null(Test_Importance) && !is.null(Validation_Importance) && is.null(Train_Importance)) {
-      All_Importance <- merge(Test_Importance, Validation_Importance, by = 'Variable', all = TRUE)
-    } else if(!is.null(Test_Importance) && is.null(Validation_Importance) && !is.null(Train_Importance)) {
-      All_Importance <- merge(Test_Importance, Train_Importance, by = 'Variable', all = TRUE)
-    } else if(is.null(Test_Importance) && !is.null(Validation_Importance) && !is.null(Train_Importance)) {
-      All_Importance <- merge(Validation_Importance, Train_Importance, by = 'Variable', all = TRUE)
-    } else if(is.null(Test_Importance) && is.null(Validation_Importance) && !is.null(Train_Importance)) {
-      All_Importance <- Train_Importance
-    } else if(is.null(Test_Importance) && !is.null(Validation_Importance) && is.null(Train_Importance)) {
-      All_Importance <- Validation_Importance
-    } else if(!is.null(Test_Importance) && is.null(Validation_Importance) && is.null(Train_Importance)) {
-      All_Importance <- Test_Importance
-    } else {
-      All_Importance <- NULL
-    }
-    
-  }
-  
-  ## Model_IntImportanceTable ----
-  if(tolower(Algo) == 'catboost') {
-    if(file.exists(file.path(SourcePath, paste0(ModelID, "_Test_Interaction_Interaction.csv")))) {
-      Test_Interaction <- data.table::fread(file = file.path(SourcePath, paste0(ModelID, "_Test_Interaction_Interaction.csv")))
-    } else {
-      Test_Interaction <- NULL
-    }
-    if(file.exists(file.path(SourcePath, paste0(ModelID, "_Validation_Interaction_Interaction.csv")))) {
-      Validation_Interaction <- data.table::fread(file = file.path(SourcePath, paste0(ModelID, "_Validation_Interaction_Interaction.csv")))
-    } else {
-      Validation_Interaction <- NULL
-    }
-    if(file.exists(file.path(SourcePath, paste0(ModelID, "_Train_Interaction_Interaction.csv")))) {
-      Train_Interaction <- data.table::fread(file = file.path(SourcePath, paste0(ModelID, "_Train_Interaction_Interaction.csv")))
-    } else {
-      Train_Interaction <- NULL
-    }
-    
-    # Update Colnames
-    if(!is.null(Test_Interaction)) data.table::setnames(Test_Interaction, old = 'score', new = 'Test_Importance', skip_absent = TRUE)
-    if(!is.null(Validation_Interaction)) data.table::setnames(Validation_Interaction, old = 'score', new = 'Validation_Importance', skip_absent = TRUE)
-    if(!is.null(Train_Interaction)) data.table::setnames(Train_Interaction, old = 'score', new = 'Train_Importance', skip_absent = TRUE)
-
-    # CatBoost only
-    if(is.null(Test_Interaction) && is.null(Validation_Interaction) && is.null(Train_Interaction)) {
-      All_Interaction <- NULL
-    } else if(!is.null(Test_Interaction) && !is.null(Validation_Interaction) && !is.null(Train_Interaction)) {
-      All_Interaction <- merge(Test_Interaction, Validation_Interaction, by = c('Features1','Features2'), all = TRUE)
-      All_Interaction <- merge(All_Interaction, Train_Interaction, by = c('Features1','Features2'), all = TRUE)
-      data.table::setorderv(x = All_Interaction, cols = names(All_Interaction)[3L], order = -1)
-    } else if(!is.null(Test_Interaction) && !is.null(Validation_Interaction) && is.null(Train_Interaction)) {
-      All_Interaction <- merge(Test_Interaction, Validation_Interaction, by = c('Features1','Features2'), all = TRUE)
-      data.table::setorderv(x = All_Interaction, cols = names(All_Interaction)[3L], order = -1)
-    } else if(!is.null(Test_Interaction) && is.null(Validation_Interaction) && !is.null(Train_Interaction)) {
-      All_Interaction <- merge(Test_Interaction, Train_Interaction, by = c('Features1','Features2'), all = TRUE)
-      data.table::setorderv(x = All_Interaction, cols = names(All_Interaction)[3L], order = -1)
-    } else if(is.null(Test_Interaction) && !is.null(Validation_Interaction) && !is.null(Train_Interaction)) {
-      All_Interaction <- merge(Validation_Interaction, Train_Interaction, by = c('Features1','Features2'), all = TRUE)
-      data.table::setorderv(x = All_Interaction, cols = names(All_Interaction)[3L], order = -1)
-    } else if(is.null(Test_Interaction) && is.null(Validation_Interaction) && !is.null(Train_Interaction)) {
-      All_Interaction <- Train_Interaction
-    } else if(is.null(Test_Interaction) && !is.null(Validation_Interaction) && is.null(Train_Interaction)) {
-      All_Interaction <- Validation_Interaction
-    } else if(!is.null(Test_Interaction) && is.null(Validation_Interaction) && is.null(Train_Interaction)) {
-      All_Interaction <- Test_Interaction
-    } else {
-      All_Interaction <- NULL
-    }
-  }
-}
-```
-
 ```{r Generic_Evaluation_Plots, echo = FALSE}
 
 # Evaluation Plots ----
@@ -966,7 +471,7 @@ if(!is.null(TestData)) {
     NumberBins = 21,
     Height = "600px",
     Width = "975px",
-    Title = "Calibration Plot",
+    Title = "Calibration Plot: Test Data",
     ShowLabels = FALSE,
     Title.YAxis = TargetColumnName,
     Title.XAxis = "p1",
@@ -996,11 +501,10 @@ if(!is.null(TrainData)) {
     NumberBins = 21,
     Height = "600px",
     Width = "975px",
-    Title = "Calibration Plot",
+    Title = "Calibration Plot: Train Data",
     ShowLabels = FALSE,
     Title.YAxis = TargetColumnName,
     Title.XAxis = "p1",
-    
     EchartsTheme = "wef",
     TimeLine = TRUE,
     
@@ -1029,11 +533,10 @@ if(!is.null(TestData)) {
     AggMethod = "mean",
     Height = "600px",
     Width = "975px",
-    Title = "Calibration Plot",
+    Title = "Calibration Plot: Test Data",
     ShowLabels = FALSE,
     Title.YAxis = TargetColumnName,
     Title.XAxis = "p1",
-    
     EchartsTheme = "wef",
     TimeLine = TRUE,
     
@@ -1060,11 +563,10 @@ if(!is.null(TrainData)) {
     AggMethod = "mean",
     Height = "600px",
     Width = "975px",
-    Title = "Calibration Plot",
+    Title = "Calibration Plot: Train Data",
     ShowLabels = FALSE,
     Title.YAxis = TargetColumnName,
     Title.XAxis = "p1",
-    
     EchartsTheme = "wef",
     TimeLine = TRUE,
     
@@ -1093,11 +595,10 @@ if(!is.null(TestData)) {
     NumberBins = 20,
     Height = "600px",
     Width = "975px",
-    Title = "Gains Plot",
+    Title = "Gains Plot: Test Data",
     ShowLabels = FALSE,
     Title.YAxis = TargetColumnName,
     Title.XAxis = "p1",
-    
     EchartsTheme = "wef",
     TimeLine = TRUE,
     
@@ -1126,11 +627,10 @@ if(!is.null(TrainData)) {
     NumberBins = 20,
     Height = "600px",
     Width = "975px",
-    Title = "Gains Plot",
+    Title = "Gains Plot: Train Data",
     ShowLabels = FALSE,
     Title.YAxis = TargetColumnName,
     Title.XAxis = "p1",
-    
     EchartsTheme = "wef",
     TimeLine = TRUE,
     
@@ -1160,9 +660,7 @@ Test_ParDepPlots <- list()
 if(!is.null(TestData) && !is.null(FeatureColumnNames)) {
   for(g in FeatureColumnNames) {
     if(is.numeric(TestData[[g]])) {
-      
-      # Add
-      Test_ParDepPlots[[g]] <- AutoPlots::Plot.PartialDependence.Line(
+      Test_ParDepPlots[[g]] <- tryCatch({AutoPlots::Plot.PartialDependence.Line(
         dt = TestData,
         XVar = g,
         YVar = TargetColumnName,
@@ -1183,12 +681,11 @@ if(!is.null(TestData) && !is.null(FeatureColumnNames)) {
         Title.YAxis = TargetColumnName,
         Title.XAxis = g,
         EchartsTheme = "wef",
-        
         TimeLine = TRUE,
         
         
         TextColor = "white",
-        Debug = FALSE)
+        Debug = FALSE)}, error = function(x) NULL)
     }
   }
 }
@@ -1204,9 +701,7 @@ Train_ParDepPlots <- list() # ModelObject[['PlotList']][['Train_ParDepPlots']]
 if(!is.null(TrainData) && !is.null(FeatureColumnNames)) {
   for(g in FeatureColumnNames) {
     if(is.numeric(TrainData[[g]])) {
-
-      # Add
-      Train_ParDepPlots[[g]] <- AutoPlots::Plot.PartialDependence.Line(
+      Train_ParDepPlots[[g]] <- tryCatch({AutoPlots::Plot.PartialDependence.Line(
         dt = TrainData,
         XVar = g,
         YVar = TargetColumnName,
@@ -1227,12 +722,11 @@ if(!is.null(TrainData) && !is.null(FeatureColumnNames)) {
         Title.YAxis = TargetColumnName,
         Title.XAxis = g,
         EchartsTheme = "wef",
-        
         TimeLine = TRUE,
         
         
         TextColor = "white",
-        Debug = FALSE)
+        Debug = FALSE)}, error = function(x) NULL)
     }
   }
 }
@@ -1248,9 +742,7 @@ Test_ParDepBoxPlots <- list()
 if(!is.null(TestData) && !is.null(FeatureColumnNames)) {
   for(g in FeatureColumnNames) {
     if(is.numeric(TestData[[g]])) {
-
-      # Add
-      Test_ParDepBoxPlots[[g]] <- AutoPlots::Plot.PartialDependence.Box(
+      Test_ParDepBoxPlots[[g]] <- tryCatch({AutoPlots::Plot.PartialDependence.Box(
         dt = TestData,
         XVar = g,
         YVar = TargetColumnName,
@@ -1271,12 +763,11 @@ if(!is.null(TestData) && !is.null(FeatureColumnNames)) {
         Title.YAxis = TargetColumnName,
         Title.XAxis = g,
         EchartsTheme = "wef",
-        
         TimeLine = TRUE,
         
         
         TextColor = "white",
-        Debug = FALSE)
+        Debug = FALSE)}, error = function(x) NULL)
     }
   }
 }
@@ -1290,9 +781,7 @@ Train_ParDepBoxPlots <- list()
 if(!is.null(TrainData) && !is.null(FeatureColumnNames)) {
   for(g in FeatureColumnNames) {
     if(is.numeric(TrainData[[g]])) {
-
-      # Add
-      Train_ParDepBoxPlots[[g]] <- AutoPlots::Plot.PartialDependence.Box(
+      Train_ParDepBoxPlots[[g]] <- tryCatch({AutoPlots::Plot.PartialDependence.Box(
         dt = TrainData,
         XVar = g,
         YVar = TargetColumnName,
@@ -1313,12 +802,11 @@ if(!is.null(TrainData) && !is.null(FeatureColumnNames)) {
         Title.YAxis = TargetColumnName,
         Title.XAxis = g,
         EchartsTheme = "wef",
-        
         TimeLine = TRUE,
         
         
         TextColor = "white",
-        Debug = FALSE)
+        Debug = FALSE)}, error = function(x) NULL)
     }
   }
 }
@@ -1333,9 +821,8 @@ Test_ParDepCatPlots <- list()
 # Add Plots
 if(!is.null(TestData) && !is.null(FeatureColumnNames)) {
   for(g in FeatureColumnNames) {
-    if(!is.numeric(TestData[[g]])) {
-      
-      Test_ParDepCatPlots[[g]] <- AutoPlots::Plot.PartialDependence.HeatMap(
+    if(is.character(TestData[[g]]) || is.factor(TestData[[g]])) {
+      Test_ParDepCatPlots[[g]] <- tryCatch({AutoPlots::Plot.PartialDependence.HeatMap(
         dt = TestData,
         XVar = g,
         YVar = TargetColumnName,
@@ -1356,12 +843,11 @@ if(!is.null(TestData) && !is.null(FeatureColumnNames)) {
         Title.YAxis = TargetColumnName,
         Title.XAxis = g,
         EchartsTheme = "wef",
-        
         TimeLine = TRUE,
         
         
         TextColor = "white",
-        Debug = FALSE)
+        Debug = FALSE)}, error = function(x) NULL)
     }
   }
 }
@@ -1374,9 +860,8 @@ Train_ParDepCatPlots <- list()
 # Add Plots
 if(!is.null(TrainData) && !is.null(FeatureColumnNames)) {
   for(g in FeatureColumnNames) {
-    if(!is.numeric(TrainData[[g]])) {
-      
-      Train_ParDepCatPlots[[g]] <- AutoPlots::Plot.PartialDependence.HeatMap(
+    if(is.character(TrainData[[g]]) || is.factor(TrainData[[g]])) {
+      Train_ParDepCatPlots[[g]] <- tryCatch({AutoPlots::Plot.PartialDependence.HeatMap(
         dt = TrainData,
         XVar = g,
         YVar = TargetColumnName,
@@ -1397,31 +882,32 @@ if(!is.null(TrainData) && !is.null(FeatureColumnNames)) {
         Title.YAxis = TargetColumnName,
         Title.XAxis = g,
         EchartsTheme = "wef",
-        
         TimeLine = TRUE,
         
         
         TextColor = "white",
-        Debug = FALSE)
+        Debug = FALSE)}, error = function(x) NULL)
     }
   }
 }
 
 ```
 
+# <font size="6">ML Report Descriptions:</font>
 
-# <font size="6">Model Evaluation and Insights:</font>
-
-The two main goals with this document are to provide a wide range of output to investigate high level performance and insights and to deliver a high quality report design layout to increase user experience. The metrics provided are intended to be semi-comprehensive. One can always dig deeper into results to gain further insights. In light of that, the results are intended to provide one what they need to come to a reasonable conclusion about their model or to find the area where they need to dig a deeper. 
+The two main goals with this document are to provide a wide range of output to investigate high level performance and insights, and to deliver a high quality report design layout to increase user experience. The metrics provided are intended to be semi-comprehensive. One can always dig deeper into results to gain further insights. In light of that, the results are intended to provide information that one can come to a reasonable conclusion about their model or to find the areas where they need to dig a little deeper. 
 
 ## Evaluation Metrics
-This section contains statistics and variable importance measures to help the user understand model performance at a high level. If the user chose to include Train Data results then these can be used to compare against the Test Data results to identify over / under fitting of models.
+This section contains statistics and variable importance measures to help the user understand model performance at a high level. Train Data results are included and can be used to compare against the Test Data results to identify over / under fitting of models.
 
 ## Evaluation Plots 
-This section contains visualizations that span the range of predicted values and the associated accuracies across that range. The predicted values range are broken up into every 5th percentile to provide a solid range for evaluation.
+This section contains visualizations that span the range of predicted values and the associated accuracies across that range. The predicted values range is broken up into every 5th percentile to provide a wide range for evaluation.
 
 ## Model Interpretation sections 
-These contains visualizations intended to open up the black box of your algorithm. When one inspects coefficients from a regression model, the insights they gain are two-fold: they get an understanding about statistics significance, and they gain an understanding of the variable's effect on the target variable. However, not all relationships are linear and sometimes the user doesn't specifiy an appropriate model structure to fully capture the nature of the relationship, which can lead to incorrect conclusions about statistical signifance along with incorrect conclusions about the nature of the relationship. These visualizations provide a way to understand what the exact nature of those relationships are and if the user chooses, they can attempt to fit the relationship better with an appropriate statistical model to gain a better understanding of statistical significance.
+This section contains visualizations intended to open up the black box of your algorithm. When one inspects coefficients from a regression model, the insights they gain are two-fold: 
+- get an understanding about statistics significance
+- gain an understanding of the variable's effect on the target variable
+However, not all relationships are linear and sometimes the user doesn't specifiy an appropriate model structure to fully capture the nature of the relationship, which can lead to incorrect conclusions about both statistical signifance and the nature of the relationship. These visualizations provide a way to understand what the exact nature of those relationships are (in a visual manner) and if the user chooses, they can attempt to fit the relationship more precisely with an appropriate statistical model in order to gain a better understanding of statistical significance.
 
 # <font size="6">Evaluation Metrics</font>
 <p>
@@ -1677,7 +1163,7 @@ if(!is.null(Test_Importance)) {
     AggMethod = "mean",
     Height = "600px",
     Width = "975px",
-    Title = "Variable Importance Plot",
+    Title = "Variable Importance Plot: Test Data",
     ShowLabels = FALSE,
     Title.YAxis = NULL,
     Title.XAxis = NULL,
@@ -1695,8 +1181,6 @@ if(!is.null(Test_Importance)) {
     xaxis.fontSize = 14,
     yaxis.fontSize = 14,
     Debug = FALSE)
-} else {
-  print("Test_Importance is NULL")
 }
 if(!is.null(Validation_Importance)) {
   if("Validation_Importance" %in% names(Validation_Importance)) data.table::setnames(Validation_Importance, 'Validation_Importance', 'Importance', skip_absent = TRUE)
@@ -1714,7 +1198,7 @@ if(!is.null(Validation_Importance)) {
     AggMethod = "mean",
     Height = "600px",
     Width = "975px",
-    Title = "Variable Importance Plot",
+    Title = "Variable Importance Plot: Validation Data",
     ShowLabels = FALSE,
     Title.YAxis = NULL,
     Title.XAxis = NULL,
@@ -1732,8 +1216,6 @@ if(!is.null(Validation_Importance)) {
     xaxis.fontSize = 14,
     yaxis.fontSize = 14,
     Debug = FALSE)
-} else {
-  print("Validation_Importance is only provided for with CatBoost")
 }
 if(!is.null(Train_Importance)) {
   if("Train_Importance" %in% names(Train_Importance)) data.table::setnames(Train_Importance, 'Train_Importance', 'Importance', skip_absent = TRUE)
@@ -1751,7 +1233,7 @@ if(!is.null(Train_Importance)) {
     AggMethod = "mean",
     Height = "600px",
     Width = "975px",
-    Title = "Variable Importance Plot",
+    Title = "Variable Importance Plot: Train Data",
     ShowLabels = FALSE,
     Title.YAxis = NULL,
     Title.XAxis = NULL,
@@ -1770,8 +1252,6 @@ if(!is.null(Train_Importance)) {
     yaxis.fontSize = 14,
     Debug = FALSE)
   
-} else {
-  print("Train_Importance is only provided for with CatBoost")
 }
 ```
 
@@ -1795,8 +1275,6 @@ if(!is.null(Test_EvaluationPlot)) {
 }
 if(!is.null(Train_EvaluationPlot)) {
   Train_EvaluationPlot
-} else {
-  print('Train_EvaluationPlot is NULL or TrainData is NULL')
 }
 ```
 
@@ -1820,8 +1298,6 @@ if(!is.null(Test_ROCPlot)) {
 }
 if(!is.null(Train_EvaluationPlot)) {
   Train_ROCPlot
-} else {
-  print('Train_ROCPlot is NULL or TrainData is NULL')
 }
 ```
 
@@ -1844,8 +1320,6 @@ if(!is.null(Test_CumGainsChart)) {
 }
 if(!is.null(Test_CumGainsChart)) {
   Train_CumGainsChart
-} else {
-  print('Train_CumGainsChart is NULL or TestData is NULL')
 }
 ```
 
@@ -1918,7 +1392,7 @@ options(warn = -1)
 if(!is.null(Train_ParDepPlots) && length(Train_ParDepPlots) > 0) {
   echarts4r::e_arrange(Train_ParDepPlots)
 } else {
-  print('Train_ParDepPlots is NULL and TrainData is NULL')
+  print('Train Data was not supplied')
 }
 options(warn = 1)
 ```
@@ -1946,7 +1420,7 @@ options(warn = -1)
 if(!is.null(Test_ParDepCatPlots) && length(Test_ParDepCatPlots) > 0) {
   echarts4r::e_arrange(Test_ParDepCatPlots)
 } else {
-  print('Test_ParDepCatPlots is NULL and TestData is NULL')
+  print('Categorical variables were not supplied')
 }
 options(warn = 1)
 ```
@@ -1966,7 +1440,7 @@ options(warn = -1)
 if(!is.null(Train_ParDepCatPlots) && length(Train_ParDepCatPlots) > 0) {
   echarts4r::e_arrange(Train_ParDepCatPlots)
 } else {
-  print('Train_ParDepCatPlots is NULL and TrainData is NULL')
+  print('Train Data was not supplied')
 }
 options(warn = 1)
 ```
