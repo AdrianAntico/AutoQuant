@@ -32,10 +32,6 @@ ShapImportancePlot(
 \description{
 Generate Variable Importance Plots using Shapely Values of given data set
 }
-\seealso{
-Other Model Insights: 
-\code{\link{ModelInsightsReport}()}
-}
 \author{
 Adrian Antico
 }
