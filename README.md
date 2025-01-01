@@ -4632,7 +4632,7 @@ Results <- AutoQuant::AutoH2OCARMA(
 </p>
 </details>
 
-## Time Series Forecasting <img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/ModelEvaluationImage.png" align="right" width="80" />
+## Time Series Forecasting <img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/TimeSeriesImage2.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
 
