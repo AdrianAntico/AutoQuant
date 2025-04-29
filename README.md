@@ -2257,19 +2257,12 @@ TestModel <- AutoQuant::AutoCatBoostRegression(
 
 # Insights Report
 AutoQuant::ModelInsightsReport(
-  
-  # Meta info
-  TargetColumnName = 'Adrian',
-  PredictionColumnName = 'Predict',
+  TrainDataInclude = TRUE,
   FeatureColumnNames = Features,
-  DateColumnName = NULL,
-  
-  # Control options
-  TargetType = 'regression',
+  SampleSize = 100000,
+  ModelObject = ModelObject,
   ModelID = 'Test_Model_1',
-  Algo = 'catboost',
-  OutputPath = getwd(),
-  ModelObject = TestModel)
+  OutputPath = getwd())
 
 
 # Score data
@@ -2404,19 +2397,12 @@ TestModel <- AutoQuant::AutoCatBoostClassifier(
 
 # Insights Report
 AutoQuant::ModelInsightsReport(
-  
-  # Meta info
-  TargetColumnName = 'Adrian',
-  PredictionColumnName = 'p1',
+  TrainDataInclude = TRUE,
   FeatureColumnNames = Features,
-  DateColumnName = NULL,
-  
-  # Control options
-  TargetType = 'classification',
+  SampleSize = 100000,
+  ModelObject = ModelObject,
   ModelID = 'Test_Model_1',
-  Algo = 'catboost',
-  OutputPath = getwd(),
-  ModelObject = TestModel)
+  OutputPath = getwd())
 
 
 # Score data
@@ -2548,19 +2534,12 @@ TestModel <- AutoQuant::AutoCatBoostMultiClass(
 
 # Insights Report
 AutoQuant::ModelInsightsReport(
-  
-  # Meta info
-  TargetColumnName = 'Adrian',
-  PredictionColumnName = 'Predict',
+  TrainDataInclude = TRUE,
   FeatureColumnNames = Features,
-  DateColumnName = NULL,
-  
-  # Control options
-  TargetType = 'multiclass',
+  SampleSize = 100000,
+  ModelObject = ModelObject,
   ModelID = 'Test_Model_1',
-  Algo = 'catboost',
-  OutputPath = getwd(),
-  ModelObject = TestModel)
+  OutputPath = getwd())
 
 
 # Score data
