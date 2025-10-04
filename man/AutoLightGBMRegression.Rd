@@ -120,7 +120,7 @@ AutoLightGBMRegression(
 
 \item{IDcols}{A vector of column names or column numbers to keep in your data but not include in the modeling.}
 
-\item{OutputSelection}{You can select what type of output you want returned. Choose from c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData')}
+\item{OutputSelection}{You can select what type of output you want returned. Choose from c('Importances', 'EvalMetrics', 'Score_TrainData')}
 
 \item{model_path}{A character string of your path file to where you want your output saved}
 

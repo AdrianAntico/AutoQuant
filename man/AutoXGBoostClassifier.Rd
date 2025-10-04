@@ -5,7 +5,7 @@
 \title{AutoXGBoostClassifier}
 \usage{
 AutoXGBoostClassifier(
-  OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "Score_TrainData"),
+  OutputSelection = c("Importances", "EvalMetrics", "Score_TrainData"),
   data = NULL,
   TrainOnFull = FALSE,
   ValidationData = NULL,
@@ -50,7 +50,7 @@ AutoXGBoostClassifier(
 )
 }
 \arguments{
-\item{OutputSelection}{You can select what type of output you want returned. Choose from c("Importances", "EvalPlots", "EvalMetrics", "Score_TrainData")}
+\item{OutputSelection}{You can select what type of output you want returned. Choose from c("Importances", "EvalMetrics", "Score_TrainData")}
 
 \item{data}{This is your data set for training and testing your model}
 
@@ -160,7 +160,7 @@ TestModel <- AutoQuant::AutoXGBoostClassifier(
   NThreads = parallel::detectCores(),
 
   # Metadata args
-  OutputSelection = c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData'),
+  OutputSelection = c('Importances', 'EvalMetrics', 'Score_TrainData'),
   model_path = normalizePath("./"),
   metadata_path = NULL,
   ModelID = "Test_Model_1",

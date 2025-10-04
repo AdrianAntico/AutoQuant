@@ -21,7 +21,7 @@
 #' @author Adrian Antico
 #' @family Automated Supervised Learning - Binary Classification
 #'
-#' @param OutputSelection You can select what type of output you want returned. Choose from c("Importances", "EvalPlots", "EvalMetrics", "Score_TrainData")
+#' @param OutputSelection You can select what type of output you want returned. Choose from c("Importances", "EvalMetrics", "Score_TrainData")
 #' @param data This is your data set for training and testing your model
 #' @param TrainOnFull Set to TRUE to train on full data
 #' @param ValidationData This is your holdout data set used in modeling either refine your hyperparameters.
@@ -83,7 +83,7 @@
 #'   NThreads = parallel::detectCores(),
 #'
 #'   # Metadata args
-#'   OutputSelection = c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData'),
+#'   OutputSelection = c('Importances', 'EvalMetrics', 'Score_TrainData'),
 #'   model_path = normalizePath("./"),
 #'   metadata_path = NULL,
 #'   ModelID = "Test_Model_1",
@@ -131,7 +131,7 @@
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
 #' @export
-AutoXGBoostClassifier <- function(OutputSelection = c('Importances','EvalPlots','EvalMetrics','Score_TrainData'),
+AutoXGBoostClassifier <- function(OutputSelection = c('Importances','EvalMetrics','Score_TrainData'),
                                   data = NULL,
                                   TrainOnFull = FALSE,
                                   ValidationData = NULL,
@@ -312,27 +312,6 @@ AutoXGBoostClassifier <- function(OutputSelection = c('Importances','EvalPlots',
     }
   }
 
-  # Classification evaluation plots ----
-  if(DebugMode) print("Running ML_EvalPlots()")
-  PlotList <- list()
-  if("evalplots" %chin% tolower(OutputSelection)) {
-    if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull) {
-      Output <- ML_EvalPlots(ModelType="classification", TrainOnFull.=TrainOnFull, DataType = 'Train', ValidationData.=TrainData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL)
-      PlotList[["Train_EvaluationPlot"]] <- Output$EvaluationPlot; Output$EvaluationPlot <- NULL
-      PlotList[["Train_ParDepPlots"]] <- Output$ParDepPlots; Output$ParDepPlots <- NULL
-      PlotList[["Train_GainsPlot"]] <- Output$GainsPlot; Output$GainsPlot <- NULL
-      PlotList[["Train_LiftPlot"]] <- Output$LiftPlot; Output$LiftPlot <- NULL
-      PlotList[["Train_ROC_Plot"]] <- Output$ROC_Plot; rm(Output)
-    }
-    Output <- ML_EvalPlots(ModelType="classification", TrainOnFull.=TrainOnFull, DataType = 'Test', ValidationData.=ValidationData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL)
-    PlotList[["Test_EvaluationPlot"]] <- Output$EvaluationPlot; Output$EvaluationPlot <- NULL
-    PlotList[["Test_ParDepPlots"]] <- Output$ParDepPlots; Output$ParDepPlots <- NULL
-    PlotList[["Test_GainsPlot"]] <- Output$GainsPlot; Output$GainsPlot <- NULL
-    PlotList[["Test_LiftPlot"]] <- Output$LiftPlot; Output$LiftPlot <- NULL
-    PlotList[["Test_ROC_Plot"]] <- Output$ROC_Plot; rm(Output)
-    if(!is.null(VariableImportance) && "plotly" %chin% installed.packages()) PlotList[['Train_VariableImportance']] <- plotly::ggplotly(VI_Plot(Type = "xgboost", VariableImportance)) else if(!is.null(VariableImportance)) PlotList[['Train_VariableImportance']] <- VI_Plot(Type = "xgboost", VariableImportance)
-  }
-
   # Binary Return Model Objects ----
   if(!exists("FactorLevelsList")) FactorLevelsList <- NULL
 
@@ -343,7 +322,6 @@ AutoXGBoostClassifier <- function(OutputSelection = c('Importances','EvalPlots',
     outputList[["Model"]] <- model
     outputList[["TrainData"]] <- if(exists('ShapValues') && !is.null(ShapValues[['Train_Shap']])) ShapValues[['Train_Shap']] else if(exists('TrainData')) TrainData else NULL
     outputList[["TestData"]] <- if(exists('ShapValues') && !is.null(ShapValues[['Test_Shap']])) ShapValues[['Test_Shap']] else if(exists('ValidationData')) ValidationData else NULL
-    outputList[["PlotList"]] <- if(exists('PlotList')) PlotList else NULL
     outputList[["EvaluationMetrics"]] <- if(exists('EvalMetricsList')) EvalMetricsList else NULL
     outputList[["EvaluationMetrics2"]] <- if(exists('EvalMetrics2List')) EvalMetrics2List else NULL
     outputList[["VariableImportance"]] <- if(exists('VariableImportance')) VariableImportance else NULL

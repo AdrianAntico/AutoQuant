@@ -591,7 +591,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
     if(Debug) print('Scoring Here 11')
 
     grid_trans_results <- data.table::copy(TransformationObject)
-    data.table::set(grid_trans_results, i = which(grid_trans_results[['ColumnName']] == eval(TargetColumnName)), j = 'ColumnName', value = 'Predictions')
+    data.table::set(grid_trans_results, i = which(grid_trans_results[['ColumnName']] == eval(TargetColumnName)), j = 'ColumnName', value = 'Predict')
     grid_trans_results <- grid_trans_results[ColumnName != eval(TargetColumnName)]
 
     if(Debug) print('Scoring Here 12')

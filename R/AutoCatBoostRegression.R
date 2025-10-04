@@ -21,7 +21,7 @@
 #' @author Adrian Antico
 #' @family Automated Supervised Learning - Regression
 #'
-#' @param OutputSelection You can select what type of output you want returned. Choose from c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData')
+#' @param OutputSelection You can select what type of output you want returned. Choose from c('Importances', 'EvalPlots', 'Score_TrainData')
 #' @param ReturnShap TRUE. Set to FALSE to not generate shap values.
 #' @param data This is your data set for training and testing your model
 #' @param TrainOnFull Set to TRUE to train on full data and skip over evaluation steps
@@ -96,7 +96,7 @@
 #'   DebugMode = FALSE,
 #'
 #'   # Metadata args
-#'   OutputSelection = c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData'),
+#'   OutputSelection = c('Importances', 'EvalPlots', 'Score_TrainData'),
 #'   ModelID = 'Test_Model_1',
 #'   model_path = normalizePath('./'),
 #'   metadata_path = normalizePath('./'),
@@ -156,7 +156,7 @@
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, catboostgrid, and a transformation details file.
 #' @export
-AutoCatBoostRegression <- function(OutputSelection = c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData'),
+AutoCatBoostRegression <- function(OutputSelection = c('Importances', 'EvalMetrics', 'Score_TrainData'),
                                    ReturnShap = TRUE,
                                    data = NULL,
                                    ValidationData = NULL,
@@ -366,35 +366,6 @@ AutoCatBoostRegression <- function(OutputSelection = c('Importances', 'EvalPlots
     }
   }
 
-  # Regression Plots ----
-  if(DebugMode) print('Running ML_EvalPlots()')
-  PlotList <- list()
-  if('evalplots' %chin% tolower(OutputSelection)) {
-    if('score_traindata' %chin% tolower(OutputSelection) && !TrainOnFull) {
-      Output <- ML_EvalPlots(ModelType='regression', DataType = 'Train', TrainOnFull.=TrainOnFull, LossFunction.=LossFunction, EvalMetric.=EvalMetric, EvaluationMetrics.=EvalMetricsList, ValidationData.=TrainData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=metadata_path, predict.=NULL, DateColumnName.=PrimaryDateColumn)
-      PlotList[['Train_EvaluationPlot']] <- Output$EvaluationPlot; Output$EvaluationPlot <- NULL
-      PlotList[['Train_EvaluationBoxPlot']] <- Output$EvaluationBoxPlot; Output$EvaluationBoxPlot <- NULL
-      PlotList[['Train_ParDepPlots']] <- Output$ParDepPlots;  Output$ParDepPlots <- NULL
-      PlotList[['Train_ParDepBoxPlots']] <- Output$ParDepBoxPlots; Output$ParDepBoxPlots <- NULL
-      PlotList[['Train_ResidualsHistogram']] <- Output$ResidualsHistogram; Output$ResidualsHistogram <- NULL
-      PlotList[['Train_ResidualTime']] <- Output$ResidualTime; Output$ResidualTime <- NULL
-      PlotList[['Train_ScatterPlot']] <- Output$ScatterPlot; Output$ScatterPlot <- NULL
-      PlotList[['Train_CopulaPlot']] <- Output$CopulaPlot; rm(Output)
-      if(!is.null(VariableImportance$Train_Importance) && "plotly" %chin% installed.packages()) PlotList[['Train_VariableImportance']] <- plotly::ggplotly(VI_Plot(Type = 'catboost', VariableImportance$Train_Importance)) else if(!is.null(VariableImportance$Train_Importance)) PlotList[['Train_VariableImportance']] <- VI_Plot(Type = 'catboost', VariableImportance$Train_Importance)
-      if(!is.null(VariableImportance$Validation_Importance) && "plotly" %chin% installed.packages()) PlotList[['Validation_VariableImportance']] <- plotly::ggplotly(VI_Plot(Type = 'catboost', VariableImportance$Validation_Importance)) else if(!is.null(VariableImportance$Validation_Importance)) PlotList[['Validation_VariableImportance']] <- VI_Plot(Type = 'catboost', VariableImportance$Validation_Importance)
-    }
-    Output <- ML_EvalPlots(ModelType='regression', DataType = 'Test', TrainOnFull.=TrainOnFull, LossFunction.=LossFunction, EvalMetric.=EvalMetric, EvaluationMetrics.=EvalMetricsList, ValidationData.=ValidationData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=metadata_path, predict.=NULL, DateColumnName.=PrimaryDateColumn)
-    PlotList[['Test_EvaluationPlot']] <- Output$EvaluationPlot; Output$EvaluationPlot <- NULL
-    PlotList[['Test_EvaluationBoxPlot']] <- Output$EvaluationBoxPlot; Output$EvaluationBoxPlot <- NULL
-    PlotList[['Test_ParDepPlots']] <- Output$ParDepPlots;  Output$ParDepPlots <- NULL
-    PlotList[['Test_ParDepBoxPlots']] <- Output$ParDepBoxPlots; Output$ParDepBoxPlots <- NULL
-    PlotList[['Test_ResidualsHistogram']] <- Output$ResidualsHistogram; Output$ResidualsHistogram <- NULL
-    PlotList[['Test_ResidualTime']] <- Output$ResidualTime; Output$ResidualTime <- NULL
-    PlotList[['Test_ScatterPlot']] <- Output$ScatterPlot; Output$ScatterPlot <- NULL
-    PlotList[['Test_CopulaPlot']] <- Output$CopulaPlot; rm(Output)
-    if(!is.null(VariableImportance[['Test_VariableImportance']]) && "plotly" %chin% installed.packages()) PlotList[['Test_VariableImportance']] <- plotly::ggplotly(VI_Plot(Type = 'catboost', VariableImportance[['Test_VariableImportance']])) else if(!is.null(VariableImportance[['Test_VariableImportance']])) PlotList[['Test_VariableImportance']] <- VI_Plot(Type = 'catboost', VariableImportance[['Test_VariableImportance']])
-  }
-
   # Subset Transformation Object ----
   if(!is.null(TransformNumericColumns) && !((!is.null(LossFunction) && LossFunction == 'MultiRMSE') || (!is.null(EvalMetric) && EvalMetric == 'MultiRMSE'))) {
     if(TargetColumnName == 'Target') {
@@ -418,7 +389,6 @@ AutoCatBoostRegression <- function(OutputSelection = c('Importances', 'EvalPlots
     outputList[["Model"]] <- model
     outputList[["TrainData"]] <- if(exists('ShapValues') && !is.null(ShapValues[['Train_Shap']])) ShapValues[['Train_Shap']] else if(exists('TrainData')) TrainData else NULL
     outputList[["TestData"]] <- if(exists('ShapValues') && !is.null(ShapValues[['Test_Shap']])) ShapValues[['Test_Shap']] else if(exists('ValidationData')) ValidationData else NULL
-    outputList[["PlotList"]] <- if(exists('PlotList')) PlotList else NULL
     outputList[["EvaluationMetrics"]] <- if(exists('EvalMetricsList')) EvalMetricsList else NULL
     outputList[["VariableImportance"]] <- if(exists('VariableImportance')) VariableImportance else NULL
     outputList[["InteractionImportance"]] <- if(exists('Interaction')) Interaction else NULL

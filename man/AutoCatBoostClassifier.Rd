@@ -5,7 +5,7 @@
 \title{AutoCatBoostClassifier}
 \usage{
 AutoCatBoostClassifier(
-  OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "Score_TrainData"),
+  OutputSelection = c("Importances", "EvalMetrics", "Score_TrainData"),
   data = NULL,
   ValidationData = NULL,
   TestData = NULL,
@@ -58,7 +58,7 @@ AutoCatBoostClassifier(
 )
 }
 \arguments{
-\item{OutputSelection}{You can select what type of output you want returned. Choose from c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData')}
+\item{OutputSelection}{You can select what type of output you want returned. Choose from c('Importances', 'EvalPlots', 'Score_TrainData')}
 
 \item{data}{This is your data set for training and testing your model}
 
@@ -186,7 +186,7 @@ TestModel <- AutoQuant::AutoCatBoostClassifier(
   DebugMode = FALSE,
 
   # Metadata args
-  OutputSelection = c('Score_TrainData', 'Importances', 'EvalPlots', 'EvalMetrics'),
+  OutputSelection = c('Score_TrainData', 'Importances', 'EvalMetrics'),
   ModelID = 'Test_Model_1',
   model_path = normalizePath('./'),
   metadata_path = normalizePath('./'),

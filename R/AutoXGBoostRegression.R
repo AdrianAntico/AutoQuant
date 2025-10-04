@@ -21,7 +21,7 @@
 #' @author Adrian Antico
 #' @family Automated Supervised Learning - Regression
 #'
-#' @param OutputSelection You can select what type of output you want returned. Choose from c("Importances", "EvalPlots", "EvalMetrics", "Score_TrainData")
+#' @param OutputSelection You can select what type of output you want returned. Choose from c("Importances", "EvalMetrics", "Score_TrainData")
 #' @param data This is your data set for training and testing your model
 #' @param TrainOnFull Set to TRUE to train on full data
 #' @param DebugMode Set to TRUE to get a print out of the steps taken throughout the function
@@ -86,7 +86,7 @@
 #'   LossFunction = 'reg:squarederror',
 #'
 #'   # Metadata args
-#'   OutputSelection = c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData'),
+#'   OutputSelection = c('Importances', 'EvalMetrics', 'Score_TrainData'),
 #'   model_path = normalizePath("./"),
 #'   metadata_path = NULL,
 #'   ModelID = "Test_Model_1",
@@ -310,33 +310,6 @@ AutoXGBoostRegression <- function(OutputSelection = c('Importances', 'EvalMetric
     }
   }
 
-  # Classification evaluation plots ----
-  if(DebugMode) print("Running ML_EvalPlots()")
-  PlotList <- list()
-  if("evalplots" %chin% tolower(OutputSelection)) {
-    if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull) {
-      Output <- ML_EvalPlots(ModelType="regression", TrainOnFull.=TrainOnFull, DataType = 'Train', ValidationData.=TrainData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.="RMSE", EvalMetric.=NULL, EvaluationMetrics.=EvalMetricsList, predict.=NULL, DateColumnName.=PrimaryDateColumn)
-      PlotList[['Train_EvaluationPlot']] <- Output[['EvaluationPlot']]; Output[['EvaluationPlot']] <- NULL
-      PlotList[['Train_EvaluationBoxPlot']] <- Output[['EvaluationBoxPlot']]; Output[['EvaluationBoxPlot']] <- NULL
-      PlotList[['Train_ParDepPlots']] <- Output[['ParDepPlots']]; Output[['ParDepPlots']] <- NULL
-      PlotList[['Train_ParDepBoxPlots']] <- Output[['ParDepBoxPlots']]; Output[['ParDepBoxPlots']] <- NULL
-      PlotList[['Train_ResidualsHistogram']] <- Output[['ResidualsHistogram']]; Output[['ResidualsHistogram']] <- NULL
-      PlotList[['Train_ResidualTime']] <- Output[['ResidualTime']]; Output[['ResidualTime']] <- NULL
-      PlotList[['Train_ScatterPlot']] <- Output[['ScatterPlot']]; Output[['ScatterPlot']] <- NULL
-      PlotList[['Train_CopulaPlot']] <- Output[['CopulaPlot']]; rm(Output)
-    }
-    Output <- ML_EvalPlots(ModelType="regression", TrainOnFull.=TrainOnFull, DataType = 'Test', ValidationData.=ValidationData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.="RMSE", EvalMetric.=NULL, EvaluationMetrics.=EvalMetricsList, predict.=NULL, DateColumnName.=PrimaryDateColumn)
-    PlotList[['Test_EvaluationPlot']] <- Output[['EvaluationPlot']]; Output[['EvaluationPlot']] <- NULL
-    PlotList[['Test_EvaluationBoxPlot']] <- Output[['EvaluationBoxPlot']]; Output[['EvaluationBoxPlot']] <- NULL
-    PlotList[['Test_ParDepPlots']] <- Output[['ParDepPlots']]; Output[['ParDepPlots']] <- NULL
-    PlotList[['Test_ParDepBoxPlots']] <- Output[['ParDepBoxPlots']]; Output[['ParDepBoxPlots']] <- NULL
-    PlotList[['Test_ResidualsHistogram']] <- Output[['ResidualsHistogram']]; Output[['ResidualsHistogram']] <- NULL
-    PlotList[['Test_ResidualTime']] <- Output[['ResidualTime']]; Output[['ResidualTime']] <- NULL
-    PlotList[['Test_ScatterPlot']] <- Output[['ScatterPlot']]; Output[['ScatterPlot']] <- NULL
-    PlotList[['Test_CopulaPlot']] <- Output[['CopulaPlot']]; rm(Output)
-    if(!is.null(VariableImportance) && 'plotly' %chin% installed.packages()) PlotList[['Train_VariableImportance']] <- plotly::ggplotly(VI_Plot(Type = "xgboost", VariableImportance)) else if(!is.null(VariableImportance)) PlotList[['Train_VariableImportance']] <- VI_Plot(Type = 'xgboost', VariableImportance)
-  }
-
   # Subset Transformation Object ----
   if(DebugMode) print("Subset Transformation Object ----")
   if(!is.null(TransformNumericColumns)) {
@@ -357,7 +330,6 @@ AutoXGBoostRegression <- function(OutputSelection = c('Importances', 'EvalMetric
     outputList[["Model"]] <- model
     outputList[["TrainData"]] <- if(exists('ShapValues') && !is.null(ShapValues[['Train_Shap']])) ShapValues[['Train_Shap']] else if(exists('TrainData')) TrainData else NULL
     outputList[["TestData"]] <- if(exists('ShapValues') && !is.null(ShapValues[['Test_Shap']])) ShapValues[['Test_Shap']] else if(exists('ValidationData')) ValidationData else NULL
-    outputList[["PlotList"]] <- if(exists('PlotList')) PlotList else NULL
     outputList[["EvaluationMetrics"]] <- if(exists('EvalMetricsList')) EvalMetricsList else NULL
     outputList[["VariableImportance"]] <- if(exists('VariableImportance')) VariableImportance else NULL
     outputList[["GridMetrics"]] <- if(exists('ExperimentalGrid') && !is.null(ExperimentalGrid)) ExperimentalGrid else NULL

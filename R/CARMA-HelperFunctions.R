@@ -199,19 +199,17 @@ CarmaMergeXREGS <- function(data. = NULL,
     if(length(GroupVariables.) > 1) {
       data.[, GroupVar := do.call(paste, c(.SD, sep = ' ')), .SDcols = GroupVariables.]
       data. <- merge(data., XREGS., by = c('GroupVar', eval(DateColumnName.)), all.x = TRUE)
-      data. <- Rodeo::ModelDataPrep(data = data., Impute = TRUE, CharToFactor = FALSE, FactorToChar = FALSE, IntToNumeric = FALSE, LogicalToBinary = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = '0', MissNum = -1, IgnoreCols = NULL)
     } else {
       if(class(data.[[GroupVariables.]])[1L] != class(XREGS.[['GroupVar']])[[1L]]) {
         data.table::set(data., j = GroupVariables., value = as.character(data.[[GroupVariables.]]))
         data.table::set(XREGS., j = 'GroupVar', value = as.character(XREGS.[['GroupVar']]))
       }
       data. <- merge(data., XREGS., by.x = c(eval(GroupVariables.), eval(DateColumnName.)), by.y = c('GroupVar', eval(DateColumnName.)), all.x = TRUE)
-      data. <- Rodeo::ModelDataPrep(data = data., Impute = TRUE, CharToFactor = FALSE, FactorToChar = FALSE, IntToNumeric = FALSE, LogicalToBinary = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = '0', MissNum = -1, IgnoreCols = NULL)
     }
   } else {
     data. <- merge(data., XREGS., by = c(eval(DateColumnName.)), all.x = TRUE)
-    data. <- Rodeo::ModelDataPrep(data = data., Impute = TRUE, CharToFactor = FALSE, FactorToChar = FALSE, IntToNumeric = FALSE, LogicalToBinary = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = '0', MissNum = -1, IgnoreCols = NULL)
   }
+  data. <- Rodeo::ModelDataPrep(data = data., Impute = TRUE, CharToFactor = FALSE, FactorToChar = FALSE, IntToNumeric = FALSE, LogicalToBinary = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = '0', MissNum = -1, IgnoreCols = NULL)
   if(any(eval(TargetColumnName.) %chin% names(XREGS.))) data.table::set(XREGS., j = eval(TargetColumnName.), value = NULL)
   return(list(data = data., XREGS = XREGS.))
 }
@@ -1491,13 +1489,6 @@ FutureTimePeriods <- function(UpdateData. = NULL,
   return(x)
 }
 
-
-# Create a single sequence of dates
-# cj that with the dims
-# merge on max dates by dims
-# subset values > max dates
-
-# Pass on
 
 #' @param UpdateData. Passthrough
 #' @param GroupVariables. Passthrough

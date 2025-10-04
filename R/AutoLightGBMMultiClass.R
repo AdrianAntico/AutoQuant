@@ -21,7 +21,7 @@
 #' @author Adrian Antico
 #' @family Automated Supervised Learning - MultiClass Classification
 #'
-#' @param OutputSelection You can select what type of output you want returned. Choose from c("Importances", "EvalPlots", "EvalMetrics", "Score_TrainData")
+#' @param OutputSelection You can select what type of output you want returned. Choose from c("Importances", "EvalMetrics", "Score_TrainData")
 #' @param TrainOnFull Set to TRUE to train on full data
 #' @param DebugMode Set to TRUE to get a print out of the steps taken throughout the function
 #' @param data This is your data set for training and testing your model
@@ -144,7 +144,7 @@
 #' TestModel <- AutoQuant::AutoLightGBMMultiClass(
 #'
 #'   # Metadata args
-#'   OutputSelection = c("Importances","EvalPlots","EvalMetrics","Score_TrainData"),
+#'   OutputSelection = c("Importances","EvalMetrics","Score_TrainData"),
 #'   model_path = normalizePath("./"),
 #'   metadata_path = NULL,
 #'   ModelID = "Test_Model_1",
@@ -276,7 +276,7 @@ AutoLightGBMMultiClass <- function(data = NULL,
                                    EncodingMethod = 'credibility',
 
                                    # Metadata parameters
-                                   OutputSelection = c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData'),
+                                   OutputSelection = c('Importances', 'EvalMetrics', 'Score_TrainData'),
                                    model_path = NULL,
                                    metadata_path = NULL,
                                    DebugMode = FALSE,
@@ -531,40 +531,6 @@ AutoLightGBMMultiClass <- function(data = NULL,
     }
   }
 
-  # Classification evaluation plots ----
-  if(DebugMode) print("Running ML_EvalPlots()")
-  PlotList <- list()
-  options(warn = -1)
-  if("evalplots" %chin% tolower(OutputSelection)) {
-    if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull) {
-      for(tarlevel in as.character(unique(TargetLevels[["OriginalLevels"]]))) {
-        TrainData[, p1 := get(tarlevel)]
-        TrainData[, paste0("Temp_",tarlevel) := data.table::fifelse(get(TargetColumnName) == eval(tarlevel), 1, 0)]
-        if(length(unique(TrainData[[paste0('Temp_',tarlevel)]])) == 1) next
-        Output <- ML_EvalPlots(ModelType="classification", TrainOnFull.=TrainOnFull, ValidationData.=TrainData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=paste0("Temp_",tarlevel), FeatureColNames.=FeatureColNames, SaveModelObjects.=FALSE, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL)
-        PlotList[[paste0("Train_EvaluationPlot_",tarlevel)]] <- Output$EvaluationPlot; Output$EvaluationPlot <- NULL
-        PlotList[[paste0("Train_ParDepPlots_",tarlevel)]] <- Output$ParDepPlots; Output$ParDepPlots <- NULL
-        PlotList[[paste0("Train_GainsPlot_",tarlevel)]] <- Output$GainsPlot; Output$GainsPlot <- NULL
-        PlotList[[paste0("Train_LiftPlot_",tarlevel)]] <- Output$LiftPlot; Output$LiftPlot <- NULL
-        PlotList[[paste0("Train_ROC_Plot_",tarlevel)]] <- Output$ROC_Plot; rm(Output)
-        data.table::set(TrainData, j = c("p1",paste0("Temp_",tarlevel)), value = NULL)
-      }
-    }
-    if(!is.null(VariableImportance) && "plotly" %chin% installed.packages()) PlotList[["Train_VariableImportance"]] <- plotly::ggplotly(VI_Plot(Type = "xgboost", VariableImportance)) else if(!is.null(VariableImportance)) PlotList[["Train_VariableImportance"]] <- VI_Plot(Type = "xgboost", VariableImportance)
-    for(tarlevel in as.character(unique(TargetLevels[["OriginalLevels"]]))) {
-      ValidationData[, p1 := get(tarlevel)]
-      ValidationData[, paste0("Temp_",tarlevel) := data.table::fifelse(get(TargetColumnName) == eval(tarlevel), 1, 0)]
-      if(length(unique(ValidationData[[paste0('Temp_',tarlevel)]])) == 1) next
-      Output <- ML_EvalPlots(ModelType="classification", TrainOnFull.=TrainOnFull, ValidationData.=ValidationData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL)
-      PlotList[[paste0("Test_EvaluationPlot_",tarlevel)]] <- Output$EvaluationPlot; Output$EvaluationPlot <- NULL
-      PlotList[[paste0("Test_ParDepPlots_",tarlevel)]] <- Output$ParDepPlots; Output$ParDepPlots <- NULL
-      PlotList[[paste0("Test_GainsPlot_",tarlevel)]] <- Output$GainsPlot; Output$GainsPlot <- NULL
-      PlotList[[paste0("Test_LiftPlot_",tarlevel)]] <- Output$LiftPlot; Output$LiftPlot <- NULL
-      PlotList[[paste0("Test_ROC_Plot_",tarlevel)]] <- Output$ROC_Plot; rm(Output)
-      data.table::set(ValidationData, j = c("p1",paste0("Temp_",tarlevel)), value = NULL)
-    }
-  }
-
   # Save GridCollect and grid_metrics ----
   if(DebugMode) print("Save GridCollect and grid_metrics ----")
   if(SaveModelObjects & GridTune) {
@@ -582,7 +548,6 @@ AutoLightGBMMultiClass <- function(data = NULL,
     outputList[["Model"]] <- model
     outputList[["TrainData"]] <- if(exists('ShapValues') && !is.null(ShapValues[['Train_Shap']])) ShapValues[['Train_Shap']] else if(exists('TrainData')) TrainData else NULL
     outputList[["TestData"]] <- if(exists('ShapValues') && !is.null(ShapValues[['Test_Shap']])) ShapValues[['Test_Shap']] else if(exists('ValidationData')) ValidationData else NULL
-    outputList[["PlotList"]] <- if(exists('PlotList')) PlotList else NULL
     outputList[["EvaluationMetrics"]] <- if(exists('EvalMetricsList')) EvalMetricsList else NULL
     outputList[["EvaluationMetrics2"]] <- if(exists('EvalMetrics2List')) EvalMetrics2List else NULL
     outputList[["VariableImportance"]] <- if(exists('VariableImportance')) VariableImportance else NULL

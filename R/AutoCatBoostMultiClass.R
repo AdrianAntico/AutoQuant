@@ -21,7 +21,7 @@
 #' @author Adrian Antico
 #' @family Automated Supervised Learning - Multiclass Classification
 #'
-#' @param OutputSelection You can select what type of output you want returned. Choose from c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData')
+#' @param OutputSelection You can select what type of output you want returned. Choose from c('Importances', 'EvalMetrics', 'Score_TrainData')
 #' @param data This is your data set for training and testing your model
 #' @param TrainOnFull Set to TRUE to train on full data and skip over evaluation steps
 #' @param ValidationData This is your holdout data set used in modeling either refine your hyperparameters. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
@@ -92,7 +92,7 @@
 #'  DebugMode = FALSE,
 #'
 #'  # Metadata args
-#'  OutputSelection = c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData'),
+#'  OutputSelection = c('Importances', 'EvalMetrics', 'Score_TrainData'),
 #'  ModelID = 'Test_Model_1',
 #'  model_path = normalizePath('./'),
 #'  metadata_path = normalizePath('./'),
@@ -381,46 +381,6 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalMetri
     }
   }
 
-  # Classification evaluation plots ----
-  if(DebugMode) print('Running ML_EvalPlots()')
-  PlotList <- list()
-  options(warn = -1)
-  if('evalplots' %chin% tolower(OutputSelection)) {
-    if('score_traindata' %chin% tolower(OutputSelection) && !TrainOnFull) {
-      if(!is.null(VariableImportance$Train_Importance) && "plotly" %chin% installed.packages()) PlotList[['Train_VariableImportance']] <- plotly::ggplotly(VI_Plot(Type = 'catboost', VariableImportance$Train_Importance)) else if(!is.null(VariableImportance$Train_Importance)) PlotList[['Train_VariableImportance']] <- VI_Plot(Type = 'catboost', VariableImportance$Train_Importance)
-      if(!is.null(VariableImportance$Validation_Importance) && "plotly" %chin% installed.packages()) PlotList[['Validation_VariableImportance']] <- plotly::ggplotly(VI_Plot(Type = 'catboost', VariableImportance$Validation_Importance)) else if(!is.null(VariableImportance$Validation_Importance)) PlotList[['Validation_VariableImportance']] <- VI_Plot(Type = 'catboost', VariableImportance$Validation_Importance)
-      for(tarlevel in as.character(unique(TargetLevels[['OriginalLevels']]))) {
-        TrainData[, p1 := get(tarlevel)]
-        TrainData[, paste0('Temp_',tarlevel) := data.table::fifelse(get(TargetColumnName) == eval(tarlevel), 1, 0)]
-        if(length(unique(TrainData[[paste0('Temp_',tarlevel)]])) == 1) next
-        Output <- tryCatch({ML_EvalPlots(ModelType='multiclass', DataType = 'Train', TrainOnFull.=TrainOnFull, ValidationData.=TrainData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=paste0('Temp_',tarlevel), FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=metadata_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL, TargetLevel = tarlevel)}, error = function(x) NULL)
-        if(length(Output) > 0L) {
-          PlotList[[paste0('Train_EvaluationPlot_',tarlevel)]] <- Output[['EvaluationPlot']]; Output[['EvaluationPlot']] <- NULL
-          PlotList[[paste0('Train_ParDepPlots_',tarlevel)]] <- Output[['ParDepPlots']]; Output[['ParDepPlots']] <- NULL
-          PlotList[[paste0('Train_GainsPlot_',tarlevel)]] <- Output[['GainsPlot']]; Output[['GainsPlot']] <- NULL
-          PlotList[[paste0('Train_LiftPlot_',tarlevel)]] <- Output[['LiftPlot']]; Output[['LiftPlot']] <- NULL
-          PlotList[[paste0('Train_ROC_Plot_',tarlevel)]] <- Output[['ROC_Plot']]; rm(Output)
-        }
-        data.table::set(TrainData, j = c('p1',paste0('Temp_',tarlevel)), value = NULL)
-      }
-    }
-    if(!is.null(VariableImportance[['Test_VariableImportance']]) && "plotly" %chin% installed.packages()) PlotList[['Test_VariableImportance']] <- plotly::ggplotly(VI_Plot(Type = 'catboost', VariableImportance[['Test_VariableImportance']])) else if(!is.null(VariableImportance[['Test_VariableImportance']])) PlotList[['Test_VariableImportance']] <- VI_Plot(Type = 'catboost', VariableImportance[['Test_VariableImportance']])
-    for(tarlevel in as.character(unique(TargetLevels[['OriginalLevels']]))) {
-      ValidationData[, p1 := get(tarlevel)]
-      ValidationData[, paste0('Temp_',tarlevel) := data.table::fifelse(get(TargetColumnName) == eval(tarlevel), 1, 0)]
-      if(length(unique(ValidationData[[paste0('Temp_',tarlevel)]])) == 1) next
-      Output <- tryCatch({ML_EvalPlots(ModelType='multiclass', DataType = 'Test', TrainOnFull.=TrainOnFull, ValidationData.=ValidationData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=paste0('Temp_',tarlevel), FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=metadata_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL, TargetLevel = tarlevel)}, error = function(x) NULL)
-      if(length(Output) > 0L) {
-        PlotList[[paste0('Test_EvaluationPlot_',tarlevel)]] <- Output[['EvaluationPlot']]; Output[['EvaluationPlot']] <- NULL
-        PlotList[[paste0('Test_ParDepPlots_',tarlevel)]] <- Output[['ParDepPlots']]; Output[['ParDepPlots']] <- NULL
-        PlotList[[paste0('Test_GainsPlot_',tarlevel)]] <- Output[['GainsPlot']]; Output[['GainsPlot']] <- NULL
-        PlotList[[paste0('Test_LiftPlot_',tarlevel)]] <- Output[['LiftPlot']]; Output[['LiftPlot']] <- NULL
-        PlotList[[paste0('Test_ROC_Plot_',tarlevel)]] <- Output[['ROC_Plot']]; rm(Output)
-      }
-      data.table::set(ValidationData, j = c('p1',paste0('Temp_',tarlevel)), value = NULL)
-    }
-  }
-
   # Remove extenal files if GridTune is TRUE ----
   if(DebugMode) print('Running CatBoostRemoveFiles()')
   CatBoostRemoveFiles(GridTune. = GridTune, model_path. = model_path)
@@ -435,7 +395,6 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalMetri
       outputList[["Model"]] <- model
       outputList[["TrainData"]] <- if(exists('ShapValues') && !is.null(ShapValues[['Train_Shap']])) ShapValues[['Train_Shap']] else if(exists('TrainData')) TrainData else NULL
       outputList[["TestData"]] <- if(exists('ShapValues') && !is.null(ShapValues[['Test_Shap']])) ShapValues[['Test_Shap']] else if(exists('ValidationData')) ValidationData else NULL
-      outputList[["PlotList"]] <- if(exists('PlotList')) PlotList else NULL
       outputList[["EvaluationMetrics"]] <- if(exists('EvalMetricsList')) EvalMetricsList else NULL
       outputList[["EvaluationMetrics2"]] <- if(exists('EvalMetrics2List')) EvalMetrics2List else NULL
       outputList[["VariableImportance"]] <- if(exists('VariableImportance')) VariableImportance else NULL

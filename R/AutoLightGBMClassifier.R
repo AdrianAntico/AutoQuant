@@ -21,7 +21,7 @@
 #' @author Adrian Antico
 #' @family Automated Supervised Learning - Binary Classification
 #'
-#' @param OutputSelection You can select what type of output you want returned. Choose from c("Importances", "EvalPlots", "EvalMetrics", "Score_TrainData")
+#' @param OutputSelection You can select what type of output you want returned. Choose from c("Importances", "EvalMetrics", "Score_TrainData")
 #' @param TrainOnFull Set to TRUE to train on full data
 #' @param DebugMode Set to TRUE to get a print out of the steps taken throughout the function
 #' @param data This is your data set for training and testing your model
@@ -144,7 +144,7 @@
 #' TestModel <- AutoQuant::AutoLightGBMClassifier(
 #'
 #'   # Metadata args
-#'   OutputSelection = c('Importances','EvalPlots','EvalMetrics','Score_TrainData'),
+#'   OutputSelection = c('Importances','EvalMetrics','Score_TrainData'),
 #'   model_path = normalizePath("./"),
 #'   metadata_path = NULL,
 #'   ModelID = "Test_Model_1",
@@ -277,7 +277,7 @@ AutoLightGBMClassifier <- function(# Data Args
                                    EncodingMethod = 'credibility',
 
                                    # Metadata parameters
-                                   OutputSelection = c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData'),
+                                   OutputSelection = c('Importances', 'EvalMetrics', 'Score_TrainData'),
                                    model_path = NULL,
                                    metadata_path = NULL,
                                    DebugMode = FALSE,
@@ -505,27 +505,6 @@ AutoLightGBMClassifier <- function(# Data Args
     }
   }
 
-  # Classification evaluation plots ----
-  if(DebugMode) print("Running ML_EvalPlots()")
-  PlotList <- list()
-  if("evalplots" %chin% tolower(OutputSelection)) {
-    if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull) {
-      Output <- ML_EvalPlots(ModelType="classification", DataType = 'Train', TrainOnFull.=TrainOnFull, ValidationData.=TrainData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL)
-      PlotList[["Train_EvaluationPlot"]] <- Output$EvaluationPlot; Output$EvaluationPlot <- NULL
-      PlotList[["Train_ParDepPlots"]] <- Output$ParDepPlots; Output$ParDepPlots <- NULL
-      PlotList[["Train_GainsPlot"]] <- Output$GainsPlot; Output$GainsPlot <- NULL
-      PlotList[["Train_LiftPlot"]] <- Output$LiftPlot; Output$LiftPlot <- NULL
-      PlotList[["Train_ROC_Plot"]] <- Output$ROC_Plot; rm(Output)
-    }
-    Output <- ML_EvalPlots(ModelType="classification", DataType = 'Test', TrainOnFull.=TrainOnFull, ValidationData.=ValidationData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL)
-    PlotList[["Test_EvaluationPlot"]] <- Output$EvaluationPlot; Output$EvaluationPlot <- NULL
-    PlotList[["Test_ParDepPlots"]] <- Output$ParDepPlots; Output$ParDepPlots <- NULL
-    PlotList[["Test_GainsPlot"]] <- Output$GainsPlot; Output$GainsPlot <- NULL
-    PlotList[["Test_LiftPlot"]] <- Output$LiftPlot; Output$LiftPlot <- NULL
-    PlotList[["Test_ROC_Plot"]] <- Output$ROC_Plot; rm(Output)
-    if(!is.null(VariableImportance) && "plotly" %chin% installed.packages()) PlotList[["Train_VariableImportance"]] <- plotly::ggplotly(VI_Plot(Type = "xgboost", VariableImportance)) else if(!is.null(VariableImportance)) PlotList[["Train_VariableImportance"]] <- VI_Plot(Type = "xgboost", VariableImportance)
-  }
-
   # FactorLevelsList ----
   if(!exists("FactorLevelsList")) FactorLevelsList <- NULL
 
@@ -539,7 +518,6 @@ AutoLightGBMClassifier <- function(# Data Args
     outputList[["Model"]] <- model
     outputList[["TrainData"]] <- if(exists('ShapValues') && !is.null(ShapValues[['Train_Shap']])) ShapValues[['Train_Shap']] else if(exists('TrainData')) TrainData else NULL
     outputList[["TestData"]] <- if(exists('ShapValues') && !is.null(ShapValues[['Test_Shap']])) ShapValues[['Test_Shap']] else if(exists('ValidationData')) ValidationData else NULL
-    outputList[["PlotList"]] <- if(exists('PlotList')) PlotList else NULL
     outputList[["EvaluationMetrics"]] <- if(exists('EvalMetricsList')) EvalMetricsList else NULL
     outputList[["EvaluationMetrics2"]] <- if(exists('EvalMetrics2List')) EvalMetrics2List else NULL
     outputList[["VariableImportance"]] <- if(exists('VariableImportance')) VariableImportance else NULL
