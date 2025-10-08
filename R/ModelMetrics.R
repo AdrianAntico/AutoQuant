@@ -177,8 +177,8 @@ ClassificationMetrics <- function(TestData,
                                   PredictColumnName,
                                   PositiveOutcome,
                                   NegativeOutcome,
-                                  CostMatrix = c(0,1,1,0)) {
-  if("Target" %chin% names(TestData)) data.table::set(TestData, j = "Target", value = NULL)
+                                  CostMatrix = c(0,-1,-1,0)) {
+  # if("Target" %chin% names(TestData)) data.table::set(TestData, j = "Target", value = NULL)
   ThreshLength <- rep(1, length(Thresholds))
   ThresholdOutput <- data.table::data.table(
     Threshold   = ThreshLength,
@@ -186,8 +186,8 @@ ClassificationMetrics <- function(TestData,
     TP          = ThreshLength,
     FN          = ThreshLength,
     FP          = ThreshLength,
-    N           = ThreshLength,
-    P           = ThreshLength,
+    PredNeg     = ThreshLength,
+    PredPos     = ThreshLength,
     MCC         = ThreshLength,
     Accuracy    = ThreshLength,
     TPR         = ThreshLength,
@@ -203,62 +203,52 @@ ClassificationMetrics <- function(TestData,
     PPV         = ThreshLength,
     ThreatScore = ThreshLength,
     Utility     = ThreshLength)
+
+  safe_div <- function(num, den) if (den > 0) num/den else NA_real_
+  P1  <- TestData[get(Target) == PositiveOutcome, .N]
+  N1  <- TestData[, .N]
+  NegCount <- N1 - P1
   counter <- 0L
   for(Thresh in Thresholds) {
     counter <- counter + 1L
-    TN <- TestData[, sum(data.table::fifelse(get(PredictColumnName) < Thresh & get(Target) == eval(NegativeOutcome), 1, 0))]
-    TP <- TestData[, sum(data.table::fifelse(get(PredictColumnName) > Thresh & get(Target) == eval(PositiveOutcome), 1, 0))]
-    FN <- TestData[, sum(data.table::fifelse(get(PredictColumnName) < Thresh & get(Target) == eval(PositiveOutcome), 1, 0))]
-    FP <- TestData[, sum(data.table::fifelse(get(PredictColumnName) > Thresh & get(Target) == eval(NegativeOutcome), 1, 0))]
-    N1  <- TestData[, .N]
-    N  <- TestData[get(PredictColumnName) < eval(Thresh), .N]
-    P1  <- TestData[get(Target) == 1, .N]
-    P  <- TestData[get(Target) == 1 & get(PredictColumnName) > Thresh, .N]
+    TN <- TestData[, sum(data.table::fifelse(get(PredictColumnName) < Thresh & get(Target) == NegativeOutcome, 1, 0))]
+    TP <- TestData[, sum(data.table::fifelse(get(PredictColumnName) >= Thresh & get(Target) == PositiveOutcome, 1, 0))]
+    FN <- TestData[, sum(data.table::fifelse(get(PredictColumnName) < Thresh & get(Target) == PositiveOutcome, 1, 0))]
+    FP <- TestData[, sum(data.table::fifelse(get(PredictColumnName) >= Thresh & get(Target) == NegativeOutcome, 1, 0))]
+    N  <- TestData[get(PredictColumnName) < Thresh, .N]
+    P  <- TestData[get(PredictColumnName) >= Thresh, .N]
 
     # Calculate metrics ----
-    MCC         <- (TP*TN-FP*FN)/sqrt((TP+FP)*(TP+FN)*(TN+FP)*(TN+FN))
+    MCC_denom   <- sqrt((TP+FP)*(TP+FN)*(TN+FP)*(TN+FN))
+    MCC         <- if (is.finite(MCC_denom) && MCC_denom > 0) (TP*TN - FP*FN) / MCC_denom else NA_real_
     Accuracy    <- (TP+TN)/N1
-    TPR         <- TP/P1
-    TNR         <- TN/(N1-P1)
-    FNR         <- FN / P1
-    FPR         <- FP / N1
-    FDR         <- FP / (FP + TP)
-    FOR         <- FN / (FN + TN)
-    F1_Score    <- 2 * TP / (2 * TP + FP + FN)
-    F2_Score    <- 3 * TP / (2 * TP + FP + FN)
-    F0.5_Score  <- 1.5 * TP / (0.5 * TP + FP + FN)
-    NPV         <- TN / (TN + FN)
-    PPV         <- TP / (TP + FP)
-    ThreatScore <- TP / (TP + FN + FP)
+    TPR         <- safe_div(TP, P1)
+    TNR         <- safe_div(TN, NegCount)
+    FNR         <- safe_div(FN, P1)
+    FPR         <- safe_div(FP, FP + TN)
+    FDR         <- safe_div(FP, FP + TP)
+    FOR         <- safe_div(FN, FN + TN)
+    F1_Score    <- safe_div(2 * TP, 2 * TP + FP + FN)
+    F2_Score    <- safe_div(5 * TP, 5 * TP + 4 * FN + FP)
+    F0.5_Score  <- safe_div(1.25 * TP, 1.25 * TP + 0.25 * FN + FP)
+    NPV         <- safe_div(TN, TN + FN)
+    PPV         <- safe_div(TP, TP + FP)
+    ThreatScore <- safe_div(TP, TP + FP + FN)
     Utility     <- P1/N1 * (CostMatrix[1L] * TPR + CostMatrix[2L] * (1 - TPR)) + (1 - P1/N1) * (CostMatrix[3L] * FPR + CostMatrix[4L] * (1 - FPR))
 
     # Fill in values ----
-    data.table::set(ThresholdOutput, i = counter, j = "Threshold",   value = Thresh)
-    data.table::set(ThresholdOutput, i = counter, j = "P",           value = P)
-    data.table::set(ThresholdOutput, i = counter, j = "N",           value = N)
-    data.table::set(ThresholdOutput, i = counter, j = "TN",          value = TN)
-    data.table::set(ThresholdOutput, i = counter, j = "TP",          value = TP)
-    data.table::set(ThresholdOutput, i = counter, j = "FP",          value = FP)
-    data.table::set(ThresholdOutput, i = counter, j = "FN",          value = FN)
-    data.table::set(ThresholdOutput, i = counter, j = "Utility",     value = Utility)
-    data.table::set(ThresholdOutput, i = counter, j = "MCC",         value = MCC)
-    data.table::set(ThresholdOutput, i = counter, j = "Accuracy",    value = Accuracy)
-    data.table::set(ThresholdOutput, i = counter, j = "F1_Score",    value = F1_Score)
-    data.table::set(ThresholdOutput, i = counter, j = "F0.5_Score",  value = F0.5_Score)
-    data.table::set(ThresholdOutput, i = counter, j = "F2_Score",    value = F2_Score)
-    data.table::set(ThresholdOutput, i = counter, j = "NPV",         value = NPV)
-    data.table::set(ThresholdOutput, i = counter, j = "TPR",         value = TPR)
-    data.table::set(ThresholdOutput, i = counter, j = "TNR",         value = TNR)
-    data.table::set(ThresholdOutput, i = counter, j = "FNR",         value = FNR)
-    data.table::set(ThresholdOutput, i = counter, j = "FPR",         value = FPR)
-    data.table::set(ThresholdOutput, i = counter, j = "FDR",         value = FDR)
-    data.table::set(ThresholdOutput, i = counter, j = "FOR",         value = FOR)
-    data.table::set(ThresholdOutput, i = counter, j = "PPV",         value = PPV)
-    data.table::set(ThresholdOutput, i = counter, j = "ThreatScore", value = ThreatScore)
+    data.table::set(ThresholdOutput, counter, c(
+      "Threshold","TN","TP","FN","FP","PredNeg","PredPos","MCC","Accuracy","TPR","TNR",
+      "FNR","FPR","FDR","FOR","F1_Score","F2_Score","F0.5_Score","NPV","PPV",
+      "ThreatScore","Utility"
+    ), list(
+      Thresh, TN, TP, FN, FP, N, P, MCC, Accuracy, TPR, TNR,
+      FNR, FPR, FDR, FOR, F1_Score, F2_Score, F0.5_Score, NPV, PPV,
+      ThreatScore, Utility
+    ))
   }
 
   # Remove NA's
-  ThresholdOutput <- ThresholdOutput[, RowSum := rowSums(x = as.matrix(ThresholdOutput))][!is.na(RowSum)][, RowSum := NULL]
   return(ThresholdOutput)
 }
 
@@ -286,7 +276,7 @@ ClassificationMetrics <- function(TestData,
 #' @noRd
 RemixClassificationMetrics <- function(TargetVariable = NULL,
                                        Thresholds = seq(0.01,0.99,0.01),
-                                       CostMatrix = c(1,0,0,1),
+                                       CostMatrix = c(0,-1,-1,0),
                                        ClassLabels = c(1,0),
                                        ValidationData. = NULL) {
 
@@ -335,7 +325,7 @@ BinaryMetrics <- function(ClassWeights. = ClassWeights,
                           model_path. = model_path,
                           metadata_path. = metadata_path,
                           Method = "threshold") {
-  if(is.null(CostMatrixWeights.)) CostMatrixWeights. <- c(ClassWeights.[1L], 0, 0, ClassWeights.[2L])
+  if(is.null(CostMatrixWeights.)) CostMatrixWeights. <- c(0,-1,-1,0)
   if(Method == "threshold") {
     vals <- seq(0.01,0.99,0.01)
   } else if(Method == "bins") {

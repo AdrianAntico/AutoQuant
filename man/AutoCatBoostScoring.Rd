@@ -179,31 +179,6 @@ TestModel$Model
 TestModel$TrainData
 TestModel$TestData
 
-# Calibration Plots
-TestModel$PlotList$Train_EvaluationPlot
-TestModel$PlotList$Test_EvaluationPlot
-
-# Calibration Box Plots
-TestModel$PlotList$Train_EvaluationBoxPlot
-TestModel$PlotList$Test_EvaluationBoxPlot
-
-# Residual Analysis Plots
-TestModel$PlotList$Train_ResidualsHistogram
-TestModel$PlotList$Test_ResidualsHistogram
-
-# Preds vs Actuals Scatterplots
-TestModel$PlotList$Train_ScatterPlot
-TestModel$PlotList$Test_ScatterPlot
-
-# Preds vs Actuals Copula Plot
-TestModel$PlotList$Train_CopulaPlot
-TestModel$PlotList$Test_CopulaPlot
-
-# Variable Importance Plots
-TestModel$PlotList$Train_VariableImportance
-TestModel$PlotList$Validation_VariableImportance
-TestModel$PlotList$Test_VariableImportance
-
 # Evaluation Metrics
 TestModel$EvaluationMetrics$TrainData
 TestModel$EvaluationMetrics$TestData
