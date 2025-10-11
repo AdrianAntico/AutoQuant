@@ -32,7 +32,7 @@
 #' @param WeightsColumnName Supply a column name for your weights column. Leave NULL otherwise
 #' @param ClassWeights Supply a vector of weights for your target classes. E.g. c(0.25, 1) to weight your 0 class by 0.25 and your 1 class by 1.
 #' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
-#' @param EncodeMethod 'binary', 'm_estimator', 'credibility', 'woe', 'target_encoding', 'poly_encode', 'backward_difference', 'helmert'
+#' @param EncodeMethod 'catboost', 'target_encoding', 'credibility', 'binary', 'm_estimator', 'woe', 'poly_encode', 'backward_difference', 'helmert'
 #' @param task_type Set to 'GPU' to utilize your GPU for training. Default is 'CPU'.
 #' @param NumGPUs Set to 1, 2, 3, etc.
 #' @param NumOfParDepPlots Number of partial dependence plots to create for each target level
@@ -110,7 +110,7 @@
 #'  WeightsColumnName = NULL,
 #'  ClassWeights = c(1L,1L,1L,1L,1L),
 #'  IDcols = c('IDcol_1','IDcol_2'),
-#'  EncodeMethod = 'credibility',
+#'  EncodeMethod = 'catboost',
 #'
 #'  # Model evaluation
 #'  eval_metric = 'MCC',
@@ -157,7 +157,7 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalMetri
                                    PrimaryDateColumn = NULL,
                                    WeightsColumnName = NULL,
                                    IDcols = NULL,
-                                   EncodeMethod = 'credibility',
+                                   EncodeMethod = 'catboost',
                                    TrainOnFull = FALSE,
                                    task_type = 'GPU',
                                    NumGPUs = 1,

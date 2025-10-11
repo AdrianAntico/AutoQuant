@@ -203,7 +203,7 @@
 #'   TransformationObject = NULL
 #'   TransID = NULL
 #'   TransPath = NULL
-#'   MDP_Impute = TRUE
+#'   MDP_Impute = FALSE
 #'   MDP_CharToFactor = TRUE
 #'   MDP_RemoveDates = TRUE
 #'   MDP_MissFactor = '0'
@@ -249,27 +249,23 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   # Check arguments ----
   if(!data.table::is.data.table(ScoringData)) data.table::setDT(ScoringData)
 
-  # IDcols conversion ----
-  if(is.numeric(IDcols)) IDcols <- names(data)[IDcols]
-
   # Pull in ColNames ----
   if(is.null(FeatureColumnNames) && !is.null(ModelPath)) FeatureColumnNames <- data.table::fread(file = file.path(ModelPath, paste0(ModelID, '_ColNames.csv')))
 
   # Pull In Transformation Object ----
-  if(is.null(TransformationObject) && (TransformNumeric || BackTransNumeric)) {
+  if((TransformNumeric || BackTransNumeric) && is.null(TransformationObject)) {
     TransformationObject <- data.table::fread(file.path(TransPath, paste0(TransID, '_transformation.csv')))
   }
 
   # Identify column numbers for factor variables ----
   if(Debug) print('Scoring Here 1')
-  CatFeatures <- tryCatch({sort(c(as.numeric(which(sapply(ScoringData, is.factor))), as.numeric(which(sapply(ScoringData, is.character)))))}, error = function(x) NULL)
-  CatFeatures <- CatFeatures[CatFeatures %in% which(names(ScoringData) %in% FeatureColumnNames)]
-  if(!is.null(IDcols)) CatFeatures <- CatFeatures[!CatFeatures %in% which(names(ScoringData) %in% IDcols)]
-  if(identical(CatFeatures, numeric(0))) CatFeatures <- NULL
+  CatFeatures <- names(ScoringData)[tryCatch({sort(c(as.numeric(which(sapply(ScoringData, is.factor))), as.numeric(which(sapply(ScoringData, is.character)))))}, error = function(x) NULL)]
+  if(!is.null(IDcols)) CatFeatures <- CatFeatures[!CatFeatures %in% IDcols]
+  if(length(CatFeatures) == 0) CatFeatures <- NULL
 
   # DummifyDT categorical columns ----
   if(Debug) print('Scoring Here 2')
-  if(length(CatFeatures) > 0L) {
+  if(length(CatFeatures) > 0L && length(FactorLevelsList$EncodingMethod) > 0) {
 
     # Encode
     if(Debug) print('Scoring Here 2.001')
@@ -307,22 +303,24 @@ AutoCatBoostScoring <- function(TargetType = NULL,
       print(TargetType)
       print(FactorLevelsList$EncodingMethod)
     }
-    Output <- Rodeo::EncodeCharacterVariables(
-      RunMode = 'score',
-      ModelType = TargetType,
-      TrainData = ScoringData,
-      ValidationData = NULL,
-      TestData = NULL,
-      TargetVariableName = NULL,
-      CategoricalVariableNames = if(!is.character(CatFeatures)) names(ScoringData)[CatFeatures] else CatFeatures,
-      EncodeMethod = FactorLevelsList$EncodingMethod,
-      KeepCategoricalVariables = TRUE,
-      ReturnMetaData = TRUE,
-      MetaDataPath = ModelPath,
-      MetaDataList = FactorLevelsList,
-      ImputeMissingValue = 0)
-    ScoringData <- Output$TrainData
-    MetaData <- Output$MetaData
+    if (length(FactorLevelsList$EncodingMethod) > 0 & FactorLevelsList$EncodingMethod != "catboost") {
+      Output <- Rodeo::EncodeCharacterVariables(
+        RunMode = 'score',
+        ModelType = TargetType,
+        TrainData = ScoringData,
+        ValidationData = NULL,
+        TestData = NULL,
+        TargetVariableName = NULL,
+        CategoricalVariableNames = if(!is.character(CatFeatures)) names(ScoringData)[CatFeatures] else CatFeatures,
+        EncodeMethod = FactorLevelsList$EncodingMethod,
+        KeepCategoricalVariables = TRUE,
+        ReturnMetaData = TRUE,
+        MetaDataPath = ModelPath,
+        MetaDataList = FactorLevelsList,
+        ImputeMissingValue = 0)
+      ScoringData <- Output$TrainData
+      MetaData <- Output$MetaData
+    }
 
     if(Debug) print('Scoring Here 2.1')
 
@@ -361,11 +359,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
 
   } else {
     MetaData <- NULL
-    CatFeatures <- NULL
   }
-
-  # Convert CatFeatures to 1-indexed ----
-  if(!is.null(CatFeatures)) CatFeatures <- CatFeatures - 1L
 
   # ModelDataPrep Check ----
   if(Debug) print('Scoring Here 2.3')
@@ -408,80 +402,53 @@ AutoCatBoostScoring <- function(TargetType = NULL,
 
   # Subset Columns Needed ----
   if(Debug) print('Scoring Here 4')
-  if(!is.null(IDcols) && TargetType != 'multiregression' && any(FeatureColumnNames %chin% c(IDcols))) {
-    FeatureColumnNames <- FeatureColumnNames[!FeatureColumnNames %chin% c(IDcols)]
+  if(!is.null(IDcols) && TargetType != 'multiregression' && any(FeatureColumnNames %in% c(IDcols))) {
+    FeatureColumnNames <- FeatureColumnNames[!FeatureColumnNames %in% c(IDcols)]
   } else if(TargetType == 'multiregression') {
     temp <- setdiff(names(ScoringData), c(TargetColumnName, FeatureColumnNames))
     FeatureColumnNames <- c(FeatureColumnNames, temp)
     FeatureColumnNames <- FeatureColumnNames[!FeatureColumnNames %chin% 'GroupVar']
   }
 
-  # Debugging
-  if(Debug) {
-    print('AutoCatBoostHurdleModelScoring QA Check 1')
-    print(!identical(setdiff(names(ScoringData), FeatureColumnNames), character(0)) && TargetType != 'multiregression')
-  }
-
   # Remove unnecessary columns
-  if(Debug) print('Scoring Here 5')
-  if(Debug) print(!identical(setdiff(names(ScoringData), FeatureColumnNames), character(0)))
   if(!identical(setdiff(names(ScoringData), FeatureColumnNames), character(0)) && TargetType != 'multiregression') {
-    if(Debug) {
-      print('AutoCatBoostHurdleModelScoring QA Check 2')
-      print(c(setdiff(names(ScoringData), FeatureColumnNames)))
-      print(all(c(setdiff(names(ScoringData), FeatureColumnNames)) %in% names(ScoringData)))
-    }
     if(length(setdiff(names(ScoringData), FeatureColumnNames)) > 0L) {
       data.table::set(ScoringData, j = c(setdiff(names(ScoringData), FeatureColumnNames)), value = NULL)
     }
   } else if(TargetType == 'multiregression') {
     if(length(setdiff(names(ScoringData), FeatureColumnNames)) > 0L) {
-      if(Debug) print("Here 5.1")
-      if(Debug) print(length(setdiff(names(ScoringData), FeatureColumnNames)) > 0L)
       tryCatch({data.table::set(ScoringData, j = setdiff(names(ScoringData), FeatureColumnNames), value = NULL)}, error = function(x) NULL)
     }
   }
 
   # Initialize Catboost Data Conversion ----
   if(Debug) print('Scoring Here 6')
-  if(!is.null(CatFeatures)) {
-    if(Debug) print("CatFeatures is NOT NULL")
-    ScoringPool <- catboost::catboost.load_pool(ScoringData, cat_features = CatFeatures)
-  } else {
-    if(Debug) {
-      print("CatFeatures is NULL")
-      print(ScoringData)
-    }
-    ScoringPool <- catboost::catboost.load_pool(ScoringData)
-  }
+  ScoringPool <- catboost::catboost.load_pool(ScoringData)
 
   # Load model ----
   if(is.null(ModelObject)) ModelObject <- catboost::catboost.load_model(file.path(ModelPath, ModelID))
 
   # Score model ----
-  if(Debug) {
-    print('Scoring Here 7')
-    print(TargetType)
-  }
-  if(TargetType %chin% c('regression', 'multiregression')) {
+  if(TargetType %in% c('regression', 'multiregression')) {
+
     predict <- data.table::as.data.table(
       catboost::catboost.predict(
         model = ModelObject,
         pool = ScoringPool,
         prediction_type = 'RawFormulaVal',
         thread_count = -1L))
+
   } else if(TargetType == 'classification') {
+
     predict <- data.table::as.data.table(
       catboost::catboost.predict(
         model = ModelObject,
         pool = ScoringPool,
         prediction_type = 'Probability',
         thread_count = -1L))
-    if(Debug) {
-      print("predict creation")
-      print(predict)
-    }
+
   } else if(TargetType == 'multiclass') {
+
     predict <- data.table::as.data.table(cbind(
       1 + catboost::catboost.predict(
         model = ModelObject,
@@ -493,6 +460,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
         pool = ScoringPool,
         prediction_type = 'Probability',
         thread_count = -1L)))
+
   }
 
   # Create ShapValues ----
@@ -533,37 +501,17 @@ AutoCatBoostScoring <- function(TargetType = NULL,
 
   # Merge features back on ----
   if(ReturnFeatures && TargetType != 'multiclass') {
-    if(Debug) {
-      print('Scoring Here 10')
-      print(predict[, .N])
-      print('HERE 0')
-      print(ScoringMerge[, .N])
-      print('HERE 1')
-      print(ReturnFeatures && TargetType != 'multiclass')
-      print('HERE 2')
-      print(predict)
-      print('HERE 3')
-      print(ScoringMerge)
-      print('HERE 4')
-      print(length(predict[[1L]]))
-    }
     if(tolower(TargetType) == 'classification') {
       ScoringMerge[, p1 := predict[[1L]]]
     } else {
       ScoringMerge[, Predict := predict[[1L]]]
     }
-    if(Debug) print('HERE 2')
     predict <- ScoringMerge
-    if(Debug) print('HERE 3')
     data.table::setcolorder(predict, c(ncol(predict), 1L:(ncol(predict)-1L)))
   }
 
-  if(Debug) print('HERE 4')
-
   # Back Transform Numeric Variables ----
   if(BackTransNumeric && TargetType != 'multiregression') {
-
-    if(Debug) print('Scoring Here 11')
 
     grid_trans_results <- data.table::copy(TransformationObject)
     data.table::set(grid_trans_results, i = which(grid_trans_results[['ColumnName']] == eval(TargetColumnName)), j = 'ColumnName', value = 'Predict')
@@ -603,14 +551,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   }
 
   # Return data ----
-  if(Debug) print("HERE 5")
-  if(Debug) print(check1)
   if(check1) {
-    if(Debug) {
-      print('Scoring Here 14.a')
-      print(predict[, .N])
-      print(ShapValues[, .N])
-    }
     return(cbind(predict, ShapValues))
   } else {
     if(TargetType == "multiclass" && ReturnFeatures) {

@@ -15,7 +15,7 @@ AutoCatBoostRegression(
   PrimaryDateColumn = NULL,
   WeightsColumnName = NULL,
   IDcols = NULL,
-  EncodeMethod = "credibility",
+  EncodeMethod = "catboost",
   TransformNumericColumns = NULL,
   Methods = c("BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit"),
   TrainOnFull = FALSE,
@@ -81,7 +81,7 @@ AutoCatBoostRegression(
 
 \item{IDcols}{A vector of column names or column numbers to keep in your data but not include in the modeling.}
 
-\item{EncodeMethod}{'binary', 'm_estimator', 'credibility', 'woe', 'target_encoding', 'poly_encode', 'backward_difference', 'helmert'}
+\item{EncodeMethod}{'catboost', 'target_encoding', 'credibility', 'binary', 'm_estimator', 'woe', 'poly_encode', 'backward_difference', 'helmert'}
 
 \item{TransformNumericColumns}{Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed}
 
@@ -195,7 +195,7 @@ TestModel <- AutoQuant::AutoCatBoostRegression(
   DebugMode = FALSE,
 
   # Metadata args
-  OutputSelection = c('Importances', 'EvalPlots', 'Score_TrainData'),
+  OutputSelection = c('Importances', 'EvalMetrics', 'Score_TrainData'),
   ModelID = 'Test_Model_1',
   model_path = normalizePath('./'),
   metadata_path = normalizePath('./'),
@@ -213,7 +213,7 @@ TestModel <- AutoQuant::AutoCatBoostRegression(
   PrimaryDateColumn = NULL,
   WeightsColumnName = NULL,
   IDcols = c('IDcol_1','IDcol_2'),
-  EncodeMethod = 'credibility',
+  EncodeMethod = 'catboost',
   TransformNumericColumns = 'Adrian',
   Methods = c('BoxCox', 'Asinh', 'Asin', 'Log',
     'LogPlus1', 'Sqrt', 'Logit'),

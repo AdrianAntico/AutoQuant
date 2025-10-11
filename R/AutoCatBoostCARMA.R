@@ -34,7 +34,7 @@
 #' @param TimeGroups Select time aggregations for adding various time aggregated GDL features.
 #' @param FC_Periods Set the number of periods you want to have forecasts for. E.g. 52 for weekly data to forecast a year ahead
 #' @param SaveDataPath NULL Or supply a path. Data saved will be called 'ModelID'_data.csv
-#' @param EncodingMethod 'binary', 'credibility', 'woe', 'target_encoding', 'poly_encode', 'backward_difference', 'helmert'
+#' @param EncodingMethod 'catboost', 'target_encoding', 'credibility', 'binary', 'woe', 'poly_encode', 'backward_difference', 'helmert'
 #' @param TargetTransformation TRUE or FALSE. If TRUE, select the methods in the Methods arg you want tested. The best one will be applied.
 #' @param Methods Choose from 'YeoJohnson', 'BoxCox', 'Asinh', 'Log', 'LogPlus1', 'Sqrt', 'Asin', or 'Logit'. If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.
 #' @param XREGS Additional data to use for model development and forecasting. Data needs to be a complete series which means both the historical and forward looking values over the specified forecast window needs to be supplied.

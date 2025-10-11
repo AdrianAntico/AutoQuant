@@ -32,7 +32,7 @@
 #' @param PrimaryDateColumn Supply a date or datetime column for catboost to utilize time as its basis for handling categorical features, instead of random shuffling
 #' @param WeightsColumnName Supply a column name for your weights column. Leave NULL otherwise
 #' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
-#' @param EncodeMethod 'binary', 'm_estimator', 'credibility', 'woe', 'target_encoding', 'poly_encode', 'backward_difference', 'helmert'
+#' @param EncodeMethod 'catboost', 'target_encoding', 'credibility', 'binary', 'm_estimator', 'woe', 'poly_encode', 'backward_difference', 'helmert'
 #' @param TransformNumericColumns Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed
 #' @param Methods Choose from 'YeoJohnson', 'BoxCox', 'Asinh', 'Log', 'LogPlus1', 'Sqrt', 'Asin', or 'Logit'. If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.
 #' @param task_type Set to 'GPU' to utilize your GPU for training. Default is 'CPU'.
@@ -96,7 +96,7 @@
 #'   DebugMode = FALSE,
 #'
 #'   # Metadata args
-#'   OutputSelection = c('Importances', 'EvalPlots', 'Score_TrainData'),
+#'   OutputSelection = c('Importances', 'EvalMetrics', 'Score_TrainData'),
 #'   ModelID = 'Test_Model_1',
 #'   model_path = normalizePath('./'),
 #'   metadata_path = normalizePath('./'),
@@ -114,7 +114,7 @@
 #'   PrimaryDateColumn = NULL,
 #'   WeightsColumnName = NULL,
 #'   IDcols = c('IDcol_1','IDcol_2'),
-#'   EncodeMethod = 'credibility',
+#'   EncodeMethod = 'catboost',
 #'   TransformNumericColumns = 'Adrian',
 #'   Methods = c('BoxCox', 'Asinh', 'Asin', 'Log',
 #'     'LogPlus1', 'Sqrt', 'Logit'),
@@ -166,7 +166,7 @@ AutoCatBoostRegression <- function(OutputSelection = c('Importances', 'EvalMetri
                                    PrimaryDateColumn = NULL,
                                    WeightsColumnName = NULL,
                                    IDcols = NULL,
-                                   EncodeMethod = 'credibility',
+                                   EncodeMethod = 'catboost',
                                    TransformNumericColumns = NULL,
                                    Methods = c('BoxCox', 'Asinh', 'Log', 'LogPlus1', 'Sqrt', 'Asin', 'Logit'),
                                    TrainOnFull = FALSE,

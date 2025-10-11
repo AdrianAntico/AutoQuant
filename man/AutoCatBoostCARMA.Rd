@@ -109,7 +109,7 @@ AutoCatBoostCARMA(
 
 \item{NumOfParDepPlots}{Supply a number for the number of partial dependence plots you want returned}
 
-\item{EncodingMethod}{'binary', 'credibility', 'woe', 'target_encoding', 'poly_encode', 'backward_difference', 'helmert'}
+\item{EncodingMethod}{'catboost', 'target_encoding', 'credibility', 'binary', 'woe', 'poly_encode', 'backward_difference', 'helmert'}
 
 \item{TargetTransformation}{TRUE or FALSE. If TRUE, select the methods in the Methods arg you want tested. The best one will be applied.}
 

@@ -288,25 +288,10 @@ CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
   if(!is.null(ValidationData.)) if(!data.table::is.data.table(ValidationData.)) data.table::setDT(ValidationData.)
   if(!is.null(TestData.)) if(!data.table::is.data.table(TestData.)) data.table::setDT(TestData.)
 
-  # Target Name Storage ----
-  if(!is.character(TargetColumnName.)) TargetColumnName. <- names(data.)[TargetColumnName.]
-
-  # IDcol Name Storage ----
-  if(!is.null(IDcols.)) if(!is.character(IDcols.)) IDcols. <- names(data.)[IDcols.]
-
   # Identify column numbers for factor variables ----
-  if(ModelType != "multiclass") {
-    CatFeatures <- sort(c(as.numeric(which(sapply(data., is.factor))), as.numeric(which(sapply(data., is.character)))))
-    CatFeatures <- CatFeatures[CatFeatures %in% which(names(data.) %in% FeatureColNames.)]
-    if(!is.null(IDcols.)) CatFeatures <- CatFeatures[!CatFeatures %in% which(names(data.) %in% IDcols.)]
-    if(identical(CatFeatures, numeric(0))) CatFeatures <- NULL
-  } else {
-    CatFeatures <- sort(c(as.numeric(which(sapply(data., is.factor))), as.numeric(which(sapply(data., is.character)))))
-    CatFeatures <- CatFeatures[CatFeatures %in% which(names(data.) %in% FeatureColNames.)]
-    CatFeatures <- setdiff(CatFeatures, TargetColumnName.)
-    if(!is.null(IDcols.)) CatFeatures <- CatFeatures[!CatFeatures %in% IDcols.]
-    if(identical(CatFeatures, numeric(0))) CatFeatures <- NULL
-  }
+  CatFeatures <- names(data)[sort(c(as.numeric(which(sapply(data., is.factor))), as.numeric(which(sapply(data., is.character)))))]
+  CatFeatures <- CatFeatures[!CatFeatures %in% c(IDcols., TargetColumnName.)]
+  if(length(CatFeatures) == 0) CatFeatures <- NULL
 
   # Partition
   if(is.null(ValidationData.) && is.null(TestData.) && !TrainOnFull.) {
@@ -433,7 +418,7 @@ CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
   }
 
   # Dummify ----
-  if(length(CatFeatures) > 0L) {
+  if(length(CatFeatures) > 0L & EncodeMethod. != "catboost") {
 
     # Encode
     xx <- names(data.table::copy(data.))
@@ -466,7 +451,7 @@ CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
     CatFeatures <- NULL
   } else {
     MetaData <- NULL
-    CatFeatures <- NULL
+    if (EncodeMethod. != "catboost") CatFeatures <- NULL
   }
 
   # Multiclass target levels
@@ -570,9 +555,9 @@ CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
   }
 
   # Train Rodeo::ModelDataPrep ----
-  data. <- Rodeo::ModelDataPrep(data = data., Impute = TRUE, CharToFactor = TRUE, RemoveDates = TRUE, MissFactor = "0", MissNum = -1, IntToNumeric = TRUE, FactorToChar = FALSE, DateToChar = FALSE, IgnoreCols = NULL)
-  if(!TrainOnFull. && length(ValidationData.) > 0L) ValidationData. <- Rodeo::ModelDataPrep(data = ValidationData., Impute = TRUE, CharToFactor = TRUE, RemoveDates = TRUE, MissFactor = "0", MissNum = -1, FactorToChar = FALSE, IntToNumeric = TRUE, DateToChar = FALSE, IgnoreCols = NULL)
-  if(!is.null(TestData.)) TestData. <- Rodeo::ModelDataPrep(data = TestData., Impute = TRUE, CharToFactor = TRUE, RemoveDates = TRUE, MissFactor = "0", MissNum = -1, FactorToChar = FALSE, IntToNumeric = TRUE, DateToChar = FALSE, IgnoreCols = NULL)
+  data. <- Rodeo::ModelDataPrep(data = data., Impute = FALSE, CharToFactor = TRUE, RemoveDates = TRUE, MissFactor = "0", MissNum = -1, IntToNumeric = TRUE, FactorToChar = FALSE, DateToChar = FALSE, IgnoreCols = NULL)
+  if(!TrainOnFull. && length(ValidationData.) > 0L) ValidationData. <- Rodeo::ModelDataPrep(data = ValidationData., Impute = FALSE, CharToFactor = TRUE, RemoveDates = TRUE, MissFactor = "0", MissNum = -1, FactorToChar = FALSE, IntToNumeric = TRUE, DateToChar = FALSE, IgnoreCols = NULL)
+  if(!is.null(TestData.)) TestData. <- Rodeo::ModelDataPrep(data = TestData., Impute = FALSE, CharToFactor = TRUE, RemoveDates = TRUE, MissFactor = "0", MissNum = -1, FactorToChar = FALSE, IntToNumeric = TRUE, DateToChar = FALSE, IgnoreCols = NULL)
 
   # Save Names of data ----
   Names <- data.table::as.data.table(setdiff(names(data.), c(TargetColumnName., PrimaryDateColumn., IDcols.)))
@@ -606,7 +591,7 @@ CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
   if(length(TestData.) > 0L && ncol(FinalTestTarget) > 1L) FinalTestTarget <- as.matrix(FinalTestTarget) else FinalTestTarget <- FinalTestTarget[[1L]]
 
   # Convert CatFeatures to 1-indexed----
-  if(length(CatFeatures) > 0L) CatFeatures <- CatFeatures - 1L
+  # if(length(CatFeatures) > 0L) CatFeatures <- CatFeatures - 1L
 
   # Return ----
   return(list(dataTrain = data.,
@@ -678,15 +663,15 @@ CatBoostDataConversion <- function(CatFeatures. = CatFeatures,
   if(!is.null(CatFeatures.) || length(CatFeatures.) > 0) {
     cats <- unique(c(as.numeric(which(unlist(lapply(dataTrain., is.factor)))) - 1L, as.numeric(which(unlist(lapply(dataTrain., is.character)))) - 1L))
     if(!is.null(TestData.)) {
-      TrainPool <- catboost::catboost.load_pool(dataTrain., label = TrainTarget., cat_features = cats, weight = TrainWeightVector)
+      TrainPool <- catboost::catboost.load_pool(dataTrain., label = TrainTarget., weight = TrainWeightVector)
       if(!TrainOnFull.) {
-        TestPool <- catboost::catboost.load_pool(dataTest., label = TestTarget., cat_features = cats, weight = ValidationWeightVector)
-        FinalTestPool <- catboost::catboost.load_pool(TestData., label = FinalTestTarget., cat_features = cats, weight = TestWeightVector)
+        TestPool <- catboost::catboost.load_pool(dataTest., label = TestTarget., weight = ValidationWeightVector)
+        FinalTestPool <- catboost::catboost.load_pool(TestData., label = FinalTestTarget., weight = TestWeightVector)
       }
     } else {
-      TrainPool <- catboost::catboost.load_pool(dataTrain., label = TrainTarget., cat_features = cats, weight = TrainWeightVector)
+      TrainPool <- catboost::catboost.load_pool(dataTrain., label = TrainTarget., weight = TrainWeightVector)
       if(!TrainOnFull.) {
-        TestPool <- catboost::catboost.load_pool(dataTest., label = TestTarget., cat_features = cats, weight = ValidationWeightVector)
+        TestPool <- catboost::catboost.load_pool(dataTest., label = TestTarget., weight = ValidationWeightVector)
       }
     }
   } else {

@@ -14,7 +14,7 @@ AutoCatBoostClassifier(
   PrimaryDateColumn = NULL,
   WeightsColumnName = NULL,
   IDcols = NULL,
-  EncodeMethod = "credibility",
+  EncodeMethod = "catboost",
   TrainOnFull = FALSE,
   task_type = "GPU",
   NumGPUs = 1,
@@ -76,7 +76,7 @@ AutoCatBoostClassifier(
 
 \item{IDcols}{A vector of column names or column numbers to keep in your data but not include in the modeling.}
 
-\item{EncodeMethod}{'credibility', 'binary', 'm_estimator', 'woe', 'target_encoding', 'poly_encode', 'backward_difference', 'helmert'}
+\item{EncodeMethod}{'catboost', 'target_encoding', 'credibility', 'binary', 'm_estimator', 'woe', 'poly_encode', 'backward_difference', 'helmert'}
 
 \item{TrainOnFull}{Set to TRUE to train on full data and skip over evaluation steps}
 
@@ -204,7 +204,7 @@ TestModel <- AutoQuant::AutoCatBoostClassifier(
   PrimaryDateColumn = NULL,
   WeightsColumnName = NULL,
   IDcols = c('IDcol_1','IDcol_2'),
-  EncodeMethod = 'credibility',
+  EncodeMethod = 'catboost',
 
   # Evaluation args
   ClassWeights = c(1L,1L),

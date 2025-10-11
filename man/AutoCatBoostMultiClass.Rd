@@ -14,7 +14,7 @@ AutoCatBoostMultiClass(
   PrimaryDateColumn = NULL,
   WeightsColumnName = NULL,
   IDcols = NULL,
-  EncodeMethod = "credibility",
+  EncodeMethod = "catboost",
   TrainOnFull = FALSE,
   task_type = "GPU",
   NumGPUs = 1,
@@ -74,7 +74,7 @@ AutoCatBoostMultiClass(
 
 \item{IDcols}{A vector of column names or column numbers to keep in your data but not include in the modeling.}
 
-\item{EncodeMethod}{'binary', 'm_estimator', 'credibility', 'woe', 'target_encoding', 'poly_encode', 'backward_difference', 'helmert'}
+\item{EncodeMethod}{'catboost', 'target_encoding', 'credibility', 'binary', 'm_estimator', 'woe', 'poly_encode', 'backward_difference', 'helmert'}
 
 \item{TrainOnFull}{Set to TRUE to train on full data and skip over evaluation steps}
 
@@ -198,7 +198,7 @@ TestModel <- AutoQuant::AutoCatBoostMultiClass(
  WeightsColumnName = NULL,
  ClassWeights = c(1L,1L,1L,1L,1L),
  IDcols = c('IDcol_1','IDcol_2'),
- EncodeMethod = 'credibility',
+ EncodeMethod = 'catboost',
 
  # Model evaluation
  eval_metric = 'MCC',

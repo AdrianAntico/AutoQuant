@@ -177,7 +177,7 @@ ClassificationMetrics <- function(TestData,
                                   PredictColumnName,
                                   PositiveOutcome,
                                   NegativeOutcome,
-                                  CostMatrix = c(0,-1,-1,0)) {
+                                  CostMatrix = c(1,-1,-1,0)) {
   # if("Target" %chin% names(TestData)) data.table::set(TestData, j = "Target", value = NULL)
   ThreshLength <- rep(1, length(Thresholds))
   ThresholdOutput <- data.table::data.table(

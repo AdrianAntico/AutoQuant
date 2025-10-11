@@ -246,7 +246,7 @@ Preds <- AutoQuant::AutoCatBoostScoring(
   TransformationObject = NULL
   TransID = NULL
   TransPath = NULL
-  MDP_Impute = TRUE
+  MDP_Impute = FALSE
   MDP_CharToFactor = TRUE
   MDP_RemoveDates = TRUE
   MDP_MissFactor = '0'
