@@ -27,6 +27,7 @@ Documentation + Code Examples
 - [Panel Data Forecasting](#panel-data-forecasting-)
 - [Time Series Forecasting](#time-series-forecasting-)
 
+<br>
 
 ## Background
 
@@ -44,6 +45,8 @@ Documentation + Code Examples
 
 </p>
 </details>
+
+<br>
 
 ## Installation
 
@@ -150,7 +153,9 @@ install.packages("https://github.com/AdrianAntico/AutoQuant/archive/refs/tags/<v
 </p>
 </details>
 
-# Usage
+<br>
+
+# Code Examples
 
 
 ## Supervised Learning <img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/SupervisedLearningImage.png" align="right" width="80" />
@@ -158,7 +163,7 @@ install.packages("https://github.com/AdrianAntico/AutoQuant/archive/refs/tags/<v
 <details><summary>Expand to view content</summary>
 <p>
 
-
+<br>
 
 ### Regression
 
@@ -863,6 +868,8 @@ TestModel <- AutoQuant::AutoH2oGAMRegression(
 </p>
 </details>
 
+<br>
+
 ### Binary Classification
 
 <details><summary>click to expand</summary>
@@ -1529,6 +1536,8 @@ TestModel <- AutoQuant::AutoH2oGAMClassifier(
 </p>
 </details>
 
+<br>
+
 ### MultiClass Classification
 
 <details><summary>click to expand</summary>
@@ -2164,7 +2173,7 @@ TestModel <- AutoQuant::AutoH2oGAMMultiClass(
 </p>
 </details>
 
-
+<br>
 
 ## Model Scoring <img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/ModelScoringImage.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
@@ -2183,11 +2192,6 @@ TestModel <- AutoQuant::AutoH2oGAMMultiClass(
 
 <code>AutoH2OMLScoring()</code> is an automated scoring function that compliments the AutoH2oGBM__() and AutoH2oDRF__() model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep()to prepare your features for H2O data conversion and scoring. It will also handle transformations and back-transformations if you utilized that feature in the regression training case and didn't do it yourself before hand.
 
-<code>AutoCatBoostHurdleModelScoring()</code> for scoring models developed with AutoCatBoostHurdleModel()
-
-<code>AutoLightGBMHurdleModelScoring()</code> for scoring models developed with AutoLightGBMHurdleModel()
-
-<code>AutoXGBoostHurdleModelScoring()</code> for scoring models developed with AutoXGBoostHurdleModel()
 
 </p>
 </details>
@@ -3163,163 +3167,7 @@ Preds <- AutoQuant::AutoLightGBMScoring(
 </p>
 </details>
 
-<details><summary>AutoLightGBMHurdleModel() Scoring Example</summary>
-<p>
 
-```r
-# Classify
-Classify <- TRUE
-
-# Get data
-if(Classify) {
-  data <- AutoQuant::FakeDataGenerator(N = 15000, ZIP = 1)
-} else {
-  data <- AutoQuant::FakeDataGenerator(N = 100000, ZIP = 2)
-}
-
-# Partition Data
-Sets <- Rodeo::AutoDataPartition(
-  data = data,
-  NumDataSets = 3,
-  Ratios = c(0.7,0.2,0.1),
-  PartitionType = "random",
-  StratifyColumnNames = "Adrian",
-  TimeColumnName = NULL)
-TTrainData <- Sets$TrainData
-VValidationData <- Sets$ValidationData
-TTestData <- Sets$TestData
-rm(Sets)
-
-# Run function
-TestModel <- AutoQuant::AutoLightGBMHurdleModel(
-  
-  # Operationalization
-  ModelID = 'ModelTest',
-  SaveModelObjects = FALSE,
-  ReturnModelObjects = TRUE,
-  NThreads = parallel::detectCores(),
-  
-  # Data related args
-  data = TTrainData,
-  ValidationData = VValidationData,
-  PrimaryDateColumn = "DateTime",
-  TestData = TTestData,
-  WeightsColumnName = NULL,
-  TrainOnFull = FALSE,
-  Buckets = if(Classify) 0L else c(0,2,3),
-  TargetColumnName = "Adrian",
-  FeatureColNames = names(TTrainData)[!names(data) %in% c("Adrian","IDcol_1","IDcol_2","IDcol_3","IDcol_4","IDcol_5","DateTime")],
-  IDcols = c("IDcol_1","IDcol_2","IDcol_3","IDcol_4","IDcol_5","DateTime"),
-  DebugMode = TRUE,
-  
-  # Metadata args
-  EncodingMethod = "credibility",
-  Paths = getwd(),
-  MetaDataPaths = NULL,
-  TransformNumericColumns = NULL,
-  Methods = c('Asinh', 'Asin', 'Log', 'LogPlus1', 'Logit'),
-  ClassWeights = c(1,1),
-  SplitRatios = NULL,
-  NumOfParDepPlots = 10L,
-  
-  # Grid tuning setup
-  PassInGrid = NULL,
-  GridTune = FALSE,
-  BaselineComparison = 'default',
-  MaxModelsInGrid = 1L,
-  MaxRunsWithoutNewWinner = 20L,
-  MaxRunMinutes = 60L*60L,
-  
-  # LightGBM parameters
-  task = list('classifier' = 'train', 'regression' = 'train'),
-  device_type = list('classifier' = 'CPU', 'regression' = 'CPU'),
-  objective = if(Classify) list('classifier' = 'binary', 'regression' = 'regression') else list('classifier' = 'multiclass', 'regression' = 'regression'),
-  metric = if(Classify) list('classifier' = 'binary_logloss', 'regression' = 'rmse') else list('classifier' = 'multi_logloss', 'regression' = 'rmse'),
-  boosting = list('classifier' = 'gbdt', 'regression' = 'gbdt'),
-  LinearTree = list('classifier' = FALSE, 'regression' = FALSE),
-  Trees = list('classifier' = 50L, 'regression' = 50L),
-  eta = list('classifier' = NULL, 'regression' = NULL),
-  num_leaves = list('classifier' = 31, 'regression' = 31),
-  deterministic = list('classifier' = TRUE, 'regression' = TRUE),
-  
-  # Learning Parameters
-  force_col_wise = list('classifier' = FALSE, 'regression' = FALSE),
-  force_row_wise = list('classifier' = FALSE, 'regression' = FALSE),
-  max_depth = list('classifier' = NULL, 'regression' = NULL),
-  min_data_in_leaf = list('classifier' = 20, 'regression' = 20),
-  min_sum_hessian_in_leaf = list('classifier' = 0.001, 'regression' = 0.001),
-  bagging_freq = list('classifier' = 0, 'regression' = 0),
-  bagging_fraction = list('classifier' = 1.0, 'regression' = 1.0),
-  feature_fraction = list('classifier' = 1.0, 'regression' = 1.0),
-  feature_fraction_bynode = list('classifier' = 1.0, 'regression' = 1.0),
-  extra_trees = list('classifier' = FALSE, 'regression' = FALSE),
-  early_stopping_round = list('classifier' = 10, 'regression' = 10),
-  first_metric_only = list('classifier' = TRUE, 'regression' = TRUE),
-  max_delta_step = list('classifier' = 0.0, 'regression' = 0.0),
-  lambda_l1 = list('classifier' = 0.0, 'regression' = 0.0),
-  lambda_l2 = list('classifier' = 0.0, 'regression' = 0.0),
-  linear_lambda = list('classifier' = 0.0, 'regression' = 0.0),
-  min_gain_to_split = list('classifier' = 0, 'regression' = 0),
-  drop_rate_dart = list('classifier' = 0.10, 'regression' = 0.10),
-  max_drop_dart = list('classifier' = 50, 'regression' = 50),
-  skip_drop_dart = list('classifier' = 0.50, 'regression' = 0.50),
-  uniform_drop_dart = list('classifier' = FALSE, 'regression' = FALSE),
-  top_rate_goss = list('classifier' = FALSE, 'regression' = FALSE),
-  other_rate_goss = list('classifier' = FALSE, 'regression' = FALSE),
-  monotone_constraints = list('classifier' = NULL, 'regression' = NULL),
-  monotone_constraints_method = list('classifier' = 'advanced', 'regression' = 'advanced'),
-  monotone_penalty = list('classifier' = 0.0, 'regression' = 0.0),
-  forcedsplits_filename = list('classifier' = NULL, 'regression' = NULL),
-  refit_decay_rate = list('classifier' = 0.90, 'regression' = 0.90),
-  path_smooth = list('classifier' = 0.0, 'regression' = 0.0),
-  
-  # IO Dataset Parameters
-  max_bin = list('classifier' = 255, 'regression' = 255),
-  min_data_in_bin = list('classifier' = 3, 'regression' = 3),
-  data_random_seed = list('classifier' = 1, 'regression' = 1),
-  is_enable_sparse = list('classifier' = TRUE, 'regression' = TRUE),
-  enable_bundle = list('classifier' = TRUE, 'regression' = TRUE),
-  use_missing = list('classifier' = TRUE, 'regression' = TRUE),
-  zero_as_missing = list('classifier' = FALSE, 'regression' = FALSE),
-  two_round = list('classifier' = FALSE, 'regression' = FALSE),
-  
-  # Convert Parameters
-  convert_model = list('classifier' = NULL, 'regression' = NULL),
-  convert_model_language = list('classifier' = "cpp", 'regression' = "cpp"),
-  
-  # Objective Parameters
-  boost_from_average = list('classifier' = TRUE, 'regression' = TRUE),
-  is_unbalance = list('classifier' = FALSE, 'regression' = FALSE),
-  scale_pos_weight = list('classifier' = 1.0, 'regression' = 1.0),
-  
-  # Metric Parameters (metric is in Core)
-  is_provide_training_metric = list('classifier' = TRUE, 'regression' = TRUE),
-  eval_at = list('classifier' = c(1,2,3,4,5), 'regression' = c(1,2,3,4,5)),
-  
-  # Network Parameters
-  num_machines = list('classifier' = 1, 'regression' = 1),
-  
-  # GPU Parameters
-  gpu_platform_id = list('classifier' = -1, 'regression' = -1),
-  gpu_device_id = list('classifier' = -1, 'regression' = -1),
-  gpu_use_dp = list('classifier' = TRUE, 'regression' = TRUE),
-  num_gpu = list('classifier' = 1, 'regression' = 1))
-
-# Remove Target Variable
-TTrainData[, c("Target_Buckets", "Adrian") := NULL]
-
-# Score LightGBM Hurdle Model
-Output <- AutoQuant::AutoLightGBMHurdleModelScoring(
-  TestData = TTrainData,
-  Path = NULL,
-  ModelID = "ModelTest",
-  ModelList = TestModel$ModelList,
-  ArgsList = TestModel$ArgsList,
-  Threshold = NULL)
-```
-
-</p>
-</details>
 
 </p>
 </details>
@@ -3662,97 +3510,6 @@ Preds <- AutoQuant::AutoXGBoostScoring(
 </p>
 </details>
 
-<details><summary>AutoXGBoostHurdleModel() Scoring Example</summary>
-<p>
-
-```r
-# Classify
-Classify <- TRUE
-
-# Get data
-if(Classify) {
-  data <- AutoQuant::FakeDataGenerator(N = 15000, ZIP = 1)
-} else {
-  data <- AutoQuant::FakeDataGenerator(N = 100000, ZIP = 2)
-}
-
-# Partition Data
-Sets <- Rodeo::AutoDataPartition(
-  data = data,
-  NumDataSets = 3,
-  Ratios = c(0.7,0.2,0.1),
-  PartitionType = "random",
-  StratifyColumnNames = "Adrian",
-  TimeColumnName = NULL)
-TTrainData <- Sets$TrainData
-VValidationData <- Sets$ValidationData
-TTestData <- Sets$TestData
-rm(Sets)
-
-# Run function
-TestModel <- AutoQuant::AutoXGBoostHurdleModel(
-  
-  # Operationalization
-  ModelID = 'ModelTest',
-  SaveModelObjects = FALSE,
-  ReturnModelObjects = TRUE,
-  NThreads = parallel::detectCores(),
-  
-  # Data related args
-  data = TTrainData,
-  ValidationData = VValidationData,
-  PrimaryDateColumn = "DateTime",
-  TestData = TTestData,
-  WeightsColumnName = NULL,
-  TrainOnFull = FALSE,
-  Buckets = if(Classify) 0L else c(0,2,3),
-  TargetColumnName = "Adrian",
-  FeatureColNames = names(TTrainData)[!names(data) %in% c("Adrian","IDcol_1","IDcol_2","IDcol_3","IDcol_4","IDcol_5","DateTime")],
-  IDcols = c("IDcol_1","IDcol_2","IDcol_3","IDcol_4","IDcol_5","DateTime"),
-  DebugMode = FALSE,
-  
-  # Metadata args
-  EncodingMethod = "credibility",
-  Paths = normalizePath('./'),
-  MetaDataPaths = NULL,
-  TransformNumericColumns = NULL,
-  Methods = c('Asinh', 'Asin', 'Log', 'LogPlus1', 'Logit'),
-  ClassWeights = c(1,1),
-  SplitRatios = NULL,
-  NumOfParDepPlots = 10L,
-  
-  # Grid tuning setup
-  PassInGrid = NULL,
-  GridTune = FALSE,
-  BaselineComparison = 'default',
-  MaxModelsInGrid = 1L,
-  MaxRunsWithoutNewWinner = 20L,
-  MaxRunMinutes = 60L*60L,
-  
-  # XGBoost parameters
-  TreeMethod = "hist",
-  Trees = list("classifier" = 50, "regression" = 50),
-  eta = list("classifier" = 0.05, "regression" = 0.05),
-  max_depth = list("classifier" = 4L, "regression" = 4L),
-  min_child_weight = list("classifier" = 1.0, "regression" = 1.0),
-  subsample = list("classifier" = 0.55, "regression" = 0.55),
-  colsample_bytree = list("classifier" = 0.55, "regression" = 0.55))
-
-# Remove Target Variable
-TTrainData[, c("Target_Buckets", "Adrian") := NULL]
-
-# Score XGBoost Hurdle Model
-Output <- AutoQuant::AutoXGBoostHurdleModelScoring(
-  TestData = TTrainData,
-  Path = NULL,
-  ModelID = "ModelTest",
-  ModelList = TestModel$ModelList,
-  ArgsList = TestModel$ArgsList,
-  Threshold = NULL)
-```
-
-</p>
-</details>
 
 </p>
 </details>
@@ -3762,7 +3519,7 @@ Output <- AutoQuant::AutoXGBoostHurdleModelScoring(
 </p>
 </details>
 
-
+<br>
 
 ## Model Evaluation <img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/ModelEvaluationImage.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
@@ -3941,7 +3698,7 @@ AutoQuant::ModelInsightsReport(
 </p>
 </details>
 
-
+<br>
 
 ## Panel Data Forecasting <img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/AutoCARMA2.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
@@ -4634,7 +4391,7 @@ Results <- AutoQuant::AutoH2OCARMA(
 </p>
 </details>
 
-
+<br>
 
 </p>
 </details>
