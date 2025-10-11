@@ -88,7 +88,7 @@ a:hover {
 }
 
 .main-content, .toc {
-  max-width: 64rem;
+  max-width: 95%;
   padding: 2rem 4rem;
   margin: 0 auto;
   font-size: 1.1rem;
@@ -539,8 +539,6 @@ if(!is.null(TestData)) {
     Title.XAxis = "p1",
     EchartsTheme = "wef",
     TimeLine = TRUE,
-    
-    
     TextColor = "white",
     Debug = FALSE)
 } else {
@@ -569,8 +567,62 @@ if(!is.null(TrainData)) {
     Title.XAxis = "p1",
     EchartsTheme = "wef",
     TimeLine = TRUE,
-    
-    
+    TextColor = "white",
+    Debug = FALSE)
+}
+
+## EvaluationPlots_prROC_Plot ----
+
+### TestData ----
+if(!is.null(TestData)) {
+  Test_prROCPlot <- AutoPlots::Plot.prROC(
+    dt = TestData,
+    SampleSize = 500000,
+    XVar = PredictionColumnName,
+    YVar = TargetColumnName,
+    GroupVar = NULL,
+    YVarTrans = "Identity",
+    XVarTrans = "Identity",
+    FacetRows = 1,
+    FacetCols = 1,
+    FacetLevels = NULL,
+    AggMethod = "mean",
+    Height = "600px",
+    Width = "975px",
+    Title = "Calibration Plot: Test Data",
+    ShowLabels = FALSE,
+    Title.YAxis = TargetColumnName,
+    Title.XAxis = "p1",
+    EchartsTheme = "wef",
+    TimeLine = TRUE,
+    TextColor = "white",
+    Debug = FALSE)
+} else {
+  Test_ROCPlot <- NULL
+}
+
+### TrainData ----
+if(!is.null(TrainData)) {
+  Train_prROCPlot <- AutoPlots::Plot.prROC(
+    dt = TrainData,
+    SampleSize = 500000,
+    XVar = PredictionColumnName,
+    YVar = TargetColumnName,
+    GroupVar = NULL,
+    YVarTrans = "Identity",
+    XVarTrans = "Identity",
+    FacetRows = 1,
+    FacetCols = 1,
+    FacetLevels = NULL,
+    AggMethod = "mean",
+    Height = "600px",
+    Width = "975px",
+    Title = "Calibration Plot: Train Data",
+    ShowLabels = FALSE,
+    Title.YAxis = TargetColumnName,
+    Title.XAxis = "p1",
+    EchartsTheme = "wef",
+    TimeLine = TRUE,
     TextColor = "white",
     Debug = FALSE)
 }
@@ -1305,6 +1357,26 @@ if(!is.null(Train_EvaluationPlot)) {
 </p>
 
 
+## <font size="5">prROC Plots</font>
+<p>
+
+<details><summary>Expand</summary>
+<p>
+
+```{r prROC_Plot, echo=FALSE}
+if(!is.null(Test_prROCPlot)) {
+  Test_prROCPlot
+} else {
+  print('Test_prROCPlot is NULL or TestData is NULL')
+}
+if(!is.null(Train_EvaluationPlot)) {
+  Train_prROCPlot
+}
+```
+
+</details>
+</p>
+
 
 ## <font size="5">Lift & Gains Plots</font>
 <p>
@@ -1348,13 +1420,6 @@ if(!is.null(Test_CumGainsChart)) {
 
 
 ## <font size="5">Partial Dependence Plots: Numeric-Features</font>
-<p>
-
-<details><summary>Expand</summary>
-<p>
-
-
-### Partial Dependence Line Plots
 <p>
 
 <details><summary>Expand</summary>
@@ -1409,7 +1474,7 @@ options(warn = 1)
 <p>
 
 
-### **TestData**
+#### **TestData**
 <p>
 
 <details><summary>Partital Dependence Bar Plots</summary>
@@ -1429,7 +1494,7 @@ options(warn = 1)
 </p>
 
 
-### **TrainData** + **ValidationData**
+#### **TrainData** + **ValidationData**
 <p>
 
 <details><summary>Partital Dependence Bar Plots</summary>

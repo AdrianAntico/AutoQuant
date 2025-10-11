@@ -231,8 +231,7 @@ TestModel <- AutoQuant::AutoCatBoostRegression(
   ValidationData = NULL,
   TestData = NULL,
   TargetColumnName = 'Adrian',
-  FeatureColNames = names(data)[!names(data) %in%
-    c('IDcol_1', 'IDcol_2','Adrian')],
+  FeatureColNames = names(data)[!names(data) %in% c('IDcol_1', 'IDcol_2','Adrian')],
   PrimaryDateColumn = NULL,
   WeightsColumnName = NULL,
   IDcols = c('IDcol_1','IDcol_2'),
@@ -274,6 +273,16 @@ TestModel <- AutoQuant::AutoCatBoostRegression(
   subsample = NULL,
   score_function = 'Cosine',
   min_data_in_leaf = 1)
+  
+# Build Training Report
+AutoQuant::ModelInsightsReport(
+  TrainDataInclude = TRUE,
+  FeatureColumnNames = names(data)[!names(data) %in% c('IDcol_1', 'IDcol_2','Adrian')],
+  SampleSize = 1e+05,
+  ModelObject = TestModel,
+  ModelID = "Test_Model_1",
+  OutputPath = getwd()
+)
 ```
  
 </p>
@@ -923,8 +932,7 @@ TestModel <- AutoQuant::AutoCatBoostClassifier(
   ValidationData = NULL,
   TestData = NULL,
   TargetColumnName = 'Adrian',
-  FeatureColNames = names(data)[!names(data) %in%
-     c('IDcol_1','IDcol_2','Adrian')],
+  FeatureColNames = names(data)[!names(data) %in% c('IDcol_1','IDcol_2','Adrian')],
   PrimaryDateColumn = NULL,
   WeightsColumnName = NULL,
   IDcols = c('IDcol_1','IDcol_2'),
@@ -964,6 +972,16 @@ TestModel <- AutoQuant::AutoCatBoostClassifier(
   subsample = NULL,
   score_function = 'Cosine',
   min_data_in_leaf = 1)
+
+# Build Training Report
+AutoQuant::ModelInsightsReport(
+  TrainDataInclude = TRUE,
+  FeatureColumnNames = names(data)[!names(data) %in% c('IDcol_1', 'IDcol_2','Adrian')],
+  SampleSize = 1e+05,
+  ModelObject = TestModel,
+  ModelID = "Test_Model_1",
+  OutputPath = getwd()
+)
 ```
 
 </p>
@@ -1617,6 +1635,16 @@ TestModel <- AutoQuant::AutoCatBoostMultiClass(
   subsample = NULL,
   score_function = 'Cosine',
   min_data_in_leaf = 1)
+
+# Build Training Report
+AutoQuant::ModelInsightsReport(
+  TrainDataInclude = TRUE,
+  FeatureColumnNames = names(data)[!names(data) %in% c('IDcol_1', 'IDcol_2','Adrian')],
+  SampleSize = 1e+05,
+  ModelObject = TestModel,
+  ModelID = "Test_Model_1",
+  OutputPath = getwd()
+)
 ```
 
 </p>
@@ -2285,7 +2313,7 @@ Preds <- AutoQuant::AutoCatBoostScoring(
   TransformationObject = NULL,
   TransID = NULL,
   TransPath = NULL,
-  MDP_Impute = TRUE,
+  MDP_Impute = FALSE,
   MDP_CharToFactor = TRUE,
   MDP_RemoveDates = TRUE,
   MDP_MissFactor = '0',

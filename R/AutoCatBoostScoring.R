@@ -129,31 +129,15 @@
 #'   score_function = 'Cosine',
 #'   min_data_in_leaf = 1)
 #'
-#' # Trained Model Object
-#' TestModel$Model
-#'
-#' # Train Data (includes validation data) and Test Data with predictions and shap values
-#' TestModel$TrainData
-#' TestModel$TestData
-#'
-#' # Evaluation Metrics
-#' TestModel$EvaluationMetrics$TrainData
-#' TestModel$EvaluationMetrics$TestData
-#'
-#' # Variable Importance Tables
-#' TestModel$VariableImportance$Train_Importance
-#' TestModel$VariableImportance$Validation_Importance
-#' TestModel$VariableImportance$Test_Importance
-#'
-#' # Interaction Importance
-#' TestModel$InteractionImportance$Train_Interaction
-#' TestModel$InteractionImportance$Validation_Interaction
-#' TestModel$InteractionImportance$Test_Interaction
-#'
-#' # Meta Data
-#' TestModel$ColNames
-#' TestModel$TransformationResults
-#' TestModel$GridList
+#' # Build Training Report
+#' AutoQuant::ModelInsightsReport(
+#'   TrainDataInclude = TRUE,
+#'   FeatureColumnNames = names(data1)[!names(data1) %in% c('IDcol_1', 'IDcol_2','Adrian')],
+#'   SampleSize = 1e+05,
+#'   ModelObject = TestModel,
+#'   ModelID = "Test_Model_1",
+#'   OutputPath = getwd()
+#' )
 #'
 #' # Score data
 #' Preds <- AutoQuant::AutoCatBoostScoring(
@@ -175,41 +159,12 @@
 #'   TransformationObject = NULL,
 #'   TransID = NULL,
 #'   TransPath = NULL,
-#'   MDP_Impute = TRUE,
+#'   MDP_Impute = FALSE,
 #'   MDP_CharToFactor = TRUE,
 #'   MDP_RemoveDates = TRUE,
 #'   MDP_MissFactor = '0',
 #'   MDP_MissNum = -1,
 #'   RemoveModel = FALSE)
-#'
-#'   # Step through scoring function
-#'   library(AutoQuant)
-#'   library(data.table)
-#'   TargetType = 'regression'
-#'   ScoringData = data
-#'   FeatureColumnNames = names(data)[!names(data) %in% c('IDcol_1', 'IDcol_2','Adrian')]
-#'   FactorLevelsList = TestModel$FactorLevelsList
-#'   IDcols = c('IDcol_1','IDcol_2')
-#'   OneHot = FALSE
-#'   ReturnShapValues = TRUE
-#'   ModelObject = TestModel$Model
-#'   ModelPath = NULL
-#'   ModelID = 'Test_Model_1'
-#'   ReturnFeatures = TRUE
-#'   MultiClassTargetLevels = NULL
-#'   TransformNumeric = FALSE
-#'   BackTransNumeric = FALSE
-#'   TargetColumnName = NULL
-#'   TransformationObject = NULL
-#'   TransID = NULL
-#'   TransPath = NULL
-#'   MDP_Impute = FALSE
-#'   MDP_CharToFactor = TRUE
-#'   MDP_RemoveDates = TRUE
-#'   MDP_MissFactor = '0'
-#'   MDP_MissNum = -1
-#'   RemoveModel = FALSE
-#'   Debug = TRUE
 #' }
 #' @return A data.table of predicted values with the option to return model features as well.
 #' @export

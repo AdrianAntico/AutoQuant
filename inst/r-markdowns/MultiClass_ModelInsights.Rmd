@@ -98,7 +98,7 @@ a:hover {
 }
 
 .main-content, .toc {
-  max-width: 64rem;
+  max-width: 95%;
   padding: 2rem 4rem;
   margin: 0 auto;
   font-size: 1.1rem;
