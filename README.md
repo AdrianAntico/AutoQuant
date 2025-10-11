@@ -4391,10 +4391,10 @@ Results <- AutoQuant::AutoH2OCARMA(
 </p>
 </details>
 
-<br>
-
 </p>
 </details>
+
+<br>
 
 ## Time Series Forecasting <img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/TimeSeriesImage2.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
