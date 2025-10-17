@@ -156,20 +156,17 @@ DT_BinaryConfusionMatrix <- function(data = MetricsData,
   return(AggData)
 }
 
-#' @title ClassificationMetrics
-#'
-#' @description ClassificationMetrics
-#'
+#' @title ClassificationMetrics (vectorized, NA-safe, ties-positive, overflow-safe)
+#' @description Fast confusion metrics for many thresholds; exact >= tie handling.
 #' @author Adrian Antico
 #' @family Model Evaluation
-#'
-#' @param TestData Test data from your modeling
-#' @param Thresholds Value
-#' @param Target Name of your target variable
-#' @param PredictColumnName Name of your predicted value variable
-#' @param PositiveOutcome The value of the positive outcome level
-#' @param NegativeOutcome The value of the negative outcome level
-#' @param CostMatrix c(True Positive Cost, False Negative Cost, False Positive Cost, True Negative Cost)
+#' @param TestData data.table with target and prediction columns
+#' @param Thresholds numeric vector of decision thresholds (pred >= t => positive)
+#' @param Target character, name of the target column
+#' @param PredictColumnName character, name of the prediction column (numeric; higher=more positive)
+#' @param PositiveOutcome value in Target representing the positive class
+#' @param NegativeOutcome value in Target representing the negative class
+#' @param CostMatrix numeric length-4: c(TP, FN, FP, TN) utilities/costs (default c(1, -1, -1, 0))
 #' @noRd
 ClassificationMetrics <- function(TestData,
                                   Thresholds,
@@ -177,80 +174,295 @@ ClassificationMetrics <- function(TestData,
                                   PredictColumnName,
                                   PositiveOutcome,
                                   NegativeOutcome,
-                                  CostMatrix = c(1,-1,-1,0)) {
-  # if("Target" %chin% names(TestData)) data.table::set(TestData, j = "Target", value = NULL)
-  ThreshLength <- rep(1, length(Thresholds))
-  ThresholdOutput <- data.table::data.table(
-    Threshold   = ThreshLength,
-    TN          = ThreshLength,
-    TP          = ThreshLength,
-    FN          = ThreshLength,
-    FP          = ThreshLength,
-    PredNeg     = ThreshLength,
-    PredPos     = ThreshLength,
-    MCC         = ThreshLength,
-    Accuracy    = ThreshLength,
-    TPR         = ThreshLength,
-    TNR         = ThreshLength,
-    FNR         = ThreshLength,
-    FPR         = ThreshLength,
-    FDR         = ThreshLength,
-    FOR         = ThreshLength,
-    F1_Score    = ThreshLength,
-    F2_Score    = ThreshLength,
-    F0.5_Score  = ThreshLength,
-    NPV         = ThreshLength,
-    PPV         = ThreshLength,
-    ThreatScore = ThreshLength,
-    Utility     = ThreshLength)
+                                  CostMatrix = c(1, -1, -1, 0)) {
+  stopifnot(data.table::is.data.table(TestData))
 
-  safe_div <- function(num, den) if (den > 0) num/den else NA_real_
-  P1  <- TestData[get(Target) == PositiveOutcome, .N]
-  N1  <- TestData[, .N]
-  NegCount <- N1 - P1
-  counter <- 0L
-  for(Thresh in Thresholds) {
-    counter <- counter + 1L
-    TN <- TestData[, sum(data.table::fifelse(get(PredictColumnName) < Thresh & get(Target) == NegativeOutcome, 1, 0))]
-    TP <- TestData[, sum(data.table::fifelse(get(PredictColumnName) >= Thresh & get(Target) == PositiveOutcome, 1, 0))]
-    FN <- TestData[, sum(data.table::fifelse(get(PredictColumnName) < Thresh & get(Target) == PositiveOutcome, 1, 0))]
-    FP <- TestData[, sum(data.table::fifelse(get(PredictColumnName) >= Thresh & get(Target) == NegativeOutcome, 1, 0))]
-    N  <- TestData[get(PredictColumnName) < Thresh, .N]
-    P  <- TestData[get(PredictColumnName) >= Thresh, .N]
+  # Minimal columns; coerce pred to numeric; drop bad preds or NA target
+  dt <- TestData[, .(
+    .__pred = suppressWarnings(as.numeric(get(PredictColumnName))),
+    .__y    = get(Target)
+  )]
+  dt <- dt[is.finite(.__pred) & !is.na(.__y)]
+  if (!nrow(dt)) return(data.table::data.table())
 
-    # Calculate metrics ----
-    MCC_denom   <- sqrt((TP+FP)*(TP+FN)*(TN+FP)*(TN+FN))
-    MCC         <- if (is.finite(MCC_denom) && MCC_denom > 0) (TP*TN - FP*FN) / MCC_denom else NA_real_
-    Accuracy    <- (TP+TN)/N1
-    TPR         <- safe_div(TP, P1)
-    TNR         <- safe_div(TN, NegCount)
-    FNR         <- safe_div(FN, P1)
-    FPR         <- safe_div(FP, FP + TN)
-    FDR         <- safe_div(FP, FP + TP)
-    FOR         <- safe_div(FN, FN + TN)
-    F1_Score    <- safe_div(2 * TP, 2 * TP + FP + FN)
-    F2_Score    <- safe_div(5 * TP, 5 * TP + 4 * FN + FP)
-    F0.5_Score  <- safe_div(1.25 * TP, 1.25 * TP + 0.25 * FN + FP)
-    NPV         <- safe_div(TN, TN + FN)
-    PPV         <- safe_div(TP, TP + FP)
-    ThreatScore <- safe_div(TP, TP + FP + FN)
-    Utility     <- P1/N1 * (CostMatrix[1L] * TPR + CostMatrix[2L] * (1 - TPR)) + (1 - P1/N1) * (CostMatrix[3L] * FPR + CostMatrix[4L] * (1 - FPR))
-
-    # Fill in values ----
-    data.table::set(ThresholdOutput, counter, c(
-      "Threshold","TN","TP","FN","FP","PredNeg","PredPos","MCC","Accuracy","TPR","TNR",
-      "FNR","FPR","FDR","FOR","F1_Score","F2_Score","F0.5_Score","NPV","PPV",
-      "ThreatScore","Utility"
-    ), list(
-      Thresh, TN, TP, FN, FP, N, P, MCC, Accuracy, TPR, TNR,
-      FNR, FPR, FDR, FOR, F1_Score, F2_Score, F0.5_Score, NPV, PPV,
-      ThreatScore, Utility
-    ))
+  # Strict class flags (as doubles to avoid integer overflow later)
+  dt[, .__pos := as.numeric(.__y == PositiveOutcome)]
+  dt[, .__neg := as.numeric(.__y == NegativeOutcome)]
+  # Optional sanity warning if other labels exist
+  if (!all(dt$.__y %in% c(PositiveOutcome, NegativeOutcome))) {
+    warning("Targets other than PositiveOutcome/NegativeOutcome are present; ",
+            "they won't contribute to TP/TN/FP/FN but are included in PredPos/PredNeg.")
   }
 
-  # Remove NA's
-  return(ThresholdOutput)
+  # --- ASCENDING sort on predictions ---
+  data.table::setorder(dt, .__pred)
+
+  # Suffix cumsums for >= thresholds (ties positive)
+  # cTP_ge[i] = sum(pos for rows i..N); same for FP
+  dt[, .__cTP_ge := rev(cumsum(rev(.__pos)))]
+  dt[, .__cFP_ge := rev(cumsum(rev(.__neg)))]
+
+  # Totals
+  P1       <- sum(dt$.__pos)
+  NegCount <- sum(dt$.__neg)
+  N1       <- nrow(dt)
+
+  # Clean thresholds
+  Thresholds <- as.numeric(Thresholds)
+  if (any(!is.finite(Thresholds))) {
+    keep <- is.finite(Thresholds)
+    warning(sprintf("Dropping %d non-finite thresholds", sum(!keep)))
+    Thresholds <- Thresholds[keep]
+  }
+  if (!length(Thresholds)) return(data.table::data.table())
+
+  # For ascending vec, findInterval(t, pred, rightmost.closed = FALSE) gives # of elements < t.
+  # So index of first element with pred >= t is idx = k_lt + 1.
+  k_lt <- findInterval(Thresholds, dt$.__pred, rightmost.closed = FALSE)  # 0..N
+  idx  <- pmin.int(k_lt + 1L, N1)                                         # clamp to [1..N]
+
+  # Confusion counts (as doubles)
+  TP <- ifelse(k_lt < N1, dt$.__cTP_ge[idx], 0.0)  # if t > max(pred), TP=0
+  FP <- ifelse(k_lt < N1, dt$.__cFP_ge[idx], 0.0)
+  TN <- as.double(NegCount) - FP
+  FN <- as.double(P1) - TP
+
+  PredPos <- as.double(N1 - k_lt)  # # of rows with pred >= t
+  PredNeg <- as.double(k_lt)
+
+  # Safe division
+  safe_div <- function(num, den) ifelse(den > 0, num / den, NA_real_)
+
+  # Metrics (double to avoid overflow)
+  MCC_denom <- sqrt((TP + FP) * (TP + FN) * (TN + FP) * (TN + FN))
+  MCC       <- ifelse(is.finite(MCC_denom) & MCC_denom > 0,
+                      ((TP * TN) - (FP * FN)) / MCC_denom, NA_real_)
+  Accuracy  <- (TP + TN) / N1
+  TPR       <- safe_div(TP, P1)
+  TNR       <- safe_div(TN, NegCount)
+  FNR       <- safe_div(FN, P1)
+  FPR       <- safe_div(FP, FP + TN)
+  FDR       <- safe_div(FP, FP + TP)
+  FOR       <- safe_div(FN, FN + TN)
+  F1_Score  <- safe_div(2 * TP, 2 * TP + FP + FN)
+  F2_Score  <- safe_div(5 * TP, 5 * TP + 4 * FN + FP)
+  F0_5_Score<- safe_div(1.25 * TP, 1.25 * TP + 0.25 * FN + FP)
+  NPV       <- safe_div(TN, TN + FN)
+  PPV       <- safe_div(TP, TP + FP)
+  Threat    <- safe_div(TP, TP + FP + FN)
+
+  base_rate <- if (N1 > 0) P1 / N1 else NA_real_
+  Utility   <- base_rate * (CostMatrix[1L] * TPR + CostMatrix[2L] * (1 - TPR)) +
+    (1 - base_rate) * (CostMatrix[3L] * FPR + CostMatrix[4L] * (1 - FPR))
+
+  data.table::data.table(
+    Threshold   = Thresholds,
+    TN          = TN,
+    TP          = TP,
+    FN          = FN,
+    FP          = FP,
+    PredNeg     = PredNeg,
+    PredPos     = PredPos,
+    MCC         = MCC,
+    Accuracy    = Accuracy,
+    TPR         = TPR,
+    TNR         = TNR,
+    FNR         = FNR,
+    FPR         = FPR,
+    FDR         = FDR,
+    FOR         = FOR,
+    F1_Score    = F1_Score,
+    F2_Score    = F2_Score,
+    `F0.5_Score`= F0_5_Score,
+    NPV         = NPV,
+    PPV         = PPV,
+    ThreatScore = Threat,
+    Utility     = Utility
+  )[]
 }
+
+#' @title ClassificationMetricsTwoThresholds (fast, vectorized, >= ties, NA-safe)
+#' @description
+#'   Compute counts/metrics for a two-threshold classifier with a middle "reject" band,
+#'   plus the utility surface U(t1, t2) using class priors and a reject utility.
+#'   Regions: Auto-Neg (pred < t1), Reject (t1 <= pred < t2), Auto-Pos (pred >= t2).
+#'
+#' @param TestData data.table with target and prediction columns.
+#' @param LowerThresholds numeric vector of lower thresholds (t1).
+#' @param UpperThresholds numeric vector of upper thresholds (t2).
+#' @param Target character, name of target column.
+#' @param PredictColumnName character, name of prediction column (numeric; higher=more positive).
+#' @param PositiveOutcome value representing the positive class.
+#' @param NegativeOutcome value representing the negative class.
+#' @param RejectUtility scalar u_r utility/cost applied to items sent to Reject (review) band.
+#' @param CostMatrix length-4 numeric c(TP, FN, FP, TN). For the utility surface from the paper,
+#'        set TP=0, TN=0 and use FN<0, FP<0 (or positive costs if you're minimizing cost).
+#'        Defaults here maintain your prior signature (but TP/TN are not used in U by default).
+#'
+#' @return data.table with one row per valid (t1,t2) pair (t1 <= t2), including:
+#'   t1, t2, counts per region, rates (TPR/FPR at t1,t2), review_rate, and UtilitySurface.
+#' @noRd
+ClassificationMetricsTwoThresholds <- function(
+    TestData,
+    LowerThresholds,
+    UpperThresholds,
+    Target,
+    PredictColumnName,
+    PositiveOutcome,
+    NegativeOutcome,
+    RejectUtility = 0,
+    CostMatrix = c(0, -1, -1, 0)
+) {
+  stopifnot(data.table::is.data.table(TestData))
+
+  # Minimal columns; coerce pred; drop bad rows
+  dt <- TestData[, .(
+    .__pred = suppressWarnings(as.numeric(get(PredictColumnName))),
+    .__y    = get(Target)
+  )]
+  dt <- dt[is.finite(.__pred) & !is.na(.__y)]
+  if (!nrow(dt)) return(data.table::data.table())
+
+  # Class flags (as doubles to avoid integer overflow later)
+  dt[, .__pos := as.numeric(.__y == PositiveOutcome)]
+  dt[, .__neg := as.numeric(.__y == NegativeOutcome)]
+
+  # Sort ASCENDING to enable ">= t" via suffix sums (ties counted as positive)
+  data.table::setorder(dt, .__pred)
+
+  # Prefix sums for "< t" region
+  pos_lt <- cumsum(dt$.__pos)
+  neg_lt <- cumsum(dt$.__neg)
+
+  # Suffix sums for ">= t" region
+  pos_ge <- rev(cumsum(rev(dt$.__pos)))
+  neg_ge <- rev(cumsum(rev(dt$.__neg)))
+
+  # Totals and priors
+  P1 <- sum(dt$.__pos)
+  N0 <- sum(dt$.__neg)
+  N  <- nrow(dt)
+  r_p <- if (N > 0) P1 / N else NA_real_
+  r_n <- if (N > 0) N0 / N else NA_real_
+
+  # Threshold vectors (clean)
+  LowerThresholds <- as.numeric(LowerThresholds)
+  UpperThresholds <- as.numeric(UpperThresholds)
+  if (any(!is.finite(LowerThresholds))) LowerThresholds <- LowerThresholds[is.finite(LowerThresholds)]
+  if (any(!is.finite(UpperThresholds))) UpperThresholds <- UpperThresholds[is.finite(UpperThresholds)]
+  if (!length(LowerThresholds) || !length(UpperThresholds)) return(data.table::data.table())
+
+  # For ascending vec, findInterval(t, pred, rightmost.closed = FALSE) returns # of rows with pred < t
+  k1_lt <- findInterval(LowerThresholds, dt$.__pred, rightmost.closed = FALSE)  # length L1
+  k2_lt <- findInterval(UpperThresholds, dt$.__pred, rightmost.closed = FALSE)  # length L2
+
+  # TPR/FPR at a threshold t defined by "pred >= t"
+  # TP_ge(t) = pos_ge[idx2], idx2 = k2_lt + 1 if k2_lt < N else 1 past end (we'll guard)
+  idx2 <- pmin.int(k2_lt + 1L, N)  # vector length L2
+  TP_ge_vec <- ifelse(k2_lt < N, pos_ge[idx2], 0.0)
+  FP_ge_vec <- ifelse(k2_lt < N, neg_ge[idx2], 0.0)
+  TPR_t2    <- if (P1 > 0) TP_ge_vec / P1 else NA_real_
+  FPR_t2    <- if (N0 > 0) FP_ge_vec / N0 else NA_real_
+
+  # FN/TN in "< t1" region
+  FN_lt_vec <- ifelse(k1_lt > 0, as.double(pos_lt[k1_lt]), 0.0)  # length L1
+  TN_lt_vec <- ifelse(k1_lt > 0, as.double(neg_lt[k1_lt]), 0.0)
+
+  # TPR/FPR at t1 (using ">= t1"): TP_ge(t1), FP_ge(t1)
+  idx1 <- pmin.int(k1_lt + 1L, N)
+  TP_ge_t1 <- ifelse(k1_lt < N, pos_ge[idx1], 0.0)
+  FP_ge_t1 <- ifelse(k1_lt < N, neg_ge[idx1], 0.0)
+  TPR_t1   <- if (P1 > 0) TP_ge_t1 / P1 else NA_real_
+  FPR_t1   <- if (N0 > 0) FP_ge_t1 / N0 else NA_real_
+
+  # Prefix at t2 for building reject band counts: pos_lt(t2), neg_lt(t2)
+  pos_lt_t2 <- ifelse(k2_lt > 0, as.double(pos_lt[k2_lt]), 0.0)  # length L2
+  neg_lt_t2 <- ifelse(k2_lt > 0, as.double(neg_lt[k2_lt]), 0.0)
+
+  # Cross all (t1,t2) pairs, but keep only t1 <= t2
+  grid <- data.table::CJ(t1 = LowerThresholds, t2 = UpperThresholds, sorted = FALSE)
+  grid <- grid[t1 <= t2]
+
+  if (!nrow(grid)) return(data.table::data.table())
+
+  # Map indices into the precomputed vectors
+  # (match allows us to fetch the precomputed k1_lt/k2_lt/metrics by threshold value)
+  # For speed, build hash maps once:
+  idxL <- match(grid$t1, LowerThresholds)
+  idxU <- match(grid$t2, UpperThresholds)
+
+  # Auto-negative region (pred < t1): TN, FN
+  TN_auto <- TN_lt_vec[idxL]
+  FN_auto <- FN_lt_vec[idxL]
+
+  # Auto-positive region (pred >= t2): TP, FP
+  TP_auto <- TP_ge_vec[idxU]
+  FP_auto <- FP_ge_vec[idxU]
+
+  # Reject (t1 <= pred < t2): counts by difference of prefixes at t2 and t1
+  # pos in reject = pos_lt(t2) - pos_lt(t1); neg in reject = neg_lt(t2) - neg_lt(t1)
+  # We need pos_lt(t1) and neg_lt(t1) too:
+  pos_lt_t1 <- ifelse(k1_lt > 0, as.double(pos_lt[k1_lt]), 0.0)
+  neg_lt_t1 <- ifelse(k1_lt > 0, as.double(neg_lt[k1_lt]), 0.0)
+
+  RejectPos <- pos_lt_t2[idxU] - pos_lt_t1[idxL]
+  RejectNeg <- neg_lt_t2[idxU] - neg_lt_t1[idxL]
+
+  # Sanity: sizes
+  PredAutoNeg <- as.double(k1_lt[idxL])                 # count(pred < t1)
+  PredAutoPos <- as.double(N - k2_lt[idxU])             # count(pred >= t2)
+  PredReject  <- as.double(k2_lt[idxU] - k1_lt[idxL])   # count(t1 <= pred < t2)
+
+  # Review (reject) rate per paper: r_n*(FPR(t1)-FPR(t2)) + r_p*(TPR(t1)-TPR(t2))
+  review_rate <- r_n * (FPR_t1[idxL] - FPR_t2[idxU]) + r_p * (TPR_t1[idxL] - TPR_t2[idxU])
+
+  # Utility surface per Kruchten:
+  # U(t1,t2) = u_fn * (r_p * (1 - TPR(t1))) + u_fp * (r_n * FPR(t2))
+  #          + u_r  * (  r_n*(FPR(t1)-FPR(t2)) + r_p*(TPR(t1)-TPR(t2))  )
+  u_tp <- CostMatrix[1L]; u_fn <- CostMatrix[2L]; u_fp <- CostMatrix[3L]; u_tn <- CostMatrix[4L]
+  # (u_tp/u_tn are not in the paper’s simplified expression; kept for signature parity.)
+  UtilitySurface <- (u_fn * (r_p * (1 - TPR_t1[idxL]))) +
+    (u_fp * (r_n * FPR_t2[idxU])) +
+    (RejectUtility * review_rate)
+
+  # Output table
+  out <- data.table::data.table(
+    LowerThreshold = grid$t1,
+    UpperThreshold = grid$t2,
+
+    # Region sizes
+    PredAutoNeg = PredAutoNeg,
+    PredReject  = PredReject,
+    PredAutoPos = PredAutoPos,
+
+    # Region confusion counts
+    TN_auto = TN_auto,
+    FN_auto = FN_auto,
+    RejectNeg = RejectNeg,
+    RejectPos = RejectPos,
+    FP_auto = FP_auto,
+    TP_auto = TP_auto,
+
+    # Rates at t1 and t2 (useful for plotting/validating)
+    TPR_t1 = TPR_t1[idxL],
+    FPR_t1 = FPR_t1[idxL],
+    TPR_t2 = TPR_t2[idxU],
+    FPR_t2 = FPR_t2[idxU],
+
+    # Workload proxy (fraction sent to review)
+    ReviewRate = review_rate,
+
+    # Utility surface
+    UtilitySurface = UtilitySurface
+  )
+
+  # (Optional) you could also compute "overall" Accuracy over auto-decisions only:
+  # AutoAccuracy = (TP_auto + TN_auto) / pmax(PredAutoNeg + PredAutoPos, 1)
+  out[, AutoAccuracy := (TP_auto + TN_auto) / pmax(PredAutoNeg + PredAutoPos, 1)]
+
+  out[]
+}
+
 
 #' @title RemixClassificationMetrics
 #'
