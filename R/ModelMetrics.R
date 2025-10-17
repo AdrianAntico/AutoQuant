@@ -463,6 +463,221 @@ ClassificationMetricsTwoThresholds <- function(
   out[]
 }
 
+#' @title Plot a Two-Threshold Utility Surface
+#'
+#' @description
+#' Generates a 2D visualization of the two-threshold classification utility surface
+#' produced by a dual-threshold evaluation function. The plot can show filled contours,
+#' raster tiles, or heatmaps, with an optional ridge line of local maxima and a
+#' highlighted global maximum point. The color scale represents model utility, allowing
+#' visual inspection of optimal threshold combinations and their tradeoffs.
+#'
+#' @details
+#' For each pair of thresholds (t₁, t₂), a utility value is computed (e.g., via a cost matrix).
+#' The resulting grid of utilities is visualized as a smooth surface or contour map.
+#' The gold ridge line identifies the best-response curve: the t₂ value that maximizes
+#' utility for each t₁. The black dot marks the global maximum utility point.
+#' When \code{label_in_lower_triangle = TRUE}, the annotation label is moved into the
+#' unused lower-triangular region (where t₂ < t₁) to keep the plot visually clear.
+#'
+#' @param out A \code{data.table} or \code{data.frame} containing the utility surface,
+#'   with columns \code{LowerThreshold}, \code{UpperThreshold}, and \code{UtilitySurface}.
+#' @param mode Character string specifying the rendering mode:
+#'   \itemize{
+#'     \item \code{"contour_filled"} — filled contour plot with smooth shading (default)
+#'     \item \code{"tile"} — discrete tile heatmap
+#'     \item \code{"raster"} — interpolated raster surface
+#'   }
+#' @param bins Integer number of contour levels (only used when \code{mode = "contour_filled"}).
+#' @param show_ridge Logical; if \code{TRUE}, draws the gold ridge line showing the
+#'   local maximum t₂ for each t₁.
+#' @param show_best Logical; if \code{TRUE}, adds the black dot marking the global
+#'   maximum utility point.
+#' @param diag_line Logical; if \code{TRUE}, adds a reference diagonal line (t₁ = t₂).
+#' @param label_in_lower_triangle Logical; if \code{TRUE}, places the annotation box
+#'   for the global maximum in the lower triangular region (t₂ < t₁).
+#'
+#' @return
+#' A \code{ggplot2} object representing the styled 2D utility surface visualization.
+#'
+#' @section Visualization Features:
+#' \itemize{
+#'   \item Dark theme for improved contrast.
+#'   \item Viridis color scale for perceptually uniform utility gradients.
+#'   \item Ridge line (gold) indicating local maxima across threshold pairs.
+#'   \item Black dot with white halo denoting the global utility maximum.
+#'   \item Optional annotation box positioned for clarity.
+#' }
+#'
+#' @seealso
+#' \code{\link{ClassificationMetrics}}, \code{\link{UtilitySurface2D}},
+#' and \pkg{ggplot2} functions such as \code{\link[ggplot2]{geom_contour_filled}}.
+#'
+#' @examples
+#' \dontrun{
+#' # Example using simulated data
+#' dt <- data.table::CJ(LowerThreshold = seq(0, 1, 0.05),
+#'                      UpperThreshold = seq(0, 1, 0.05))
+#' dt[, UtilitySurface := exp(-(LowerThreshold - 0.3)^2 - (UpperThreshold - 0.6)^2)]
+#'
+#' utility_surface_plot(
+#'   out = dt,
+#'   mode = "contour_filled",
+#'   bins = 20,
+#'   label_in_lower_triangle = TRUE
+#' )
+#' }
+#'
+#' @author Adrian Antico
+#' @family Visualization
+#' @export
+utility_surface_plot <- function(
+  out,
+  mode = c("contour_filled", "tile", "raster"),
+  bins = 18,
+  show_ridge = TRUE,
+  show_best = TRUE,
+  diag_line = TRUE,
+  label_in_lower_triangle = TRUE) {
+mode <- match.arg(mode)
+
+# Ensure correct data type
+dt <- data.table::as.data.table(out)[
+  , .(t1 = LowerThreshold, t2 = UpperThreshold, U = as.numeric(UtilitySurface))
+][t1 <= t2]
+
+ridge <- dt[, .SD[which.max(U)], by = t1]
+best  <- dt[which.max(U)]
+
+# axis ranges
+x_min <- min(dt$t1); x_max <- max(dt$t1)
+y_min <- min(dt$t2); y_max <- max(dt$t2)
+x_rng <- x_max - x_min
+y_rng <- y_max - y_min
+
+p <- ggplot2::ggplot(dt, ggplot2::aes(t1, t2, z = U))
+
+if (mode == "contour_filled") {
+  p <- p +
+    ggplot2::geom_contour_filled(bins = bins, alpha = 0.95) +
+    ggplot2::geom_contour(color = "#FFFFFF", linewidth = 0.25, alpha = 0.35, bins = bins)
+} else if (mode == "tile") {
+  p <- p + ggplot2::geom_tile(ggplot2::aes(fill = U))
+} else {
+  p <- p + ggplot2::geom_raster(ggplot2::aes(fill = U), interpolate = TRUE)
+}
+
+if (diag_line) {
+  p <- p + ggplot2::geom_abline(
+    slope = 1, intercept = 0, linetype = "11",
+    color = "#b0b6c3", linewidth = 0.4, alpha = 0.6
+  )
+}
+
+if (show_ridge) {
+  p <- p +
+    ggplot2::geom_path(
+      data = ridge[order(t1)], ggplot2::aes(t1, t2),
+      inherit.aes = FALSE, color = "#FFCC00", linewidth = 1.1, lineend = "round"
+    ) +
+    ggplot2::geom_point(
+      data = ridge, ggplot2::aes(t1, t2),
+      inherit.aes = FALSE, color = "#FFCC00", alpha = 0.25, size = 0.6
+    )
+}
+
+# --- black dot + label positioning ---
+if (show_best && nrow(best)) {
+  p <- p +
+    ggplot2::geom_point(
+      data = best, ggplot2::aes(t1, t2),
+      inherit.aes = FALSE, color = "white", size = 6
+    ) +
+    ggplot2::geom_point(
+      data = best, ggplot2::aes(t1, t2),
+      inherit.aes = FALSE, color = "black", size = 3.8
+    )
+
+  if (label_in_lower_triangle) {
+    dx <- 0.10 * x_rng
+    dy <- 0.10 * y_rng
+    lab_x <- best$t1 + dx
+    lab_y <- best$t2 - dy
+
+    if (!(lab_y < lab_x)) {
+      lab_y <- best$t2 - 0.20 * y_rng
+      if (!(lab_y < lab_x)) lab_x <- best$t1 + 0.20 * x_rng
+    }
+
+    m <- 0.02
+    lab_x <- min(max(lab_x, x_min + m * x_rng), x_max - m * x_rng)
+    lab_y <- min(max(lab_y, y_min + m * y_rng), y_max - m * y_rng)
+
+    p <- p +
+      ggplot2::annotate(
+        "segment",
+        x = best$t1, y = best$t2,
+        xend = lab_x - 0.02 * x_rng, yend = lab_y - 0.02 * y_rng,
+        color = "white", linewidth = 0.4
+      ) +
+      ggplot2::annotate(
+        "label",
+        x = lab_x, y = lab_y,
+        label = sprintf("max U = %.3f\n(t1=%.3f, t2=%.3f)",
+                        best$U, best$t1, best$t2),
+        size = 3.2, label.size = 0.2, fill = "#101624", color = "white"
+      )
+  } else {
+    p <- p +
+      ggplot2::annotate(
+        "segment",
+        x = best$t1, y = best$t2,
+        xend = best$t1 + 0.04 * x_rng, yend = best$t2 + 0.04 * y_rng,
+        color = "white", linewidth = 0.4
+      ) +
+      ggplot2::annotate(
+        "label",
+        x = best$t1 + 0.06 * x_rng, y = best$t2 + 0.06 * y_rng,
+        label = sprintf("max U = %.3f\n(t1=%.3f, t2=%.3f)",
+                        best$U, best$t1, best$t2),
+        size = 3.2, label.size = 0.2, fill = "#101624", color = "white"
+      )
+  }
+}
+
+# fill scales
+if (mode == "contour_filled") {
+  p <- p + ggplot2::scale_fill_viridis_d(name = "Utility level", direction = -1)
+} else {
+  p <- p + ggplot2::scale_fill_viridis_c(name = "Utility", option = "C", direction = -1)
+}
+
+p +
+  ggplot2::coord_fixed() +
+  ggplot2::labs(
+    title = "Two-Threshold Utility Surface",
+    subtitle = if (mode == "contour_filled")
+      "Contours show constant utility; gold line = best t₂ for each t₁"
+    else
+      "Higher values (yellow–green) indicate better combined utility",
+    x = "Lower Threshold (t₁)",
+    y = "Upper Threshold (t₂)"
+  ) +
+  ggplot2::theme_minimal(base_size = 13) +
+  ggplot2::theme(
+    plot.background  = ggplot2::element_rect(fill = "#0B1020", color = NA),
+    panel.background = ggplot2::element_rect(fill = "#0B1020", color = NA),
+    legend.background= ggplot2::element_rect(fill = "#0B1020", color = NA),
+    legend.key       = ggplot2::element_rect(fill = "#0B1020", color = NA),
+    panel.grid       = ggplot2::element_blank(),
+    axis.title       = ggplot2::element_text(color = "#E6ECF2", face = "bold"),
+    axis.text        = ggplot2::element_text(color = "#C7D0DA"),
+    plot.title       = ggplot2::element_text(color = "white", face = "bold", size = 15),
+    plot.subtitle    = ggplot2::element_text(color = "#C7D0DA"),
+    legend.title     = ggplot2::element_text(color = "#E6ECF2"),
+    legend.text      = ggplot2::element_text(color = "#C7D0DA")
+  )
+}
 
 #' @title RemixClassificationMetrics
 #'
