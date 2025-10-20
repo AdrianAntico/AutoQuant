@@ -24,7 +24,7 @@ AutoCatBoostScoring(
   TransID = NULL,
   TransPath = NULL,
   MDP_Impute = FALSE,
-  MDP_CharToFactor = FALSE,
+  MDP_CharToFactor = TRUE,
   MDP_RemoveDates = FALSE,
   MDP_MissFactor = "0",
   MDP_MissNum = -1,
