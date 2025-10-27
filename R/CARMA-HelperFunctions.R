@@ -1555,6 +1555,9 @@ UpdateFeatures <- function(UpdateData. = NULL,
         CalendarFeatures. <- merge(CalendarFeatures., XREGS., by = c('GroupVar', eval(DateColumnName.)), all = FALSE)
       } else {
         if(Debug) print('UpdateFeatures 4.1')
+        if (class(CalendarFeatures.[[DateColumnName.]])[1] == "Date") {
+          XREGS.[, eval(DateColumnName.) := as.Date(get(DateColumnName.))]
+        }
         CalendarFeatures. <- merge(CalendarFeatures., XREGS., by = eval(DateColumnName.), all = FALSE)
       }
     }

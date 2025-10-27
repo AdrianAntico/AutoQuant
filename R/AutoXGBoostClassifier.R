@@ -60,9 +60,9 @@
 #' @param MaxRunsWithoutNewWinner A number
 #' @param MaxRunMinutes In minutes
 #' @param BaselineComparison Set to either "default" or "best". Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.
-#' @param DebugMode TRUE to print to console the steps taken
 #' @param alpha 0. L1 Reg.
 #' @param lambda 1. L2 Reg.
+#' @param DebugMode TRUE to print to console the steps taken
 #' @examples
 #' \dontrun{
 #' # Create some dummy correlated data
