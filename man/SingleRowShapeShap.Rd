@@ -19,9 +19,7 @@ Other Model Evaluation and Interpretation:
 \code{\link{EvalPlot}()},
 \code{\link{ParDepCalPlots}()},
 \code{\link{ROCPlot}()},
-\code{\link{RedYellowGreen}()},
-\code{\link{ResidualPlots}()},
-\code{\link{threshOptim}()}
+\code{\link{ResidualPlots}()}
 }
 \author{
 Adrian Antico

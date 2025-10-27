@@ -55,10 +55,8 @@ Other Model Evaluation and Interpretation:
 \code{\link{CumGainsChart}()},
 \code{\link{ParDepCalPlots}()},
 \code{\link{ROCPlot}()},
-\code{\link{RedYellowGreen}()},
 \code{\link{ResidualPlots}()},
-\code{\link{SingleRowShapeShap}()},
-\code{\link{threshOptim}()}
+\code{\link{SingleRowShapeShap}()}
 }
 \author{
 Adrian Antico
