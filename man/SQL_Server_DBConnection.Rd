@@ -29,8 +29,8 @@ Other Database:
 \code{\link{PosteGRE_ListDatabases}()},
 \code{\link{SQL_ClearTable}()},
 \code{\link{SQL_DropTable}()},
-\code{\link{SQL_Query_Push}()},
 \code{\link{SQL_Query}()},
+\code{\link{SQL_Query_Push}()},
 \code{\link{SQL_SaveTable}()}
 }
 \author{

@@ -20,47 +20,165 @@ TempNames <- names(temp)
 for(nam in TempNames) {
   assign(x = nam, value = eval(temp[[nam]]), envir = .GlobalEnv)
 }
+
+rt_theme_neon <- reactable::reactableTheme(
+  color = "#E7ECFF",
+  backgroundColor = "rgba(16, 24, 61, 0.55)",      # glass panel
+  borderColor = "rgba(140, 170, 255, 0.22)",
+  stripedColor = "rgba(255, 255, 255, 0.035)",
+  highlightColor = "rgba(72, 145, 255, 0.12)",     # hover row glow tint
+  cellPadding = "10px 12px",
+
+  style = list(
+    fontFamily = "-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif",
+    fontSize = "14px",
+    borderRadius = "14px",
+    boxShadow = "0 10px 26px rgba(0,0,0,0.30), 0 0 18px rgba(72,145,255,0.18)",
+    backdropFilter = "blur(10px)"
+  ),
+
+  headerStyle = list(
+    backgroundColor = "rgba(5, 7, 26, 0.75)",
+    color = "#E7ECFF",
+    fontWeight = 800,
+    borderBottom = "1px solid rgba(140,170,255,0.25)"
+  ),
+
+  rowStyle = list(
+    borderBottom = "1px solid rgba(231,236,255,0.10)"
+  ),
+
+  cellStyle = list(
+    borderRight = "1px solid rgba(231,236,255,0.06)"
+  ),
+
+  searchInputStyle = list(
+    width = "100%",
+    color = "#E7ECFF",
+    backgroundColor = "rgba(0,0,0,0.20)",
+    border = "1px solid rgba(140,170,255,0.30)",
+    borderRadius = "12px",
+    padding = "10px 12px",
+    outline = "none"
+  ),
+
+  filterInputStyle = list(
+    color = "#E7ECFF",
+    backgroundColor = "rgba(0,0,0,0.20)",
+    border = "1px solid rgba(140,170,255,0.28)",
+    borderRadius = "10px",
+    padding = "7px 10px",
+    outline = "none"
+  ),
+
+  selectStyle = list(
+    color = "#E7ECFF",
+    backgroundColor = "rgba(0,0,0,0.20)",
+    border = "1px solid rgba(140,170,255,0.28)",
+    borderRadius = "10px"
+  ),
+
+  paginationStyle = list(
+    color = "rgba(231,236,255,0.80)"
+  ),
+
+  pageButtonStyle = list(
+    background = "rgba(72,145,255,0.12)",
+    color = "#E7ECFF",
+    border = "1px solid rgba(140,170,255,0.35)",
+    borderRadius = "10px",
+    padding = "6px 10px"
+  ),
+
+  pageButtonHoverStyle = list(
+    background = "rgba(72,145,255,0.20)",
+    border = "1px solid rgba(140,170,255,0.60)",
+    boxShadow = "0 0 14px rgba(72,145,255,0.28)"
+  ),
+
+  pageButtonActiveStyle = list(
+    background = "rgba(72,145,255,0.26)",
+    border = "1px solid rgba(140,170,255,0.70)",
+    boxShadow = "0 0 18px rgba(72,145,255,0.40)"
+  )
+)
+
 ```
 
 ```{css, echo=FALSE}
 @import url('https://fonts.googleapis.com/css2?family=Yusei+Magic&display=swap');
 
-* {
-  box-sizing: border-box;
+:root{
+  /* Core dark palette */
+  --bg0: #070A14;
+  --bg1: #0B1030;
+  --bg2: #10183D;
+
+  --panel: rgba(16, 24, 61, 0.72);
+  --panel2: rgba(10, 14, 32, 0.72);
+
+  --text: #E7ECFF;
+  --muted: rgba(231, 236, 255, 0.72);
+
+  --link: #9EC5FF;
+  --linkHover: #CFE3FF;
+
+  /* Neon glow */
+  --glow: rgba(72, 145, 255, 0.40);
+  --glowStrong: rgba(72, 145, 255, 0.70);
+  --border: rgba(140, 170, 255, 0.30);
+
+  --codeBg: rgba(255,255,255,0.06);
+  --codeBorder: rgba(140, 170, 255, 0.22);
+
+  --preBg: rgba(0,0,0,0.25);
+  --preBorder: rgba(140, 170, 255, 0.28);
+
+  --tableHeadBg: rgba(72, 145, 255, 0.22);
+  --tableOdd: rgba(255,255,255,0.04);
+  --tableEven: rgba(255,255,255,0.02);
+  --tableGrid: rgba(231, 236, 255, 0.12);
 }
+
+* { box-sizing: border-box; }
+
+html, body { height: 100%; }
 
 body {
   padding: 0;
   margin: 0;
   font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 16px;
-  line-height: 1.5;
-  color: #000000;
-  background: linear-gradient(180deg, #787989, #b7b8cf);
+  line-height: 1.55;
+
+  color: var(--text);
+  background: radial-gradient(1200px 600px at 20% -10%, rgba(72,145,255,0.20), transparent 60%),
+              radial-gradient(900px 500px at 90% 10%, rgba(168,80,255,0.14), transparent 55%),
+              linear-gradient(180deg, var(--bg1), var(--bg0));
 }
 
 a {
-  color: #b1c5d8;
+  color: var(--link);
   text-decoration: none;
 }
 a:hover {
+  color: var(--linkHover);
   text-decoration: underline;
 }
 
+/* Header */
 .page-header {
-  color: #fff;
+  color: var(--text);
   text-align: center;
-  background-color: #000121;
-  background-image: linear-gradient(120deg,#000121,#696b76);
+  background-color: #05071A;
+  background-image: radial-gradient(900px 400px at 50% 0%, rgba(72,145,255,0.18), transparent 70%),
+                    linear-gradient(120deg, #05071A, #0E1B4E);
   padding: 1.5rem 2rem;
+  border-bottom: 1px solid rgba(140,170,255,0.15);
 }
-.page-header :last-child {
-  margin-bottom: 0.5rem;
-}
+.page-header :last-child { margin-bottom: 0.5rem; }
 @media screen and (max-width: 42em) {
-  .page-header {
-    padding: 1rem 1rem;
-  }
+  .page-header { padding: 1rem 1rem; }
 }
 
 .project-name {
@@ -69,209 +187,230 @@ a:hover {
   font-size: 2rem;
 }
 @media screen and (max-width: 42em) {
-  .project-name {
-    font-size: 1.75rem;
-  }
+  .project-name { font-size: 1.75rem; }
 }
 
 .project-tagline {
   margin-bottom: 2rem;
   font-weight: normal;
-  opacity: 0.7;
+  opacity: 0.8;
   font-size: 1.5rem;
+  color: var(--muted);
 }
 @media screen and (max-width: 42em) {
-  .project-tagline {
-    font-size: 1.2rem;
-  }
+  .project-tagline { font-size: 1.2rem; }
 }
 
 .project-author, .project-date {
   font-weight: normal;
-  opacity: 0.7;
+  opacity: 0.85;
   font-size: 1.2rem;
+  color: var(--muted);
 }
 @media screen and (max-width: 42em) {
-  .project-author, .project-date {
-    font-size: 1rem;
-  }
+  .project-author, .project-date { font-size: 1rem; }
 }
 
+/* Main layout */
 .main-content, .toc {
   max-width: 95%;
   padding: 2rem 4rem;
   margin: 0 auto;
-  font-size: 1.1rem;
+  font-size: 1.06rem;
 }
 
-.toc {
-  padding-bottom: 0;
+@media screen and (min-width: 42em) and (max-width: 64em) {
+  .main-content, .toc { padding: 2rem; }
 }
+@media screen and (max-width: 42em) {
+  .main-content, .toc {
+    padding: 2rem 1rem;
+    font-size: 1rem;
+  }
+}
+
+.main-content :first-child { margin-top: 0; }
+.main-content img { max-width: 100%; }
+
+/* TOC */
+.toc { padding-bottom: 0; }
+
 .toc .toc-box {
-  padding: 55px;
-  background: linear-gradient(90deg, #000121, #696b76);
-  border: solid 1px #000000;
-  border-radius: 70px;
-  color: white;
-  box-shadow: 8px 5px 10px 0px #000000;
+  padding: 48px;
+  background: linear-gradient(90deg, rgba(5,7,26,0.90), rgba(16,24,61,0.70));
+  border: 1px solid rgba(140,170,255,0.20);
+  border-radius: 44px;
+  color: var(--text);
+  box-shadow:
+    0 10px 30px rgba(0,0,0,0.35),
+    0 0 24px var(--glow);
+  backdrop-filter: blur(10px);
 }
 .toc .toc-box .toc-title {
   margin: 0 0 0.5rem;
   text-align: center;
 }
-.toc .toc-box > ul {
-  margin: 0;
-  padding-left: 1.5rem;
-}
-@media screen and (min-width: 42em) and (max-width: 64em) {
-  .toc {
-    padding: 2rem 2rem 0;
-  }
-}
-@media screen and (max-width: 42em) {
-  .toc {
-    padding: 2rem 1rem 0;
-    font-size: 1rem;
-  }
-}
+.toc .toc-box > ul { margin: 0; padding-left: 1.5rem; }
 
-.main-content :first-child {
-  margin-top: 0;
-}
-@media screen and (min-width: 42em) and (max-width: 64em) {
-  .main-content {
-    padding: 2rem;
-  }
-}
-@media screen and (max-width: 42em) {
-  .main-content {
-    padding: 2rem 1rem;
-    font-size: 1rem;
-  }
-}
-.main-content img {
-  max-width: 100%;
-}
-
-.main-content h1  {
-  margin-top: 2rem;
-  margin-bottom: 1rem;
-  font-weight: bold;
-  color: #070e56;
-}
-
-.main-content h2 {
-  margin-top: 2rem;
-  margin-bottom: 1rem;
-  font-weight: normal;
-  color: #121e94;
-}
-.main-content h3 {
-  margin-top: 2rem;
-  margin-bottom: 1rem;
-  font-weight: normal;
-  color: #3745d1;
-}
-.main-content h4 {
-  margin-top: 2rem;
-  margin-bottom: 1rem;
-  font-weight: normal;
-  color: #374995;
-}
-.main-content h5 {
-  margin-top: 2rem;
-  margin-bottom: 1rem;
-  font-weight: normal;
-  color: #000000;
-}
+/* Headings */
+.main-content h1,
+.main-content h2,
+.main-content h3,
+.main-content h4,
+.main-content h5,
 .main-content h6 {
   margin-top: 2rem;
   margin-bottom: 1rem;
-  font-weight: normal;
-  color: #000000;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  color: var(--text);
 }
 
-.main-content p {
-  margin-bottom: 1em;
-}
+.main-content h1 { font-size: 2.0rem; }
+.main-content h2 { font-size: 1.6rem; opacity: 0.95; }
+.main-content h3 { font-size: 1.35rem; opacity: 0.92; }
+.main-content h4 { font-size: 1.15rem; opacity: 0.90; }
+.main-content h5 { font-size: 1.05rem; opacity: 0.88; }
+.main-content h6 { font-size: 1.0rem; opacity: 0.86; }
+
+/* Paragraphs */
+.main-content p { margin-bottom: 1em; color: var(--text); }
+
+/* Inline code */
 .main-content code {
-  padding: 2px 4px;
+  padding: 2px 6px;
   font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
-  color: #2c2c2d;
-  background-color: #f3f6fa;
-  border-radius: 0.3rem;
+  color: var(--text);
+  background-color: var(--codeBg);
+  border: 1px solid var(--codeBorder);
+  border-radius: 0.45rem;
 }
+
+/* Code blocks */
 .main-content pre {
-  padding: 0.8rem;
+  padding: 0.9rem 1rem;
   margin-top: 0;
   margin-bottom: 1rem;
-  font: 1rem Consolas, "Liberation Mono", Menlo, Courier, monospace;
-  color: #2c2c2d;
-  word-wrap: normal;
-  background-color: #e9edf9c9;
-  border: solid 1px #001a35;
-  border-radius: 0.3rem;
+
+  font: 0.98rem Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  color: var(--text);
+
+  background-color: var(--preBg);
+  border: 1px solid var(--preBorder);
+  border-radius: 0.75rem;
   line-height: 1.45;
   overflow: auto;
+
+  box-shadow:
+    0 10px 24px rgba(0,0,0,0.35),
+    0 0 18px rgba(72,145,255,0.16);
 }
 @media screen and (max-width: 42em) {
-  .main-content pre {
-    font-size: 0.9rem;
-  }
+  .main-content pre { font-size: 0.9rem; }
 }
+
 .main-content pre > code {
   padding: 0;
   margin: 0;
-  color: #2c2c2d;
+  color: var(--text);
   word-break: normal;
   white-space: pre;
   background: transparent;
   border: 0;
 }
-@media screen and (max-width: 42em) {
-  .main-content pre > code {
-    font-size: 0.9rem;
-  }
+
+/* Lists */
+.main-content ul, .main-content ol { margin-top: 0; }
+
+/* Blockquotes */
+.main-content blockquote {
+  padding: 0.25rem 1rem;
+  margin-left: 0;
+  color: var(--muted);
+  border-left: 0.3rem solid rgba(72,145,255,0.45);
+  background: rgba(255,255,255,0.03);
+  border-radius: 0.6rem;
 }
-.main-content pre code,
-.main-content pre tt {
-  display: inline;
-  max-width: initial;
+@media screen and (max-width: 42em) {
+  .main-content blockquote { font-size: 1.05rem; }
+}
+
+/* HR */
+.main-content hr {
+  height: 1px;
   padding: 0;
-  margin: 0;
-  overflow: initial;
-  line-height: inherit;
-  word-wrap: normal;
-  background-color: transparent;
+  margin: 1.25rem 0;
+  background-color: rgba(231,236,255,0.12);
   border: 0;
 }
-.main-content pre code:before, .main-content pre code:after,
-.main-content pre tt:before,
-.main-content pre tt:after {
-  content: normal;
+
+/* ============================
+   DETAILS: glow box + hover glow
+   ============================ */
+.main-content details {
+  margin: 1rem 0;
+  padding: 0.85rem 1rem;
+  border-radius: 0.95rem;
+
+  background: linear-gradient(180deg, var(--panel), var(--panel2));
+  border: 1px solid var(--border);
+
+  box-shadow:
+    0 10px 26px rgba(0,0,0,0.35),
+    0 0 18px var(--glow);
+
+  transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
+  backdrop-filter: blur(10px);
 }
-.main-content ul,
-.main-content ol {
-  margin-top: 0;
+
+.main-content details:hover {
+  transform: translateY(-1px);
+  border-color: rgba(140,170,255,0.55);
+  box-shadow:
+    0 14px 34px rgba(0,0,0,0.45),
+    0 0 26px var(--glowStrong);
 }
-.main-content blockquote {
-  padding: 0 1rem;
-  margin-left: 0;
-  color: #2c2c2d;
-  border-left: 0.3rem solid #dce6f0;
-  font-size: 1.2rem;
+
+.main-content details[open] {
+  border-color: rgba(140,170,255,0.60);
+  box-shadow:
+    0 14px 34px rgba(0,0,0,0.45),
+    0 0 28px var(--glowStrong);
 }
-.main-content blockquote > :first-child {
-  margin-top: 0;
+
+.main-content details > summary {
+  cursor: pointer;
+  user-select: none;
+  font-weight: 700;
+  color: var(--text);
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
-.main-content blockquote > :last-child {
-  margin-bottom: 0;
+
+.main-content details > summary::-webkit-details-marker { display: none; }
+
+.main-content details > summary::before {
+  content: "▸";
+  display: inline-block;
+  transform: translateY(-1px);
+  opacity: 0.85;
+  transition: transform 140ms ease;
 }
-@media screen and (max-width: 42em) {
-  .main-content blockquote {
-    font-size: 1.1rem;
-  }
+
+.main-content details[open] > summary::before {
+  transform: rotate(90deg) translateY(-1px);
 }
+
+/* Inner content spacing inside details */
+.main-content details > *:not(summary) {
+  margin-top: 0.85rem;
+}
+
+/* ============================
+   TABLES (dark) + wrapper hooks
+   ============================ */
 .main-content table {
   width: 100%;
   overflow: auto;
@@ -280,42 +419,106 @@ a:hover {
   -webkit-overflow-scrolling: touch;
   border-collapse: collapse;
   border-spacing: 0;
-  margin: 1rem 0;
+  margin: 0.75rem 0;
+  color: var(--text);
 }
+
 .main-content table th {
-  font-weight: bold;
-  background-color: #159957;
-  color: #fff;
+  font-weight: 800;
+  background-color: var(--tableHeadBg);
+  color: var(--text);
+  border-bottom: 1px solid var(--tableGrid);
 }
+
 .main-content table th,
 .main-content table td {
-  padding: 0.5rem 1rem;
-  border-bottom: 1px solid #e9ebec;
+  padding: 0.55rem 0.85rem;
+  border-bottom: 1px solid var(--tableGrid);
   text-align: left;
 }
-.main-content table tr:nth-child(odd) {
-  background-color: #f2f2f2;
+
+.main-content table tr:nth-child(odd) { background-color: var(--tableOdd); }
+.main-content table tr:nth-child(even) { background-color: var(--tableEven); }
+
+/* Wrapper that JS will create around tables */
+.table-wrap {
+  margin: 1rem 0 1.25rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 0.95rem;
+  background: linear-gradient(180deg, var(--panel), var(--panel2));
+  border: 1px solid rgba(140,170,255,0.22);
+  box-shadow:
+    0 10px 26px rgba(0,0,0,0.30),
+    0 0 18px rgba(72,145,255,0.18);
 }
-.main-content dl {
-  padding: 0;
+
+.table-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-bottom: 0.6rem;
 }
+
+.table-btn {
+  appearance: none;
+  border: 1px solid rgba(140,170,255,0.40);
+  background: rgba(72,145,255,0.14);
+  color: var(--text);
+  padding: 7px 10px;
+  border-radius: 0.7rem;
+  cursor: pointer;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease, background 120ms ease;
+}
+
+.table-btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(140,170,255,0.70);
+  background: rgba(72,145,255,0.22);
+  box-shadow: 0 0 18px rgba(72,145,255,0.35);
+}
+
+.table-btn:active {
+  transform: translateY(0px);
+}
+
+/* Definition lists */
+.main-content dl { padding: 0; }
 .main-content dl dt {
   padding: 0;
   margin-top: 1rem;
   font-size: 1rem;
-  font-weight: bold;
+  font-weight: 800;
+  color: var(--text);
 }
 .main-content dl dd {
   padding: 0;
   margin-bottom: 1rem;
+  color: var(--muted);
 }
-.main-content hr {
-  height: 2px;
-  padding: 0;
-  margin: 1rem 0;
-  background-color: #eff0f1;
-  border: 0;
+
+/* Reactable: focus glow + small polish */
+.reactable .rt-search input:focus,
+.reactable .rt-filter input:focus,
+.reactable select:focus {
+  border-color: rgba(140,170,255,0.70) !important;
+  box-shadow: 0 0 0 3px rgba(72,145,255,0.18), 0 0 18px rgba(72,145,255,0.30) !important;
 }
+
+/* Reactable: soften grid + round the whole widget */
+.reactable {
+  border-radius: 14px;
+  overflow: hidden; /* keeps rounded corners clean */
+}
+
+/* Scrollbar polish (Chrome/Edge) */
+.reactable ::-webkit-scrollbar { height: 10px; width: 10px; }
+.reactable ::-webkit-scrollbar-track { background: rgba(0,0,0,0.15); border-radius: 999px; }
+.reactable ::-webkit-scrollbar-thumb { background: rgba(140,170,255,0.25); border-radius: 999px; }
+.reactable ::-webkit-scrollbar-thumb:hover { background: rgba(140,170,255,0.40); }
+
+
 ```
 
 ```{r ModelObject_Model_MetaData, echo = FALSE}
@@ -861,13 +1064,13 @@ if(!is.null(All_MultiClassMetrics)) {
   All_MultiClassMetrics <- All_MultiClassMetrics[Data_Source != 'Train']
   data.table::setcolorder(All_MultiClassMetrics, c(3L, 1L, 2L))
   reactable::reactable(
-    width = 1075,
     data = All_MultiClassMetrics,
+    width = "100%",
+    fullWidth = TRUE,
     compact = TRUE,
     defaultPageSize = 10,
     wrap = FALSE,
     filterable = TRUE,
-    fullWidth = FALSE,
     highlight = TRUE,
     pagination = TRUE,
     resizable = TRUE,
@@ -878,18 +1081,7 @@ if(!is.null(All_MultiClassMetrics)) {
     showSortIcon = TRUE,
     sortable = TRUE,
     striped = TRUE,
-    theme = reactable::reactableTheme(
-      color = 'black',
-      backgroundColor = "#4f4f4f26",
-      borderColor = "#dfe2e5",
-      stripedColor = "#4f4f4f8f",
-      highlightColor = "#8989898f",
-      cellPadding = "8px 12px",
-      style = list(
-        fontFamily = "-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif"
-      ),
-      searchInputStyle = list(width = "100%")
-    )
+    theme = rt_theme_neon
   )
 } else {
   print('All_MultiClassMetrics is NULL')
@@ -917,13 +1109,13 @@ if(!is.null(Test_EvalMetrics)) {
   for(nam in names(Test_EvalMetrics)) {
     print(nam)
     reactable::reactable(
-      width = 1075,
       data = Test_EvalMetrics[[nam]],
+      width = "100%",
+      fullWidth = TRUE,
       compact = TRUE,
       defaultPageSize = 10,
       wrap = FALSE,
       filterable = TRUE,
-      fullWidth = FALSE,
       highlight = TRUE,
       pagination = TRUE,
       resizable = TRUE,
@@ -934,18 +1126,7 @@ if(!is.null(Test_EvalMetrics)) {
       showSortIcon = TRUE,
       sortable = TRUE,
       striped = TRUE,
-      theme = reactable::reactableTheme(
-        color = 'black',
-        backgroundColor = "#4f4f4f26",
-        borderColor = "#dfe2e5",
-        stripedColor = "#4f4f4f8f",
-        highlightColor = "#8989898f",
-        cellPadding = "8px 12px",
-        style = list(
-          fontFamily = "-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif"
-        ),
-        searchInputStyle = list(width = "100%")
-      )
+      theme = rt_theme_neon
     )
   }
 } else {
@@ -968,13 +1149,13 @@ if(!is.null(Train_EvalMetrics)) {
   for(nam in names(Train_EvalMetrics)) {
     print(nam)
     reactable::reactable(
-      width = 1075,
       data = Train_EvalMetrics[[nam]],
+      width = "100%",
+      fullWidth = TRUE,
       compact = TRUE,
       defaultPageSize = 10,
       wrap = FALSE,
       filterable = TRUE,
-      fullWidth = FALSE,
       highlight = TRUE,
       pagination = TRUE,
       resizable = TRUE,
@@ -985,18 +1166,7 @@ if(!is.null(Train_EvalMetrics)) {
       showSortIcon = TRUE,
       sortable = TRUE,
       striped = TRUE,
-      theme = reactable::reactableTheme(
-        color = 'black',
-        backgroundColor = "#4f4f4f26",
-        borderColor = "#dfe2e5",
-        stripedColor = "#4f4f4f8f",
-        highlightColor = "#8989898f",
-        cellPadding = "8px 12px",
-        style = list(
-          fontFamily = "-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif"
-        ),
-        searchInputStyle = list(width = "100%")
-      )
+      theme = rt_theme_neon
     )
   }
 } else {
@@ -1021,35 +1191,24 @@ if(!is.null(Train_EvalMetrics)) {
 if(!is.null(All_Importance)) {
   data.table::setorderv(x = All_Importance, cols = names(All_Importance)[2L], order = -1L, na.last = TRUE)
   reactable::reactable(
-    width = 1075,
     data = All_Importance,
-    compact = TRUE,
-    defaultPageSize = 10,
-    wrap = FALSE,
-    filterable = TRUE,
-    fullWidth = FALSE,
-    highlight = TRUE,
-    pagination = TRUE,
-    resizable = TRUE,
-    searchable = TRUE,
-    selection = "multiple",
-    showPagination = TRUE,
-    showSortable = TRUE,
-    showSortIcon = TRUE,
-    sortable = TRUE,
-    striped = TRUE,
-    theme = reactable::reactableTheme(
-      color = 'black',
-      backgroundColor = "#4f4f4f26",
-      borderColor = "#dfe2e5",
-      stripedColor = "#4f4f4f8f",
-      highlightColor = "#8989898f",
-      cellPadding = "8px 12px",
-      style = list(
-        fontFamily = "-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif"
-      ),
-      searchInputStyle = list(width = "100%")
-    )
+    width = "100%",
+      fullWidth = TRUE,
+      compact = TRUE,
+      defaultPageSize = 10,
+      wrap = FALSE,
+      filterable = TRUE,
+      highlight = TRUE,
+      pagination = TRUE,
+      resizable = TRUE,
+      searchable = TRUE,
+      selection = "multiple",
+      showPagination = TRUE,
+      showSortable = TRUE,
+      showSortIcon = TRUE,
+      sortable = TRUE,
+      striped = TRUE,
+      theme = rt_theme_neon
   )
 } else {
   print("No Importance data was provided")
@@ -1070,35 +1229,24 @@ if(!is.null(All_Importance)) {
 if(exists("All_Interaction") && !is.null(All_Interaction)) {
   data.table::setorderv(x = All_Interaction, cols = names(All_Interaction)[3L], order = -1L, na.last = TRUE)
   reactable::reactable(
-    width = 1075,
     data = All_Interaction,
-    compact = TRUE,
-    defaultPageSize = 10,
-    wrap = FALSE,
-    filterable = TRUE,
-    fullWidth = FALSE,
-    highlight = TRUE,
-    pagination = TRUE,
-    resizable = TRUE,
-    searchable = TRUE,
-    selection = "multiple",
-    showPagination = TRUE,
-    showSortable = TRUE,
-    showSortIcon = TRUE,
-    sortable = TRUE,
-    striped = TRUE,
-    theme = reactable::reactableTheme(
-      color = 'black',
-      backgroundColor = "#4f4f4f26",
-      borderColor = "#dfe2e5",
-      stripedColor = "#4f4f4f8f",
-      highlightColor = "#8989898f",
-      cellPadding = "8px 12px",
-      style = list(
-        fontFamily = "-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif"
-      ),
-      searchInputStyle = list(width = "100%")
-    )
+    width = "100%",
+      fullWidth = TRUE,
+      compact = TRUE,
+      defaultPageSize = 10,
+      wrap = FALSE,
+      filterable = TRUE,
+      highlight = TRUE,
+      pagination = TRUE,
+      resizable = TRUE,
+      searchable = TRUE,
+      selection = "multiple",
+      showPagination = TRUE,
+      showSortable = TRUE,
+      showSortIcon = TRUE,
+      sortable = TRUE,
+      striped = TRUE,
+      theme = rt_theme_neon
   )
 } else {
   print('Interaction importance is only available with CatBoost')
@@ -1527,13 +1675,13 @@ if(!is.null(ArgsList)) {
 ```{r Model_MetaData_GridMetrics, echo=FALSE}
 if(!is.null(GridMetrics)) {
   reactable::reactable(
-    width = 1075,
     data = GridMetrics[order(-MetricValue)],
+    width = "100%",
+    fullWidth = TRUE,
     compact = TRUE,
     defaultPageSize = 10,
     wrap = FALSE,
     filterable = TRUE,
-    fullWidth = TRUE,
     highlight = TRUE,
     pagination = TRUE,
     resizable = TRUE,
@@ -1544,18 +1692,7 @@ if(!is.null(GridMetrics)) {
     showSortIcon = TRUE,
     sortable = TRUE,
     striped = TRUE,
-    theme = reactable::reactableTheme(
-      color = 'black',
-      backgroundColor = "#4f4f4f26",
-      borderColor = "#dfe2e5",
-      stripedColor = "#4f4f4f8f",
-      highlightColor = "#8989898f",
-      cellPadding = "8px 12px",
-      style = list(
-        fontFamily = "-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif"
-      ),
-      searchInputStyle = list(width = "100%")
-    )
+    theme = rt_theme_neon
   )
   
 } else {
@@ -1571,3 +1708,101 @@ if(!is.null(GridMetrics)) {
 </details>
 </p>
 
+```{js, echo=FALSE}
+<script>
+(function() {
+  function tableToCSV(table) {
+    const rows = Array.from(table.querySelectorAll('tr'));
+    return rows.map(row => {
+      const cells = Array.from(row.querySelectorAll('th,td'));
+      return cells.map(cell => {
+        let text = (cell.innerText || '').replace(/\r?\n|\r/g, ' ').trim();
+        text = '"' + text.replace(/"/g, '""') + '"';
+        return text;
+      }).join(',');
+    }).join('\n');
+  }
+
+  function downloadText(filename, text) {
+    const blob = new Blob([text], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    URL.revokeObjectURL(url);
+    a.remove();
+  }
+
+  function safeName(s) {
+    return (s || 'table')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '')
+      .slice(0, 60) || 'table';
+  }
+
+  function inferFilename(table, idx) {
+    // Prefer caption if present
+    const cap = table.querySelector('caption');
+    if (cap && cap.textContent.trim()) return safeName(cap.textContent) + '.csv';
+
+    // Else, nearest preceding heading
+    const headings = Array.from(document.querySelectorAll('.main-content h1,.main-content h2,.main-content h3,.main-content h4,.main-content h5,.main-content h6'));
+    const tRect = table.getBoundingClientRect();
+    let best = null;
+
+    for (const h of headings) {
+      const hRect = h.getBoundingClientRect();
+      // heading above the table (rough heuristic)
+      if (hRect.top < tRect.top + window.scrollY) best = h;
+    }
+    if (best && best.textContent.trim()) return safeName(best.textContent) + '.csv';
+
+    return 'table_' + (idx + 1) + '.csv';
+  }
+
+  function wrapTable(table) {
+    if (table.closest('.table-wrap')) return;
+
+    const wrap = document.createElement('div');
+    wrap.className = 'table-wrap';
+
+    const toolbar = document.createElement('div');
+    toolbar.className = 'table-toolbar';
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'table-btn';
+    btn.textContent = 'Download CSV';
+
+    toolbar.appendChild(btn);
+
+    // wrap insertion
+    table.parentNode.insertBefore(wrap, table);
+    wrap.appendChild(toolbar);
+    wrap.appendChild(table);
+
+    return btn;
+  }
+
+  function init() {
+    const tables = document.querySelectorAll('.main-content table');
+    tables.forEach((table, i) => {
+      const btn = wrapTable(table);
+      if (!btn) return;
+
+      btn.addEventListener('click', function() {
+        const filename = inferFilename(table, i);
+        const csv = tableToCSV(table);
+        downloadText(filename, csv);
+      });
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+})();
+</script>
+```

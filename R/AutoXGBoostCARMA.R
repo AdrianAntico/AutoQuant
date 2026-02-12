@@ -358,13 +358,13 @@ AutoXGBoostCARMA <- function(data = NULL,
   }
 
   # Check for duplication in the data ----
-  if(data[, .N] != unique(data)[, .N]) stop('There is duplicates in your data')
+  if(data[, .N] != unique(data)[, .N]) stop('There are duplicates in your data')
 
   # Set Keys for data.table usage ----
   if(DebugMode) print('# Set Keys for data.table usage----')
   if(length(GroupVariables) > 0L) {
     data.table::setkeyv(x = data, cols = c(eval(GroupVariables), eval(DateColumnName)))
-    if(!is.null(XREGS)) data.table::setkeyv(x = XREGS, cols = c('GroupVar', eval(DateColumnName)))
+    if(!is.null(XREGS)) data.table::setkeyv(x = XREGS, cols = c(eval(DateColumnName)))
   } else {
     data.table::setkeyv(x = data, cols = c(eval(DateColumnName)))
     if(!is.null(XREGS)) data.table::setkeyv(x = XREGS, cols = c(eval(DateColumnName)))
@@ -659,7 +659,7 @@ AutoXGBoostCARMA <- function(data = NULL,
   # i = 2
   # i = 3
   # i = 4
-  if(length(Lags) > 0L && all(Lags != 0) || (length(MA_Periods) > 0L && all(MA_Periods != 0))) {
+  if(length(Lags) > 0L || (length(MA_Periods) > 0L)) {
 
     for(i in seq_len(FC_Periods+1L)) {
 
