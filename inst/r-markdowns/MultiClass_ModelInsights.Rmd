@@ -150,12 +150,18 @@ body {
   font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 16px;
   line-height: 1.55;
+  color: #E7ECFF;
 
-  color: var(--text);
-  background: radial-gradient(1200px 600px at 20% -10%, rgba(72,145,255,0.20), transparent 60%),
-              radial-gradient(900px 500px at 90% 10%, rgba(168,80,255,0.14), transparent 55%),
-              linear-gradient(180deg, var(--bg1), var(--bg0));
+  background:
+    radial-gradient(1200px 600px at 20% -10%, rgba(72,145,255,0.20), transparent 60%),
+    radial-gradient(900px 500px at 90% 10%, rgba(168,80,255,0.14), transparent 55%),
+    linear-gradient(180deg, #0B1030, #070A14);
+
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
 }
+
 
 a {
   color: var(--link);
@@ -518,6 +524,43 @@ a:hover {
 .reactable ::-webkit-scrollbar-thumb { background: rgba(140,170,255,0.25); border-radius: 999px; }
 .reactable ::-webkit-scrollbar-thumb:hover { background: rgba(140,170,255,0.40); }
 
+.reactable {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.reactable::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    rgba(72,145,255,0.7),
+    rgba(168,80,255,0.5),
+    rgba(72,145,255,0.7)
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.reactable .rt-tbody .rt-tr:hover {
+  background: rgba(72,145,255,0.12) !important;
+  box-shadow: inset 0 0 18px rgba(72,145,255,0.18);
+}
+.reactable .rt-tr {
+  transition: background 120ms ease, box-shadow 120ms ease;
+}
+
+.reactable .rt-pagination button {
+  transition: all 120ms ease;
+}
 
 ```
 
@@ -675,8 +718,8 @@ if(!is.null(TestData)) {
     FacetCols = 1,
     FacetLevels = NULL,
     NumberBins = 21,
-    Height = "600px",
-    Width = "975px",
+    #Height = "600px",
+    #Width = "975px",
     Title = "Calibration Plot: Test Data",
     ShowLabels = FALSE,
     Title.YAxis = TargetColumnName,
@@ -706,8 +749,8 @@ if(!is.null(TrainData)) {
     FacetCols = 1,
     FacetLevels = NULL,
     NumberBins = 21,
-    Height = "600px",
-    Width = "975px",
+    #Height = "600px",
+    #Width = "975px",
     Title = "Calibration Plot: Train Data",
     ShowLabels = FALSE,
     Title.YAxis = TargetColumnName,
@@ -739,8 +782,8 @@ if(!is.null(TestData)) {
     FacetCols = 1,
     FacetLevels = NULL,
     AggMethod = "mean",
-    Height = "600px",
-    Width = "975px",
+    #Height = "600px",
+    #Width = "975px",
     Title = "Calibration Plot: Test Data",
     ShowLabels = FALSE,
     Title.YAxis = TargetColumnName,
@@ -770,8 +813,8 @@ if(!is.null(TrainData)) {
     FacetCols = 1,
     FacetLevels = NULL,
     AggMethod = "mean",
-    Height = "600px",
-    Width = "975px",
+    #Height = "600px",
+    #Width = "975px",
     Title = "Calibration Plot: Train Data",
     ShowLabels = FALSE,
     Title.YAxis = TargetColumnName,
@@ -804,8 +847,8 @@ if(!is.null(TestData)) {
     FacetCols = 1,
     FacetLevels = NULL,
     NumberBins = 20,
-    Height = "600px",
-    Width = "975px",
+    #Height = "600px",
+    #Width = "975px",
     Title = "Gains Plot: Test Data",
     ShowLabels = FALSE,
     Title.YAxis = TargetColumnName,
@@ -836,8 +879,8 @@ if(!is.null(TrainData)) {
     FacetCols = 1,
     FacetLevels = NULL,
     NumberBins = 20,
-    Height = "600px",
-    Width = "975px",
+    #Height = "600px",
+    #Width = "975px",
     Title = "Gains Plot: Train Data",
     ShowLabels = FALSE,
     Title.YAxis = TargetColumnName,
@@ -888,8 +931,8 @@ if(!is.null(TestData) && !is.null(FeatureColumnNames)) {
         GroupVar = NULL,
         NumberBins = 20,
         AggMethod = "mean",
-        Height = "600px",
-        Width = "975px",
+        #Height = "600px",
+        #Width = "975px",
         Title = "Partial Dependence Line: Test Data",
         ShowLabels = FALSE,
         Title.YAxis = TargetColumnName,
@@ -932,8 +975,8 @@ if(!is.null(TrainData) && !is.null(FeatureColumnNames)) {
         GroupVar = NULL,
         NumberBins = 20,
         AggMethod = "mean",
-        Height = "600px",
-        Width = "975px",
+        #Height = "600px",
+        #Width = "975px",
         Title = "Partial Dependence Line: Train Data",
         ShowLabels = FALSE,
         Title.YAxis = TargetColumnName,
@@ -973,8 +1016,8 @@ if(!is.null(TestData) && !is.null(FeatureColumnNames)) {
         GroupVar = NULL,
         NumberBins = 20,
         AggMethod = "mean",
-        Height = "600px",
-        Width = "975px",
+        #Height = "600px",
+        #Width = "975px",
         Title = "Partial Dependence Heatmap: Test Data",
         ShowLabels = FALSE,
         Title.YAxis = TargetColumnName,
@@ -1012,8 +1055,8 @@ if(!is.null(TrainData) && !is.null(FeatureColumnNames)) {
         GroupVar = NULL,
         NumberBins = 20,
         AggMethod = "mean",
-        Height = "600px",
-        Width = "975px",
+        #Height = "600px",
+        #Width = "975px",
         Title = "Partial Dependence Heatmap: Train Data",
         ShowLabels = FALSE,
         Title.YAxis = TargetColumnName,
@@ -1290,8 +1333,8 @@ if(!is.null(Test_Importance)) {
     FacetCols = 1,
     FacetLevels = NULL,
     AggMethod = "mean",
-    Height = "600px",
-    Width = "975px",
+    #Height = "600px",
+    #Width = "975px",
     Title = "Variable Importance Plot: Test Data",
     ShowLabels = FALSE,
     Title.YAxis = NULL,
@@ -1327,8 +1370,8 @@ if(!is.null(Validation_Importance)) {
     FacetCols = 1,
     FacetLevels = NULL,
     AggMethod = "mean",
-    Height = "600px",
-    Width = "975px",
+    #Height = "600px",
+    #Width = "975px",
     Title = "Variable Importance Plot: Validation Data",
     ShowLabels = FALSE,
     Title.YAxis = NULL,
@@ -1362,8 +1405,8 @@ if(!is.null(Train_Importance)) {
     FacetCols = 1,
     FacetLevels = NULL,
     AggMethod = "mean",
-    Height = "600px",
-    Width = "975px",
+    #Height = "600px",
+    #Width = "975px",
     Title = "Variable Importance Plot: Train Data",
     ShowLabels = FALSE,
     Title.YAxis = NULL,
