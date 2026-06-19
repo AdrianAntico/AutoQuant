@@ -2,7 +2,7 @@
 % Please edit documentation in R/ModelInsights.R
 \name{EDAReport}
 \alias{EDAReport}
-\title{EDAReport}
+\title{Exploratory Data Analysis Report}
 \usage{
 EDAReport(
   data = NULL,
@@ -18,28 +18,73 @@ EDAReport(
 )
 }
 \arguments{
-\item{data}{NULL}
+\item{data}{A data.frame or data.table containing the dataset to profile.}
 
-\item{DataName}{NULL}
+\item{DataName}{Optional character value used as the display name for the
+dataset in the report.}
 
-\item{UnivariateVars}{NULL}
+\item{UnivariateVars}{Optional character vector of variables to include in
+the univariate statistics and univariate plot sections. If NULL, variables
+are selected from the supplied dataset based on supported data types.}
 
-\item{CorrVars}{NULL}
+\item{CorrVars}{Optional character vector of variables to include in the
+correlation analysis section. Non-numeric, missing, and constant variables
+are diagnosed and skipped where appropriate.}
 
-\item{TrendVars}{NULL}
+\item{TrendVars}{Optional character vector of numeric variables to include in
+the trend analysis section.}
 
-\item{TrendDateVar}{NULL}
+\item{TrendDateVar}{Optional character value identifying the date or datetime
+variable used to aggregate trend plots and drift diagnostics.}
 
-\item{TrendGroupVar}{NULL}
+\item{TrendGroupVar}{Optional character value identifying a grouping variable
+used to split grouped trend plots, grouped target trends, and grouped
+distribution diagnostics where applicable.}
 
-\item{TargetVar}{NULL}
+\item{TargetVar}{Optional character value identifying the target variable for
+target-oriented analysis. When supplied, the report creates target QA,
+target distribution summaries, target association diagnostics, target trend
+diagnostics, feature drift diagnostics, concept drift diagnostics, and
+potential leakage, collider, or post-treatment risk flags.}
 
-\item{OutputPath}{List of output objects}
+\item{OutputPath}{Character value specifying the directory or file path where
+the rendered report should be written.}
 
-\item{Theme}{AutoPlots Theme parameter value}
+\item{Theme}{Character value passed to AutoPlots plotting functions to control
+the visual theme of generated plots.}
+}
+\value{
+Invisibly returns the output path of the rendered report. The primary side
+effect is an HTML EDA report written to `OutputPath`.
 }
 \description{
-EDAReport is an Rmarkdown report for viewing EDA results
+Generates an HTML R Markdown exploratory data analysis report for a supplied
+dataset. The report includes dataset-level diagnostics, univariate summaries,
+univariate plots, correlation analysis, trend analysis, and optional
+target-oriented diagnostics when a target variable is supplied.
+
+The report is designed to provide a broad pre-modeling view of data quality,
+variable distributions, relationships between numeric variables, temporal
+movement, grouped trend behavior, target associations, feature drift, concept
+drift, and potential leakage or collider-risk indicators.
+}
+\details{
+The report contains the following major sections:
+
+\itemize{
+  \item Data description and column-level diagnostics
+  \item Univariate statistics
+  \item Univariate distribution, box, grouped box, discrete numeric, and categorical plots
+  \item Correlation input diagnostics, pairwise correlation statistics, and correlation plots
+  \item Overall trend area plots and grouped trend line plots
+  \item Optional target-oriented analysis when `TargetVar` is supplied
+}
+
+Target-oriented analysis supports binary, multiclass, and continuous target
+variables where possible. The diagnostics are intended to surface useful
+modeling signals and risks, but leakage, collider, and concept drift flags are
+heuristic indicators and should be reviewed before being treated as causal or
+definitive.
 }
 \seealso{
 Other Reports: 
