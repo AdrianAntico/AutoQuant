@@ -1,0 +1,7059 @@
+---
+title: "EDA Report"
+author: "Provided by AutoQuant"
+date: "`r format(Sys.time(), '%Y-%m-%d')`"
+output:
+  prettydoc::html_pretty:
+    theme: cayman
+    toc: yes
+    toc_depth: 2
+    fig_caption: yes
+    number_sections: no
+classoption: landscape
+---
+
+```{r Environment, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+temp <- globalenv()
+TempNames <- names(temp)
+for(nam in TempNames) {
+  assign(x = nam, value = eval(temp[[nam]]), envir = .GlobalEnv)
+}
+```
+
+```{css, echo=FALSE}
+@import url('https://fonts.googleapis.com/css2?family=Yusei+Magic&display=swap');
+
+:root{
+  /* Core dark palette */
+  --bg0: #070A14;
+  --bg1: #0B1030;
+  --bg2: #10183D;
+
+  --panel: rgba(16, 24, 61, 0.72);
+  --panel2: rgba(10, 14, 32, 0.72);
+
+  --text: #E7ECFF;
+  --muted: rgba(231, 236, 255, 0.72);
+
+  --link: #9EC5FF;
+  --linkHover: #CFE3FF;
+
+  /* Neon glow */
+  --glow: rgba(72, 145, 255, 0.40);
+  --glowStrong: rgba(72, 145, 255, 0.70);
+  --border: rgba(140, 170, 255, 0.30);
+
+  --codeBg: rgba(255,255,255,0.06);
+  --codeBorder: rgba(140, 170, 255, 0.22);
+
+  --preBg: rgba(0,0,0,0.25);
+  --preBorder: rgba(140, 170, 255, 0.28);
+
+  --tableHeadBg: rgba(72, 145, 255, 0.22);
+  --tableOdd: rgba(255,255,255,0.04);
+  --tableEven: rgba(255,255,255,0.02);
+  --tableGrid: rgba(231, 236, 255, 0.12);
+}
+
+* { box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  padding: 0;
+  margin: 0;
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
+  color: #E7ECFF;
+
+  background:
+    radial-gradient(1200px 600px at 20% -10%, rgba(72,145,255,0.20), transparent 60%),
+    radial-gradient(900px 500px at 90% 10%, rgba(168,80,255,0.14), transparent 55%),
+    linear-gradient(180deg, #0B1030, #070A14);
+
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
+}
+
+a {
+  color: var(--link);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--linkHover);
+  text-decoration: underline;
+}
+
+/* Header */
+.page-header {
+  color: var(--text);
+  text-align: center;
+  background-color: #05071A;
+  background-image: radial-gradient(900px 400px at 50% 0%, rgba(72,145,255,0.18), transparent 70%),
+                    linear-gradient(120deg, #05071A, #0E1B4E);
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid rgba(140,170,255,0.15);
+}
+.page-header :last-child { margin-bottom: 0.5rem; }
+@media screen and (max-width: 42em) {
+  .page-header { padding: 1rem 1rem; }
+}
+
+.project-name {
+  margin-top: 0;
+  margin-bottom: 0.1rem;
+  font-size: 2rem;
+}
+@media screen and (max-width: 42em) {
+  .project-name { font-size: 1.75rem; }
+}
+
+.project-tagline {
+  margin-bottom: 2rem;
+  font-weight: normal;
+  opacity: 0.8;
+  font-size: 1.5rem;
+  color: var(--muted);
+}
+@media screen and (max-width: 42em) {
+  .project-tagline { font-size: 1.2rem; }
+}
+
+.project-author, .project-date {
+  font-weight: normal;
+  opacity: 0.85;
+  font-size: 1.2rem;
+  color: var(--muted);
+}
+@media screen and (max-width: 42em) {
+  .project-author, .project-date { font-size: 1rem; }
+}
+
+/* Main layout */
+.main-content, .toc {
+  max-width: 95%;
+  padding: 2rem 4rem;
+  margin: 0 auto;
+  font-size: 1.06rem;
+}
+
+@media screen and (min-width: 42em) and (max-width: 64em) {
+  .main-content, .toc { padding: 2rem; }
+}
+@media screen and (max-width: 42em) {
+  .main-content, .toc {
+    padding: 2rem 1rem;
+    font-size: 1rem;
+  }
+}
+
+.main-content :first-child { margin-top: 0; }
+.main-content img { max-width: 100%; }
+
+/* TOC */
+.toc { padding-bottom: 0; }
+
+.toc .toc-box {
+  padding: 48px;
+  background: linear-gradient(90deg, rgba(5,7,26,0.90), rgba(16,24,61,0.70));
+  border: 1px solid rgba(140,170,255,0.20);
+  border-radius: 44px;
+  color: var(--text);
+  box-shadow:
+    0 10px 30px rgba(0,0,0,0.35),
+    0 0 24px var(--glow);
+  backdrop-filter: blur(10px);
+}
+.toc .toc-box .toc-title {
+  margin: 0 0 0.5rem;
+  text-align: center;
+}
+.toc .toc-box > ul { margin: 0; padding-left: 1.5rem; }
+
+/* Headings */
+.main-content h1,
+.main-content h2,
+.main-content h3,
+.main-content h4,
+.main-content h5,
+.main-content h6 {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  color: var(--text);
+}
+
+.main-content h1 { font-size: 2.0rem; }
+.main-content h2 { font-size: 1.6rem; opacity: 0.95; }
+.main-content h3 { font-size: 1.35rem; opacity: 0.92; }
+.main-content h4 { font-size: 1.15rem; opacity: 0.90; }
+.main-content h5 { font-size: 1.05rem; opacity: 0.88; }
+.main-content h6 { font-size: 1.0rem; opacity: 0.86; }
+
+/* Paragraphs */
+.main-content p { margin-bottom: 1em; color: var(--text); }
+
+/* Inline code */
+.main-content code {
+  padding: 2px 6px;
+  font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  color: var(--text);
+  background-color: var(--codeBg);
+  border: 1px solid var(--codeBorder);
+  border-radius: 0.45rem;
+}
+
+/* Code blocks */
+.main-content pre {
+  padding: 0.9rem 1rem;
+  margin-top: 0;
+  margin-bottom: 1rem;
+
+  font: 0.98rem Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  color: var(--text);
+
+  background-color: var(--preBg);
+  border: 1px solid var(--preBorder);
+  border-radius: 0.75rem;
+  line-height: 1.45;
+  overflow: auto;
+
+  box-shadow:
+    0 10px 24px rgba(0,0,0,0.35),
+    0 0 18px rgba(72,145,255,0.16);
+}
+@media screen and (max-width: 42em) {
+  .main-content pre { font-size: 0.9rem; }
+}
+
+.main-content pre > code {
+  padding: 0;
+  margin: 0;
+  color: var(--text);
+  word-break: normal;
+  white-space: pre;
+  background: transparent;
+  border: 0;
+}
+
+/* Lists */
+.main-content ul, .main-content ol { margin-top: 0; }
+
+/* Blockquotes */
+.main-content blockquote {
+  padding: 0.25rem 1rem;
+  margin-left: 0;
+  color: var(--muted);
+  border-left: 0.3rem solid rgba(72,145,255,0.45);
+  background: rgba(255,255,255,0.03);
+  border-radius: 0.6rem;
+}
+@media screen and (max-width: 42em) {
+  .main-content blockquote { font-size: 1.05rem; }
+}
+
+/* HR */
+.main-content hr {
+  height: 1px;
+  padding: 0;
+  margin: 1.25rem 0;
+  background-color: rgba(231,236,255,0.12);
+  border: 0;
+}
+
+/* ============================
+   DETAILS: glow box + hover glow
+   ============================ */
+.main-content details {
+  margin: 1rem 0;
+  padding: 0.85rem 1rem;
+  border-radius: 0.95rem;
+
+  background: linear-gradient(180deg, var(--panel), var(--panel2));
+  border: 1px solid var(--border);
+
+  box-shadow:
+    0 10px 26px rgba(0,0,0,0.35),
+    0 0 18px var(--glow);
+
+  transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
+  backdrop-filter: blur(10px);
+}
+
+.main-content details:hover {
+  transform: translateY(-1px);
+  border-color: rgba(140,170,255,0.55);
+  box-shadow:
+    0 14px 34px rgba(0,0,0,0.45),
+    0 0 26px var(--glowStrong);
+}
+
+.main-content details[open] {
+  border-color: rgba(140,170,255,0.60);
+  box-shadow:
+    0 14px 34px rgba(0,0,0,0.45),
+    0 0 28px var(--glowStrong);
+}
+
+.main-content details > summary {
+  cursor: pointer;
+  user-select: none;
+  font-weight: 700;
+  color: var(--text);
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.main-content details > summary::-webkit-details-marker { display: none; }
+
+.main-content details > summary::before {
+  content: "▸";
+  display: inline-block;
+  transform: translateY(-1px);
+  opacity: 0.85;
+  transition: transform 140ms ease;
+}
+
+.main-content details[open] > summary::before {
+  transform: rotate(90deg) translateY(-1px);
+}
+
+/* Inner content spacing inside details */
+.main-content details > *:not(summary) {
+  margin-top: 0.85rem;
+}
+
+/* ============================
+   TABLES (dark) + wrapper hooks
+   ============================ */
+.main-content table {
+  width: 100%;
+  overflow: auto;
+  word-break: normal;
+  word-break: keep-all;
+  -webkit-overflow-scrolling: touch;
+  border-collapse: collapse;
+  border-spacing: 0;
+  margin: 0.75rem 0;
+  color: var(--text);
+}
+
+.main-content table th {
+  font-weight: 800;
+  background-color: var(--tableHeadBg);
+  color: var(--text);
+  border-bottom: 1px solid var(--tableGrid);
+}
+
+.main-content table th,
+.main-content table td {
+  padding: 0.55rem 0.85rem;
+  border-bottom: 1px solid var(--tableGrid);
+  text-align: left;
+}
+
+.main-content table tr:nth-child(odd) { background-color: var(--tableOdd); }
+.main-content table tr:nth-child(even) { background-color: var(--tableEven); }
+
+/* Wrapper that JS will create around tables */
+.table-wrap {
+  margin: 1rem 0 1.25rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 0.95rem;
+  background: linear-gradient(180deg, var(--panel), var(--panel2));
+  border: 1px solid rgba(140,170,255,0.22);
+  box-shadow:
+    0 10px 26px rgba(0,0,0,0.30),
+    0 0 18px rgba(72,145,255,0.18);
+}
+
+.table-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-bottom: 0.6rem;
+}
+
+.table-btn {
+  appearance: none;
+  border: 1px solid rgba(140,170,255,0.40);
+  background: rgba(72,145,255,0.14);
+  color: var(--text);
+  padding: 7px 10px;
+  border-radius: 0.7rem;
+  cursor: pointer;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease, background 120ms ease;
+}
+
+.table-btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(140,170,255,0.70);
+  background: rgba(72,145,255,0.22);
+  box-shadow: 0 0 18px rgba(72,145,255,0.35);
+}
+
+.table-btn:active {
+  transform: translateY(0px);
+}
+
+/* Definition lists */
+.main-content dl { padding: 0; }
+.main-content dl dt {
+  padding: 0;
+  margin-top: 1rem;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text);
+}
+.main-content dl dd {
+  padding: 0;
+  margin-bottom: 1rem;
+  color: var(--muted);
+}
+
+/* Reactable: focus glow + small polish */
+.reactable .rt-search input:focus,
+.reactable .rt-filter input:focus,
+.reactable select:focus {
+  border-color: rgba(140,170,255,0.70) !important;
+  box-shadow: 0 0 0 3px rgba(72,145,255,0.18), 0 0 18px rgba(72,145,255,0.30) !important;
+}
+
+/* Reactable: soften grid + round the whole widget */
+.reactable {
+  border-radius: 14px;
+  overflow: hidden; /* keeps rounded corners clean */
+}
+
+/* Scrollbar polish (Chrome/Edge) */
+.reactable ::-webkit-scrollbar { height: 10px; width: 10px; }
+.reactable ::-webkit-scrollbar-track { background: rgba(0,0,0,0.15); border-radius: 999px; }
+.reactable ::-webkit-scrollbar-thumb { background: rgba(140,170,255,0.25); border-radius: 999px; }
+.reactable ::-webkit-scrollbar-thumb:hover { background: rgba(140,170,255,0.40); }
+
+.reactable {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.reactable::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    rgba(72,145,255,0.7),
+    rgba(168,80,255,0.5),
+    rgba(72,145,255,0.7)
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+.reactable .rt-tbody .rt-tr:hover {
+  background: rgba(72,145,255,0.12) !important;
+  box-shadow: inset 0 0 18px rgba(72,145,255,0.18);
+}
+.reactable .rt-tr {
+  transition: background 120ms ease, box-shadow 120ms ease;
+}
+
+.reactable .rt-pagination button {
+  transition: all 120ms ease;
+}
+
+```
+
+```{r Describe Data and Table Creation, echo = FALSE}
+# ============================================================
+# Data Description / Column Audit
+# ============================================================
+
+null_count <- function(x) {
+  # Atomic data.frame/data.table columns cannot contain row-level NULLs.
+  # List columns can.
+  if (is.list(x)) {
+    return(sum(vapply(x, is.null, logical(1L))))
+  }
+
+  0L
+}
+
+empty_count <- function(x) {
+  # Empty strings for character/factor-like fields.
+  # Empty elements for list columns.
+  if (is.character(x)) {
+    return(sum(!is.na(x) & trimws(x) == ""))
+  }
+
+  if (is.factor(x)) {
+    y <- as.character(x)
+    return(sum(!is.na(y) & trimws(y) == ""))
+  }
+
+  if (is.list(x)) {
+    return(sum(vapply(x, function(z) length(z) == 0L, logical(1L))))
+  }
+
+  0L
+}
+
+infinite_count <- function(x) {
+  if (is.numeric(x) || is.integer(x)) {
+    return(sum(is.infinite(x)))
+  }
+
+  0L
+}
+
+nan_count <- function(x) {
+  if (is.numeric(x) || is.integer(x)) {
+    return(sum(is.nan(x)))
+  }
+
+  0L
+}
+
+unique_count <- function(x) {
+  if (is.list(x)) {
+    # uniqueN() can be awkward on arbitrary list columns.
+    return(NA_integer_)
+  }
+
+  data.table::uniqueN(x, na.rm = FALSE)
+}
+
+non_missing_unique_count <- function(x) {
+  if (is.list(x)) {
+    return(NA_integer_)
+  }
+
+  data.table::uniqueN(x, na.rm = TRUE)
+}
+
+mode_value <- function(x) {
+  if (is.list(x)) {
+    return(NA_character_)
+  }
+
+  y <- x[!is.na(x)]
+
+  if (!length(y)) {
+    return(NA_character_)
+  }
+
+  tab <- sort(table(y), decreasing = TRUE)
+  as.character(names(tab)[1L])
+}
+
+mode_count <- function(x) {
+  if (is.list(x)) {
+    return(NA_integer_)
+  }
+
+  y <- x[!is.na(x)]
+
+  if (!length(y)) {
+    return(NA_integer_)
+  }
+
+  max(as.integer(table(y)))
+}
+
+first_values <- function(x, n = 5L) {
+  y <- utils::head(x, n)
+
+  if (is.list(y)) {
+    y <- vapply(
+      y,
+      function(z) {
+        if (is.null(z)) {
+          "<NULL>"
+        } else if (length(z) == 0L) {
+          "<EMPTY>"
+        } else {
+          paste(as.character(z), collapse = "|")
+        }
+      },
+      character(1L)
+    )
+  } else {
+    y <- as.character(y)
+    y[is.na(y)] <- "<NA>"
+    y[trimws(y) == ""] <- "<EMPTY STRING>"
+  }
+
+  paste(y, collapse = ", ")
+}
+
+is_numeric_like_character <- function(x) {
+  if (!is.character(x) && !is.factor(x)) {
+    return(FALSE)
+  }
+
+  y <- trimws(as.character(x))
+  y <- y[!is.na(y) & y != ""]
+
+  if (!length(y)) {
+    return(FALSE)
+  }
+
+  mean(!is.na(suppressWarnings(as.numeric(y)))) >= 0.95
+}
+
+is_date_like_character <- function(x) {
+  if (!is.character(x) && !is.factor(x)) {
+    return(FALSE)
+  }
+
+  y <- trimws(as.character(x))
+  y <- y[!is.na(y) & y != ""]
+
+  if (!length(y)) {
+    return(FALSE)
+  }
+
+  if (length(y) > 1000L) {
+    y <- sample(y, 1000L)
+  }
+
+  # Only check highly standard formats.
+  # Do not use loose as.Date(y), because it can error and is too magical.
+  formats <- c(
+    "%Y-%m-%d",
+    "%Y/%m/%d",
+    "%m/%d/%Y",
+    "%m-%d-%Y",
+    "%d-%b-%Y",
+    "%d %b %Y"
+  )
+
+  rates <- vapply(
+    formats,
+    function(fmt) {
+      parsed <- tryCatch(
+        suppressWarnings(as.Date(y, format = fmt)),
+        error = function(e) rep(as.Date(NA), length(y))
+      )
+
+      mean(!is.na(parsed))
+    },
+    numeric(1L)
+  )
+
+  max(rates, na.rm = TRUE) >= 0.95
+}
+
+column_role_guess <- function(x, var_name = NULL, n_rows = NULL) {
+
+  cls <- class(x)[1L]
+  unique_n <- unique_count(x)
+  non_missing_n <- sum(!is.na(x))
+
+  if (is.list(x)) {
+    return("List Column")
+  }
+
+  if (!is.null(var_name) && grepl("(^id$|_id$|id$|uuid|guid)", var_name, ignore.case = TRUE)) {
+    return("Possible ID")
+  }
+
+  if (inherits(x, c("Date", "POSIXct", "POSIXlt", "IDate", "ITime"))) {
+    return("Date/Time")
+  }
+
+  if (cls %in% c("character", "factor")) {
+    if (!is.na(unique_n) && unique_n <= 2L) {
+      return("Binary Categorical")
+    }
+
+    if (is_numeric_like_character(x)) {
+      return("Numeric-like Text")
+    }
+
+    if (is_date_like_character(x)) {
+      return("Date-like Text")
+    }
+
+    if (!is.na(unique_n) && !is.null(n_rows) && unique_n > 0.9 * n_rows) {
+      return("High-Cardinality Text")
+    }
+
+    return("Categorical")
+  }
+
+  if (cls %in% c("logical")) {
+    return("Logical")
+  }
+
+  if (cls %in% c("numeric", "integer")) {
+    if (!is.na(unique_n) && unique_n <= 2L) {
+      return("Binary Numeric")
+    }
+
+    if (!is.na(unique_n) && !is.null(n_rows) && unique_n > 0.9 * n_rows) {
+      return("Continuous / Possible ID")
+    }
+
+    return("Numeric")
+  }
+
+  cls
+}
+
+n_rows <- nrow(data)
+
+DescribeData <- data.table::data.table(
+  `Variable Name` = names(data)
+)
+
+DescribeData[, `Variable Type` := vapply(
+  data,
+  function(x) class(x)[1L],
+  character(1L)
+)]
+
+DescribeData[, `Column Role Guess` := vapply(
+  names(data),
+  function(nm) column_role_guess(data[[nm]], var_name = nm, n_rows = n_rows),
+  character(1L)
+)]
+
+DescribeData[, `Rows` := n_rows]
+
+DescribeData[, `NULL Counts` := vapply(
+  data,
+  null_count,
+  integer(1L)
+)]
+
+DescribeData[, `NA Counts` := vapply(
+  data,
+  function(x) sum(is.na(x)),
+  integer(1L)
+)]
+
+DescribeData[, `NA Percent` := round(
+  vapply(data, function(x) mean(is.na(x)) * 100, numeric(1L)),
+  2
+)]
+
+DescribeData[, `NaN Counts` := vapply(
+  data,
+  nan_count,
+  integer(1L)
+)]
+
+DescribeData[, `Infinite Counts` := vapply(
+  data,
+  infinite_count,
+  integer(1L)
+)]
+
+DescribeData[, `Empty Counts` := vapply(
+  data,
+  empty_count,
+  integer(1L)
+)]
+
+DescribeData[, `Unique Values` := vapply(
+  data,
+  unique_count,
+  integer(1L)
+)]
+
+DescribeData[, `Non-Missing Unique Values` := vapply(
+  data,
+  non_missing_unique_count,
+  integer(1L)
+)]
+
+DescribeData[, `Unique Percent` := round(
+  `Unique Values` / pmax(`Rows`, 1L) * 100,
+  2
+)]
+
+DescribeData[, `Mode` := vapply(
+  data,
+  mode_value,
+  character(1L)
+)]
+
+DescribeData[, `Mode Count` := vapply(
+  data,
+  mode_count,
+  integer(1L)
+)]
+
+DescribeData[, `Mode Percent` := round(
+  `Mode Count` / pmax(`Rows` - `NA Counts`, 1L) * 100,
+  2
+)]
+
+DescribeData[, `Is Constant` := fifelse(
+  !is.na(`Non-Missing Unique Values`) & `Non-Missing Unique Values` <= 1L,
+  TRUE,
+  FALSE
+)]
+
+DescribeData[, `Has Missing` := `NA Counts` > 0L | `NULL Counts` > 0L | `NaN Counts` > 0L]
+
+DescribeData[, `Has Infinite` := `Infinite Counts` > 0L]
+
+DescribeData[, `First 5 Values` := vapply(
+  data,
+  first_values,
+  character(1L)
+)]
+
+# ============================================================
+# Describe Data Reactable Theme Helpers
+# ============================================================
+
+audit_badge <- function(value, type = c("neutral", "good", "warning", "danger", "info")) {
+
+  type <- match.arg(type)
+
+  colors <- list(
+    neutral = list(bg = "#263247", fg = "#CBD5E1", border = "#475569"),
+    good    = list(bg = "#064E3B", fg = "#A7F3D0", border = "#10B981"),
+    warning = list(bg = "#78350F", fg = "#FDE68A", border = "#F59E0B"),
+    danger  = list(bg = "#7F1D1D", fg = "#FECACA", border = "#EF4444"),
+    info    = list(bg = "#1E3A8A", fg = "#BFDBFE", border = "#3B82F6")
+  )
+
+  htmltools::tags$span(
+    style = paste0(
+      "display:inline-block;",
+      "padding:2px 8px;",
+      "border-radius:999px;",
+      "font-size:11px;",
+      "font-weight:700;",
+      "letter-spacing:0.02em;",
+      "background:", colors[[type]]$bg, ";",
+      "color:", colors[[type]]$fg, ";",
+      "border:1px solid ", colors[[type]]$border, ";"
+    ),
+    as.character(value)
+  )
+}
+
+fmt_num <- function(x, digits = 0L) {
+  ifelse(
+    is.na(x),
+    NA_character_,
+    formatC(x, format = "f", big.mark = ",", digits = digits)
+  )
+}
+
+fmt_pct <- function(x, digits = 2L) {
+  ifelse(
+    is.na(x),
+    NA_character_,
+    paste0(formatC(x, format = "f", big.mark = ",", digits = digits), "%")
+  )
+}
+
+numeric_cell_style <- function(value) {
+  list(
+    textAlign = "right",
+    fontVariantNumeric = "tabular-nums",
+    color = if (length(value) == 0 || is.na(value)) "#64748B" else "#E2E8F0"
+  )
+}
+
+problem_count_cell <- function(value) {
+  if (is.na(value)) {
+    return(htmltools::tags$span(style = "color:#64748B;", "—"))
+  }
+
+  if (value > 0) {
+    audit_badge(fmt_num(value, 0L), "danger")
+  } else {
+    htmltools::tags$span(style = "color:#64748B;", "0")
+  }
+}
+
+percent_cell <- function(value, danger_cutoff = 25, warning_cutoff = 5) {
+  if (is.na(value)) {
+    return(htmltools::tags$span(style = "color:#64748B;", "—"))
+  }
+
+  type <- if (value >= danger_cutoff) {
+    "danger"
+  } else if (value >= warning_cutoff) {
+    "warning"
+  } else if (value > 0) {
+    "info"
+  } else {
+    "neutral"
+  }
+
+  audit_badge(fmt_pct(value, 2L), type)
+}
+
+bool_cell <- function(value) {
+  if (is.na(value)) {
+    return(htmltools::tags$span(style = "color:#64748B;", "—"))
+  }
+
+  if (isTRUE(value)) {
+    audit_badge("Yes", "danger")
+  } else {
+    audit_badge("No", "good")
+  }
+}
+
+role_cell <- function(value) {
+  type <- switch(
+    as.character(value),
+    "Possible ID" = "warning",
+    "Continuous / Possible ID" = "warning",
+    "High-Cardinality Text" = "warning",
+    "Numeric-like Text" = "info",
+    "Date-like Text" = "info",
+    "Date/Time" = "info",
+    "List Column" = "warning",
+    "Binary Numeric" = "neutral",
+    "Binary Categorical" = "neutral",
+    "Numeric" = "good",
+    "Categorical" = "good",
+    "Logical" = "neutral",
+    "neutral"
+  )
+
+  audit_badge(value, type)
+}
+
+type_cell <- function(value) {
+  type <- switch(
+    as.character(value),
+    "numeric" = "good",
+    "integer" = "good",
+    "character" = "info",
+    "factor" = "info",
+    "Date" = "info",
+    "IDate" = "info",
+    "POSIXct" = "info",
+    "logical" = "neutral",
+    "list" = "warning",
+    "neutral"
+  )
+
+  audit_badge(value, type)
+}
+
+sample_values_cell <- function(value) {
+  htmltools::tags$span(
+    title = as.character(value),
+    style = paste0(
+      "display:block;",
+      "max-width:420px;",
+      "overflow:hidden;",
+      "text-overflow:ellipsis;",
+      "white-space:nowrap;",
+      "color:#CBD5E1;",
+      "font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;",
+      "font-size:12px;"
+    ),
+    as.character(value)
+  )
+}
+
+# ============================================================
+# Describe Data Table
+# ============================================================
+
+Describe_Data <- reactable::reactable(
+  data = DescribeData,
+
+  # Core functionality
+  compact = TRUE,
+  defaultPageSize = 15,
+  pageSizeOptions = c(10, 15, 25, 50, 100),
+  wrap = FALSE,
+  filterable = TRUE,
+  fullWidth = TRUE,
+  highlight = TRUE,
+  pagination = TRUE,
+  resizable = TRUE,
+  searchable = TRUE,
+  selection = "multiple",
+  showPagination = TRUE,
+  showPageSizeOptions = TRUE,
+  showSortable = TRUE,
+  showSortIcon = TRUE,
+  sortable = TRUE,
+  striped = TRUE,
+  bordered = FALSE,
+  outlined = FALSE,
+
+  # Quality of life
+  defaultColDef = reactable::colDef(
+    minWidth = 110,
+    headerStyle = list(
+      background = "#0F1B33",
+      color = "#E5E7EB",
+      fontWeight = "800",
+      borderBottom = "1px solid #334155",
+      textTransform = "uppercase",
+      letterSpacing = "0.045em",
+      fontSize = "11px"
+    ),
+    style = list(
+      borderBottom = "1px solid rgba(148, 163, 184, 0.14)"
+    )
+  ),
+
+  columns = list(
+
+    `Variable Name` = reactable::colDef(
+      name = "Variable",
+      sticky = "left",
+      minWidth = 220,
+      filterable = TRUE,
+      style = list(
+        position = "sticky",
+        left = 0,
+        zIndex = 1,
+        background = "#101B2F",
+        color = "#F8FAFC",
+        fontWeight = "800",
+        fontFamily = "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace"
+      ),
+      headerStyle = list(
+        position = "sticky",
+        left = 0,
+        zIndex = 2,
+        background = "#0B1326",
+        color = "#F8FAFC",
+        fontWeight = "900",
+        borderBottom = "1px solid #334155"
+      )
+    ),
+
+    `Variable Type` = reactable::colDef(
+      name = "Type",
+      minWidth = 125,
+      cell = type_cell,
+      align = "center"
+    ),
+
+    `Column Role Guess` = reactable::colDef(
+      name = "Role Guess",
+      minWidth = 185,
+      cell = role_cell,
+      align = "center"
+    ),
+
+    Rows = reactable::colDef(
+      minWidth = 95,
+      align = "right",
+      cell = function(value) fmt_num(value, 0L),
+      style = numeric_cell_style
+    ),
+
+    `NULL Counts` = reactable::colDef(
+      name = "NULL",
+      minWidth = 95,
+      align = "center",
+      cell = problem_count_cell
+    ),
+
+    `NA Counts` = reactable::colDef(
+      name = "NA",
+      minWidth = 95,
+      align = "center",
+      cell = problem_count_cell
+    ),
+
+    `NA Percent` = reactable::colDef(
+      name = "NA %",
+      minWidth = 105,
+      align = "center",
+      cell = function(value) percent_cell(value, danger_cutoff = 25, warning_cutoff = 5)
+    ),
+
+    `NaN Counts` = reactable::colDef(
+      name = "NaN",
+      minWidth = 95,
+      align = "center",
+      cell = problem_count_cell
+    ),
+
+    `Infinite Counts` = reactable::colDef(
+      name = "Inf",
+      minWidth = 95,
+      align = "center",
+      cell = problem_count_cell
+    ),
+
+    `Empty Counts` = reactable::colDef(
+      name = "Empty",
+      minWidth = 95,
+      align = "center",
+      cell = problem_count_cell
+    ),
+
+    `Unique Values` = reactable::colDef(
+      name = "Unique",
+      minWidth = 105,
+      align = "right",
+      cell = function(value) fmt_num(value, 0L),
+      style = numeric_cell_style
+    ),
+
+    `Non-Missing Unique Values` = reactable::colDef(
+      name = "Unique Non-NA",
+      minWidth = 135,
+      align = "right",
+      cell = function(value) fmt_num(value, 0L),
+      style = numeric_cell_style
+    ),
+
+    `Unique Percent` = reactable::colDef(
+      name = "Unique %",
+      minWidth = 115,
+      align = "center",
+      cell = function(value) {
+        if (is.na(value)) {
+          return(htmltools::tags$span(style = "color:#64748B;", "—"))
+        }
+
+        type <- if (value >= 90) {
+          "warning"
+        } else if (value <= 1) {
+          "warning"
+        } else {
+          "neutral"
+        }
+
+        audit_badge(fmt_pct(value, 2L), type)
+      }
+    ),
+
+    Mode = reactable::colDef(
+      minWidth = 160,
+      cell = function(value) {
+        htmltools::tags$span(
+          title = as.character(value),
+          style = paste0(
+            "display:block;",
+            "max-width:150px;",
+            "overflow:hidden;",
+            "text-overflow:ellipsis;",
+            "white-space:nowrap;",
+            "color:#CBD5E1;",
+            "font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;",
+            "font-size:12px;"
+          ),
+          ifelse(is.na(value), "—", as.character(value))
+        )
+      }
+    ),
+
+    `Mode Count` = reactable::colDef(
+      name = "Mode N",
+      minWidth = 105,
+      align = "right",
+      cell = function(value) fmt_num(value, 0L),
+      style = numeric_cell_style
+    ),
+
+    `Mode Percent` = reactable::colDef(
+      name = "Mode %",
+      minWidth = 115,
+      align = "center",
+      cell = function(value) {
+        if (is.na(value)) {
+          return(htmltools::tags$span(style = "color:#64748B;", "—"))
+        }
+
+        type <- if (value >= 95) {
+          "danger"
+        } else if (value >= 75) {
+          "warning"
+        } else {
+          "neutral"
+        }
+
+        audit_badge(fmt_pct(value, 2L), type)
+      }
+    ),
+
+    `Is Constant` = reactable::colDef(
+      name = "Constant",
+      minWidth = 105,
+      align = "center",
+      cell = bool_cell
+    ),
+
+    `Has Missing` = reactable::colDef(
+      name = "Missing",
+      minWidth = 105,
+      align = "center",
+      cell = bool_cell
+    ),
+
+    `Has Infinite` = reactable::colDef(
+      name = "Infinite",
+      minWidth = 105,
+      align = "center",
+      cell = bool_cell
+    ),
+
+    `First 5 Values` = reactable::colDef(
+      name = "Sample Values",
+      minWidth = 430,
+      cell = sample_values_cell
+    )
+  ),
+
+  theme = reactable::reactableTheme(
+    color = "#E2E8F0",
+    backgroundColor = "#0B1326",
+    borderColor = "rgba(148, 163, 184, 0.22)",
+
+    stripedColor = "rgba(30, 41, 59, 0.78)",
+    highlightColor = "rgba(59, 130, 246, 0.18)",
+
+    rowSelectedStyle = list(
+      backgroundColor = "rgba(37, 99, 235, 0.28)",
+      boxShadow = "inset 3px 0 0 #60A5FA"
+    ),
+
+    cellPadding = "9px 12px",
+
+    style = list(
+      fontFamily = "-apple-system, BlinkMacSystemFont, Segoe UI, Inter, Helvetica, Arial, sans-serif",
+      fontSize = "13px",
+      border = "1px solid rgba(148, 163, 184, 0.22)",
+      borderRadius = "14px",
+      overflow = "hidden",
+      boxShadow = "0 18px 45px rgba(0, 0, 0, 0.28)"
+    ),
+
+    tableStyle = list(
+      borderCollapse = "separate",
+      borderSpacing = "0"
+    ),
+
+    headerStyle = list(
+      background = "#0F1B33",
+      color = "#F8FAFC",
+      borderBottom = "1px solid rgba(148, 163, 184, 0.28)"
+    ),
+
+    rowStyle = list(
+      backgroundColor = "#0B1326"
+    ),
+
+    searchInputStyle = list(
+      width = "100%",
+      backgroundColor = "#111C33",
+      color = "#E2E8F0",
+      border = "1px solid #334155",
+      borderRadius = "10px",
+      padding = "8px 12px",
+      outline = "none"
+    ),
+
+    filterInputStyle = list(
+      backgroundColor = "#111C33",
+      color = "#E2E8F0",
+      border = "1px solid #334155",
+      borderRadius = "8px",
+      padding = "5px 8px",
+      outline = "none"
+    ),
+
+    selectStyle = list(
+      backgroundColor = "#111C33",
+      color = "#E2E8F0",
+      border = "1px solid #60A5FA",
+      borderRadius = "10px",
+      padding = "6px 10px",
+      minWidth = "76px",
+      height = "34px",
+      fontSize = "13px",
+      fontWeight = "800",
+      lineHeight = "1.2",
+      cursor = "pointer",
+      outline = "none",
+      boxShadow = paste(
+        "inset 0 1px 0 rgba(255, 255, 255, 0.06),",
+        "0 0 0 1px rgba(96, 165, 250, 0.14),",
+        "0 8px 18px rgba(0, 0, 0, 0.24)"
+      )
+    )
+  )
+)
+
+```
+
+```{r Univariate Analysis, echo=FALSE}
+# ============================================================
+# Univariate Analysis
+# ============================================================
+
+# ----------------------------
+# Helpers
+# ----------------------------
+
+is_numeric_col <- function(x) {
+  class(x)[1L] %in% c("numeric", "integer")
+}
+
+is_categorical_col <- function(x) {
+  class(x)[1L] %in% c("character", "factor", "logical")
+}
+
+safe_min <- function(x) {
+  x <- x[!is.na(x)]
+  x <- x[is.finite(x)]
+
+  if (!length(x)) {
+    return(NA_real_)
+  }
+
+  min(x)
+}
+
+safe_max <- function(x) {
+  x <- x[!is.na(x)]
+  x <- x[is.finite(x)]
+
+  if (!length(x)) {
+    return(NA_real_)
+  }
+
+  max(x)
+}
+
+safe_mean <- function(x) {
+  x <- x[!is.na(x)]
+  x <- x[is.finite(x)]
+
+  if (!length(x)) {
+    return(NA_real_)
+  }
+
+  mean(x)
+}
+
+safe_median <- function(x) {
+  x <- x[!is.na(x)]
+  x <- x[is.finite(x)]
+
+  if (!length(x)) {
+    return(NA_real_)
+  }
+
+  stats::median(x)
+}
+
+safe_sd <- function(x) {
+  x <- x[!is.na(x)]
+  x <- x[is.finite(x)]
+
+  if (length(x) < 2L) {
+    return(NA_real_)
+  }
+
+  stats::sd(x)
+}
+
+safe_iqr <- function(x) {
+  x <- x[!is.na(x)]
+  x <- x[is.finite(x)]
+
+  if (!length(x)) {
+    return(NA_real_)
+  }
+
+  stats::IQR(x)
+}
+
+safe_mad <- function(x) {
+  x <- x[!is.na(x)]
+  x <- x[is.finite(x)]
+
+  if (!length(x)) {
+    return(NA_real_)
+  }
+
+  stats::mad(x)
+}
+
+safe_skewness <- function(x) {
+  x <- x[!is.na(x)]
+  x <- x[is.finite(x)]
+
+  if (length(x) < 3L || isTRUE(all.equal(stats::sd(x), 0))) {
+    return(NA_real_)
+  }
+
+  e1071::skewness(x, na.rm = TRUE)
+}
+
+safe_kurtosis <- function(x) {
+  x <- x[!is.na(x)]
+  x <- x[is.finite(x)]
+
+  if (length(x) < 4L || isTRUE(all.equal(stats::sd(x), 0))) {
+    return(NA_real_)
+  }
+
+  e1071::kurtosis(x, na.rm = TRUE)
+}
+
+safe_cv <- function(x) {
+  m <- safe_mean(x)
+  s <- safe_sd(x)
+
+  if (is.na(m) || is.na(s) || isTRUE(all.equal(m, 0))) {
+    return(NA_real_)
+  }
+
+  s / m
+}
+
+safe_quantile <- function(x, p) {
+  x <- x[!is.na(x)]
+  x <- x[is.finite(x)]
+
+  if (!length(x)) {
+    return(NA_real_)
+  }
+
+  as.numeric(stats::quantile(x, probs = p, na.rm = TRUE, names = FALSE, type = 7))
+}
+
+outlier_count_iqr <- function(x) {
+  x <- x[!is.na(x)]
+  x <- x[is.finite(x)]
+
+  if (length(x) < 4L) {
+    return(NA_integer_)
+  }
+
+  q1 <- safe_quantile(x, 0.25)
+  q3 <- safe_quantile(x, 0.75)
+  iqr <- q3 - q1
+
+  if (is.na(iqr) || iqr == 0) {
+    return(0L)
+  }
+
+  lower <- q1 - 1.5 * iqr
+  upper <- q3 + 1.5 * iqr
+
+  sum(x < lower | x > upper)
+}
+
+zero_count <- function(x) {
+  sum(!is.na(x) & x == 0)
+}
+
+negative_count <- function(x) {
+  sum(!is.na(x) & is.finite(x) & x < 0)
+}
+
+positive_count <- function(x) {
+  sum(!is.na(x) & is.finite(x) & x > 0)
+}
+
+infinite_count_numeric <- function(x) {
+  sum(is.infinite(x))
+}
+
+nan_count_numeric <- function(x) {
+  sum(is.nan(x))
+}
+
+fmt_num <- function(x, digits = 2L) {
+  ifelse(
+    is.na(x),
+    NA_character_,
+    formatC(x, format = "f", big.mark = ",", digits = digits)
+  )
+}
+
+fmt_int <- function(x) {
+  ifelse(
+    is.na(x),
+    NA_character_,
+    formatC(x, format = "d", big.mark = ",")
+  )
+}
+
+fmt_pct <- function(x, digits = 2L) {
+  ifelse(
+    is.na(x),
+    NA_character_,
+    paste0(formatC(x, format = "f", big.mark = ",", digits = digits), "%")
+  )
+}
+
+stat_badge <- function(value, type = c("neutral", "good", "warning", "danger", "info")) {
+
+  type <- match.arg(type)
+
+  colors <- list(
+    neutral = list(bg = "#263247", fg = "#CBD5E1", border = "#475569"),
+    good    = list(bg = "#064E3B", fg = "#A7F3D0", border = "#10B981"),
+    warning = list(bg = "#78350F", fg = "#FDE68A", border = "#F59E0B"),
+    danger  = list(bg = "#7F1D1D", fg = "#FECACA", border = "#EF4444"),
+    info    = list(bg = "#1E3A8A", fg = "#BFDBFE", border = "#3B82F6")
+  )
+
+  htmltools::tags$span(
+    style = paste0(
+      "display:inline-block;",
+      "padding:2px 8px;",
+      "border-radius:999px;",
+      "font-size:11px;",
+      "font-weight:700;",
+      "letter-spacing:0.02em;",
+      "background:", colors[[type]]$bg, ";",
+      "color:", colors[[type]]$fg, ";",
+      "border:1px solid ", colors[[type]]$border, ";"
+    ),
+    as.character(value)
+  )
+}
+
+numeric_style <- function(value) {
+  list(
+    textAlign = "right",
+    fontVariantNumeric = "tabular-nums",
+    color = if (is.na(value)) "#64748B" else "#E2E8F0"
+  )
+}
+
+numeric_cell <- function(value, digits = 2L) {
+  if (is.na(value)) {
+    htmltools::tags$span(style = "color:#64748B;", "—")
+  } else {
+    htmltools::tags$span(
+      style = paste0(
+        "font-variant-numeric:tabular-nums;",
+        "color:#E2E8F0;"
+      ),
+      fmt_num(value, digits)
+    )
+  }
+}
+
+integer_cell <- function(value) {
+  if (is.na(value)) {
+    htmltools::tags$span(style = "color:#64748B;", "—")
+  } else {
+    htmltools::tags$span(
+      style = paste0(
+        "font-variant-numeric:tabular-nums;",
+        "color:#E2E8F0;"
+      ),
+      fmt_int(value)
+    )
+  }
+}
+
+percent_badge_cell <- function(value, danger_cutoff = 25, warning_cutoff = 5) {
+  if (is.na(value)) {
+    return(htmltools::tags$span(style = "color:#64748B;", "—"))
+  }
+
+  type <- if (value >= danger_cutoff) {
+    "danger"
+  } else if (value >= warning_cutoff) {
+    "warning"
+  } else if (value > 0) {
+    "info"
+  } else {
+    "neutral"
+  }
+
+  stat_badge(fmt_pct(value, 2L), type)
+}
+
+count_badge_cell <- function(value) {
+  if (is.na(value)) {
+    return(htmltools::tags$span(style = "color:#64748B;", "—"))
+  }
+
+  if (value > 0) {
+    stat_badge(fmt_int(value), "warning")
+  } else {
+    htmltools::tags$span(style = "color:#64748B;", "0")
+  }
+}
+
+problem_count_badge_cell <- function(value) {
+  if (is.na(value)) {
+    return(htmltools::tags$span(style = "color:#64748B;", "—"))
+  }
+
+  if (value > 0) {
+    stat_badge(fmt_int(value), "danger")
+  } else {
+    htmltools::tags$span(style = "color:#64748B;", "0")
+  }
+}
+
+skewness_cell <- function(value) {
+  if (is.na(value)) {
+    return(htmltools::tags$span(style = "color:#64748B;", "—"))
+  }
+
+  abs_value <- abs(value)
+
+  type <- if (abs_value >= 2) {
+    "danger"
+  } else if (abs_value >= 1) {
+    "warning"
+  } else {
+    "neutral"
+  }
+
+  stat_badge(fmt_num(value, 2L), type)
+}
+
+kurtosis_cell <- function(value) {
+  if (is.na(value)) {
+    return(htmltools::tags$span(style = "color:#64748B;", "—"))
+  }
+
+  type <- if (abs(value) >= 7) {
+    "danger"
+  } else if (abs(value) >= 3) {
+    "warning"
+  } else {
+    "neutral"
+  }
+
+  stat_badge(fmt_num(value, 2L), type)
+}
+
+cv_cell <- function(value) {
+  if (is.na(value)) {
+    return(htmltools::tags$span(style = "color:#64748B;", "—"))
+  }
+
+  type <- if (abs(value) >= 2) {
+    "danger"
+  } else if (abs(value) >= 1) {
+    "warning"
+  } else {
+    "neutral"
+  }
+
+  stat_badge(fmt_num(value, 2L), type)
+}
+
+bool_badge_cell <- function(value) {
+  if (is.na(value)) {
+    return(htmltools::tags$span(style = "color:#64748B;", "—"))
+  }
+
+  if (isTRUE(value)) {
+    stat_badge("Yes", "danger")
+  } else {
+    stat_badge("No", "good")
+  }
+}
+
+
+# ----------------------------
+# Variable Selection
+# ----------------------------
+
+if (is.null(UnivariateVars)) {
+  UnivariateVars_Valid <- names(data)
+} else {
+  UnivariateVars_Valid <- intersect(UnivariateVars, names(data))
+}
+
+UnivariateVars_Missing <- if (is.null(UnivariateVars)) {
+  character(0L)
+} else {
+  setdiff(UnivariateVars, names(data))
+}
+
+UnivariateNumericVars <- UnivariateVars_Valid[
+  vapply(data[, ..UnivariateVars_Valid], is_numeric_col, logical(1L))
+]
+
+UnivariateCategoricalVars <- UnivariateVars_Valid[
+  vapply(data[, ..UnivariateVars_Valid], is_categorical_col, logical(1L))
+]
+
+UnivariateSkippedVars <- setdiff(
+  UnivariateVars_Valid,
+  c(UnivariateNumericVars, UnivariateCategoricalVars)
+)
+
+
+# ----------------------------
+# Numeric Univariate Stats
+# ----------------------------
+
+if (length(UnivariateNumericVars) > 0L) {
+
+  UnivariateStats <- data.table::rbindlist(lapply(UnivariateNumericVars, function(v) {
+
+    x <- data[[v]]
+
+    n_total <- length(x)
+    n_na <- sum(is.na(x))
+    n_nan <- nan_count_numeric(x)
+    n_inf <- infinite_count_numeric(x)
+    n_finite <- sum(!is.na(x) & is.finite(x))
+    n_zero <- zero_count(x)
+    n_negative <- negative_count(x)
+    n_positive <- positive_count(x)
+    n_outlier <- outlier_count_iqr(x)
+
+    q01 <- safe_quantile(x, 0.01)
+    q05 <- safe_quantile(x, 0.05)
+    q10 <- safe_quantile(x, 0.10)
+    q25 <- safe_quantile(x, 0.25)
+    q50 <- safe_quantile(x, 0.50)
+    q75 <- safe_quantile(x, 0.75)
+    q90 <- safe_quantile(x, 0.90)
+    q95 <- safe_quantile(x, 0.95)
+    q99 <- safe_quantile(x, 0.99)
+
+    data.table::data.table(
+      Variable = v,
+      Type = class(x)[1L],
+      Rows = n_total,
+      `Valid N` = n_finite,
+      `NA N` = n_na,
+      `NA %` = ifelse(n_total > 0L, n_na / n_total * 100, NA_real_),
+      `NaN N` = n_nan,
+      `Inf N` = n_inf,
+      `Zero N` = n_zero,
+      `Zero %` = ifelse(n_total > 0L, n_zero / n_total * 100, NA_real_),
+      `Negative N` = n_negative,
+      `Positive N` = n_positive,
+      `Unique N` = data.table::uniqueN(x, na.rm = FALSE),
+      `Unique %` = ifelse(n_total > 0L, data.table::uniqueN(x, na.rm = FALSE) / n_total * 100, NA_real_),
+      Min = safe_min(x),
+      q01 = q01,
+      q05 = q05,
+      q10 = q10,
+      q25 = q25,
+      Median = q50,
+      Mean = safe_mean(x),
+      q75 = q75,
+      q90 = q90,
+      q95 = q95,
+      q99 = q99,
+      Max = safe_max(x),
+      Range = safe_max(x) - safe_min(x),
+      IQR = q75 - q25,
+      MAD = safe_mad(x),
+      `Standard Deviation` = safe_sd(x),
+      `Coef of Variation` = safe_cv(x),
+      Skewness = safe_skewness(x),
+      Kurtosis = safe_kurtosis(x),
+      `IQR Outlier N` = n_outlier,
+      `IQR Outlier %` = ifelse(n_finite > 0L, n_outlier / n_finite * 100, NA_real_),
+      `Is Constant` = data.table::uniqueN(x, na.rm = TRUE) <= 1L,
+      `Has Missing` = n_na > 0L,
+      `Has Infinite` = n_inf > 0L
+    )
+  }), fill = TRUE)
+
+} else {
+
+  UnivariateStats <- data.table::data.table(
+    Variable = character(),
+    Type = character(),
+    Rows = integer(),
+    `Valid N` = integer(),
+    `NA N` = integer(),
+    `NA %` = numeric(),
+    `NaN N` = integer(),
+    `Inf N` = integer(),
+    `Zero N` = integer(),
+    `Zero %` = numeric(),
+    `Negative N` = integer(),
+    `Positive N` = integer(),
+    `Unique N` = integer(),
+    `Unique %` = numeric(),
+    Min = numeric(),
+    q01 = numeric(),
+    q05 = numeric(),
+    q10 = numeric(),
+    q25 = numeric(),
+    Median = numeric(),
+    Mean = numeric(),
+    q75 = numeric(),
+    q90 = numeric(),
+    q95 = numeric(),
+    q99 = numeric(),
+    Max = numeric(),
+    Range = numeric(),
+    IQR = numeric(),
+    MAD = numeric(),
+    `Standard Deviation` = numeric(),
+    `Coef of Variation` = numeric(),
+    Skewness = numeric(),
+    Kurtosis = numeric(),
+    `IQR Outlier N` = integer(),
+    `IQR Outlier %` = numeric(),
+    `Is Constant` = logical(),
+    `Has Missing` = logical(),
+    `Has Infinite` = logical()
+  )
+}
+
+
+# ----------------------------
+# Optional Input QA Table
+# ----------------------------
+
+UnivariateInputQA <- data.table::data.table(
+  Metric = c(
+    "Requested Variables",
+    "Valid Variables",
+    "Missing Variables",
+    "Numeric Variables",
+    "Categorical Variables",
+    "Skipped Variables"
+  ),
+  Count = c(
+    ifelse(is.null(UnivariateVars), length(names(data)), length(UnivariateVars)),
+    length(UnivariateVars_Valid),
+    length(UnivariateVars_Missing),
+    length(UnivariateNumericVars),
+    length(UnivariateCategoricalVars),
+    length(UnivariateSkippedVars)
+  ),
+  Values = c(
+    ifelse(is.null(UnivariateVars), "All columns", paste(UnivariateVars, collapse = ", ")),
+    paste(UnivariateVars_Valid, collapse = ", "),
+    paste(UnivariateVars_Missing, collapse = ", "),
+    paste(UnivariateNumericVars, collapse = ", "),
+    paste(UnivariateCategoricalVars, collapse = ", "),
+    paste(UnivariateSkippedVars, collapse = ", ")
+  )
+)
+
+
+# ----------------------------
+# Univariate Stats Reactable
+# ----------------------------
+
+Univariate_Stats <- reactable::reactable(
+  data = UnivariateStats,
+
+  compact = TRUE,
+  defaultPageSize = 15,
+  pageSizeOptions = c(10, 15, 25, 50, 100),
+  wrap = FALSE,
+  filterable = TRUE,
+  fullWidth = TRUE,
+  highlight = TRUE,
+  pagination = TRUE,
+  resizable = TRUE,
+  searchable = TRUE,
+  selection = "multiple",
+  showPagination = TRUE,
+  showPageSizeOptions = TRUE,
+  showSortable = TRUE,
+  showSortIcon = TRUE,
+  sortable = TRUE,
+  striped = TRUE,
+  bordered = FALSE,
+  outlined = FALSE,
+
+  defaultColDef = reactable::colDef(
+    minWidth = 105,
+    headerStyle = list(
+      background = "#0F1B33",
+      color = "#E5E7EB",
+      fontWeight = "800",
+      borderBottom = "1px solid #334155",
+      textTransform = "uppercase",
+      letterSpacing = "0.045em",
+      fontSize = "11px"
+    ),
+    style = list(
+      borderBottom = "1px solid rgba(148, 163, 184, 0.14)"
+    )
+  ),
+
+  columns = list(
+
+    Variable = reactable::colDef(
+      sticky = "left",
+      minWidth = 220,
+      filterable = TRUE,
+      style = list(
+        position = "sticky",
+        left = 0,
+        zIndex = 1,
+        background = "#101B2F",
+        color = "#F8FAFC",
+        fontWeight = "800",
+        fontFamily = "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace"
+      ),
+      headerStyle = list(
+        position = "sticky",
+        left = 0,
+        zIndex = 2,
+        background = "#0B1326",
+        color = "#F8FAFC",
+        fontWeight = "900",
+        borderBottom = "1px solid #334155"
+      )
+    ),
+
+    Type = reactable::colDef(
+      minWidth = 105,
+      align = "center",
+      cell = function(value) stat_badge(value, ifelse(value == "integer", "info", "good"))
+    ),
+
+    Rows = reactable::colDef(
+      minWidth = 95,
+      align = "right",
+      cell = integer_cell,
+      style = numeric_style
+    ),
+
+    `Valid N` = reactable::colDef(
+      minWidth = 105,
+      align = "right",
+      cell = integer_cell,
+      style = numeric_style
+    ),
+
+    `NA N` = reactable::colDef(
+      minWidth = 95,
+      align = "center",
+      cell = problem_count_badge_cell
+    ),
+
+    `NA %` = reactable::colDef(
+      minWidth = 95,
+      align = "center",
+      cell = function(value) percent_badge_cell(value, danger_cutoff = 25, warning_cutoff = 5)
+    ),
+
+    `NaN N` = reactable::colDef(
+      minWidth = 95,
+      align = "center",
+      cell = problem_count_badge_cell
+    ),
+
+    `Inf N` = reactable::colDef(
+      minWidth = 95,
+      align = "center",
+      cell = problem_count_badge_cell
+    ),
+
+    `Zero N` = reactable::colDef(
+      minWidth = 95,
+      align = "center",
+      cell = count_badge_cell
+    ),
+
+    `Zero %` = reactable::colDef(
+      minWidth = 95,
+      align = "center",
+      cell = function(value) percent_badge_cell(value, danger_cutoff = 75, warning_cutoff = 25)
+    ),
+
+    `Negative N` = reactable::colDef(
+      minWidth = 110,
+      align = "center",
+      cell = count_badge_cell
+    ),
+
+    `Positive N` = reactable::colDef(
+      minWidth = 110,
+      align = "right",
+      cell = integer_cell,
+      style = numeric_style
+    ),
+
+    `Unique N` = reactable::colDef(
+      minWidth = 105,
+      align = "right",
+      cell = integer_cell,
+      style = numeric_style
+    ),
+
+    `Unique %` = reactable::colDef(
+      minWidth = 105,
+      align = "center",
+      cell = function(value) {
+        if (is.na(value)) {
+          return(htmltools::tags$span(style = "color:#64748B;", "—"))
+        }
+
+        type <- if (value >= 90) {
+          "warning"
+        } else if (value <= 1) {
+          "warning"
+        } else {
+          "neutral"
+        }
+
+        stat_badge(fmt_pct(value, 2L), type)
+      }
+    ),
+
+    Min = reactable::colDef(
+      minWidth = 110,
+      align = "right",
+      cell = function(value) numeric_cell(value, 2L),
+      style = numeric_style
+    ),
+
+    q01 = reactable::colDef(
+      name = "P01",
+      minWidth = 110,
+      align = "right",
+      cell = function(value) numeric_cell(value, 2L),
+      style = numeric_style
+    ),
+
+    q05 = reactable::colDef(
+      name = "P05",
+      minWidth = 110,
+      align = "right",
+      cell = function(value) numeric_cell(value, 2L),
+      style = numeric_style
+    ),
+
+    q10 = reactable::colDef(
+      name = "P10",
+      minWidth = 110,
+      align = "right",
+      cell = function(value) numeric_cell(value, 2L),
+      style = numeric_style
+    ),
+
+    q25 = reactable::colDef(
+      name = "P25",
+      minWidth = 110,
+      align = "right",
+      cell = function(value) numeric_cell(value, 2L),
+      style = numeric_style
+    ),
+
+    Median = reactable::colDef(
+      minWidth = 110,
+      align = "right",
+      cell = function(value) numeric_cell(value, 2L),
+      style = numeric_style
+    ),
+
+    Mean = reactable::colDef(
+      minWidth = 110,
+      align = "right",
+      cell = function(value) numeric_cell(value, 2L),
+      style = numeric_style
+    ),
+
+    q75 = reactable::colDef(
+      name = "P75",
+      minWidth = 110,
+      align = "right",
+      cell = function(value) numeric_cell(value, 2L),
+      style = numeric_style
+    ),
+
+    q90 = reactable::colDef(
+      name = "P90",
+      minWidth = 110,
+      align = "right",
+      cell = function(value) numeric_cell(value, 2L),
+      style = numeric_style
+    ),
+
+    q95 = reactable::colDef(
+      name = "P95",
+      minWidth = 110,
+      align = "right",
+      cell = function(value) numeric_cell(value, 2L),
+      style = numeric_style
+    ),
+
+    q99 = reactable::colDef(
+      name = "P99",
+      minWidth = 110,
+      align = "right",
+      cell = function(value) numeric_cell(value, 2L),
+      style = numeric_style
+    ),
+
+    Max = reactable::colDef(
+      minWidth = 110,
+      align = "right",
+      cell = function(value) numeric_cell(value, 2L),
+      style = numeric_style
+    ),
+
+    Range = reactable::colDef(
+      minWidth = 110,
+      align = "right",
+      cell = function(value) numeric_cell(value, 2L),
+      style = numeric_style
+    ),
+
+    IQR = reactable::colDef(
+      minWidth = 110,
+      align = "right",
+      cell = function(value) numeric_cell(value, 2L),
+      style = numeric_style
+    ),
+
+    MAD = reactable::colDef(
+      minWidth = 110,
+      align = "right",
+      cell = function(value) numeric_cell(value, 2L),
+      style = numeric_style
+    ),
+
+    `Standard Deviation` = reactable::colDef(
+      name = "SD",
+      minWidth = 110,
+      align = "right",
+      cell = function(value) numeric_cell(value, 2L),
+      style = numeric_style
+    ),
+
+    `Coef of Variation` = reactable::colDef(
+      name = "CV",
+      minWidth = 105,
+      align = "center",
+      cell = cv_cell
+    ),
+
+    Skewness = reactable::colDef(
+      minWidth = 115,
+      align = "center",
+      cell = skewness_cell
+    ),
+
+    Kurtosis = reactable::colDef(
+      minWidth = 115,
+      align = "center",
+      cell = kurtosis_cell
+    ),
+
+    `IQR Outlier N` = reactable::colDef(
+      name = "Outlier N",
+      minWidth = 115,
+      align = "center",
+      cell = count_badge_cell
+    ),
+
+    `IQR Outlier %` = reactable::colDef(
+      name = "Outlier %",
+      minWidth = 115,
+      align = "center",
+      cell = function(value) percent_badge_cell(value, danger_cutoff = 10, warning_cutoff = 2)
+    ),
+
+    `Is Constant` = reactable::colDef(
+      name = "Constant",
+      minWidth = 105,
+      align = "center",
+      cell = bool_badge_cell
+    ),
+
+    `Has Missing` = reactable::colDef(
+      name = "Missing",
+      minWidth = 105,
+      align = "center",
+      cell = bool_badge_cell
+    ),
+
+    `Has Infinite` = reactable::colDef(
+      name = "Infinite",
+      minWidth = 105,
+      align = "center",
+      cell = bool_badge_cell
+    )
+  ),
+
+  theme = reactable::reactableTheme(
+    color = "#E2E8F0",
+    backgroundColor = "#0B1326",
+    borderColor = "rgba(148, 163, 184, 0.22)",
+
+    stripedColor = "rgba(30, 41, 59, 0.78)",
+    highlightColor = "rgba(59, 130, 246, 0.18)",
+
+    rowSelectedStyle = list(
+      backgroundColor = "rgba(37, 99, 235, 0.28)",
+      boxShadow = "inset 3px 0 0 #60A5FA"
+    ),
+
+    cellPadding = "9px 12px",
+
+    style = list(
+      fontFamily = "-apple-system, BlinkMacSystemFont, Segoe UI, Inter, Helvetica, Arial, sans-serif",
+      fontSize = "13px",
+      border = "1px solid rgba(148, 163, 184, 0.22)",
+      borderRadius = "14px",
+      overflow = "hidden",
+      boxShadow = "0 18px 45px rgba(0, 0, 0, 0.28)"
+    ),
+
+    tableStyle = list(
+      borderCollapse = "separate",
+      borderSpacing = "0"
+    ),
+
+    headerStyle = list(
+      background = "#0F1B33",
+      color = "#F8FAFC",
+      borderBottom = "1px solid rgba(148, 163, 184, 0.28)"
+    ),
+
+    rowStyle = list(
+      backgroundColor = "#0B1326"
+    ),
+
+    searchInputStyle = list(
+      width = "100%",
+      backgroundColor = "#111C33",
+      color = "#E2E8F0",
+      border = "1px solid #334155",
+      borderRadius = "10px",
+      padding = "8px 12px",
+      outline = "none"
+    ),
+
+    filterInputStyle = list(
+      backgroundColor = "#111C33",
+      color = "#E2E8F0",
+      border = "1px solid #334155",
+      borderRadius = "8px",
+      padding = "5px 8px",
+      outline = "none"
+    ),
+
+    selectStyle = list(
+      backgroundColor = "#111C33",
+      color = "#E2E8F0",
+      border = "1px solid #60A5FA",
+      borderRadius = "10px",
+      padding = "6px 10px",
+      minWidth = "76px",
+      height = "34px",
+      fontSize = "13px",
+      fontWeight = "800",
+      lineHeight = "1.2",
+      cursor = "pointer",
+      outline = "none",
+      boxShadow = paste(
+        "inset 0 1px 0 rgba(255, 255, 255, 0.06),",
+        "0 0 0 1px rgba(96, 165, 250, 0.14),",
+        "0 8px 18px rgba(0, 0, 0, 0.24)"
+      )
+    )
+  )
+)
+
+
+# ============================================================
+# Univariate Plots
+# ============================================================
+
+# ----------------------------
+# Plot settings
+# ----------------------------
+
+MaxCategoricalLevels <- 25L
+MaxDiscreteNumericLevels <- 20L
+
+has_trend_group <- !is.null(TrendGroupVar) &&
+  length(TrendGroupVar) == 1L &&
+  !is.na(TrendGroupVar) &&
+  nzchar(TrendGroupVar) &&
+  TrendGroupVar %in% names(data)
+
+# ----------------------------
+# Defensive variable selection for plots
+# ----------------------------
+
+if (!exists("UnivariateVars") || is.null(UnivariateVars)) {
+  UnivariateVars_PlotRequested <- names(data)
+} else {
+  UnivariateVars_PlotRequested <- as.character(UnivariateVars)
+  UnivariateVars_PlotRequested <- trimws(UnivariateVars_PlotRequested)
+  UnivariateVars_PlotRequested <- UnivariateVars_PlotRequested[
+    !is.na(UnivariateVars_PlotRequested) &
+      nzchar(UnivariateVars_PlotRequested)
+  ]
+
+  if (length(UnivariateVars_PlotRequested) == 0L) {
+    UnivariateVars_PlotRequested <- names(data)
+  }
+}
+
+UnivariateVars_PlotValid <- intersect(UnivariateVars_PlotRequested, names(data))
+UnivariateVars_PlotMissing <- setdiff(UnivariateVars_PlotRequested, names(data))
+
+UnivariateNumericVars <- UnivariateVars_PlotValid[
+  vapply(
+    UnivariateVars_PlotValid,
+    function(v) {
+      is.numeric(data[[v]]) &&
+        !inherits(data[[v]], c("Date", "POSIXct", "POSIXlt", "IDate", "ITime"))
+    },
+    logical(1L)
+  )
+]
+
+UnivariateCategoricalVars <- UnivariateVars_PlotValid[
+  vapply(
+    UnivariateVars_PlotValid,
+    function(v) {
+      is.character(data[[v]]) ||
+        is.factor(data[[v]]) ||
+        is.logical(data[[v]])
+    },
+    logical(1L)
+  )
+]
+
+UnivariatePlotSkippedVars <- setdiff(
+  UnivariateVars_PlotValid,
+  c(UnivariateNumericVars, UnivariateCategoricalVars)
+)
+
+# ----------------------------
+# Plot storage lists
+# ----------------------------
+
+UnivariatePlotList <- list()
+UnivariateCharacterPlotList <- list()
+
+UnivariateHistogramPlotList <- list()
+UnivariateBoxPlotList <- list()
+UnivariateGroupedBoxPlotList <- list()
+UnivariateDiscreteNumericPlotList <- list()
+UnivariateCategoricalTopNPlotList <- list()
+
+UnivariatePlots <- list(
+  Histograms = list(),
+  BoxPlots = list(),
+  GroupedBoxPlots = list(),
+  DiscreteNumericBarPlots = list(),
+  CategoricalTopNBarPlots = list()
+)
+
+# ----------------------------
+# Numeric Histograms
+# ----------------------------
+
+if (length(UnivariateNumericVars) > 0L) {
+
+  for (i in UnivariateNumericVars) {
+
+    data_plot <- data[
+      !is.na(get(i)) &
+        is.finite(get(i))
+    ]
+
+    if (nrow(data_plot) > 0L) {
+
+      UnivariateHistogramPlotList[[i]] <- AutoPlots::Histogram(
+        dt = data_plot,
+        XVar = i,
+        title.text = paste0(i, " Distribution"),
+        xAxis.title = i,
+        yAxis.title = "Count",
+        Theme = Theme
+      )
+
+      UnivariatePlots$Histograms[[i]] <- UnivariateHistogramPlotList[[i]]
+    }
+  }
+}
+
+# ----------------------------
+# Numeric Box Plots - All Data
+# ----------------------------
+
+if (length(UnivariateNumericVars) > 0L) {
+
+  for (i in UnivariateNumericVars) {
+
+    data_box <- data[
+      !is.na(get(i)) &
+        is.finite(get(i))
+    ]
+
+    if (nrow(data_box) > 0L) {
+
+      data_box <- data.table::copy(data_box)
+      data_box[, `.All Data` := "All Data"]
+
+      UnivariateBoxPlotList[[i]] <- AutoPlots::Box(
+        dt = data_box,
+        XVar = ".All Data",
+        YVar = i,
+        title.text = paste0(i, " Box Plot"),
+        yAxis.title = i,
+        xAxis.title = NULL,
+        Theme = Theme
+      )
+
+      UnivariatePlotList[[i]] <- UnivariateBoxPlotList[[i]]
+      UnivariatePlots$BoxPlots[[i]] <- UnivariateBoxPlotList[[i]]
+    }
+  }
+}
+
+# ----------------------------
+# Numeric Box Plots - Grouped
+# ----------------------------
+
+if (has_trend_group && length(UnivariateNumericVars) > 0L) {
+
+  for (i in UnivariateNumericVars) {
+
+    data_grouped_box <- data[
+      !is.na(get(i)) &
+        is.finite(get(i)) &
+        !is.na(get(TrendGroupVar))
+    ]
+
+    if (nrow(data_grouped_box) > 0L) {
+
+      UnivariateGroupedBoxPlotList[[i]] <- AutoPlots::Box(
+        dt = data_grouped_box,
+        XVar = TrendGroupVar,
+        YVar = i,
+        title.text = paste0(i, " by ", TrendGroupVar),
+        yAxis.title = i,
+        xAxis.title = TrendGroupVar,
+        Theme = Theme
+      )
+
+      UnivariatePlots$GroupedBoxPlots[[i]] <- UnivariateGroupedBoxPlotList[[i]]
+    }
+  }
+}
+
+# ----------------------------
+# Low-Cardinality Numeric Bar Plots
+# ----------------------------
+
+if (length(UnivariateNumericVars) > 0L) {
+
+  for (i in UnivariateNumericVars) {
+
+    unique_n <- data.table::uniqueN(data[[i]], na.rm = TRUE)
+
+    if (!is.na(unique_n) && unique_n > 0L && unique_n <= MaxDiscreteNumericLevels) {
+
+      data_discrete <- data.table::data.table(
+        Value = data[[i]]
+      )
+
+      data_discrete[, Value := as.character(Value)]
+      data_discrete[is.na(Value), Value := "<NA>"]
+
+      data2 <- data_discrete[
+        ,
+        .(Counts = .N),
+        by = Value
+      ]
+
+      data2[, Percent := Counts / sum(Counts) * 100]
+
+      sort_value <- suppressWarnings(as.numeric(data2$Value))
+      data2[, SortValue := sort_value]
+      data.table::setorderv(data2, c("SortValue", "Value"), order = c(1L, 1L), na.last = TRUE)
+      data2[, SortValue := NULL]
+
+      data.table::setnames(data2, "Value", i)
+
+      UnivariateDiscreteNumericPlotList[[i]] <- AutoPlots::Bar(
+        dt = data2,
+        XVar = i,
+        YVar = "Counts",
+        title.text = paste0(i, " Value Counts"),
+        yAxis.title = "Count",
+        xAxis.title = i,
+        Theme = Theme
+      )
+
+      UnivariatePlots$DiscreteNumericBarPlots[[i]] <- UnivariateDiscreteNumericPlotList[[i]]
+    }
+  }
+}
+
+# ----------------------------
+# Categorical Top-N Bar Plots
+# ----------------------------
+
+if (length(UnivariateCategoricalVars) > 0L) {
+
+  for (i in UnivariateCategoricalVars) {
+
+    data_cat <- data.table::data.table(
+      Value = as.character(data[[i]])
+    )
+
+    data_cat[is.na(Value), Value := "<NA>"]
+    data_cat[trimws(Value) == "", Value := "<EMPTY STRING>"]
+
+    data2 <- data_cat[
+      ,
+      .(Counts = .N),
+      by = Value
+    ]
+
+    data.table::setorderv(data2, "Counts", order = -1L)
+
+    data2[, Percent := Counts / sum(Counts) * 100]
+
+    if (nrow(data2) > MaxCategoricalLevels) {
+
+      data_top <- data2[seq_len(MaxCategoricalLevels)]
+
+      other_count <- data2[-seq_len(MaxCategoricalLevels), sum(Counts)]
+      other_pct <- other_count / sum(data2$Counts) * 100
+
+      other_row <- data.table::data.table(
+        Value = "Other",
+        Counts = other_count,
+        Percent = other_pct
+      )
+
+      data2 <- data.table::rbindlist(
+        list(data_top, other_row),
+        fill = TRUE
+      )
+    }
+
+    data.table::setnames(data2, "Value", i)
+
+    UnivariateCategoricalTopNPlotList[[i]] <- AutoPlots::Bar(
+      dt = data2,
+      XVar = i,
+      YVar = "Counts",
+      title.text = paste0(i, " Counts"),
+      yAxis.title = "Count",
+      xAxis.title = i,
+      Theme = Theme
+    )
+
+    UnivariateCharacterPlotList[[i]] <- UnivariateCategoricalTopNPlotList[[i]]
+    UnivariatePlots$CategoricalTopNBarPlots[[i]] <- UnivariateCategoricalTopNPlotList[[i]]
+  }
+}
+
+# ----------------------------
+# Plot QA table
+# ----------------------------
+
+UnivariatePlotQA <- data.table::data.table(
+  PlotSection = c(
+    "Requested Variables",
+    "Valid Variables",
+    "Missing Variables",
+    "Numeric Variables",
+    "Categorical Variables",
+    "Skipped Variables",
+    "Histogram Plots",
+    "Box Plots",
+    "Grouped Box Plots",
+    "Discrete Numeric Bar Plots",
+    "Categorical Bar Plots"
+  ),
+  Count = c(
+    length(UnivariateVars_PlotRequested),
+    length(UnivariateVars_PlotValid),
+    length(UnivariateVars_PlotMissing),
+    length(UnivariateNumericVars),
+    length(UnivariateCategoricalVars),
+    length(UnivariatePlotSkippedVars),
+    length(UnivariateHistogramPlotList),
+    length(UnivariateBoxPlotList),
+    length(UnivariateGroupedBoxPlotList),
+    length(UnivariateDiscreteNumericPlotList),
+    length(UnivariateCategoricalTopNPlotList)
+  ),
+  Values = c(
+    paste(UnivariateVars_PlotRequested, collapse = ", "),
+    paste(UnivariateVars_PlotValid, collapse = ", "),
+    paste(UnivariateVars_PlotMissing, collapse = ", "),
+    paste(UnivariateNumericVars, collapse = ", "),
+    paste(UnivariateCategoricalVars, collapse = ", "),
+    paste(UnivariatePlotSkippedVars, collapse = ", "),
+    paste(names(UnivariateHistogramPlotList), collapse = ", "),
+    paste(names(UnivariateBoxPlotList), collapse = ", "),
+    paste(names(UnivariateGroupedBoxPlotList), collapse = ", "),
+    paste(names(UnivariateDiscreteNumericPlotList), collapse = ", "),
+    paste(names(UnivariateCategoricalTopNPlotList), collapse = ", ")
+  )
+)
+```
+
+```{r UnivariatePlotLayoutSettings, echo=FALSE}
+HistogramPlotCols <- 2L
+BoxPlotCols <- 2L
+GroupedBoxPlotCols <- 2L
+DiscreteNumericBarPlotCols <- 2L
+CategoricalBarPlotCols <- 1L
+```
+
+```{r Correlation Analysis, echo=FALSE}
+# ============================================================
+# Correlation Analysis
+# ============================================================
+
+# ----------------------------
+# Correlation settings
+# ----------------------------
+
+CorrelationMethod <- "spearman"
+MaxCorrelationPairsToPlot <- 25L
+HighCorrelationThreshold <- 0.70
+
+
+# ============================================================
+# Safe Value Helpers
+# ============================================================
+
+corr_is_empty <- function(value) {
+  is.null(value) ||
+    length(value) == 0L ||
+    all(is.na(value))
+}
+
+corr_is_not_empty <- function(value) {
+  !corr_is_empty(value)
+}
+
+corr_is_positive <- function(value) {
+  corr_is_not_empty(value) &&
+    suppressWarnings(is.numeric(value) || is.integer(value)) &&
+    length(value) == 1L &&
+    !is.na(value) &&
+    value > 0
+}
+
+corr_is_true <- function(value) {
+  corr_is_not_empty(value) &&
+    isTRUE(value)
+}
+
+corr_safe_chr <- function(value, empty_value = "—") {
+  if (corr_is_empty(value)) {
+    empty_value
+  } else {
+    as.character(value)
+  }
+}
+
+corr_safe_num <- function(value) {
+  if (corr_is_empty(value)) {
+    return(NA_real_)
+  }
+
+  suppressWarnings(as.numeric(value)[1L])
+}
+
+corr_safe_index <- function(index) {
+  if (is.null(index) || length(index) == 0L || is.na(index)) {
+    return(1L)
+  }
+
+  as.integer(index[1L])
+}
+
+
+# ============================================================
+# Correlation Computation Helpers
+# ============================================================
+
+is_corr_numeric_col <- function(x) {
+  is.numeric(x) &&
+    !inherits(x, c("Date", "POSIXct", "POSIXlt", "IDate", "ITime"))
+}
+
+corr_valid_n <- function(x, y) {
+  sum(!is.na(x) & !is.na(y) & is.finite(x) & is.finite(y))
+}
+
+corr_missing_n <- function(x, y) {
+  sum(is.na(x) | is.na(y) | !is.finite(x) | !is.finite(y))
+}
+
+corr_is_constant <- function(x) {
+  x <- x[!is.na(x) & is.finite(x)]
+
+  if (length(x) <= 1L) {
+    return(TRUE)
+  }
+
+  data.table::uniqueN(x) <= 1L
+}
+
+safe_cor <- function(x, y, method = "spearman") {
+  keep <- !is.na(x) & !is.na(y) & is.finite(x) & is.finite(y)
+  x <- x[keep]
+  y <- y[keep]
+
+  if (length(x) < 3L) {
+    return(NA_real_)
+  }
+
+  if (data.table::uniqueN(x) <= 1L || data.table::uniqueN(y) <= 1L) {
+    return(NA_real_)
+  }
+
+  suppressWarnings(stats::cor(x, y, method = method, use = "complete.obs"))
+}
+
+safe_cor_p_value <- function(x, y, method = "spearman") {
+  keep <- !is.na(x) & !is.na(y) & is.finite(x) & is.finite(y)
+  x <- x[keep]
+  y <- y[keep]
+
+  if (length(x) < 4L) {
+    return(NA_real_)
+  }
+
+  if (data.table::uniqueN(x) <= 1L || data.table::uniqueN(y) <= 1L) {
+    return(NA_real_)
+  }
+
+  out <- tryCatch(
+    suppressWarnings(
+      stats::cor.test(
+        x = x,
+        y = y,
+        method = method,
+        exact = FALSE
+      )$p.value
+    ),
+    error = function(e) NA_real_
+  )
+
+  as.numeric(out)
+}
+
+corr_strength_label <- function(r) {
+  if (is.na(r)) {
+    return("Not available")
+  }
+
+  ar <- abs(r)
+
+  if (ar >= 0.90) {
+    "Very Strong"
+  } else if (ar >= 0.70) {
+    "Strong"
+  } else if (ar >= 0.50) {
+    "Moderate"
+  } else if (ar >= 0.30) {
+    "Weak"
+  } else {
+    "Very Weak"
+  }
+}
+
+corr_direction_label <- function(r) {
+  if (is.na(r)) {
+    return("Not available")
+  }
+
+  if (r > 0) {
+    "Positive"
+  } else if (r < 0) {
+    "Negative"
+  } else {
+    "Zero"
+  }
+}
+
+corr_pair_name <- function(x, y) {
+  paste0(x, "  ↔  ", y)
+}
+
+
+# ============================================================
+# Correlation Formatting Helpers
+# ============================================================
+
+corr_fmt_num <- function(x, digits = 3L) {
+  if (corr_is_empty(x)) {
+    return(NA_character_)
+  }
+
+  x <- suppressWarnings(as.numeric(x))
+
+  if (length(x) == 0L || is.na(x[1L])) {
+    return(NA_character_)
+  }
+
+  formatC(x[1L], format = "f", big.mark = ",", digits = digits)
+}
+
+corr_fmt_int <- function(x) {
+  if (corr_is_empty(x)) {
+    return(NA_character_)
+  }
+
+  x <- suppressWarnings(as.numeric(x))
+
+  if (length(x) == 0L || is.na(x[1L])) {
+    return(NA_character_)
+  }
+
+  formatC(round(x[1L]), format = "f", digits = 0L, big.mark = ",")
+}
+
+corr_fmt_pct <- function(x, digits = 2L) {
+  if (corr_is_empty(x)) {
+    return(NA_character_)
+  }
+
+  x <- suppressWarnings(as.numeric(x))
+
+  if (length(x) == 0L || is.na(x[1L])) {
+    return(NA_character_)
+  }
+
+  paste0(formatC(x[1L], format = "f", big.mark = ",", digits = digits), "%")
+}
+
+
+# ============================================================
+# Correlation Reactable Cell Helpers
+# ============================================================
+
+corr_badge <- function(value, type = c("neutral", "good", "warning", "danger", "info")) {
+
+  type <- match.arg(type)
+
+  colors <- list(
+    neutral = list(bg = "#263247", fg = "#CBD5E1", border = "#475569"),
+    good    = list(bg = "#064E3B", fg = "#A7F3D0", border = "#10B981"),
+    warning = list(bg = "#78350F", fg = "#FDE68A", border = "#F59E0B"),
+    danger  = list(bg = "#7F1D1D", fg = "#FECACA", border = "#EF4444"),
+    info    = list(bg = "#1E3A8A", fg = "#BFDBFE", border = "#3B82F6")
+  )
+
+  htmltools::tags$span(
+    style = paste0(
+      "display:inline-block;",
+      "padding:2px 8px;",
+      "border-radius:999px;",
+      "font-size:11px;",
+      "font-weight:700;",
+      "letter-spacing:0.02em;",
+      "background:", colors[[type]]$bg, ";",
+      "color:", colors[[type]]$fg, ";",
+      "border:1px solid ", colors[[type]]$border, ";"
+    ),
+    corr_safe_chr(value)
+  )
+}
+
+corr_numeric_cell <- function(value, digits = 3L) {
+  if (corr_is_empty(value)) {
+    htmltools::tags$span(style = "color:#64748B;", "—")
+  } else {
+    htmltools::tags$span(
+      style = "font-variant-numeric:tabular-nums;color:#E2E8F0;",
+      corr_fmt_num(value, digits)
+    )
+  }
+}
+
+corr_integer_cell <- function(value) {
+  if (corr_is_empty(value)) {
+    htmltools::tags$span(style = "color:#64748B;", "—")
+  } else {
+    htmltools::tags$span(
+      style = "font-variant-numeric:tabular-nums;color:#E2E8F0;",
+      corr_fmt_int(value)
+    )
+  }
+}
+
+corr_value_cell <- function(value) {
+  value <- corr_safe_num(value)
+
+  if (is.na(value)) {
+    return(htmltools::tags$span(style = "color:#64748B;", "—"))
+  }
+
+  ar <- abs(value)
+
+  type <- if (ar >= 0.90) {
+    "danger"
+  } else if (ar >= 0.70) {
+    "warning"
+  } else if (ar >= 0.50) {
+    "info"
+  } else {
+    "neutral"
+  }
+
+  corr_badge(corr_fmt_num(value, 3L), type)
+}
+
+corr_abs_value_cell <- function(value) {
+  value <- corr_safe_num(value)
+
+  if (is.na(value)) {
+    return(htmltools::tags$span(style = "color:#64748B;", "—"))
+  }
+
+  type <- if (value >= 0.90) {
+    "danger"
+  } else if (value >= 0.70) {
+    "warning"
+  } else if (value >= 0.50) {
+    "info"
+  } else {
+    "neutral"
+  }
+
+  corr_badge(corr_fmt_num(value, 3L), type)
+}
+
+corr_p_value_cell <- function(value) {
+  value <- corr_safe_num(value)
+
+  if (is.na(value)) {
+    return(htmltools::tags$span(style = "color:#64748B;", "—"))
+  }
+
+  type <- if (value <= 0.001) {
+    "danger"
+  } else if (value <= 0.01) {
+    "warning"
+  } else if (value <= 0.05) {
+    "info"
+  } else {
+    "neutral"
+  }
+
+  corr_badge(corr_fmt_num(value, 4L), type)
+}
+
+corr_strength_cell <- function(value) {
+  value <- corr_safe_chr(value)
+
+  type <- switch(
+    value,
+    "Very Strong" = "danger",
+    "Strong" = "warning",
+    "Moderate" = "info",
+    "Weak" = "neutral",
+    "Very Weak" = "neutral",
+    "neutral"
+  )
+
+  corr_badge(value, type)
+}
+
+corr_direction_cell <- function(value) {
+  value <- corr_safe_chr(value)
+
+  type <- switch(
+    value,
+    "Positive" = "good",
+    "Negative" = "warning",
+    "Zero" = "neutral",
+    "neutral"
+  )
+
+  corr_badge(value, type)
+}
+
+corr_bool_cell <- function(value) {
+  if (corr_is_empty(value)) {
+    return(htmltools::tags$span(style = "color:#64748B;", "—"))
+  }
+
+  if (isTRUE(value)) {
+    corr_badge("Yes", "danger")
+  } else {
+    corr_badge("No", "good")
+  }
+}
+
+corr_positive_count_cell <- function(value) {
+  if (corr_is_positive(value)) {
+    corr_badge(corr_fmt_int(value), "danger")
+  } else {
+    htmltools::tags$span(style = "color:#64748B;", "0")
+  }
+}
+
+corr_text_cell <- function(value) {
+  htmltools::tags$span(
+    style = "color:#CBD5E1;",
+    corr_safe_chr(value)
+  )
+}
+
+corr_truncated_mono_cell <- function(value) {
+  htmltools::tags$span(
+    title = corr_safe_chr(value, empty_value = ""),
+    style = paste0(
+      "display:block;",
+      "max-width:720px;",
+      "overflow:hidden;",
+      "text-overflow:ellipsis;",
+      "white-space:nowrap;",
+      "color:#CBD5E1;",
+      "font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;",
+      "font-size:12px;"
+    ),
+    corr_safe_chr(value)
+  )
+}
+
+
+# ============================================================
+# Correlation Reactable Style Helpers
+# ============================================================
+
+corr_row_bg <- function(index) {
+  index <- corr_safe_index(index)
+
+  if (index %% 2L == 0L) {
+    "#0B1326"
+  } else {
+    "#111C33"
+  }
+}
+
+corr_sticky_row_bg <- function(index) {
+  index <- corr_safe_index(index)
+
+  if (index %% 2L == 0L) {
+    "#101B2F"
+  } else {
+    "#13203A"
+  }
+}
+
+corr_dark_row_style <- function(index) {
+  list(
+    backgroundColor = corr_row_bg(index),
+    color = "#E2E8F0"
+  )
+}
+
+corr_dark_cell_style <- function(value, index = NULL) {
+  list(
+    backgroundColor = corr_row_bg(index),
+    color = if (corr_is_empty(value)) "#64748B" else "#E2E8F0",
+    borderBottom = "1px solid rgba(148, 163, 184, 0.14)"
+  )
+}
+
+corr_dark_numeric_cell_style <- function(value, index = NULL) {
+  list(
+    backgroundColor = corr_row_bg(index),
+    color = if (corr_is_empty(value)) "#64748B" else "#E2E8F0",
+    textAlign = "right",
+    fontVariantNumeric = "tabular-nums",
+    borderBottom = "1px solid rgba(148, 163, 184, 0.14)"
+  )
+}
+
+corr_dark_center_cell_style <- function(value, index = NULL) {
+  list(
+    backgroundColor = corr_row_bg(index),
+    color = if (corr_is_empty(value)) "#64748B" else "#E2E8F0",
+    textAlign = "center",
+    borderBottom = "1px solid rgba(148, 163, 184, 0.14)"
+  )
+}
+
+corr_dark_sticky_cell_style <- function(value, index = NULL) {
+  list(
+    position = "sticky",
+    left = 0,
+    zIndex = 1,
+    backgroundColor = corr_sticky_row_bg(index),
+    color = "#F8FAFC",
+    fontWeight = "800",
+    fontFamily = "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+    borderBottom = "1px solid rgba(148, 163, 184, 0.14)",
+    boxShadow = "6px 0 10px rgba(0, 0, 0, 0.18)"
+  )
+}
+
+# Backward-compatible replacement for older table code paths.
+corr_numeric_style <- function(value, index = NULL) {
+  corr_dark_numeric_cell_style(value, index)
+}
+
+corr_center_style <- function(value, index = NULL) {
+  corr_dark_center_cell_style(value, index)
+}
+
+corr_cell_style <- function(value, index = NULL) {
+  corr_dark_cell_style(value, index)
+}
+
+corr_default_header_style <- list(
+  background = "#0F1B33",
+  color = "#E5E7EB",
+  fontWeight = "800",
+  borderBottom = "1px solid #334155",
+  textTransform = "uppercase",
+  letterSpacing = "0.045em",
+  fontSize = "11px"
+)
+
+corr_theme <- reactable::reactableTheme(
+  color = "#E2E8F0",
+  backgroundColor = "#0B1326",
+  borderColor = "rgba(148, 163, 184, 0.22)",
+  highlightColor = "rgba(59, 130, 246, 0.18)",
+  rowSelectedStyle = list(
+    backgroundColor = "rgba(37, 99, 235, 0.28)",
+    boxShadow = "inset 3px 0 0 #60A5FA"
+  ),
+  cellPadding = "9px 12px",
+  style = list(
+    fontFamily = "-apple-system, BlinkMacSystemFont, Segoe UI, Inter, Helvetica, Arial, sans-serif",
+    fontSize = "13px",
+    border = "1px solid rgba(148, 163, 184, 0.22)",
+    borderRadius = "14px",
+    overflow = "hidden",
+    boxShadow = "0 18px 45px rgba(0, 0, 0, 0.28)"
+  ),
+  tableStyle = list(
+    borderCollapse = "separate",
+    borderSpacing = "0"
+  ),
+  headerStyle = list(
+    background = "#0F1B33",
+    color = "#F8FAFC",
+    borderBottom = "1px solid rgba(148, 163, 184, 0.28)"
+  ),
+  searchInputStyle = list(
+    width = "100%",
+    backgroundColor = "#111C33",
+    color = "#E2E8F0",
+    border = "1px solid #334155",
+    borderRadius = "10px",
+    padding = "8px 12px",
+    outline = "none"
+  ),
+  filterInputStyle = list(
+    backgroundColor = "#111C33",
+    color = "#E2E8F0",
+    border = "1px solid #334155",
+    borderRadius = "8px",
+    padding = "5px 8px",
+    outline = "none"
+  ),
+  selectStyle = list(
+    backgroundColor = "#111C33",
+    color = "#E2E8F0",
+    border = "1px solid #60A5FA",
+    borderRadius = "10px",
+    padding = "6px 10px",
+    minWidth = "76px",
+    height = "34px",
+    fontSize = "13px",
+    fontWeight = "800",
+    lineHeight = "1.2",
+    cursor = "pointer",
+    outline = "none"
+  )
+)
+
+
+# ============================================================
+# Validate Selected Correlation Variables
+# ============================================================
+
+if (is.null(CorrVars)) {
+  CorrVars_Requested <- names(data)
+} else {
+  CorrVars_Requested <- as.character(CorrVars)
+  CorrVars_Requested <- trimws(CorrVars_Requested)
+  CorrVars_Requested <- CorrVars_Requested[!is.na(CorrVars_Requested) & nzchar(CorrVars_Requested)]
+
+  if (length(CorrVars_Requested) == 0L) {
+    CorrVars_Requested <- names(data)
+  }
+}
+
+CorrVars_Valid <- intersect(CorrVars_Requested, names(data))
+CorrVars_Missing <- setdiff(CorrVars_Requested, names(data))
+
+if (length(CorrVars_Valid) > 0L) {
+  CorrVars_Numeric <- CorrVars_Valid[
+    vapply(
+      CorrVars_Valid,
+      function(v) is_corr_numeric_col(data[[v]]),
+      logical(1L)
+    )
+  ]
+} else {
+  CorrVars_Numeric <- character(0L)
+}
+
+CorrVars_NonNumeric <- setdiff(CorrVars_Valid, CorrVars_Numeric)
+
+if (length(CorrVars_Numeric) > 0L) {
+  CorrVars_Constant <- CorrVars_Numeric[
+    vapply(
+      CorrVars_Numeric,
+      function(v) corr_is_constant(data[[v]]),
+      logical(1L)
+    )
+  ]
+} else {
+  CorrVars_Constant <- character(0L)
+}
+
+CorrVars_Usable <- setdiff(CorrVars_Numeric, CorrVars_Constant)
+
+CorrVars_Skipped <- unique(c(CorrVars_Missing, CorrVars_NonNumeric, CorrVars_Constant))
+
+
+# ============================================================
+# Correlation Input QA Table
+# ============================================================
+
+CorrelationInputQA <- data.table::data.table(
+  Metric = c(
+    "Requested Variables",
+    "Valid Variables",
+    "Missing Variables",
+    "Numeric Variables",
+    "Non-Numeric Variables",
+    "Constant Numeric Variables",
+    "Usable Correlation Variables",
+    "Correlation Method",
+    "High Correlation Threshold"
+  ),
+  Count = c(
+    length(CorrVars_Requested),
+    length(CorrVars_Valid),
+    length(CorrVars_Missing),
+    length(CorrVars_Numeric),
+    length(CorrVars_NonNumeric),
+    length(CorrVars_Constant),
+    length(CorrVars_Usable),
+    NA_integer_,
+    NA_integer_
+  ),
+  Values = c(
+    paste(CorrVars_Requested, collapse = ", "),
+    paste(CorrVars_Valid, collapse = ", "),
+    paste(CorrVars_Missing, collapse = ", "),
+    paste(CorrVars_Numeric, collapse = ", "),
+    paste(CorrVars_NonNumeric, collapse = ", "),
+    paste(CorrVars_Constant, collapse = ", "),
+    paste(CorrVars_Usable, collapse = ", "),
+    CorrelationMethod,
+    as.character(HighCorrelationThreshold)
+  )
+)
+
+
+# ============================================================
+# Per-Variable Correlation Diagnostics
+# ============================================================
+
+if (length(CorrVars_Numeric) > 0L) {
+
+  CorrelationVariableDiagnostics <- data.table::rbindlist(
+    lapply(CorrVars_Numeric, function(v) {
+
+      x <- data[[v]]
+      n_total <- length(x)
+      n_na <- sum(is.na(x))
+      n_nan <- sum(is.nan(x))
+      n_inf <- sum(is.infinite(x))
+      n_finite <- sum(!is.na(x) & is.finite(x))
+      unique_n <- data.table::uniqueN(x[!is.na(x) & is.finite(x)])
+
+      data.table::data.table(
+        Variable = v,
+        Type = class(x)[1L],
+        Rows = n_total,
+        `Finite N` = n_finite,
+        `NA N` = n_na,
+        `NaN N` = n_nan,
+        `Inf N` = n_inf,
+        `Unique Finite N` = unique_n,
+        `Usable For Correlation` = v %in% CorrVars_Usable,
+        `Skip Reason` = if (v %in% CorrVars_Constant) {
+          "Constant / insufficient variation"
+        } else {
+          ""
+        }
+      )
+    }),
+    fill = TRUE
+  )
+
+} else {
+
+  CorrelationVariableDiagnostics <- data.table::data.table(
+    Variable = character(),
+    Type = character(),
+    Rows = integer(),
+    `Finite N` = integer(),
+    `NA N` = integer(),
+    `NaN N` = integer(),
+    `Inf N` = integer(),
+    `Unique Finite N` = integer(),
+    `Usable For Correlation` = logical(),
+    `Skip Reason` = character()
+  )
+}
+
+
+# ============================================================
+# Pairwise Correlation Stats
+# ============================================================
+
+CorrelationStats <- data.table::data.table(
+  Variable1 = character(),
+  Variable2 = character(),
+  Pair = character(),
+  Method = character(),
+  N = integer(),
+  `Missing Pair N` = integer(),
+  Correlation = numeric(),
+  `Abs Correlation` = numeric(),
+  Direction = character(),
+  Strength = character(),
+  `P Value` = numeric(),
+  `High Correlation` = logical()
+)
+
+if (length(CorrVars_Usable) >= 2L) {
+
+  pair_matrix <- utils::combn(CorrVars_Usable, 2L)
+
+  CorrelationStats <- data.table::rbindlist(
+    lapply(seq_len(ncol(pair_matrix)), function(j) {
+
+      x_name <- pair_matrix[1L, j]
+      y_name <- pair_matrix[2L, j]
+
+      x <- data[[x_name]]
+      y <- data[[y_name]]
+
+      valid_n <- corr_valid_n(x, y)
+      missing_n <- corr_missing_n(x, y)
+      r <- safe_cor(x, y, method = CorrelationMethod)
+      p <- safe_cor_p_value(x, y, method = CorrelationMethod)
+
+      data.table::data.table(
+        Variable1 = x_name,
+        Variable2 = y_name,
+        Pair = corr_pair_name(x_name, y_name),
+        Method = CorrelationMethod,
+        N = valid_n,
+        `Missing Pair N` = missing_n,
+        Correlation = r,
+        `Abs Correlation` = abs(r),
+        Direction = corr_direction_label(r),
+        Strength = corr_strength_label(r),
+        `P Value` = p,
+        `High Correlation` = !is.na(r) && abs(r) >= HighCorrelationThreshold
+      )
+    }),
+    fill = TRUE
+  )
+
+  data.table::setorderv(
+    CorrelationStats,
+    cols = c("Abs Correlation", "N"),
+    order = c(-1L, -1L),
+    na.last = TRUE
+  )
+}
+
+
+# ============================================================
+# Summary Tables for Strongest Relationships
+# ============================================================
+
+TopAbsCorrelationStats <- CorrelationStats[
+  !is.na(`Abs Correlation`)
+][
+  order(-`Abs Correlation`)
+]
+
+if (nrow(TopAbsCorrelationStats) > MaxCorrelationPairsToPlot) {
+  TopAbsCorrelationStats <- TopAbsCorrelationStats[seq_len(MaxCorrelationPairsToPlot)]
+}
+
+TopPositiveCorrelationStats <- CorrelationStats[
+  !is.na(Correlation) & Correlation > 0
+][
+  order(-Correlation)
+]
+
+if (nrow(TopPositiveCorrelationStats) > MaxCorrelationPairsToPlot) {
+  TopPositiveCorrelationStats <- TopPositiveCorrelationStats[seq_len(MaxCorrelationPairsToPlot)]
+}
+
+TopNegativeCorrelationStats <- CorrelationStats[
+  !is.na(Correlation) & Correlation < 0
+][
+  order(Correlation)
+]
+
+if (nrow(TopNegativeCorrelationStats) > MaxCorrelationPairsToPlot) {
+  TopNegativeCorrelationStats <- TopNegativeCorrelationStats[seq_len(MaxCorrelationPairsToPlot)]
+}
+
+HighCorrelationStats <- CorrelationStats[
+  !is.na(`Abs Correlation`) & `Abs Correlation` >= HighCorrelationThreshold
+][
+  order(-`Abs Correlation`)
+]
+
+
+# ============================================================
+# Reactable: Correlation Input QA
+# ============================================================
+
+Correlation_Input_QA <- reactable::reactable(
+  data = CorrelationInputQA,
+
+  compact = TRUE,
+  defaultPageSize = 10,
+  wrap = TRUE,
+  filterable = TRUE,
+  fullWidth = TRUE,
+  highlight = TRUE,
+  pagination = FALSE,
+  resizable = TRUE,
+  searchable = TRUE,
+  showSortable = TRUE,
+  showSortIcon = TRUE,
+  sortable = TRUE,
+  striped = FALSE,
+  rowStyle = corr_dark_row_style,
+  bordered = FALSE,
+  outlined = FALSE,
+
+  defaultColDef = reactable::colDef(
+    headerStyle = corr_default_header_style,
+    style = corr_dark_cell_style
+  ),
+
+  columns = list(
+    Metric = reactable::colDef(
+      minWidth = 230,
+      style = function(value, index) {
+        out <- corr_dark_cell_style(value, index)
+        out$color <- "#F8FAFC"
+        out$fontWeight <- "800"
+        out
+      }
+    ),
+    Count = reactable::colDef(
+      minWidth = 95,
+      align = "right",
+      cell = corr_integer_cell,
+      style = corr_dark_numeric_cell_style
+    ),
+    Values = reactable::colDef(
+      minWidth = 600,
+      cell = corr_truncated_mono_cell,
+      style = corr_dark_cell_style
+    )
+  ),
+
+  theme = corr_theme
+)
+
+
+# ============================================================
+# Reactable: Variable Diagnostics
+# ============================================================
+
+Correlation_Variable_Diagnostics <- reactable::reactable(
+  data = CorrelationVariableDiagnostics,
+
+  compact = TRUE,
+  defaultPageSize = 15,
+  pageSizeOptions = c(10, 15, 25, 50, 100),
+  wrap = FALSE,
+  filterable = TRUE,
+  fullWidth = TRUE,
+  highlight = TRUE,
+  pagination = TRUE,
+  resizable = TRUE,
+  searchable = TRUE,
+  selection = "multiple",
+  showPagination = TRUE,
+  showPageSizeOptions = TRUE,
+  showSortable = TRUE,
+  showSortIcon = TRUE,
+  sortable = TRUE,
+  striped = FALSE,
+  rowStyle = corr_dark_row_style,
+  bordered = FALSE,
+  outlined = FALSE,
+
+  defaultColDef = reactable::colDef(
+    minWidth = 105,
+    headerStyle = corr_default_header_style,
+    style = corr_dark_cell_style
+  ),
+
+  columns = list(
+    Variable = reactable::colDef(
+      sticky = "left",
+      minWidth = 220,
+      filterable = TRUE,
+      style = corr_dark_sticky_cell_style,
+      headerStyle = list(
+        position = "sticky",
+        left = 0,
+        zIndex = 2,
+        background = "#0B1326",
+        color = "#F8FAFC",
+        fontWeight = "900",
+        borderBottom = "1px solid #334155",
+        boxShadow = "6px 0 10px rgba(0, 0, 0, 0.22)"
+      )
+    ),
+
+    Type = reactable::colDef(
+      minWidth = 105,
+      align = "center",
+      style = corr_dark_center_cell_style,
+      cell = function(value) {
+        if (corr_is_empty(value)) {
+          htmltools::tags$span(style = "color:#64748B;", "—")
+        } else {
+          corr_badge(
+            value,
+            ifelse(value == "integer", "info", "good")
+          )
+        }
+      }
+    ),
+
+    Rows = reactable::colDef(
+      align = "right",
+      cell = corr_integer_cell,
+      style = corr_dark_numeric_cell_style
+    ),
+
+    `Finite N` = reactable::colDef(
+      align = "right",
+      cell = corr_integer_cell,
+      style = corr_dark_numeric_cell_style
+    ),
+
+    `NA N` = reactable::colDef(
+      align = "center",
+      style = corr_dark_center_cell_style,
+      cell = corr_positive_count_cell
+    ),
+
+    `NaN N` = reactable::colDef(
+      align = "center",
+      style = corr_dark_center_cell_style,
+      cell = corr_positive_count_cell
+    ),
+
+    `Inf N` = reactable::colDef(
+      align = "center",
+      style = corr_dark_center_cell_style,
+      cell = corr_positive_count_cell
+    ),
+
+    `Unique Finite N` = reactable::colDef(
+      align = "right",
+      cell = corr_integer_cell,
+      style = corr_dark_numeric_cell_style
+    ),
+
+    `Usable For Correlation` = reactable::colDef(
+      name = "Usable",
+      align = "center",
+      style = corr_dark_center_cell_style,
+      cell = function(value) {
+        if (corr_is_true(value)) {
+          corr_badge("Yes", "good")
+        } else {
+          corr_badge("No", "danger")
+        }
+      }
+    ),
+
+    `Skip Reason` = reactable::colDef(
+      minWidth = 240,
+      style = corr_dark_cell_style,
+      cell = corr_text_cell
+    )
+  ),
+
+  theme = corr_theme
+)
+
+
+# ============================================================
+# Reactable: Pairwise Correlation Stats
+# ============================================================
+
+Correlation_Stats <- reactable::reactable(
+  data = CorrelationStats,
+
+  compact = TRUE,
+  defaultPageSize = 15,
+  pageSizeOptions = c(10, 15, 25, 50, 100),
+  wrap = FALSE,
+  filterable = TRUE,
+  fullWidth = TRUE,
+  highlight = TRUE,
+  pagination = TRUE,
+  resizable = TRUE,
+  searchable = TRUE,
+  selection = "multiple",
+  showPagination = TRUE,
+  showPageSizeOptions = TRUE,
+  showSortable = TRUE,
+  showSortIcon = TRUE,
+  sortable = TRUE,
+  striped = FALSE,
+  rowStyle = corr_dark_row_style,
+  bordered = FALSE,
+  outlined = FALSE,
+
+  defaultColDef = reactable::colDef(
+    minWidth = 105,
+    headerStyle = corr_default_header_style,
+    style = corr_dark_cell_style
+  ),
+
+  columns = list(
+    Pair = reactable::colDef(
+      sticky = "left",
+      minWidth = 360,
+      filterable = TRUE,
+      style = corr_dark_sticky_cell_style,
+      headerStyle = list(
+        position = "sticky",
+        left = 0,
+        zIndex = 2,
+        background = "#0B1326",
+        color = "#F8FAFC",
+        fontWeight = "900",
+        borderBottom = "1px solid #334155",
+        boxShadow = "6px 0 10px rgba(0, 0, 0, 0.22)"
+      )
+    ),
+
+    Variable1 = reactable::colDef(show = FALSE),
+
+    Variable2 = reactable::colDef(show = FALSE),
+
+    Method = reactable::colDef(
+      minWidth = 110,
+      align = "center",
+      style = corr_dark_center_cell_style,
+      cell = function(value) {
+        if (corr_is_empty(value)) {
+          htmltools::tags$span(style = "color:#64748B;", "—")
+        } else {
+          corr_badge(value, "info")
+        }
+      }
+    ),
+
+    N = reactable::colDef(
+      minWidth = 95,
+      align = "right",
+      cell = corr_integer_cell,
+      style = corr_dark_numeric_cell_style
+    ),
+
+    `Missing Pair N` = reactable::colDef(
+      name = "Missing N",
+      minWidth = 115,
+      align = "right",
+      cell = corr_integer_cell,
+      style = corr_dark_numeric_cell_style
+    ),
+
+    Correlation = reactable::colDef(
+      minWidth = 125,
+      align = "center",
+      style = corr_dark_center_cell_style,
+      cell = corr_value_cell
+    ),
+
+    `Abs Correlation` = reactable::colDef(
+      name = "|Corr|",
+      minWidth = 110,
+      align = "center",
+      style = corr_dark_center_cell_style,
+      cell = corr_abs_value_cell
+    ),
+
+    Direction = reactable::colDef(
+      minWidth = 115,
+      align = "center",
+      style = corr_dark_center_cell_style,
+      cell = corr_direction_cell
+    ),
+
+    Strength = reactable::colDef(
+      minWidth = 125,
+      align = "center",
+      style = corr_dark_center_cell_style,
+      cell = corr_strength_cell
+    ),
+
+    `P Value` = reactable::colDef(
+      name = "P-Value",
+      minWidth = 115,
+      align = "center",
+      style = corr_dark_center_cell_style,
+      cell = corr_p_value_cell
+    ),
+
+    `High Correlation` = reactable::colDef(
+      name = "High Corr",
+      minWidth = 115,
+      align = "center",
+      style = corr_dark_center_cell_style,
+      cell = corr_bool_cell
+    )
+  ),
+
+  theme = corr_theme
+)
+
+
+# ============================================================
+# Correlation Matrix Plot
+# ============================================================
+
+CorrelogramPlot <- NULL
+
+if (length(CorrVars_Usable) >= 2L) {
+
+  CorrelogramPlot <- AutoPlots::CorrMatrix(
+    dt = data,
+    PreAgg = FALSE,
+    CorrVars = CorrVars_Usable,
+    Method = CorrelationMethod,
+    title.text = paste0("Correlation Matrix - ", tools::toTitleCase(CorrelationMethod)),
+    yAxis.title = "",
+    xAxis.title = "",
+    Theme = Theme
+  )
+}
+
+
+# ============================================================
+# Top Correlation Bar Plots
+# ============================================================
+
+CorrelationPlotList <- list()
+
+if (nrow(TopAbsCorrelationStats) > 0L) {
+
+  CorrelationPlotList[["Top Absolute Correlations"]] <- AutoPlots::Bar(
+    dt = TopAbsCorrelationStats,
+    XVar = "Pair",
+    YVar = "Abs Correlation",
+    title.text = "Top Absolute Correlations",
+    yAxis.title = "|Correlation|",
+    xAxis.title = NULL,
+    Theme = Theme
+  ) |> echarts4r::e_flip_coords()
+}
+
+if (nrow(TopPositiveCorrelationStats) > 0L) {
+
+  CorrelationPlotList[["Top Positive Correlations"]] <- AutoPlots::Bar(
+    dt = TopPositiveCorrelationStats,
+    XVar = "Pair",
+    YVar = "Correlation",
+    title.text = "Top Positive Correlations",
+    yAxis.title = "Correlation",
+    xAxis.title = NULL,
+    Theme = Theme
+  ) |> echarts4r::e_flip_coords()
+}
+
+if (nrow(TopNegativeCorrelationStats) > 0L) {
+
+  TopNegativeCorrelationStatsPlot <- data.table::copy(TopNegativeCorrelationStats)
+  TopNegativeCorrelationStatsPlot[, `Negative Correlation Magnitude` := abs(Correlation)]
+
+  CorrelationPlotList[["Top Negative Correlations"]] <- AutoPlots::Bar(
+    dt = TopNegativeCorrelationStatsPlot,
+    XVar = "Pair",
+    YVar = "Negative Correlation Magnitude",
+    title.text = "Top Negative Correlations",
+    yAxis.title = "|Negative Correlation|",
+    xAxis.title = NULL,
+    Theme = Theme
+  ) |> echarts4r::e_flip_coords()
+}
+```
+
+```{r Trend Analysis, echo=FALSE}
+# ============================================================
+# Trend Analysis / Plots
+# ============================================================
+
+# ----------------------------
+# Trend plot storage
+# ----------------------------
+
+TrendAreaPlotList <- list()
+TrendPlotList <- list()
+
+TrendStatsList <- list()
+TrendGroupedStatsList <- list()
+
+TrendQA <- data.table::data.table(
+  Metric = character(),
+  Count = integer(),
+  Values = character()
+)
+
+# ----------------------------
+# Trend helpers
+# ----------------------------
+
+clean_trend_var_vector <- function(x) {
+  if (is.null(x)) {
+    return(character(0L))
+  }
+
+  x <- as.character(x)
+  x <- trimws(x)
+  x <- x[!is.na(x) & nzchar(x)]
+  unique(x)
+}
+
+is_trend_numeric_col <- function(x) {
+  is.numeric(x) &&
+    !inherits(x, c("Date", "POSIXct", "POSIXlt", "IDate", "ITime"))
+}
+
+is_valid_trend_date_col <- function(x) {
+  inherits(x, c("Date", "POSIXct", "POSIXlt", "IDate", "IDateTime"))
+}
+
+# ----------------------------
+# Validate trend inputs
+# ----------------------------
+
+TrendVars_Clean <- clean_trend_var_vector(TrendVars)
+
+TrendDateVar_Valid <- !is.null(TrendDateVar) &&
+  length(TrendDateVar) == 1L &&
+  !is.na(TrendDateVar) &&
+  nzchar(TrendDateVar) &&
+  TrendDateVar %in% names(data)
+
+TrendDateVar_Usable <- FALSE
+
+if (TrendDateVar_Valid) {
+  TrendDateVar_Usable <- is_valid_trend_date_col(data[[TrendDateVar]])
+}
+
+TrendGroupVar_Valid <- !is.null(TrendGroupVar) &&
+  length(TrendGroupVar) == 1L &&
+  !is.na(TrendGroupVar) &&
+  nzchar(TrendGroupVar) &&
+  TrendGroupVar %in% names(data)
+
+TrendVars_Requested <- if (length(TrendVars_Clean) == 0L) {
+  character(0L)
+} else {
+  TrendVars_Clean
+}
+
+TrendVars_Valid <- intersect(TrendVars_Requested, names(data))
+TrendVars_Missing <- setdiff(TrendVars_Requested, names(data))
+
+TrendVars_Numeric <- TrendVars_Valid[
+  vapply(
+    TrendVars_Valid,
+    function(v) is_trend_numeric_col(data[[v]]),
+    logical(1L)
+  )
+]
+
+TrendVars_NonNumeric <- setdiff(TrendVars_Valid, TrendVars_Numeric)
+
+# ----------------------------
+# Base Trend QA table
+# ----------------------------
+
+TrendQA <- data.table::data.table(
+  Metric = c(
+    "TrendDateVar Provided",
+    "TrendDateVar Exists",
+    "TrendDateVar Usable Date Type",
+    "TrendGroupVar Provided",
+    "TrendGroupVar Exists",
+    "Requested Trend Variables",
+    "Valid Trend Variables",
+    "Missing Trend Variables",
+    "Numeric Trend Variables",
+    "Non-Numeric Trend Variables"
+  ),
+  Count = c(
+    as.integer(!is.null(TrendDateVar) && length(TrendDateVar) > 0L),
+    as.integer(TrendDateVar_Valid),
+    as.integer(TrendDateVar_Usable),
+    as.integer(!is.null(TrendGroupVar) && length(TrendGroupVar) > 0L),
+    as.integer(TrendGroupVar_Valid),
+    length(TrendVars_Requested),
+    length(TrendVars_Valid),
+    length(TrendVars_Missing),
+    length(TrendVars_Numeric),
+    length(TrendVars_NonNumeric)
+  ),
+  Values = c(
+    ifelse(is.null(TrendDateVar), "", paste(TrendDateVar, collapse = ", ")),
+    as.character(TrendDateVar_Valid),
+    as.character(TrendDateVar_Usable),
+    ifelse(is.null(TrendGroupVar), "", paste(TrendGroupVar, collapse = ", ")),
+    as.character(TrendGroupVar_Valid),
+    paste(TrendVars_Requested, collapse = ", "),
+    paste(TrendVars_Valid, collapse = ", "),
+    paste(TrendVars_Missing, collapse = ", "),
+    paste(TrendVars_Numeric, collapse = ", "),
+    paste(TrendVars_NonNumeric, collapse = ", ")
+  )
+)
+
+# ----------------------------
+# Build overall ungrouped area trend plots
+# ----------------------------
+
+if (TrendDateVar_Valid && TrendDateVar_Usable && length(TrendVars_Numeric) > 0L) {
+
+  for (i in TrendVars_Numeric) {
+
+    data1 <- data[
+      !is.na(get(TrendDateVar)) &
+        !is.na(get(i)) &
+        is.finite(get(i)),
+      .(Value = mean(get(i), na.rm = TRUE)),
+      by = TrendDateVar
+    ]
+
+    if (nrow(data1) > 0L) {
+
+      data.table::setnames(data1, "Value", i)
+      data.table::setorderv(data1, TrendDateVar)
+
+      TrendStatsList[[i]] <- data1
+
+      TrendAreaPlotList[[i]] <- AutoPlots::Area(
+        dt = data1,
+        XVar = TrendDateVar,
+        YVar = i,
+        title.text = paste0(i, " Overall Trend"),
+        yAxis.title = i,
+        xAxis.title = TrendDateVar,
+        Theme = Theme
+      )
+    }
+  }
+}
+
+# ----------------------------
+# Build grouped line trend plots
+# ----------------------------
+
+if (TrendDateVar_Valid && TrendDateVar_Usable && TrendGroupVar_Valid && length(TrendVars_Numeric) > 0L) {
+
+  for (i in TrendVars_Numeric) {
+
+    data2 <- data[
+      !is.na(get(TrendDateVar)) &
+        !is.na(get(i)) &
+        is.finite(get(i)) &
+        !is.na(get(TrendGroupVar)),
+      .(Value = mean(get(i), na.rm = TRUE)),
+      by = c(TrendDateVar, TrendGroupVar)
+    ]
+
+    if (nrow(data2) > 0L) {
+
+      data.table::setnames(data2, "Value", i)
+
+      data.table::setorderv(
+        data2,
+        cols = c(TrendGroupVar, TrendDateVar)
+      )
+
+      TrendGroupedStatsList[[i]] <- data2
+
+      TrendPlotList[[i]] <- AutoPlots::Line(
+        dt = data2,
+        XVar = TrendDateVar,
+        YVar = i,
+        GroupVar = TrendGroupVar,
+        title.text = paste0(i, " Trend by ", TrendGroupVar),
+        yAxis.title = i,
+        xAxis.title = TrendDateVar,
+        Theme = Theme
+      )
+    }
+  }
+}
+
+# ----------------------------
+# Update Trend QA with output counts
+# ----------------------------
+
+TrendQA <- data.table::rbindlist(
+  list(
+    TrendQA,
+    data.table::data.table(
+      Metric = c(
+        "Overall Trend Stats Created",
+        "Overall Trend Area Plots Created",
+        "Grouped Trend Stats Created",
+        "Grouped Trend Line Plots Created"
+      ),
+      Count = c(
+        length(TrendStatsList),
+        length(TrendAreaPlotList),
+        length(TrendGroupedStatsList),
+        length(TrendPlotList)
+      ),
+      Values = c(
+        paste(names(TrendStatsList), collapse = ", "),
+        paste(names(TrendAreaPlotList), collapse = ", "),
+        paste(names(TrendGroupedStatsList), collapse = ", "),
+        paste(names(TrendPlotList), collapse = ", ")
+      )
+    )
+  ),
+  fill = TRUE
+)
+```
+
+```{r Target Variable Analysis, echo=FALSE}
+# ============================================================
+# Target-Oriented Analysis
+# ============================================================
+
+# ----------------------------
+# Target settings
+# ----------------------------
+
+TargetMaxCategoricalLevels <- 25L
+TargetHighLiftThreshold <- 2.00
+TargetLowLiftThreshold <- 0.50
+TargetExtremeRateThreshold <- 0.90
+TargetMinLevelN <- 20L
+TargetMinTimePeriods <- 4L
+TargetDriftRecentShare <- 0.25
+TargetConceptDriftMinN <- 20L
+TargetConceptDriftMinPeriods <- 4L
+
+
+# ============================================================
+# Target Safe Helpers
+# ============================================================
+target_safe_mean <- function(x) {
+  out <- suppressWarnings(mean(x, na.rm = TRUE))
+  as.numeric(out)
+}
+
+target_safe_median <- function(x) {
+  out <- suppressWarnings(stats::median(x, na.rm = TRUE))
+  as.numeric(out)
+}
+
+target_safe_sd <- function(x) {
+  out <- suppressWarnings(stats::sd(x, na.rm = TRUE))
+  as.numeric(out)
+}
+
+target_safe_min <- function(x) {
+  out <- suppressWarnings(min(x, na.rm = TRUE))
+  as.numeric(out)
+}
+
+target_safe_max <- function(x) {
+  out <- suppressWarnings(max(x, na.rm = TRUE))
+  as.numeric(out)
+}
+
+target_is_empty <- function(value) {
+  is.null(value) ||
+    length(value) == 0L ||
+    all(is.na(value))
+}
+
+target_safe_chr <- function(value, empty_value = "—") {
+  if (target_is_empty(value)) {
+    empty_value
+  } else {
+    as.character(value)
+  }
+}
+
+target_safe_num <- function(value) {
+  if (target_is_empty(value)) {
+    return(NA_real_)
+  }
+
+  suppressWarnings(as.numeric(value)[1L])
+}
+
+target_clean_var_vector <- function(x) {
+  if (is.null(x)) {
+    return(character(0L))
+  }
+
+  x <- as.character(x)
+  x <- trimws(x)
+  x <- x[!is.na(x) & nzchar(x)]
+  unique(x)
+}
+
+target_is_numeric_col <- function(x) {
+  is.numeric(x) &&
+    !inherits(x, c("Date", "POSIXct", "POSIXlt", "IDate", "ITime"))
+}
+
+target_is_categorical_col <- function(x) {
+  is.character(x) ||
+    is.factor(x) ||
+    is.logical(x)
+}
+
+target_is_date_col <- function(x) {
+  inherits(x, c("Date", "POSIXct", "POSIXlt", "IDate", "IDateTime"))
+}
+
+target_is_binary_numeric <- function(x) {
+  if (!target_is_numeric_col(x)) {
+    return(FALSE)
+  }
+
+  y <- x[!is.na(x) & is.finite(x)]
+
+  if (!length(y)) {
+    return(FALSE)
+  }
+
+  vals <- sort(unique(y))
+
+  length(vals) == 2L && all(vals %in% c(0, 1))
+}
+
+target_mode_value <- function(x) {
+  if (!length(x)) {
+    return(NA_character_)
+  }
+
+  x <- x[!is.na(x)]
+
+  if (!length(x)) {
+    return(NA_character_)
+  }
+
+  tab <- sort(table(x), decreasing = TRUE)
+
+  names(tab)[1L]
+}
+
+target_fmt_num <- function(x, digits = 3L) {
+  if (target_is_empty(x)) {
+    return(NA_character_)
+  }
+
+  x <- suppressWarnings(as.numeric(x))
+
+  if (!length(x) || is.na(x[1L])) {
+    return(NA_character_)
+  }
+
+  formatC(x[1L], format = "f", big.mark = ",", digits = digits)
+}
+
+target_fmt_int <- function(x) {
+  if (target_is_empty(x)) {
+    return(NA_character_)
+  }
+
+  x <- suppressWarnings(as.numeric(x))
+
+  if (!length(x) || is.na(x[1L])) {
+    return(NA_character_)
+  }
+
+  formatC(round(x[1L]), format = "f", digits = 0L, big.mark = ",")
+}
+
+target_fmt_pct <- function(x, digits = 2L) {
+  if (target_is_empty(x)) {
+    return(NA_character_)
+  }
+
+  x <- suppressWarnings(as.numeric(x))
+
+  if (!length(x) || is.na(x[1L])) {
+    return(NA_character_)
+  }
+
+  paste0(formatC(x[1L], format = "f", big.mark = ",", digits = digits), "%")
+}
+
+target_safe_cor <- function(x, y, method = "spearman") {
+  keep <- !is.na(x) & !is.na(y) & is.finite(x) & is.finite(y)
+
+  x <- x[keep]
+  y <- y[keep]
+
+  if (length(x) < 3L) {
+    return(NA_real_)
+  }
+
+  if (data.table::uniqueN(x) <= 1L || data.table::uniqueN(y) <= 1L) {
+    return(NA_real_)
+  }
+
+  suppressWarnings(stats::cor(x, y, method = method, use = "complete.obs"))
+}
+
+target_safe_cor_p_value <- function(x, y, method = "spearman") {
+  keep <- !is.na(x) & !is.na(y) & is.finite(x) & is.finite(y)
+
+  x <- x[keep]
+  y <- y[keep]
+
+  if (length(x) < 4L) {
+    return(NA_real_)
+  }
+
+  if (data.table::uniqueN(x) <= 1L || data.table::uniqueN(y) <= 1L) {
+    return(NA_real_)
+  }
+
+  out <- tryCatch(
+    suppressWarnings(
+      stats::cor.test(
+        x = x,
+        y = y,
+        method = method,
+        exact = FALSE
+      )$p.value
+    ),
+    error = function(e) NA_real_
+  )
+
+  as.numeric(out)
+}
+
+target_strength_label <- function(x) {
+  if (is.na(x)) {
+    return("Not available")
+  }
+
+  ax <- abs(x)
+
+  if (ax >= 0.90) {
+    "Very Strong"
+  } else if (ax >= 0.70) {
+    "Strong"
+  } else if (ax >= 0.50) {
+    "Moderate"
+  } else if (ax >= 0.30) {
+    "Weak"
+  } else {
+    "Very Weak"
+  }
+}
+
+target_direction_label <- function(x) {
+  if (is.na(x)) {
+    return("Not available")
+  }
+
+  if (x > 0) {
+    "Positive"
+  } else if (x < 0) {
+    "Negative"
+  } else {
+    "Zero"
+  }
+}
+
+target_risk_word_match <- function(x) {
+  x <- tolower(x)
+
+  patterns <- c(
+    "target",
+    "outcome",
+    "result",
+    "status",
+    "converted",
+    "conversion",
+    "complete",
+    "completed",
+    "approved",
+    "accepted",
+    "rejected",
+    "enrolled",
+    "enrollment",
+    "churn",
+    "churned",
+    "cancel",
+    "cancelled",
+    "retained",
+    "retention",
+    "response",
+    "label",
+    "score",
+    "decision",
+    "final",
+    "post",
+    "after"
+  )
+
+  any(vapply(patterns, function(p) grepl(p, x, fixed = TRUE), logical(1L)))
+}
+
+target_feature_role <- function(v, x) {
+  if (v == TargetVar) {
+    return("Target")
+  }
+
+  if (target_is_numeric_col(x)) {
+    return("Numeric Feature")
+  }
+
+  if (target_is_categorical_col(x)) {
+    return("Categorical Feature")
+  }
+
+  if (target_is_date_col(x)) {
+    return("Date/Time")
+  }
+
+  "Skipped / Unsupported"
+}
+
+
+# ============================================================
+# Target Reactable Styling Helpers
+# ============================================================
+
+target_safe_index <- function(index) {
+  if (is.null(index) || length(index) == 0L || is.na(index)) {
+    return(1L)
+  }
+
+  as.integer(index[1L])
+}
+
+target_row_bg <- function(index) {
+  index <- target_safe_index(index)
+
+  if (index %% 2L == 0L) {
+    "#0B1326"
+  } else {
+    "#111C33"
+  }
+}
+
+target_sticky_row_bg <- function(index) {
+  index <- target_safe_index(index)
+
+  if (index %% 2L == 0L) {
+    "#101B2F"
+  } else {
+    "#13203A"
+  }
+}
+
+target_dark_row_style <- function(index) {
+  list(
+    backgroundColor = target_row_bg(index),
+    color = "#E2E8F0"
+  )
+}
+
+target_dark_cell_style <- function(value, index = NULL) {
+  list(
+    backgroundColor = target_row_bg(index),
+    color = if (target_is_empty(value)) "#64748B" else "#E2E8F0",
+    borderBottom = "1px solid rgba(148, 163, 184, 0.14)"
+  )
+}
+
+target_dark_numeric_cell_style <- function(value, index = NULL) {
+  list(
+    backgroundColor = target_row_bg(index),
+    color = if (target_is_empty(value)) "#64748B" else "#E2E8F0",
+    textAlign = "right",
+    fontVariantNumeric = "tabular-nums",
+    borderBottom = "1px solid rgba(148, 163, 184, 0.14)"
+  )
+}
+
+target_dark_center_cell_style <- function(value, index = NULL) {
+  list(
+    backgroundColor = target_row_bg(index),
+    color = if (target_is_empty(value)) "#64748B" else "#E2E8F0",
+    textAlign = "center",
+    borderBottom = "1px solid rgba(148, 163, 184, 0.14)"
+  )
+}
+
+target_dark_sticky_cell_style <- function(value, index = NULL) {
+  list(
+    position = "sticky",
+    left = 0,
+    zIndex = 1,
+    backgroundColor = target_sticky_row_bg(index),
+    color = "#F8FAFC",
+    fontWeight = "800",
+    fontFamily = "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+    borderBottom = "1px solid rgba(148, 163, 184, 0.14)",
+    boxShadow = "6px 0 10px rgba(0, 0, 0, 0.18)"
+  )
+}
+
+target_default_header_style <- list(
+  background = "#0F1B33",
+  color = "#E5E7EB",
+  fontWeight = "800",
+  borderBottom = "1px solid #334155",
+  textTransform = "uppercase",
+  letterSpacing = "0.045em",
+  fontSize = "11px"
+)
+
+target_theme <- reactable::reactableTheme(
+  color = "#E2E8F0",
+  backgroundColor = "#0B1326",
+  borderColor = "rgba(148, 163, 184, 0.22)",
+  highlightColor = "rgba(59, 130, 246, 0.18)",
+  rowSelectedStyle = list(
+    backgroundColor = "rgba(37, 99, 235, 0.28)",
+    boxShadow = "inset 3px 0 0 #60A5FA"
+  ),
+  cellPadding = "9px 12px",
+  style = list(
+    fontFamily = "-apple-system, BlinkMacSystemFont, Segoe UI, Inter, Helvetica, Arial, sans-serif",
+    fontSize = "13px",
+    border = "1px solid rgba(148, 163, 184, 0.22)",
+    borderRadius = "14px",
+    overflow = "hidden",
+    boxShadow = "0 18px 45px rgba(0, 0, 0, 0.28)"
+  ),
+  tableStyle = list(
+    borderCollapse = "separate",
+    borderSpacing = "0"
+  ),
+  headerStyle = list(
+    background = "#0F1B33",
+    color = "#F8FAFC",
+    borderBottom = "1px solid rgba(148, 163, 184, 0.28)"
+  ),
+  searchInputStyle = list(
+    width = "100%",
+    backgroundColor = "#111C33",
+    color = "#E2E8F0",
+    border = "1px solid #334155",
+    borderRadius = "10px",
+    padding = "8px 12px",
+    outline = "none"
+  ),
+  filterInputStyle = list(
+    backgroundColor = "#111C33",
+    color = "#E2E8F0",
+    border = "1px solid #334155",
+    borderRadius = "8px",
+    padding = "5px 8px",
+    outline = "none"
+  ),
+  selectStyle = list(
+    backgroundColor = "#111C33",
+    color = "#E2E8F0",
+    border = "1px solid #60A5FA",
+    borderRadius = "10px",
+    padding = "6px 10px",
+    minWidth = "76px",
+    height = "34px",
+    fontSize = "13px",
+    fontWeight = "800",
+    lineHeight = "1.2",
+    cursor = "pointer",
+    outline = "none"
+  )
+)
+
+target_badge <- function(value, type = c("neutral", "good", "warning", "danger", "info")) {
+
+  type <- match.arg(type)
+
+  colors <- list(
+    neutral = list(bg = "#263247", fg = "#CBD5E1", border = "#475569"),
+    good    = list(bg = "#064E3B", fg = "#A7F3D0", border = "#10B981"),
+    warning = list(bg = "#78350F", fg = "#FDE68A", border = "#F59E0B"),
+    danger  = list(bg = "#7F1D1D", fg = "#FECACA", border = "#EF4444"),
+    info    = list(bg = "#1E3A8A", fg = "#BFDBFE", border = "#3B82F6")
+  )
+
+  htmltools::tags$span(
+    style = paste0(
+      "display:inline-block;",
+      "padding:2px 8px;",
+      "border-radius:999px;",
+      "font-size:11px;",
+      "font-weight:700;",
+      "letter-spacing:0.02em;",
+      "background:", colors[[type]]$bg, ";",
+      "color:", colors[[type]]$fg, ";",
+      "border:1px solid ", colors[[type]]$border, ";"
+    ),
+    target_safe_chr(value)
+  )
+}
+
+target_integer_cell <- function(value) {
+  if (target_is_empty(value)) {
+    htmltools::tags$span(style = "color:#64748B;", "—")
+  } else {
+    htmltools::tags$span(
+      style = "font-variant-numeric:tabular-nums;color:#E2E8F0;",
+      target_fmt_int(value)
+    )
+  }
+}
+
+target_numeric_cell <- function(value, digits = 3L) {
+  if (target_is_empty(value)) {
+    htmltools::tags$span(style = "color:#64748B;", "—")
+  } else {
+    htmltools::tags$span(
+      style = "font-variant-numeric:tabular-nums;color:#E2E8F0;",
+      target_fmt_num(value, digits)
+    )
+  }
+}
+
+target_pct_cell <- function(value, digits = 2L) {
+  if (target_is_empty(value)) {
+    htmltools::tags$span(style = "color:#64748B;", "—")
+  } else {
+    htmltools::tags$span(
+      style = "font-variant-numeric:tabular-nums;color:#E2E8F0;",
+      target_fmt_pct(value, digits)
+    )
+  }
+}
+
+target_corr_cell <- function(value) {
+  value <- target_safe_num(value)
+
+  if (is.na(value)) {
+    return(htmltools::tags$span(style = "color:#64748B;", "—"))
+  }
+
+  av <- abs(value)
+
+  type <- if (av >= 0.90) {
+    "danger"
+  } else if (av >= 0.70) {
+    "warning"
+  } else if (av >= 0.50) {
+    "info"
+  } else {
+    "neutral"
+  }
+
+  target_badge(target_fmt_num(value, 3L), type)
+}
+
+target_abs_corr_cell <- function(value) {
+  value <- target_safe_num(value)
+
+  if (is.na(value)) {
+    return(htmltools::tags$span(style = "color:#64748B;", "—"))
+  }
+
+  type <- if (value >= 0.90) {
+    "danger"
+  } else if (value >= 0.70) {
+    "warning"
+  } else if (value >= 0.50) {
+    "info"
+  } else {
+    "neutral"
+  }
+
+  target_badge(target_fmt_num(value, 3L), type)
+}
+
+target_lift_cell <- function(value) {
+  value <- target_safe_num(value)
+
+  if (is.na(value)) {
+    return(htmltools::tags$span(style = "color:#64748B;", "—"))
+  }
+
+  type <- if (value >= TargetHighLiftThreshold) {
+    "danger"
+  } else if (value <= TargetLowLiftThreshold) {
+    "warning"
+  } else {
+    "neutral"
+  }
+
+  target_badge(target_fmt_num(value, 3L), type)
+}
+
+target_flag_cell <- function(value) {
+  value <- target_safe_chr(value)
+
+  type <- switch(
+    value,
+    "High" = "danger",
+    "Medium" = "warning",
+    "Low" = "info",
+    "Yes" = "danger",
+    "No" = "good",
+    "Not available" = "neutral",
+    "neutral"
+  )
+
+  target_badge(value, type)
+}
+
+target_text_cell <- function(value) {
+  htmltools::tags$span(
+    style = "color:#CBD5E1;",
+    target_safe_chr(value)
+  )
+}
+
+target_truncated_mono_cell <- function(value) {
+  htmltools::tags$span(
+    title = target_safe_chr(value, empty_value = ""),
+    style = paste0(
+      "display:block;",
+      "max-width:720px;",
+      "overflow:hidden;",
+      "text-overflow:ellipsis;",
+      "white-space:nowrap;",
+      "color:#CBD5E1;",
+      "font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;",
+      "font-size:12px;"
+    ),
+    target_safe_chr(value)
+  )
+}
+
+
+# ============================================================
+# Target Object Initialization
+# ============================================================
+
+TargetVar_Clean <- target_clean_var_vector(TargetVar)
+
+TargetVar_Provided <- length(TargetVar_Clean) > 0L
+TargetVar_Name <- if (TargetVar_Provided) TargetVar_Clean[1L] else NA_character_
+TargetVar_Valid <- TargetVar_Provided && TargetVar_Name %in% names(data)
+
+TargetVar_Type <- NA_character_
+TargetVar_Class <- NA_character_
+TargetVar_Usable <- FALSE
+TargetProblemType <- "Not provided"
+
+TargetQA <- data.table::data.table()
+TargetDistributionTable <- data.table::data.table()
+TargetNumericAssociationStats <- data.table::data.table()
+TargetCategoricalLevelStats <- data.table::data.table()
+TargetCategoricalAssociationStats <- data.table::data.table()
+TargetTrendStats <- data.table::data.table()
+TargetGroupedTrendStats <- data.table::data.table()
+TargetFeatureDriftStats <- data.table::data.table()
+TargetConceptDriftStats <- data.table::data.table()
+TargetRiskFlags <- data.table::data.table()
+TargetPlotList <- list()
+TargetTrendPlotList <- list()
+TargetGroupedTrendPlotList <- list()
+TargetDistributionPlot <- NULL
+TargetAssociationPlotList <- list()
+TargetDriftPlotList <- list()
+TargetRiskPlotList <- list()
+
+
+# ============================================================
+# Target Validation / QA
+# ============================================================
+
+if (TargetVar_Valid) {
+
+  target_y <- data[[TargetVar_Name]]
+
+  TargetVar_Class <- class(target_y)[1L]
+
+  TargetVar_Type <- if (target_is_binary_numeric(target_y)) {
+    "Binary Numeric"
+  } else if (target_is_numeric_col(target_y)) {
+    "Continuous Numeric"
+  } else if (target_is_categorical_col(target_y)) {
+    if (data.table::uniqueN(target_y, na.rm = TRUE) == 2L) {
+      "Binary Categorical"
+    } else {
+      "Multiclass Categorical"
+    }
+  } else {
+    "Unsupported"
+  }
+
+  TargetProblemType <- if (TargetVar_Type %in% c("Binary Numeric", "Binary Categorical")) {
+    "Binary"
+  } else if (TargetVar_Type == "Continuous Numeric") {
+    "Regression"
+  } else if (TargetVar_Type == "Multiclass Categorical") {
+    "Multiclass"
+  } else {
+    "Unsupported"
+  }
+
+  TargetVar_Usable <- TargetProblemType %in% c("Binary", "Regression", "Multiclass")
+
+  TargetQA <- data.table::data.table(
+    Metric = c(
+      "TargetVar Provided",
+      "TargetVar Valid",
+      "Target Variable",
+      "Target Class",
+      "Target Type",
+      "Target Problem Type",
+      "Target Usable",
+      "Rows",
+      "Target NA N",
+      "Target NA %",
+      "Target Unique N",
+      "Target Mode"
+    ),
+    Count = c(
+      as.integer(TargetVar_Provided),
+      as.integer(TargetVar_Valid),
+      NA_integer_,
+      NA_integer_,
+      NA_integer_,
+      NA_integer_,
+      as.integer(TargetVar_Usable),
+      length(target_y),
+      sum(is.na(target_y)),
+      NA_integer_,
+      data.table::uniqueN(target_y, na.rm = TRUE),
+      NA_integer_
+    ),
+    Value = c(
+      as.character(TargetVar_Provided),
+      as.character(TargetVar_Valid),
+      TargetVar_Name,
+      TargetVar_Class,
+      TargetVar_Type,
+      TargetProblemType,
+      as.character(TargetVar_Usable),
+      as.character(length(target_y)),
+      as.character(sum(is.na(target_y))),
+      target_fmt_pct(mean(is.na(target_y)) * 100, 2L),
+      as.character(data.table::uniqueN(target_y, na.rm = TRUE)),
+      target_mode_value(target_y)
+    )
+  )
+
+} else {
+
+  TargetQA <- data.table::data.table(
+    Metric = c(
+      "TargetVar Provided",
+      "TargetVar Valid",
+      "Target Variable",
+      "Target Class",
+      "Target Type",
+      "Target Problem Type",
+      "Target Usable",
+      "Rows",
+      "Target NA N",
+      "Target NA %",
+      "Target Unique N",
+      "Target Mode"
+    ),
+    Count = c(
+      as.integer(TargetVar_Provided),
+      as.integer(TargetVar_Valid),
+      NA_integer_,
+      NA_integer_,
+      NA_integer_,
+      NA_integer_,
+      0L,
+      nrow(data),
+      NA_integer_,
+      NA_integer_,
+      NA_integer_,
+      NA_integer_
+    ),
+    Value = c(
+      as.character(TargetVar_Provided),
+      as.character(TargetVar_Valid),
+      ifelse(TargetVar_Provided, TargetVar_Name, ""),
+      "",
+      "",
+      "Not provided",
+      "FALSE",
+      as.character(nrow(data)),
+      "",
+      "",
+      "",
+      ""
+    )
+  )
+}
+
+
+# ============================================================
+# Target Distribution
+# ============================================================
+
+if (TargetVar_Valid && TargetVar_Usable) {
+
+  target_y <- data[[TargetVar_Name]]
+
+  if (TargetProblemType %in% c("Binary", "Multiclass")) {
+
+    target_dist_dt <- data.table::data.table(
+      TargetValue = as.character(target_y)
+    )
+
+    target_dist_dt[is.na(TargetValue), TargetValue := "<NA>"]
+    target_dist_dt[trimws(TargetValue) == "", TargetValue := "<EMPTY STRING>"]
+
+    TargetDistributionTable <- target_dist_dt[
+      ,
+      .(N = .N),
+      by = TargetValue
+    ]
+
+    data.table::setorderv(TargetDistributionTable, "N", order = -1L)
+
+    TargetDistributionTable[, Percent := N / sum(N) * 100]
+
+    TargetDistributionPlot <- AutoPlots::Bar(
+      dt = TargetDistributionTable,
+      XVar = "TargetValue",
+      YVar = "N",
+      title.text = paste0(TargetVar_Name, " Distribution"),
+      yAxis.title = "Count",
+      xAxis.title = TargetVar_Name,
+      Theme = Theme
+    )
+
+    TargetPlotList[["Target Distribution"]] <- TargetDistributionPlot
+
+  } else if (TargetProblemType == "Regression") {
+
+    TargetDistributionTable <- data.table::data.table(
+      Metric = c(
+        "N",
+        "NA N",
+        "Mean",
+        "Median",
+        "Standard Deviation",
+        "Min",
+        "Q25",
+        "Q75",
+        "Max"
+      ),
+      Value = as.numeric(c(
+        sum(!is.na(target_y) & is.finite(target_y)),
+        sum(is.na(target_y)),
+        target_safe_mean(target_y),
+        target_safe_median(target_y),
+        target_safe_sd(target_y),
+        target_safe_min(target_y),
+        suppressWarnings(as.numeric(stats::quantile(target_y, probs = 0.25, na.rm = TRUE, names = FALSE))),
+        suppressWarnings(as.numeric(stats::quantile(target_y, probs = 0.75, na.rm = TRUE, names = FALSE))),
+        target_safe_max(target_y)
+      ))
+    )
+
+    TargetDistributionPlot <- AutoPlots::Histogram(
+      dt = data[!is.na(get(TargetVar_Name)) & is.finite(get(TargetVar_Name))],
+      XVar = TargetVar_Name,
+      title.text = paste0(TargetVar_Name, " Distribution"),
+      xAxis.title = TargetVar_Name,
+      yAxis.title = "Count",
+      Theme = Theme
+    )
+
+    TargetPlotList[["Target Distribution"]] <- TargetDistributionPlot
+  }
+}
+
+
+# ============================================================
+# Feature Set for Target Analysis
+# ============================================================
+
+TargetCandidateVars <- setdiff(names(data), TargetVar_Name)
+
+TargetNumericFeatureVars <- TargetCandidateVars[
+  vapply(
+    TargetCandidateVars,
+    function(v) target_is_numeric_col(data[[v]]),
+    logical(1L)
+  )
+]
+
+TargetCategoricalFeatureVars <- TargetCandidateVars[
+  vapply(
+    TargetCandidateVars,
+    function(v) target_is_categorical_col(data[[v]]),
+    logical(1L)
+  )
+]
+
+TargetSkippedFeatureVars <- setdiff(
+  TargetCandidateVars,
+  c(TargetNumericFeatureVars, TargetCategoricalFeatureVars)
+)
+
+
+# ============================================================
+# Numeric Feature Association With Target
+# ============================================================
+
+if (TargetVar_Valid && TargetVar_Usable && TargetProblemType %in% c("Binary", "Regression") && length(TargetNumericFeatureVars) > 0L) {
+
+  target_y <- data[[TargetVar_Name]]
+
+  if (TargetProblemType == "Binary" && !target_is_numeric_col(target_y)) {
+    target_levels <- sort(unique(as.character(target_y[!is.na(target_y)])))
+    target_y_num <- as.integer(as.character(target_y) == target_levels[length(target_levels)])
+  } else {
+    target_y_num <- target_y
+  }
+
+  TargetNumericAssociationStats <- data.table::rbindlist(
+    lapply(TargetNumericFeatureVars, function(v) {
+
+      x <- data[[v]]
+
+      keep <- !is.na(x) &
+        !is.na(target_y_num) &
+        is.finite(x) &
+        is.finite(target_y_num)
+
+      n_valid <- sum(keep)
+
+      r <- target_safe_cor(x, target_y_num, method = "spearman")
+      p <- target_safe_cor_p_value(x, target_y_num, method = "spearman")
+
+      data.table::data.table(
+        Feature = v,
+        FeatureType = class(x)[1L],
+        N = n_valid,
+        `Feature NA N` = sum(is.na(x)),
+        `Feature NA %` = mean(is.na(x)) * 100,
+        `Target NA N` = sum(is.na(target_y_num)),
+        `Correlation` = r,
+        `Abs Correlation` = abs(r),
+        Direction = target_direction_label(r),
+        Strength = target_strength_label(r),
+        `P Value` = p,
+        `Suspicious Name` = target_risk_word_match(v)
+      )
+    }),
+    fill = TRUE
+  )
+
+  data.table::setorderv(
+    TargetNumericAssociationStats,
+    cols = c("Abs Correlation", "N"),
+    order = c(-1L, -1L),
+    na.last = TRUE
+  )
+}
+
+
+# ============================================================
+# Categorical Feature Association With Target
+# ============================================================
+
+if (TargetVar_Valid && TargetVar_Usable && TargetProblemType %in% c("Binary", "Regression") && length(TargetCategoricalFeatureVars) > 0L) {
+
+  target_y <- data[[TargetVar_Name]]
+
+  if (TargetProblemType == "Binary" && !target_is_numeric_col(target_y)) {
+    target_levels <- sort(unique(as.character(target_y[!is.na(target_y)])))
+    target_y_num <- as.integer(as.character(target_y) == target_levels[length(target_levels)])
+  } else {
+    target_y_num <- target_y
+  }
+
+  global_target_mean <- mean(target_y_num, na.rm = TRUE)
+
+  TargetCategoricalLevelStats <- data.table::rbindlist(
+    lapply(TargetCategoricalFeatureVars, function(v) {
+
+      x <- as.character(data[[v]])
+      x[is.na(x)] <- "<NA>"
+      x[trimws(x) == ""] <- "<EMPTY STRING>"
+
+      data2 <- data.table::data.table(
+        Feature = v,
+        Level = x,
+        TargetValue = target_y_num
+      )
+
+      out <- data2[
+        ,
+        .(
+          N = as.integer(.N),
+          `Target NonMissing N` = as.integer(sum(!is.na(TargetValue))),
+          `Target Mean` = target_safe_mean(TargetValue),
+          `Target Median` = target_safe_median(TargetValue),
+          `Target SD` = target_safe_sd(TargetValue)
+        ),
+        by = .(Feature, Level)
+      ]
+
+      out[, `Level N %` := N / sum(N) * 100]
+      out[, `Global Target Mean` := global_target_mean]
+      out[, Lift := `Target Mean` / global_target_mean]
+      out[, `Abs Lift From 1` := abs(Lift - 1)]
+      out[, `Suspicious Name` := target_risk_word_match(v)]
+      out[, `Low N Flag` := N < TargetMinLevelN]
+
+      data.table::setorderv(out, c("Feature", "N"), order = c(1L, -1L))
+
+      if (nrow(out) > TargetMaxCategoricalLevels) {
+        out <- out[seq_len(TargetMaxCategoricalLevels)]
+      }
+
+      out
+    }),
+    fill = TRUE
+  )
+
+  TargetCategoricalAssociationStats <- TargetCategoricalLevelStats[
+    ,
+    .(
+      Levels = data.table::uniqueN(Level),
+      N = sum(N),
+      `Max Target Mean` = max(`Target Mean`, na.rm = TRUE),
+      `Min Target Mean` = min(`Target Mean`, na.rm = TRUE),
+      `Target Mean Range` = max(`Target Mean`, na.rm = TRUE) - min(`Target Mean`, na.rm = TRUE),
+      `Max Lift` = max(Lift, na.rm = TRUE),
+      `Min Lift` = min(Lift, na.rm = TRUE),
+      `Max Abs Lift From 1` = max(`Abs Lift From 1`, na.rm = TRUE),
+      `Extreme Level Count` = sum(
+        !is.na(`Target Mean`) &
+          (`Target Mean` >= TargetExtremeRateThreshold | `Target Mean` <= (1 - TargetExtremeRateThreshold))
+      ),
+      `Low N Level Count` = sum(`Low N Flag`, na.rm = TRUE),
+      `Suspicious Name` = any(`Suspicious Name`, na.rm = TRUE)
+    ),
+    by = Feature
+  ]
+
+  TargetCategoricalAssociationStats[, RiskLevel := fifelse(
+    `Suspicious Name` & `Max Abs Lift From 1` >= 1,
+    "High",
+    fifelse(
+      `Max Abs Lift From 1` >= 1 | `Extreme Level Count` > 0,
+      "Medium",
+      fifelse(`Max Abs Lift From 1` >= 0.5, "Low", "None")
+    )
+  )]
+
+  data.table::setorderv(
+    TargetCategoricalAssociationStats,
+    cols = c("RiskLevel", "Max Abs Lift From 1"),
+    order = c(1L, -1L)
+  )
+}
+
+
+# ============================================================
+# Target Trend / Target Grouped Trend
+# ============================================================
+
+TargetTrendDateVar_Valid <- !is.null(TrendDateVar) &&
+  length(TrendDateVar) == 1L &&
+  !is.na(TrendDateVar) &&
+  nzchar(TrendDateVar) &&
+  TrendDateVar %in% names(data) &&
+  target_is_date_col(data[[TrendDateVar]])
+
+TargetTrendGroupVar_Valid <- !is.null(TrendGroupVar) &&
+  length(TrendGroupVar) == 1L &&
+  !is.na(TrendGroupVar) &&
+  nzchar(TrendGroupVar) &&
+  TrendGroupVar %in% names(data)
+
+if (TargetVar_Valid && TargetVar_Usable && TargetProblemType %in% c("Binary", "Regression") && TargetTrendDateVar_Valid) {
+
+  target_y <- data[[TargetVar_Name]]
+
+  if (TargetProblemType == "Binary" && !target_is_numeric_col(target_y)) {
+    target_levels <- sort(unique(as.character(target_y[!is.na(target_y)])))
+    target_y_num <- as.integer(as.character(target_y) == target_levels[length(target_levels)])
+  } else {
+    target_y_num <- target_y
+  }
+
+  data_target_trend <- data.table::copy(data)
+  data_target_trend[, `.TargetValue` := target_y_num]
+
+  TargetTrendStats <- data_target_trend[
+    !is.na(get(TrendDateVar)) &
+      !is.na(`.TargetValue`) &
+      is.finite(`.TargetValue`),
+    .(
+      N = as.integer(.N),
+      TargetMean = target_safe_mean(`.TargetValue`),
+      TargetMedian = target_safe_median(`.TargetValue`),
+      TargetSD = target_safe_sd(`.TargetValue`)
+    ),
+    by = TrendDateVar
+  ]
+
+  data.table::setorderv(TargetTrendStats, TrendDateVar)
+
+  if (nrow(TargetTrendStats) > 0L) {
+
+    TargetTrendPlotList[["Target Overall Trend"]] <- AutoPlots::Area(
+      dt = TargetTrendStats,
+      XVar = TrendDateVar,
+      YVar = "TargetMean",
+      title.text = paste0(TargetVar_Name, " Overall Trend"),
+      yAxis.title = ifelse(TargetProblemType == "Binary", "Target Rate", "Target Mean"),
+      xAxis.title = TrendDateVar,
+      Theme = Theme
+    )
+  }
+
+  if (TargetTrendGroupVar_Valid) {
+
+    TargetGroupedTrendStats <- data_target_trend[
+      !is.na(get(TrendDateVar)) &
+        !is.na(get(TrendGroupVar)) &
+        !is.na(`.TargetValue`) &
+        is.finite(`.TargetValue`),
+      .(
+        N = as.integer(.N),
+        TargetMean = target_safe_mean(`.TargetValue`),
+        TargetMedian = target_safe_median(`.TargetValue`),
+        TargetSD = target_safe_sd(`.TargetValue`)
+      ),
+      by = c(TrendDateVar, TrendGroupVar)
+    ]
+
+    data.table::setorderv(TargetGroupedTrendStats, c(TrendGroupVar, TrendDateVar))
+
+    if (nrow(TargetGroupedTrendStats) > 0L) {
+
+      TargetGroupedTrendPlotList[["Target Grouped Trend"]] <- AutoPlots::Line(
+        dt = TargetGroupedTrendStats,
+        XVar = TrendDateVar,
+        YVar = "TargetMean",
+        GroupVar = TrendGroupVar,
+        title.text = paste0(TargetVar_Name, " Trend by ", TrendGroupVar),
+        yAxis.title = ifelse(TargetProblemType == "Binary", "Target Rate", "Target Mean"),
+        xAxis.title = TrendDateVar,
+        Theme = Theme
+      )
+    }
+  }
+}
+
+
+# ============================================================
+# Feature Drift Diagnostics
+# ============================================================
+
+if (TargetTrendDateVar_Valid && length(TargetCandidateVars) > 0L) {
+
+  data_drift <- data.table::copy(data)
+  data.table::setorderv(data_drift, TrendDateVar)
+
+  n_rows_drift <- nrow(data_drift)
+  recent_n <- max(1L, floor(n_rows_drift * TargetDriftRecentShare))
+  early_n <- max(1L, recent_n)
+
+  early_dt <- data_drift[seq_len(min(early_n, .N))]
+  recent_dt <- data_drift[(.N - min(recent_n, .N) + 1L):.N]
+
+  numeric_drift <- data.table::data.table()
+
+  if (length(TargetNumericFeatureVars) > 0L) {
+
+    numeric_drift <- data.table::rbindlist(
+      lapply(TargetNumericFeatureVars, function(v) {
+
+        early_x <- early_dt[[v]]
+        recent_x <- recent_dt[[v]]
+
+        early_mean <- mean(early_x, na.rm = TRUE)
+        recent_mean <- mean(recent_x, na.rm = TRUE)
+
+        data.table::data.table(
+          Feature = v,
+          FeatureType = "Numeric",
+          `Early N` = sum(!is.na(early_x) & is.finite(early_x)),
+          `Recent N` = sum(!is.na(recent_x) & is.finite(recent_x)),
+          `Early Mean` = early_mean,
+          `Recent Mean` = recent_mean,
+          `Absolute Change` = recent_mean - early_mean,
+          `Percent Change` = ifelse(is.na(early_mean) || early_mean == 0, NA_real_, (recent_mean - early_mean) / abs(early_mean) * 100),
+          `Early Missing %` = mean(is.na(early_x)) * 100,
+          `Recent Missing %` = mean(is.na(recent_x)) * 100,
+          `Missing % Change` = (mean(is.na(recent_x)) - mean(is.na(early_x))) * 100
+        )
+      }),
+      fill = TRUE
+    )
+  }
+
+  categorical_drift <- data.table::data.table()
+
+  if (length(TargetCategoricalFeatureVars) > 0L) {
+
+    categorical_drift <- data.table::rbindlist(
+      lapply(TargetCategoricalFeatureVars, function(v) {
+
+        early_x <- as.character(early_dt[[v]])
+        recent_x <- as.character(recent_dt[[v]])
+
+        early_x[is.na(early_x)] <- "<NA>"
+        recent_x[is.na(recent_x)] <- "<NA>"
+
+        early_tab <- data.table::data.table(Level = early_x)[, .(EarlyN = .N), by = Level]
+        recent_tab <- data.table::data.table(Level = recent_x)[, .(RecentN = .N), by = Level]
+
+        out <- merge(early_tab, recent_tab, by = "Level", all = TRUE)
+        out[is.na(EarlyN), EarlyN := 0L]
+        out[is.na(RecentN), RecentN := 0L]
+
+        out[, Feature := v]
+        out[, FeatureType := "Categorical"]
+        out[, `Early Share` := EarlyN / sum(EarlyN) * 100]
+        out[, `Recent Share` := RecentN / sum(RecentN) * 100]
+        out[, `Share Change` := `Recent Share` - `Early Share`]
+
+        data.table::setorderv(out, "Share Change", order = -1L)
+
+        if (nrow(out) > TargetMaxCategoricalLevels) {
+          out <- out[seq_len(TargetMaxCategoricalLevels)]
+        }
+
+        out
+      }),
+      fill = TRUE
+    )
+  }
+
+  TargetFeatureDriftStats <- data.table::rbindlist(
+    list(numeric_drift, categorical_drift),
+    fill = TRUE
+  )
+}
+
+
+# ============================================================
+# Concept Drift Diagnostics
+# ============================================================
+
+if (TargetVar_Valid && TargetVar_Usable && TargetProblemType %in% c("Binary", "Regression") && TargetTrendDateVar_Valid && length(TargetNumericFeatureVars) > 0L) {
+
+  target_y <- data[[TargetVar_Name]]
+
+  if (TargetProblemType == "Binary" && !target_is_numeric_col(target_y)) {
+    target_levels <- sort(unique(as.character(target_y[!is.na(target_y)])))
+    target_y_num <- as.integer(as.character(target_y) == target_levels[length(target_levels)])
+  } else {
+    target_y_num <- target_y
+  }
+
+  data_concept <- data.table::copy(data)
+  data_concept[, `.TargetValue` := target_y_num]
+
+  date_values <- sort(unique(data_concept[[TrendDateVar]][!is.na(data_concept[[TrendDateVar]])]))
+
+  if (length(date_values) >= TargetConceptDriftMinPeriods) {
+
+    midpoint <- floor(length(date_values) / 2L)
+    early_dates <- date_values[seq_len(midpoint)]
+    recent_dates <- date_values[(midpoint + 1L):length(date_values)]
+
+    early_concept <- data_concept[get(TrendDateVar) %in% early_dates]
+    recent_concept <- data_concept[get(TrendDateVar) %in% recent_dates]
+
+    TargetConceptDriftStats <- data.table::rbindlist(
+      lapply(TargetNumericFeatureVars, function(v) {
+
+        early_r <- target_safe_cor(early_concept[[v]], early_concept[[".TargetValue"]], method = "spearman")
+        recent_r <- target_safe_cor(recent_concept[[v]], recent_concept[[".TargetValue"]], method = "spearman")
+
+        early_n <- sum(
+          !is.na(early_concept[[v]]) &
+            !is.na(early_concept[[".TargetValue"]]) &
+            is.finite(early_concept[[v]]) &
+            is.finite(early_concept[[".TargetValue"]])
+        )
+
+        recent_n <- sum(
+          !is.na(recent_concept[[v]]) &
+            !is.na(recent_concept[[".TargetValue"]]) &
+            is.finite(recent_concept[[v]]) &
+            is.finite(recent_concept[[".TargetValue"]])
+        )
+
+        data.table::data.table(
+          Feature = v,
+          `Early N` = early_n,
+          `Recent N` = recent_n,
+          `Early Correlation` = early_r,
+          `Recent Correlation` = recent_r,
+          `Correlation Change` = recent_r - early_r,
+          `Abs Correlation Change` = abs(recent_r - early_r),
+          `Direction Changed` = ifelse(is.na(early_r) | is.na(recent_r), FALSE, sign(early_r) != sign(recent_r))
+        )
+      }),
+      fill = TRUE
+    )
+
+    data.table::setorderv(
+      TargetConceptDriftStats,
+      cols = "Abs Correlation Change",
+      order = -1L,
+      na.last = TRUE
+    )
+  }
+}
+
+
+# ============================================================
+# Target Risk Flags
+# ============================================================
+
+TargetRiskFlags <- data.table::data.table(
+  Feature = character(),
+  RiskType = character(),
+  RiskLevel = character(),
+  Reason = character(),
+  Evidence = character()
+)
+
+if (TargetVar_Valid && TargetVar_Usable) {
+
+  suspicious_name_flags <- data.table::data.table(
+    Feature = names(data)[vapply(names(data), target_risk_word_match, logical(1L))]
+  )
+
+  suspicious_name_flags <- suspicious_name_flags[Feature != TargetVar_Name]
+
+  if (nrow(suspicious_name_flags) > 0L) {
+    suspicious_name_flags[, `:=`(
+      RiskType = "Name-based leakage risk",
+      RiskLevel = "Medium",
+      Reason = "Feature name contains a word commonly associated with outcome, status, decision, post-treatment, or label information.",
+      Evidence = Feature
+    )]
+
+    TargetRiskFlags <- data.table::rbindlist(
+      list(TargetRiskFlags, suspicious_name_flags),
+      fill = TRUE
+    )
+  }
+
+  if (nrow(TargetNumericAssociationStats) > 0L) {
+
+    numeric_high_assoc <- TargetNumericAssociationStats[
+      !is.na(`Abs Correlation`) & `Abs Correlation` >= 0.90
+    ]
+
+    if (nrow(numeric_high_assoc) > 0L) {
+      numeric_high_assoc <- numeric_high_assoc[
+        ,
+        .(
+          Feature,
+          RiskType = "Extreme numeric target association",
+          RiskLevel = "High",
+          Reason = "Numeric feature has extremely high absolute association with the target.",
+          Evidence = paste0("Abs correlation = ", target_fmt_num(`Abs Correlation`, 3L))
+        )
+      ]
+
+      TargetRiskFlags <- data.table::rbindlist(
+        list(TargetRiskFlags, numeric_high_assoc),
+        fill = TRUE
+      )
+    }
+  }
+
+  if (nrow(TargetCategoricalAssociationStats) > 0L) {
+
+    categorical_high_assoc <- TargetCategoricalAssociationStats[
+      RiskLevel %in% c("High", "Medium")
+    ]
+
+    if (nrow(categorical_high_assoc) > 0L) {
+      categorical_high_assoc <- categorical_high_assoc[
+        ,
+        .(
+          Feature,
+          RiskType = "Categorical target separation",
+          RiskLevel,
+          Reason = "Categorical feature has levels with unusually large target-rate or target-mean separation.",
+          Evidence = paste0(
+            "Max lift = ", target_fmt_num(`Max Lift`, 3L),
+            "; min lift = ", target_fmt_num(`Min Lift`, 3L),
+            "; target mean range = ", target_fmt_num(`Target Mean Range`, 3L)
+          )
+        )
+      ]
+
+      TargetRiskFlags <- data.table::rbindlist(
+        list(TargetRiskFlags, categorical_high_assoc),
+        fill = TRUE
+      )
+    }
+  }
+
+  if (nrow(TargetConceptDriftStats) > 0L) {
+
+    concept_flags <- TargetConceptDriftStats[
+      !is.na(`Abs Correlation Change`) & `Abs Correlation Change` >= 0.30
+    ]
+
+    if (nrow(concept_flags) > 0L) {
+      concept_flags <- concept_flags[
+        ,
+        .(
+          Feature,
+          RiskType = "Potential concept drift",
+          RiskLevel = ifelse(`Abs Correlation Change` >= 0.50, "High", "Medium"),
+          Reason = "Feature-target relationship changed materially between early and recent periods.",
+          Evidence = paste0(
+            "Early corr = ", target_fmt_num(`Early Correlation`, 3L),
+            "; recent corr = ", target_fmt_num(`Recent Correlation`, 3L),
+            "; change = ", target_fmt_num(`Correlation Change`, 3L)
+          )
+        )
+      ]
+
+      TargetRiskFlags <- data.table::rbindlist(
+        list(TargetRiskFlags, concept_flags),
+        fill = TRUE
+      )
+    }
+  }
+
+  if (nrow(TargetRiskFlags) > 0L) {
+    data.table::setorderv(
+      TargetRiskFlags,
+      cols = c("RiskLevel", "RiskType", "Feature"),
+      order = c(1L, 1L, 1L)
+    )
+  }
+}
+
+
+# ============================================================
+# Target Reactable Artifacts
+# ============================================================
+
+Target_QA <- reactable::reactable(
+  data = TargetQA,
+  compact = TRUE,
+  defaultPageSize = 25,
+  wrap = TRUE,
+  filterable = TRUE,
+  fullWidth = TRUE,
+  highlight = TRUE,
+  pagination = FALSE,
+  resizable = TRUE,
+  searchable = TRUE,
+  sortable = TRUE,
+  striped = FALSE,
+  rowStyle = target_dark_row_style,
+  bordered = FALSE,
+  outlined = FALSE,
+  defaultColDef = reactable::colDef(
+    headerStyle = target_default_header_style,
+    style = target_dark_cell_style
+  ),
+  columns = list(
+    Metric = reactable::colDef(
+      minWidth = 260,
+      style = function(value, index) {
+        out <- target_dark_cell_style(value, index)
+        out$color <- "#F8FAFC"
+        out$fontWeight <- "800"
+        out
+      }
+    ),
+    Count = reactable::colDef(
+      minWidth = 100,
+      align = "right",
+      cell = target_integer_cell,
+      style = target_dark_numeric_cell_style
+    ),
+    Value = reactable::colDef(
+      minWidth = 500,
+      cell = target_truncated_mono_cell,
+      style = target_dark_cell_style
+    )
+  ),
+  theme = target_theme
+)
+
+Target_Distribution <- reactable::reactable(
+  data = TargetDistributionTable,
+  compact = TRUE,
+  defaultPageSize = 25,
+  pageSizeOptions = c(10, 25, 50, 100),
+  wrap = FALSE,
+  filterable = TRUE,
+  fullWidth = TRUE,
+  highlight = TRUE,
+  pagination = TRUE,
+  resizable = TRUE,
+  searchable = TRUE,
+  sortable = TRUE,
+  striped = FALSE,
+  rowStyle = target_dark_row_style,
+  bordered = FALSE,
+  outlined = FALSE,
+  defaultColDef = reactable::colDef(
+    headerStyle = target_default_header_style,
+    style = target_dark_cell_style
+  ),
+  theme = target_theme
+)
+
+Target_Numeric_Association <- reactable::reactable(
+  data = TargetNumericAssociationStats,
+  compact = TRUE,
+  defaultPageSize = 15,
+  pageSizeOptions = c(10, 15, 25, 50, 100),
+  wrap = FALSE,
+  filterable = TRUE,
+  fullWidth = TRUE,
+  highlight = TRUE,
+  pagination = TRUE,
+  resizable = TRUE,
+  searchable = TRUE,
+  selection = "multiple",
+  showPagination = TRUE,
+  showPageSizeOptions = TRUE,
+  sortable = TRUE,
+  striped = FALSE,
+  rowStyle = target_dark_row_style,
+  bordered = FALSE,
+  outlined = FALSE,
+  defaultColDef = reactable::colDef(
+    minWidth = 105,
+    headerStyle = target_default_header_style,
+    style = target_dark_cell_style
+  ),
+  columns = list(
+    Feature = reactable::colDef(
+      sticky = "left",
+      minWidth = 260,
+      filterable = TRUE,
+      style = target_dark_sticky_cell_style,
+      headerStyle = list(
+        position = "sticky",
+        left = 0,
+        zIndex = 2,
+        background = "#0B1326",
+        color = "#F8FAFC",
+        fontWeight = "900",
+        borderBottom = "1px solid #334155",
+        boxShadow = "6px 0 10px rgba(0, 0, 0, 0.22)"
+      )
+    ),
+    N = reactable::colDef(align = "right", cell = target_integer_cell, style = target_dark_numeric_cell_style),
+    `Feature NA N` = reactable::colDef(align = "right", cell = target_integer_cell, style = target_dark_numeric_cell_style),
+    `Feature NA %` = reactable::colDef(align = "right", cell = target_pct_cell, style = target_dark_numeric_cell_style),
+    `Target NA N` = reactable::colDef(align = "right", cell = target_integer_cell, style = target_dark_numeric_cell_style),
+    Correlation = reactable::colDef(align = "center", cell = target_corr_cell, style = target_dark_center_cell_style),
+    `Abs Correlation` = reactable::colDef(name = "|Corr|", align = "center", cell = target_abs_corr_cell, style = target_dark_center_cell_style),
+    Direction = reactable::colDef(align = "center", cell = function(value) target_badge(value, ifelse(value == "Positive", "good", ifelse(value == "Negative", "warning", "neutral"))), style = target_dark_center_cell_style),
+    Strength = reactable::colDef(align = "center", cell = function(value) target_badge(value, ifelse(value %in% c("Very Strong", "Strong"), "danger", ifelse(value == "Moderate", "warning", "neutral"))), style = target_dark_center_cell_style),
+    `P Value` = reactable::colDef(align = "center", cell = function(value) target_numeric_cell(value, 4L), style = target_dark_center_cell_style),
+    `Suspicious Name` = reactable::colDef(align = "center", cell = function(value) if (isTRUE(value)) target_badge("Yes", "danger") else target_badge("No", "good"), style = target_dark_center_cell_style)
+  ),
+  theme = target_theme
+)
+
+Target_Categorical_Association <- reactable::reactable(
+  data = TargetCategoricalAssociationStats,
+  compact = TRUE,
+  defaultPageSize = 15,
+  pageSizeOptions = c(10, 15, 25, 50, 100),
+  wrap = FALSE,
+  filterable = TRUE,
+  fullWidth = TRUE,
+  highlight = TRUE,
+  pagination = TRUE,
+  resizable = TRUE,
+  searchable = TRUE,
+  selection = "multiple",
+  showPagination = TRUE,
+  showPageSizeOptions = TRUE,
+  sortable = TRUE,
+  striped = FALSE,
+  rowStyle = target_dark_row_style,
+  bordered = FALSE,
+  outlined = FALSE,
+  defaultColDef = reactable::colDef(
+    minWidth = 105,
+    headerStyle = target_default_header_style,
+    style = target_dark_cell_style
+  ),
+  columns = list(
+    Feature = reactable::colDef(
+      sticky = "left",
+      minWidth = 260,
+      filterable = TRUE,
+      style = target_dark_sticky_cell_style,
+      headerStyle = list(
+        position = "sticky",
+        left = 0,
+        zIndex = 2,
+        background = "#0B1326",
+        color = "#F8FAFC",
+        fontWeight = "900",
+        borderBottom = "1px solid #334155",
+        boxShadow = "6px 0 10px rgba(0, 0, 0, 0.22)"
+      )
+    ),
+    Levels = reactable::colDef(align = "right", cell = target_integer_cell, style = target_dark_numeric_cell_style),
+    N = reactable::colDef(align = "right", cell = target_integer_cell, style = target_dark_numeric_cell_style),
+    `Max Target Mean` = reactable::colDef(align = "right", cell = target_numeric_cell, style = target_dark_numeric_cell_style),
+    `Min Target Mean` = reactable::colDef(align = "right", cell = target_numeric_cell, style = target_dark_numeric_cell_style),
+    `Target Mean Range` = reactable::colDef(align = "right", cell = target_numeric_cell, style = target_dark_numeric_cell_style),
+    `Max Lift` = reactable::colDef(align = "center", cell = target_lift_cell, style = target_dark_center_cell_style),
+    `Min Lift` = reactable::colDef(align = "center", cell = target_lift_cell, style = target_dark_center_cell_style),
+    `Max Abs Lift From 1` = reactable::colDef(align = "right", cell = target_numeric_cell, style = target_dark_numeric_cell_style),
+    `Extreme Level Count` = reactable::colDef(align = "right", cell = target_integer_cell, style = target_dark_numeric_cell_style),
+    `Low N Level Count` = reactable::colDef(align = "right", cell = target_integer_cell, style = target_dark_numeric_cell_style),
+    `Suspicious Name` = reactable::colDef(align = "center", cell = function(value) if (isTRUE(value)) target_badge("Yes", "danger") else target_badge("No", "good"), style = target_dark_center_cell_style),
+    RiskLevel = reactable::colDef(align = "center", cell = target_flag_cell, style = target_dark_center_cell_style)
+  ),
+  theme = target_theme
+)
+
+Target_Categorical_Level_Association <- reactable::reactable(
+  data = TargetCategoricalLevelStats,
+  compact = TRUE,
+  defaultPageSize = 25,
+  pageSizeOptions = c(10, 25, 50, 100),
+  wrap = FALSE,
+  filterable = TRUE,
+  fullWidth = TRUE,
+  highlight = TRUE,
+  pagination = TRUE,
+  resizable = TRUE,
+  searchable = TRUE,
+  sortable = TRUE,
+  striped = FALSE,
+  rowStyle = target_dark_row_style,
+  bordered = FALSE,
+  outlined = FALSE,
+  defaultColDef = reactable::colDef(
+    minWidth = 105,
+    headerStyle = target_default_header_style,
+    style = target_dark_cell_style
+  ),
+  columns = list(
+    Feature = reactable::colDef(sticky = "left", minWidth = 240, style = target_dark_sticky_cell_style),
+    Level = reactable::colDef(minWidth = 240, cell = target_truncated_mono_cell, style = target_dark_cell_style),
+    N = reactable::colDef(align = "right", cell = target_integer_cell, style = target_dark_numeric_cell_style),
+    `Level N %` = reactable::colDef(align = "right", cell = target_pct_cell, style = target_dark_numeric_cell_style),
+    `Target Mean` = reactable::colDef(align = "right", cell = target_numeric_cell, style = target_dark_numeric_cell_style),
+    Lift = reactable::colDef(align = "center", cell = target_lift_cell, style = target_dark_center_cell_style),
+    `Abs Lift From 1` = reactable::colDef(align = "right", cell = target_numeric_cell, style = target_dark_numeric_cell_style),
+    `Low N Flag` = reactable::colDef(align = "center", cell = function(value) if (isTRUE(value)) target_badge("Yes", "warning") else target_badge("No", "good"), style = target_dark_center_cell_style)
+  ),
+  theme = target_theme
+)
+
+Target_Feature_Drift <- reactable::reactable(
+  data = TargetFeatureDriftStats,
+  compact = TRUE,
+  defaultPageSize = 25,
+  pageSizeOptions = c(10, 25, 50, 100),
+  wrap = FALSE,
+  filterable = TRUE,
+  fullWidth = TRUE,
+  highlight = TRUE,
+  pagination = TRUE,
+  resizable = TRUE,
+  searchable = TRUE,
+  sortable = TRUE,
+  striped = FALSE,
+  rowStyle = target_dark_row_style,
+  bordered = FALSE,
+  outlined = FALSE,
+  defaultColDef = reactable::colDef(
+    minWidth = 105,
+    headerStyle = target_default_header_style,
+    style = target_dark_cell_style
+  ),
+  theme = target_theme
+)
+
+Target_Concept_Drift <- reactable::reactable(
+  data = TargetConceptDriftStats,
+  compact = TRUE,
+  defaultPageSize = 25,
+  pageSizeOptions = c(10, 25, 50, 100),
+  wrap = FALSE,
+  filterable = TRUE,
+  fullWidth = TRUE,
+  highlight = TRUE,
+  pagination = TRUE,
+  resizable = TRUE,
+  searchable = TRUE,
+  sortable = TRUE,
+  striped = FALSE,
+  rowStyle = target_dark_row_style,
+  bordered = FALSE,
+  outlined = FALSE,
+  defaultColDef = reactable::colDef(
+    minWidth = 105,
+    headerStyle = target_default_header_style,
+    style = target_dark_cell_style
+  ),
+  columns = list(
+    Feature = reactable::colDef(sticky = "left", minWidth = 240, style = target_dark_sticky_cell_style),
+    `Early N` = reactable::colDef(align = "right", cell = target_integer_cell, style = target_dark_numeric_cell_style),
+    `Recent N` = reactable::colDef(align = "right", cell = target_integer_cell, style = target_dark_numeric_cell_style),
+    `Early Correlation` = reactable::colDef(align = "center", cell = target_corr_cell, style = target_dark_center_cell_style),
+    `Recent Correlation` = reactable::colDef(align = "center", cell = target_corr_cell, style = target_dark_center_cell_style),
+    `Correlation Change` = reactable::colDef(align = "right", cell = target_numeric_cell, style = target_dark_numeric_cell_style),
+    `Abs Correlation Change` = reactable::colDef(align = "right", cell = target_numeric_cell, style = target_dark_numeric_cell_style),
+    `Direction Changed` = reactable::colDef(align = "center", cell = function(value) if (isTRUE(value)) target_badge("Yes", "warning") else target_badge("No", "good"), style = target_dark_center_cell_style)
+  ),
+  theme = target_theme
+)
+
+Target_Risk_Flags <- reactable::reactable(
+  data = TargetRiskFlags,
+  compact = TRUE,
+  defaultPageSize = 25,
+  pageSizeOptions = c(10, 25, 50, 100),
+  wrap = TRUE,
+  filterable = TRUE,
+  fullWidth = TRUE,
+  highlight = TRUE,
+  pagination = TRUE,
+  resizable = TRUE,
+  searchable = TRUE,
+  sortable = TRUE,
+  striped = FALSE,
+  rowStyle = target_dark_row_style,
+  bordered = FALSE,
+  outlined = FALSE,
+  defaultColDef = reactable::colDef(
+    minWidth = 130,
+    headerStyle = target_default_header_style,
+    style = target_dark_cell_style
+  ),
+  columns = list(
+    Feature = reactable::colDef(sticky = "left", minWidth = 240, style = target_dark_sticky_cell_style),
+    RiskType = reactable::colDef(minWidth = 240, cell = target_text_cell, style = target_dark_cell_style),
+    RiskLevel = reactable::colDef(align = "center", cell = target_flag_cell, style = target_dark_center_cell_style),
+    Reason = reactable::colDef(minWidth = 500, cell = target_text_cell, style = target_dark_cell_style),
+    Evidence = reactable::colDef(minWidth = 500, cell = target_text_cell, style = target_dark_cell_style)
+  ),
+  theme = target_theme
+)
+
+
+# ============================================================
+# Target-Oriented Plots
+# ============================================================
+
+# ----------------------------
+# Target distribution plot is already created above and stored in:
+# TargetDistributionPlot
+# TargetPlotList[["Target Distribution"]]
+# ----------------------------
+
+
+# ----------------------------
+# Numeric association plots
+# ----------------------------
+
+if (exists("TargetNumericAssociationStats") && nrow(TargetNumericAssociationStats) > 0L) {
+
+  TargetNumericAssociationPlotData <- data.table::copy(
+    TargetNumericAssociationStats[
+      !is.na(`Abs Correlation`)
+    ]
+  )
+
+  data.table::setorderv(
+    TargetNumericAssociationPlotData,
+    cols = c("Abs Correlation", "N"),
+    order = c(-1L, -1L),
+    na.last = TRUE
+  )
+
+  if (nrow(TargetNumericAssociationPlotData) > MaxCorrelationPairsToPlot) {
+    TargetNumericAssociationPlotData <- TargetNumericAssociationPlotData[seq_len(MaxCorrelationPairsToPlot)]
+  }
+
+  if (nrow(TargetNumericAssociationPlotData) > 0L) {
+
+    TargetAssociationPlotList[["Top Numeric Target Associations"]] <- AutoPlots::Bar(
+      dt = TargetNumericAssociationPlotData,
+      XVar = "Feature",
+      YVar = "Abs Correlation",
+      title.text = paste0("Top Numeric Associations with ", TargetVar_Name),
+      yAxis.title = "|Spearman Correlation|",
+      xAxis.title = NULL,
+      Theme = Theme
+    )
+  }
+}
+
+
+# ----------------------------
+# Categorical association plots
+# ----------------------------
+
+if (exists("TargetCategoricalAssociationStats") && nrow(TargetCategoricalAssociationStats) > 0L) {
+
+  TargetCategoricalAssociationPlotData <- data.table::copy(
+    TargetCategoricalAssociationStats[
+      !is.na(`Max Abs Lift From 1`)
+    ]
+  )
+
+  data.table::setorderv(
+    TargetCategoricalAssociationPlotData,
+    cols = c("Max Abs Lift From 1", "Target Mean Range"),
+    order = c(-1L, -1L),
+    na.last = TRUE
+  )
+
+  if (nrow(TargetCategoricalAssociationPlotData) > MaxCorrelationPairsToPlot) {
+    TargetCategoricalAssociationPlotData <- TargetCategoricalAssociationPlotData[seq_len(MaxCorrelationPairsToPlot)]
+  }
+
+  if (nrow(TargetCategoricalAssociationPlotData) > 0L) {
+
+    TargetAssociationPlotList[["Top Categorical Target Associations"]] <- AutoPlots::Bar(
+      dt = TargetCategoricalAssociationPlotData,
+      XVar = "Feature",
+      YVar = "Max Abs Lift From 1",
+      title.text = paste0("Top Categorical Associations with ", TargetVar_Name),
+      yAxis.title = "Max |Lift - 1|",
+      xAxis.title = NULL,
+      Theme = Theme
+    )
+  }
+}
+
+
+# ----------------------------
+# Categorical level lift plot
+# ----------------------------
+
+if (exists("TargetCategoricalLevelStats") && nrow(TargetCategoricalLevelStats) > 0L) {
+
+  TargetCategoricalLevelPlotData <- data.table::copy(
+    TargetCategoricalLevelStats[
+      !is.na(`Abs Lift From 1`)
+    ]
+  )
+
+  TargetCategoricalLevelPlotData[
+    ,
+    FeatureLevel := paste0(Feature, " = ", Level)
+  ]
+
+  data.table::setorderv(
+    TargetCategoricalLevelPlotData,
+    cols = c("Abs Lift From 1", "N"),
+    order = c(-1L, -1L),
+    na.last = TRUE
+  )
+
+  if (nrow(TargetCategoricalLevelPlotData) > MaxCorrelationPairsToPlot) {
+    TargetCategoricalLevelPlotData <- TargetCategoricalLevelPlotData[seq_len(MaxCorrelationPairsToPlot)]
+  }
+
+  if (nrow(TargetCategoricalLevelPlotData) > 0L) {
+
+    TargetAssociationPlotList[["Top Categorical Level Lifts"]] <- AutoPlots::Bar(
+      dt = TargetCategoricalLevelPlotData,
+      XVar = "FeatureLevel",
+      YVar = "Abs Lift From 1",
+      title.text = paste0("Top Categorical Level Lifts for ", TargetVar_Name),
+      yAxis.title = "|Lift - 1|",
+      xAxis.title = NULL,
+      Theme = Theme
+    )
+  }
+}
+
+
+# ----------------------------
+# Target overall trend plots already created above and stored in:
+# TargetTrendPlotList
+# ----------------------------
+
+
+# ----------------------------
+# Target grouped trend plots already created above and stored in:
+# TargetGroupedTrendPlotList
+# ----------------------------
+
+
+# ----------------------------
+# Numeric feature drift plots
+# ----------------------------
+
+if (exists("TargetFeatureDriftStats") && nrow(TargetFeatureDriftStats) > 0L) {
+
+  TargetNumericFeatureDriftPlotData <- data.table::copy(
+    TargetFeatureDriftStats[
+      FeatureType == "Numeric" &
+        !is.na(`Percent Change`)
+    ]
+  )
+
+  if (nrow(TargetNumericFeatureDriftPlotData) > 0L) {
+
+    TargetNumericFeatureDriftPlotData[
+      ,
+      `Abs Percent Change` := abs(`Percent Change`)
+    ]
+
+    data.table::setorderv(
+      TargetNumericFeatureDriftPlotData,
+      cols = "Abs Percent Change",
+      order = -1L,
+      na.last = TRUE
+    )
+
+    if (nrow(TargetNumericFeatureDriftPlotData) > MaxCorrelationPairsToPlot) {
+      TargetNumericFeatureDriftPlotData <- TargetNumericFeatureDriftPlotData[seq_len(MaxCorrelationPairsToPlot)]
+    }
+
+    TargetDriftPlotList[["Top Numeric Feature Drift"]] <- AutoPlots::Bar(
+      dt = TargetNumericFeatureDriftPlotData,
+      XVar = "Feature",
+      YVar = "Abs Percent Change",
+      title.text = "Top Numeric Feature Drift",
+      yAxis.title = "|Recent Mean % Change|",
+      xAxis.title = NULL,
+      Theme = Theme
+    )
+  }
+}
+
+
+# ----------------------------
+# Numeric missingness drift plot
+# ----------------------------
+
+if (exists("TargetFeatureDriftStats") && nrow(TargetFeatureDriftStats) > 0L) {
+
+  TargetMissingDriftPlotData <- data.table::copy(
+    TargetFeatureDriftStats[
+      FeatureType == "Numeric" &
+        !is.na(`Missing % Change`)
+    ]
+  )
+
+  if (nrow(TargetMissingDriftPlotData) > 0L) {
+
+    TargetMissingDriftPlotData[
+      ,
+      `Abs Missing % Change` := abs(`Missing % Change`)
+    ]
+
+    data.table::setorderv(
+      TargetMissingDriftPlotData,
+      cols = "Abs Missing % Change",
+      order = -1L,
+      na.last = TRUE
+    )
+
+    if (nrow(TargetMissingDriftPlotData) > MaxCorrelationPairsToPlot) {
+      TargetMissingDriftPlotData <- TargetMissingDriftPlotData[seq_len(MaxCorrelationPairsToPlot)]
+    }
+
+    TargetDriftPlotList[["Top Missingness Drift"]] <- AutoPlots::Bar(
+      dt = TargetMissingDriftPlotData,
+      XVar = "Feature",
+      YVar = "Abs Missing % Change",
+      title.text = "Top Feature Missingness Drift",
+      yAxis.title = "|Recent Missing % - Early Missing %|",
+      xAxis.title = NULL,
+      Theme = Theme
+    )
+  }
+}
+
+
+# ----------------------------
+# Categorical feature share drift plot
+# ----------------------------
+
+if (exists("TargetFeatureDriftStats") && nrow(TargetFeatureDriftStats) > 0L) {
+
+  TargetCategoricalDriftPlotData <- data.table::copy(
+    TargetFeatureDriftStats[
+      FeatureType == "Categorical" &
+        !is.na(`Share Change`)
+    ]
+  )
+
+  if (nrow(TargetCategoricalDriftPlotData) > 0L) {
+
+    TargetCategoricalDriftPlotData[
+      ,
+      FeatureLevel := paste0(Feature, " = ", Level)
+    ]
+
+    TargetCategoricalDriftPlotData[
+      ,
+      `Abs Share Change` := abs(`Share Change`)
+    ]
+
+    data.table::setorderv(
+      TargetCategoricalDriftPlotData,
+      cols = "Abs Share Change",
+      order = -1L,
+      na.last = TRUE
+    )
+
+    if (nrow(TargetCategoricalDriftPlotData) > MaxCorrelationPairsToPlot) {
+      TargetCategoricalDriftPlotData <- TargetCategoricalDriftPlotData[seq_len(MaxCorrelationPairsToPlot)]
+    }
+
+    TargetDriftPlotList[["Top Categorical Share Drift"]] <- AutoPlots::Bar(
+      dt = TargetCategoricalDriftPlotData,
+      XVar = "FeatureLevel",
+      YVar = "Abs Share Change",
+      title.text = "Top Categorical Level Share Drift",
+      yAxis.title = "|Recent Share - Early Share|",
+      xAxis.title = NULL,
+      Theme = Theme
+    )
+  }
+}
+
+
+# ----------------------------
+# Concept drift plot
+# ----------------------------
+
+if (exists("TargetConceptDriftStats") && nrow(TargetConceptDriftStats) > 0L) {
+
+  TargetConceptDriftPlotData <- data.table::copy(
+    TargetConceptDriftStats[
+      !is.na(`Abs Correlation Change`)
+    ]
+  )
+
+  data.table::setorderv(
+    TargetConceptDriftPlotData,
+    cols = "Abs Correlation Change",
+    order = -1L,
+    na.last = TRUE
+  )
+
+  if (nrow(TargetConceptDriftPlotData) > MaxCorrelationPairsToPlot) {
+    TargetConceptDriftPlotData <- TargetConceptDriftPlotData[seq_len(MaxCorrelationPairsToPlot)]
+  }
+
+  if (nrow(TargetConceptDriftPlotData) > 0L) {
+
+    TargetDriftPlotList[["Top Concept Drift"]] <- AutoPlots::Bar(
+      dt = TargetConceptDriftPlotData,
+      XVar = "Feature",
+      YVar = "Abs Correlation Change",
+      title.text = paste0("Top Concept Drift Against ", TargetVar_Name),
+      yAxis.title = "|Recent Corr - Early Corr|",
+      xAxis.title = NULL,
+      Theme = Theme
+    )
+  }
+}
+
+
+# ----------------------------
+# Risk flag plots
+# ----------------------------
+
+if (exists("TargetRiskFlags") && nrow(TargetRiskFlags) > 0L) {
+
+  TargetRiskLevelPlotData <- TargetRiskFlags[
+    ,
+    .(N = .N),
+    by = RiskLevel
+  ]
+
+  data.table::setorderv(
+    TargetRiskLevelPlotData,
+    cols = "N",
+    order = -1L
+  )
+
+  TargetRiskPlotList[["Risk Flags by Severity"]] <- AutoPlots::Bar(
+    dt = TargetRiskLevelPlotData,
+    XVar = "RiskLevel",
+    YVar = "N",
+    title.text = "Target Risk Flags by Severity",
+    yAxis.title = "Flag Count",
+    xAxis.title = NULL,
+    Theme = Theme
+  )
+
+  TargetRiskTypePlotData <- TargetRiskFlags[
+    ,
+    .(N = .N),
+    by = RiskType
+  ]
+
+  data.table::setorderv(
+    TargetRiskTypePlotData,
+    cols = "N",
+    order = -1L
+  )
+
+  TargetRiskPlotList[["Risk Flags by Type"]] <- AutoPlots::Bar(
+    dt = TargetRiskTypePlotData,
+    XVar = "RiskType",
+    YVar = "N",
+    title.text = "Target Risk Flags by Type",
+    yAxis.title = "Flag Count",
+    xAxis.title = NULL,
+    Theme = Theme
+  )
+}
+
+
+# ----------------------------
+# Master target plot list
+# ----------------------------
+
+TargetPlotList <- c(
+  TargetPlotList,
+  TargetAssociationPlotList,
+  TargetTrendPlotList,
+  TargetGroupedTrendPlotList,
+  TargetDriftPlotList,
+  TargetRiskPlotList
+)
+
+# ----------------------------
+# Target plot QA
+# ----------------------------
+
+TargetPlotQA <- data.table::data.table(
+  PlotSection = c(
+    "Target Distribution Plots",
+    "Target Association Plots",
+    "Target Trend Plots",
+    "Target Grouped Trend Plots",
+    "Target Drift Plots",
+    "Target Risk Plots",
+    "Total Target Plots"
+  ),
+  Count = c(
+    as.integer(!is.null(TargetDistributionPlot)),
+    length(TargetAssociationPlotList),
+    length(TargetTrendPlotList),
+    length(TargetGroupedTrendPlotList),
+    length(TargetDriftPlotList),
+    length(TargetRiskPlotList),
+    length(TargetPlotList)
+  ),
+  Values = c(
+    ifelse(!is.null(TargetDistributionPlot), "Target Distribution", ""),
+    paste(names(TargetAssociationPlotList), collapse = ", "),
+    paste(names(TargetTrendPlotList), collapse = ", "),
+    paste(names(TargetGroupedTrendPlotList), collapse = ", "),
+    paste(names(TargetDriftPlotList), collapse = ", "),
+    paste(names(TargetRiskPlotList), collapse = ", "),
+    paste(names(TargetPlotList), collapse = ", ")
+  )
+)
+```
+
+
+# <font size="6">EDA Report Descriptions:</font>
+
+The two main goals with this document are to provide a wide range of output to investigate data sets, and to deliver a high quality report design layout to increase user experience. The output provided are intended to be semi-comprehensive. One can always dig deeper into results to gain further insights. In light of that, the results are intended to provide information that one can come to a reasonable conclusion about their data or to find the areas where they need to dig a little deeper.
+
+## Data Description
+
+This section provides a column-level audit of the input dataset. The table summarizes each variable’s data type, inferred role, row count, missingness indicators, NULL counts, NA counts, NaN counts, infinite-value counts, empty-value counts, unique-value counts, dominant value statistics, constant-field flags, and a preview of the first five values. This overview is intended to help identify data quality issues, suspicious fields, high-cardinality variables, incorrectly typed columns, and other attributes that may affect downstream analysis.
+
+## Univariate Statistics
+
+This section provides a variable-level statistical audit for the numeric fields selected for univariate analysis. The summary table includes row counts, valid-value counts, missingness indicators, zero-value counts, positive and negative value counts, unique-value counts, central tendency statistics, spread statistics, percentile values, skewness, kurtosis, coefficient of variation, IQR-based outlier counts, and diagnostic flags for constant fields, missing values, and infinite values. This table is intended to help identify distribution shape, scale, sparsity, outliers, skew, abnormal values, and other characteristics that may affect downstream analysis.
+
+## Univariate Plots
+
+This section provides visual summaries of the variables selected for univariate analysis. Numeric variables are displayed with histograms to show distribution shape and box plots to highlight spread, central tendency, and potential outliers. When a valid grouping variable is supplied, grouped box plots are also generated to compare numeric distributions across groups. Low-cardinality numeric variables may be shown as discrete bar plots, while categorical variables are summarized with count-based bar plots using a Top-N view when needed to keep high-cardinality fields readable.
+
+## Correlation Analysis
+
+This section provides a relationship-level audit for the numeric variables selected for correlation analysis. The report validates the selected correlation inputs, identifies missing, non-numeric, and constant variables, and summarizes pairwise relationships using Spearman correlation. Outputs include a correlation matrix plot, pairwise correlation statistics, pairwise sample sizes, missing-pair counts, correlation direction, correlation strength, p-values, high-correlation flags, and ranked summaries of the strongest absolute, positive, and negative relationships. This section is intended to help identify redundant variables, potential multicollinearity, inverse relationships, weak relationships, and numeric fields that may require further investigation before modeling or downstream analysis.
+
+## Trend Analysis
+
+This section provides time-series summaries for the numeric variables selected for trend analysis. Overall trends are aggregated over the supplied date field and displayed as area plots to show broad movement over time. When a valid grouping variable is supplied, grouped line plots are also generated to compare temporal patterns across segments. The section also includes trend input diagnostics to confirm that the date field, grouping field, and selected trend variables are valid and usable. This section is intended to help identify temporal patterns, seasonality, structural changes, group-level differences, and unusual metric behavior over time.
+
+## Target-Oriented Analysis
+
+This section provides target-aware diagnostics when a valid target variable is supplied. The report summarizes the target variable’s type, distribution, missingness, class balance or numeric spread, and usability for downstream analysis. It also evaluates how numeric and categorical features relate to the target through association statistics, target-rate or target-mean summaries, lift metrics, and ranked feature-level comparisons.
+
+When a valid date field is supplied, this section also includes target trend diagnostics, feature drift diagnostics, and concept drift diagnostics. Target trends help identify whether the target rate or target mean changes over time. Feature drift diagnostics compare early and recent feature distributions to identify variables whose behavior has shifted. Concept drift diagnostics compare early and recent feature-target relationships to identify variables whose predictive relationship with the target may have changed over time.
+
+The section also includes potential leakage, collider, and post-treatment risk flags. These flags are heuristic diagnostics, not causal proof, but they can help identify suspicious variables whose names, target associations, categorical separation, or changing relationships suggest they may require additional review before modeling.
+
+
+
+
+# <font size="5">Describe Data</font>
+
+<details><summary>Expand</summary>
+<p>
+
+```{r Model_Evaluation_Metrics, echo=FALSE}
+if(!is.null(Describe_Data)) {
+  eval(Describe_Data)
+}
+```
+
+</details>
+</p>
+
+
+# <font size="5">Univariate Statistics</font>
+<p>
+
+<details><summary>Expand</summary>
+<p>
+
+```{r Univariate_Stats, echo=FALSE}
+if(!is.null(Univariate_Stats)) {
+  eval(Univariate_Stats)
+} else {
+  print("No univariate variables were selected")
+}
+```
+
+</details>
+</p>
+
+
+
+
+
+# <font size="5">Univariate Distribution Plots</font>
+
+<details><summary>Expand</summary>
+<p>
+
+```{r UnivariateHistogramPlotList, echo=FALSE}
+if (exists("UnivariateHistogramPlotList") && length(UnivariateHistogramPlotList) > 0L) {
+  AutoPlots::display_plots_grid(UnivariateHistogramPlotList, cols = HistogramPlotCols)
+} else {
+  print("No numeric univariate variables were available for histogram plots")
+}
+```
+
+</p>
+</details>
+
+
+# <font size="5">Univariate Box Plots</font>
+
+<details><summary>Expand</summary>
+<p>
+
+```{r UnivariateBoxPlotList, echo=FALSE}
+if (exists("UnivariateBoxPlotList") && length(UnivariateBoxPlotList) > 0L) {
+  AutoPlots::display_plots_grid(UnivariateBoxPlotList, cols = BoxPlotCols)
+} else {
+  print("No numeric univariate variables were available for box plots")
+}
+```
+
+</p>
+</details>
+
+
+# <font size="5">Grouped Univariate Box Plots</font>
+
+<details><summary>Expand</summary>
+<p>
+
+```{r UnivariateGroupedBoxPlotList, echo=FALSE}
+if (exists("UnivariateGroupedBoxPlotList") && length(UnivariateGroupedBoxPlotList) > 0L) {
+  AutoPlots::display_plots_grid(UnivariateGroupedBoxPlotList, cols = GroupedBoxPlotCols)
+} else {
+  print("No grouped univariate box plots were generated. Provide a valid TrendGroupVar to enable this section.")
+}
+```
+
+</p>
+</details>
+
+
+# <font size="5">Discrete Numeric Bar Plots</font>
+
+<details><summary>Expand</summary>
+<p>
+
+```{r UnivariateDiscreteNumericPlotList, echo=FALSE}
+if (exists("UnivariateDiscreteNumericPlotList") && length(UnivariateDiscreteNumericPlotList) > 0L) {
+  AutoPlots::display_plots_grid(UnivariateDiscreteNumericPlotList, cols = DiscreteNumericBarPlotCols)
+} else {
+  print("No low-cardinality numeric variables were available for discrete numeric bar plots")
+}
+```
+
+</p>
+</details>
+
+
+# <font size="5">Categorical Bar Plots</font>
+
+<details><summary>Expand</summary>
+<p>
+
+```{r UnivariateCategoricalTopNPlotList, echo=FALSE}
+if (exists("UnivariateCategoricalTopNPlotList") && length(UnivariateCategoricalTopNPlotList) > 0L) {
+  AutoPlots::display_plots_grid(UnivariateCategoricalTopNPlotList, cols = CategoricalBarPlotCols)
+} else {
+  print("No categorical univariate variables were available for bar plots")
+}
+```
+
+</p>
+</details>
+
+
+# <font size="5">Correlation Variable Diagnostics</font>
+
+<details><summary>Expand</summary>
+<p>
+
+```{r Correlation_Variable_Diagnostics, echo=FALSE}
+if (exists("Correlation_Variable_Diagnostics")) {
+  Correlation_Variable_Diagnostics
+} else {
+  print("Correlation_Variable_Diagnostics not created")
+}
+```
+
+</p>
+</details>
+
+
+# <font size="5">Correlation Matrix</font>
+
+<details><summary>Expand</summary>
+<p>
+
+```{r CorrelogramPlot, echo=FALSE}
+if (exists("CorrelogramPlot") && !is.null(CorrelogramPlot)) {
+  CorrelogramPlot
+} else {
+  print("No correlation matrix was generated. At least two usable numeric correlation variables are required.")
+}
+```
+
+</p>
+</details>
+
+
+# <font size="5">Pairwise Correlation Statistics</font>
+
+<details><summary>Expand</summary>
+<p>
+
+```{r Correlation_Stats, echo=FALSE}
+if (exists("Correlation_Stats")) {
+  Correlation_Stats
+} else {
+  print("Pairwise correlation statistics were not created")
+}
+```
+
+</p>
+</details>
+
+
+# <font size="5">High Correlations</font>
+
+<details><summary>Expand</summary>
+<p>
+
+```{r HighCorrelationStats, echo=FALSE}
+if (exists("HighCorrelationStats") && nrow(HighCorrelationStats) > 0L) {
+  reactable::reactable(
+    HighCorrelationStats,
+    compact = TRUE,
+    defaultPageSize = 15,
+    pageSizeOptions = c(10, 15, 25, 50, 100),
+    wrap = FALSE,
+    filterable = TRUE,
+    searchable = TRUE,
+    fullWidth = TRUE,
+    highlight = TRUE,
+    pagination = TRUE,
+    resizable = TRUE,
+    selection = "multiple",
+    showPagination = TRUE,
+    showPageSizeOptions = TRUE,
+    sortable = TRUE,
+    striped = TRUE,
+    theme = reactable::reactableTheme(
+      color = "#E2E8F0",
+      backgroundColor = "#0B1326",
+      borderColor = "rgba(148, 163, 184, 0.22)",
+      stripedColor = "rgba(30, 41, 59, 0.78)",
+      highlightColor = "rgba(59, 130, 246, 0.18)",
+      cellPadding = "8px 12px",
+      style = list(
+        fontFamily = "-apple-system, BlinkMacSystemFont, Segoe UI, Inter, Helvetica, Arial, sans-serif",
+        fontSize = "13px"
+      ),
+      searchInputStyle = list(
+        width = "100%",
+        backgroundColor = "#111C33",
+        color = "#E2E8F0",
+        border = "1px solid #334155",
+        borderRadius = "10px",
+        padding = "8px 12px",
+        outline = "none"
+      ),
+      filterInputStyle = list(
+        backgroundColor = "#111C33",
+        color = "#E2E8F0",
+        border = "1px solid #334155",
+        borderRadius = "8px",
+        padding = "5px 8px",
+        outline = "none"
+      ),
+      selectStyle = list(
+        backgroundColor = "#111C33",
+        color = "#E2E8F0",
+        border = "1px solid #60A5FA",
+        borderRadius = "10px",
+        padding = "6px 10px",
+        minWidth = "76px",
+        height = "34px",
+        fontSize = "13px",
+        fontWeight = "800",
+        lineHeight = "1.2",
+        cursor = "pointer",
+        outline = "none"
+      )
+    )
+  )
+} else {
+  print("No high correlations were identified based on the configured threshold.")
+}
+```
+
+</p>
+</details>
+
+
+# <font size="5">Top Absolute Correlations</font>
+
+<details><summary>Expand</summary>
+<p>
+
+```{r TopAbsCorrelationStats, echo=FALSE}
+if (exists("TopAbsCorrelationStats") && nrow(TopAbsCorrelationStats) > 0L) {
+  reactable::reactable(
+    TopAbsCorrelationStats,
+    compact = TRUE,
+    defaultPageSize = 25,
+    wrap = FALSE,
+    filterable = TRUE,
+    searchable = TRUE,
+    fullWidth = TRUE,
+    highlight = TRUE,
+    pagination = TRUE,
+    resizable = TRUE,
+    sortable = TRUE,
+    striped = TRUE,
+    theme = reactable::reactableTheme(
+      color = "#E2E8F0",
+      backgroundColor = "#0B1326",
+      borderColor = "rgba(148, 163, 184, 0.22)",
+      stripedColor = "rgba(30, 41, 59, 0.78)",
+      highlightColor = "rgba(59, 130, 246, 0.18)",
+      cellPadding = "8px 12px",
+      style = list(
+        fontFamily = "-apple-system, BlinkMacSystemFont, Segoe UI, Inter, Helvetica, Arial, sans-serif",
+        fontSize = "13px"
+      )
+    )
+  )
+} else {
+  print("No absolute correlation summary was created.")
+}
+```
+
+</p>
+</details>
+
+
+# <font size="5">Top Positive Correlations</font>
+
+<details><summary>Expand</summary>
+<p>
+
+```{r TopPositiveCorrelationStats, echo=FALSE}
+if (exists("TopPositiveCorrelationStats") && nrow(TopPositiveCorrelationStats) > 0L) {
+  reactable::reactable(
+    TopPositiveCorrelationStats,
+    compact = TRUE,
+    defaultPageSize = 25,
+    wrap = FALSE,
+    filterable = TRUE,
+    searchable = TRUE,
+    fullWidth = TRUE,
+    highlight = TRUE,
+    pagination = TRUE,
+    resizable = TRUE,
+    sortable = TRUE,
+    striped = TRUE,
+    theme = reactable::reactableTheme(
+      color = "#E2E8F0",
+      backgroundColor = "#0B1326",
+      borderColor = "rgba(148, 163, 184, 0.22)",
+      stripedColor = "rgba(30, 41, 59, 0.78)",
+      highlightColor = "rgba(59, 130, 246, 0.18)",
+      cellPadding = "8px 12px",
+      style = list(
+        fontFamily = "-apple-system, BlinkMacSystemFont, Segoe UI, Inter, Helvetica, Arial, sans-serif",
+        fontSize = "13px"
+      )
+    )
+  )
+} else {
+  print("No positive correlation summary was created.")
+}
+```
+
+</p>
+</details>
+
+
+# <font size="5">Top Negative Correlations</font>
+
+<details><summary>Expand</summary>
+<p>
+
+```{r TopNegativeCorrelationStats, echo=FALSE}
+if (exists("TopNegativeCorrelationStats") && nrow(TopNegativeCorrelationStats) > 0L) {
+  reactable::reactable(
+    TopNegativeCorrelationStats,
+    compact = TRUE,
+    defaultPageSize = 25,
+    wrap = FALSE,
+    filterable = TRUE,
+    searchable = TRUE,
+    fullWidth = TRUE,
+    highlight = TRUE,
+    pagination = TRUE,
+    resizable = TRUE,
+    sortable = TRUE,
+    striped = TRUE,
+    theme = reactable::reactableTheme(
+      color = "#E2E8F0",
+      backgroundColor = "#0B1326",
+      borderColor = "rgba(148, 163, 184, 0.22)",
+      stripedColor = "rgba(30, 41, 59, 0.78)",
+      highlightColor = "rgba(59, 130, 246, 0.18)",
+      cellPadding = "8px 12px",
+      style = list(
+        fontFamily = "-apple-system, BlinkMacSystemFont, Segoe UI, Inter, Helvetica, Arial, sans-serif",
+        fontSize = "13px"
+      )
+    )
+  )
+} else {
+  print("No negative correlation summary was created.")
+}
+```
+
+</p>
+</details>
+
+
+# <font size="5">Top Correlation Plots</font>
+
+<details><summary>Expand</summary>
+<p>
+
+```{r CorrelationPlotList, echo=FALSE}
+if (exists("CorrelationPlotList") && length(CorrelationPlotList) > 0L) {
+  AutoPlots::display_plots_grid(CorrelationPlotList, cols = 1)
+} else {
+  print("No top correlation plots were generated.")
+}
+```
+
+</p>
+</details>
+
+# <font size="5">Overall Trend Area Plots</font>
+
+<details><summary>Expand</summary>
+<p>
+
+```{r TrendAreaPlotList, echo=FALSE}
+if (exists("TrendAreaPlotList") && length(TrendAreaPlotList) > 0L) {
+  AutoPlots::display_plots_grid(TrendAreaPlotList, cols = 2)
+} else {
+  print("No overall trend area plots were generated. Provide a valid TrendDateVar and at least one numeric TrendVars value.")
+}
+```
+
+</p>
+</details>
+
+
+# <font size="5">Grouped Trend Line Plots</font>
+
+<details><summary>Expand</summary>
+<p>
+
+```{r TrendPlotList, echo=FALSE}
+if (exists("TrendPlotList") && length(TrendPlotList) > 0L) {
+  AutoPlots::display_plots_grid(TrendPlotList, cols = 2)
+} else {
+  print("No grouped trend line plots were generated. Provide a valid TrendGroupVar to enable this section.")
+}
+```
+
+</p>
+</details>
+
+
+# <font size="5">Target-Oriented Analysis</font>
+
+This section provides target-aware diagnostics when a valid `TargetVar` is supplied. It summarizes the target distribution, target trends, feature associations with the target, feature drift, concept drift, and potential leakage or collider-risk flags.
+
+
+# <font size="5">Target QA</font>
+
+<details><summary>Expand</summary>
+<p>
+
+```{r Target_QA, echo=FALSE}
+if (exists("Target_QA")) {
+  Target_QA
+} else {
+  print("Target QA was not created. Provide a valid TargetVar to enable target-oriented analysis.")
+}
+```
+
+</p>
+</details>
+
+
+# <font size="5">Target Distribution Table</font>
+
+<details><summary>Expand</summary>
+<p>
+
+```{r Target_Distribution, echo=FALSE}
+if (exists("Target_Distribution")) {
+  Target_Distribution
+} else {
+  print("Target distribution table was not created.")
+}
+```
+
+</p>
+</details>
+
+
+# <font size="5">Target Distribution Plot</font>
+
+<details><summary>Expand</summary>
+<p>
+
+```{r TargetDistributionPlot, echo=FALSE}
+if (exists("TargetDistributionPlot") && !is.null(TargetDistributionPlot)) {
+  TargetDistributionPlot
+} else if (exists("TargetPlotList") && "Target Distribution" %in% names(TargetPlotList)) {
+  TargetPlotList[["Target Distribution"]]
+} else {
+  print("Target distribution plot was not generated.")
+}
+```
+
+</p>
+</details>
+
+
+# <font size="5">Target Association Plots</font>
+
+<details><summary>Expand</summary>
+<p>
+
+```{r TargetAssociationPlotList, echo=FALSE}
+if (exists("TargetAssociationPlotList") && length(TargetAssociationPlotList) > 0L) {
+  AutoPlots::display_plots_grid(TargetAssociationPlotList, cols = 1)
+} else {
+  print("No target association plots were generated.")
+}
+```
+
+</p>
+</details>
+
+
+# <font size="5">Target Overall Trend Plots</font>
+
+<details><summary>Expand</summary>
+<p>
+
+```{r TargetTrendPlotList, echo=FALSE}
+if (exists("TargetTrendPlotList") && length(TargetTrendPlotList) > 0L) {
+  AutoPlots::display_plots_grid(TargetTrendPlotList, cols = 2)
+} else {
+  print("No target trend plots were generated. Provide a valid TargetVar and TrendDateVar to enable this section.")
+}
+```
+
+</p>
+</details>
+
+
+# <font size="5">Target Grouped Trend Plots</font>
+
+<details><summary>Expand</summary>
+<p>
+
+```{r TargetGroupedTrendPlotList, echo=FALSE}
+if (exists("TargetGroupedTrendPlotList") && length(TargetGroupedTrendPlotList) > 0L) {
+  AutoPlots::display_plots_grid(TargetGroupedTrendPlotList, cols = 2)
+} else {
+  print("No grouped target trend plots were generated. Provide a valid TargetVar, TrendDateVar, and TrendGroupVar to enable this section.")
+}
+```
+
+</p>
+</details>
+
+
+# <font size="5">Target Drift Plots</font>
+
+<details><summary>Expand</summary>
+<p>
+
+```{r TargetDriftPlotList, echo=FALSE}
+if (exists("TargetDriftPlotList") && length(TargetDriftPlotList) > 0L) {
+  AutoPlots::display_plots_grid(TargetDriftPlotList, cols = 1)
+} else {
+  print("No target drift plots were generated. Provide a valid TrendDateVar to enable drift diagnostics.")
+}
+```
+
+</p>
+</details>
+
+
+# <font size="5">Target Risk Flag Plots</font>
+
+<details><summary>Expand</summary>
+<p>
+
+```{r TargetRiskPlotList, echo=FALSE}
+if (exists("TargetRiskPlotList") && length(TargetRiskPlotList) > 0L) {
+  AutoPlots::display_plots_grid(TargetRiskPlotList, cols = 1)
+} else {
+  print("No target risk flag plots were generated.")
+}
+```
+
+</p>
+</details>
+
+
+# <font size="5">All Target Plots</font>
+
+<details><summary>Expand</summary>
+<p>
+
+```{r TargetPlotList, echo=FALSE}
+if (exists("TargetPlotList") && length(TargetPlotList) > 0L) {
+  AutoPlots::display_plots_grid(TargetPlotList, cols = 1)
+} else {
+  print("No target-oriented plots were generated.")
+}
+```
+
+</p>
+</details>
+
+
+# <font size="5">Numeric Feature Association With Target</font>
+
+<details><summary>Expand</summary>
+<p>
+
+```{r Target_Numeric_Association, echo=FALSE}
+if (exists("Target_Numeric_Association")) {
+  Target_Numeric_Association
+} else {
+  print("Numeric feature association table was not created.")
+}
+```
+
+</p>
+</details>
+
+
+# <font size="5">Categorical Feature Association With Target</font>
+
+<details><summary>Expand</summary>
+<p>
+
+```{r Target_Categorical_Association, echo=FALSE}
+if (exists("Target_Categorical_Association")) {
+  Target_Categorical_Association
+} else {
+  print("Categorical feature association table was not created.")
+}
+```
+
+</p>
+</details>
+
+
+# <font size="5">Categorical Level Association With Target</font>
+
+<details><summary>Expand</summary>
+<p>
+
+```{r Target_Categorical_Level_Association, echo=FALSE}
+if (exists("Target_Categorical_Level_Association")) {
+  Target_Categorical_Level_Association
+} else {
+  print("Categorical level association table was not created.")
+}
+```
+
+</p>
+</details>
+
+
+# <font size="5">Target Trend Statistics</font>
+
+<details><summary>Expand</summary>
+<p>
+
+```{r TargetTrendStats, echo=FALSE}
+if (exists("TargetTrendStats") && nrow(TargetTrendStats) > 0L) {
+  reactable::reactable(
+    TargetTrendStats,
+    compact = TRUE,
+    defaultPageSize = 25,
+    pageSizeOptions = c(10, 25, 50, 100),
+    wrap = FALSE,
+    filterable = TRUE,
+    searchable = TRUE,
+    fullWidth = TRUE,
+    highlight = TRUE,
+    pagination = TRUE,
+    resizable = TRUE,
+    sortable = TRUE,
+    striped = FALSE,
+    rowStyle = if (exists("target_dark_row_style")) target_dark_row_style else NULL,
+    defaultColDef = reactable::colDef(
+      headerStyle = if (exists("target_default_header_style")) target_default_header_style else NULL,
+      style = if (exists("target_dark_cell_style")) target_dark_cell_style else NULL
+    ),
+    theme = if (exists("target_theme")) target_theme else reactable::reactableTheme()
+  )
+} else {
+  print("Target trend statistics were not created.")
+}
+```
+
+</p>
+</details>
+
+
+# <font size="5">Target Grouped Trend Statistics</font>
+
+<details><summary>Expand</summary>
+<p>
+
+```{r TargetGroupedTrendStats, echo=FALSE}
+if (exists("TargetGroupedTrendStats") && nrow(TargetGroupedTrendStats) > 0L) {
+  reactable::reactable(
+    TargetGroupedTrendStats,
+    compact = TRUE,
+    defaultPageSize = 25,
+    pageSizeOptions = c(10, 25, 50, 100),
+    wrap = FALSE,
+    filterable = TRUE,
+    searchable = TRUE,
+    fullWidth = TRUE,
+    highlight = TRUE,
+    pagination = TRUE,
+    resizable = TRUE,
+    sortable = TRUE,
+    striped = FALSE,
+    rowStyle = if (exists("target_dark_row_style")) target_dark_row_style else NULL,
+    defaultColDef = reactable::colDef(
+      headerStyle = if (exists("target_default_header_style")) target_default_header_style else NULL,
+      style = if (exists("target_dark_cell_style")) target_dark_cell_style else NULL
+    ),
+    theme = if (exists("target_theme")) target_theme else reactable::reactableTheme()
+  )
+} else {
+  print("Grouped target trend statistics were not created.")
+}
+```
+
+</p>
+</details>
+
+
+# <font size="5">Feature Drift Diagnostics</font>
+
+<details><summary>Expand</summary>
+<p>
+
+```{r Target_Feature_Drift, echo=FALSE}
+if (exists("Target_Feature_Drift")) {
+  Target_Feature_Drift
+} else {
+  print("Feature drift diagnostics were not created.")
+}
+```
+
+</p>
+</details>
+
+
+# <font size="5">Concept Drift Diagnostics</font>
+
+<details><summary>Expand</summary>
+<p>
+
+```{r Target_Concept_Drift, echo=FALSE}
+if (exists("Target_Concept_Drift")) {
+  Target_Concept_Drift
+} else {
+  print("Concept drift diagnostics were not created.")
+}
+```
+
+</p>
+</details>
+
+
+# <font size="5">Potential Leakage / Collider Risk Flags</font>
+
+<details><summary>Expand</summary>
+<p>
+
+```{r Target_Risk_Flags, echo=FALSE}
+if (exists("Target_Risk_Flags")) {
+  Target_Risk_Flags
+} else {
+  print("Target risk flags were not created.")
+}
+```
+
+</p>
+</details>
+
+
+
+
+```{js, echo=FALSE}
+setTimeout(function() {
+  var codes = document.querySelectorAll('.dataTables_wrapper');
+  var code, i, d, s, p;
+  for (i = 0; i < codes.length; i++) {
+    code = codes[i];
+    p = code.parentNode;
+    d = document.createElement('details');
+    s = document.createElement('summary');
+    s.innerText = 'Details';
+    // <details><summary>Details</summary></details>
+    d.appendChild(s);
+    // move the code into <details>
+    p.replaceChild(d, code);
+    d.appendChild(code);
+  }
+});
+```

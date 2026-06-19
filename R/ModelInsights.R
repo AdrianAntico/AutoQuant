@@ -154,3 +154,105 @@ ModelInsightsReport <- function(TrainDataInclude = FALSE,
   GlobalVarsNew <- ls()
   rm(list = c(setdiff(GlobalVarsNew, c(GlobalVars, KeepOutput))))
 }
+
+#' @title Run_EDA_Report
+#'
+#' @description Run_EDA_Report is an Rmarkdown report for EDA
+#'
+#' @author Adrian Antico
+#' @family Reports
+#'
+#' @param data NULL
+#' @param DataName NULL
+#' @param UnivariateVars NULL
+#' @param CorrVars NULL
+#' @param TrendVars NULL
+#' @param TrendDateVar NULL
+#' @param TrendGroupVar NULL
+#' @param TargetVar NULL
+#' @param OutputPath Path to directory where the html will be saved
+#' @param Theme AutoPlots Theme parameter value
+#'
+#' @noRd
+Run_EDA_Report <- function(data = NULL,
+                           DataName = NULL,
+                           UnivariateVars = NULL,
+                           CorrVars = NULL,
+                           TrendVars = NULL,
+                           TrendDateVar = NULL,
+                           TrendGroupVar = NULL,
+                           TargetVar = NULL,
+                           OutputPath = NULL,
+                           Theme = "dark") {
+
+  appDir <- system.file("r-markdowns", package = "AutoQuant")
+  data <- data
+  UnivariateVars <- UnivariateVars
+  CorrVars <- CorrVars
+  TrendVars <- TrendVars
+  TrendDateVar <- TrendDateVar[1]
+  TrendGroupVar <- TrendGroupVar[1]
+  TargetVar <- TargetVar[1]
+  Theme <- Theme
+
+  if(length(TrendDateVar) > 0L) {
+    if(!class(data[[TrendDateVar]])[1L] %in% c("Date", "posix", "IDate", "IDateTime")) {
+      x <- data[1L, get(TrendDateVar)]
+      x1 <- lubridate::guess_formats(x, orders = c('mdY', 'BdY', 'Bdy', 'bdY', 'bdy', 'mdy', 'dby', 'Ymd', 'Ydm', 'dmy'))
+      data[, eval(TrendDateVar) := as.Date(get(TrendDateVar), tryFormats = x1)]
+      if(!class(data[[TrendDateVar]])[1L] %in% c("Date", "posix", "IDate", "IDateTime")) {
+        TrendDateVar <- NULL
+      }
+    }
+  }
+
+  OutputPathName <- file.path(OutputPath, paste0('EDAReport-', DataName, '.html'))
+  rmarkdown::render(
+    input = file.path(appDir, 'EDA_Report.Rmd'),
+    output_file = OutputPathName
+  )
+}
+
+#' @title EDAReport
+#'
+#' @description EDAReport is an Rmarkdown report for viewing EDA results
+#'
+#' @author Adrian Antico
+#' @family Reports
+#'
+#' @param data NULL
+#' @param DataName NULL
+#' @param UnivariateVars NULL
+#' @param CorrVars NULL
+#' @param TrendVars NULL
+#' @param TrendDateVar NULL
+#' @param TrendGroupVar NULL
+#' @param TargetVar NULL
+#' @param OutputPath List of output objects
+#' @param Theme AutoPlots Theme parameter value
+#'
+#' @export
+EDAReport <- function(data = NULL,
+                      DataName = NULL,
+                      UnivariateVars = NULL,
+                      CorrVars = NULL,
+                      TrendVars = NULL,
+                      TrendDateVar = NULL,
+                      TrendGroupVar = NULL,
+                      TargetVar = NULL,
+                      OutputPath = NULL,
+                      Theme = "dark") {
+
+  Run_EDA_Report(
+    data = data,
+    DataName = DataName,
+    UnivariateVars = UnivariateVars,
+    CorrVars = CorrVars,
+    TrendVars = TrendVars,
+    TrendDateVar = TrendDateVar,
+    TrendGroupVar = TrendGroupVar,
+    TargetVar = TargetVar,
+    OutputPath = OutputPath,
+    Theme = Theme
+  )
+}
