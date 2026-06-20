@@ -6241,31 +6241,39 @@ TargetPlotQA <- data.table::data.table(
 ```
 
 
-# <font size="6">EDA Report Descriptions:</font>
+## <font size="5">EDA Report Descriptions</font>
 
-The two main goals with this document are to provide a wide range of output to investigate data sets, and to deliver a high quality report design layout to increase user experience. The output provided are intended to be semi-comprehensive. One can always dig deeper into results to gain further insights. In light of that, the results are intended to provide information that one can come to a reasonable conclusion about their data or to find the areas where they need to dig a little deeper.
+<details><summary>Expand</summary>
+<p>
 
-## Data Description
+This report is designed to provide a broad, structured, and user-friendly exploratory data analysis workflow for investigating datasets before modeling, reporting, or deeper analysis. The goal is to surface meaningful patterns, data quality issues, distribution characteristics, relationships between variables, temporal movement, target-variable behavior, drift signals, and potential modeling risks in a clear and navigable format.
+
+The outputs are intended to be semi-comprehensive rather than exhaustive. They provide enough evidence to help users form reasonable conclusions about the data, identify variables or relationships worth further investigation, and recognize areas where additional domain review, validation, or modeling decisions may be needed. The report is organized into higher-level sections so users can quickly navigate from broad diagnostics to more detailed artifacts as needed.
+
+While the report provides a wide range of tables, plots, diagnostics, and heuristic flags, it should be treated as an analytical starting point rather than a final judgment. Some findings, especially target leakage, collider risk, post-treatment risk, feature drift, and concept drift indicators, are intended to highlight areas for review rather than prove causality or modeling suitability on their own.
+
+
+### Data Description
 
 This section provides a column-level audit of the input dataset. The table summarizes each variable’s data type, inferred role, row count, missingness indicators, NULL counts, NA counts, NaN counts, infinite-value counts, empty-value counts, unique-value counts, dominant value statistics, constant-field flags, and a preview of the first five values. This overview is intended to help identify data quality issues, suspicious fields, high-cardinality variables, incorrectly typed columns, and other attributes that may affect downstream analysis.
 
-## Univariate Statistics
+### Univariate Statistics
 
 This section provides a variable-level statistical audit for the numeric fields selected for univariate analysis. The summary table includes row counts, valid-value counts, missingness indicators, zero-value counts, positive and negative value counts, unique-value counts, central tendency statistics, spread statistics, percentile values, skewness, kurtosis, coefficient of variation, IQR-based outlier counts, and diagnostic flags for constant fields, missing values, and infinite values. This table is intended to help identify distribution shape, scale, sparsity, outliers, skew, abnormal values, and other characteristics that may affect downstream analysis.
 
-## Univariate Plots
+### Univariate Plots
 
 This section provides visual summaries of the variables selected for univariate analysis. Numeric variables are displayed with histograms to show distribution shape and box plots to highlight spread, central tendency, and potential outliers. When a valid grouping variable is supplied, grouped box plots are also generated to compare numeric distributions across groups. Low-cardinality numeric variables may be shown as discrete bar plots, while categorical variables are summarized with count-based bar plots using a Top-N view when needed to keep high-cardinality fields readable.
 
-## Correlation Analysis
+### Correlation Analysis
 
 This section provides a relationship-level audit for the numeric variables selected for correlation analysis. The report validates the selected correlation inputs, identifies missing, non-numeric, and constant variables, and summarizes pairwise relationships using Spearman correlation. Outputs include a correlation matrix plot, pairwise correlation statistics, pairwise sample sizes, missing-pair counts, correlation direction, correlation strength, p-values, high-correlation flags, and ranked summaries of the strongest absolute, positive, and negative relationships. This section is intended to help identify redundant variables, potential multicollinearity, inverse relationships, weak relationships, and numeric fields that may require further investigation before modeling or downstream analysis.
 
-## Trend Analysis
+### Trend Analysis
 
 This section provides time-series summaries for the numeric variables selected for trend analysis. Overall trends are aggregated over the supplied date field and displayed as area plots to show broad movement over time. When a valid grouping variable is supplied, grouped line plots are also generated to compare temporal patterns across segments. The section also includes trend input diagnostics to confirm that the date field, grouping field, and selected trend variables are valid and usable. This section is intended to help identify temporal patterns, seasonality, structural changes, group-level differences, and unusual metric behavior over time.
 
-## Target-Oriented Analysis
+### Target-Oriented Analysis
 
 This section provides target-aware diagnostics when a valid target variable is supplied. The report summarizes the target variable’s type, distribution, missingness, class balance or numeric spread, and usability for downstream analysis. It also evaluates how numeric and categorical features relate to the target through association statistics, target-rate or target-mean summaries, lift metrics, and ranked feature-level comparisons.
 
@@ -6275,6 +6283,10 @@ The section also includes potential leakage, collider, and post-treatment risk f
 
 
 
+
+
+</details>
+</p>
 
 # <font size="5">Describe Data</font>
 
@@ -6289,6 +6301,9 @@ if(!is.null(Describe_Data)) {
 
 </details>
 </p>
+
+
+
 
 
 # <font size="5">Univariate Statistics</font>
@@ -6307,10 +6322,6 @@ if(!is.null(Univariate_Stats)) {
 
 </details>
 </p>
-
-
-
-
 
 # <font size="5">Univariate Distribution Plots</font>
 
