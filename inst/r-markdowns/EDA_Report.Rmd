@@ -6701,28 +6701,6 @@ if (exists("TrendPlotList") && length(TrendPlotList) > 0L) {
 </details>
 
 
-# <font size="5">Target-Oriented Analysis</font>
-
-This section provides target-aware diagnostics when a valid `TargetVar` is supplied. It summarizes the target distribution, target trends, feature associations with the target, feature drift, concept drift, and potential leakage or collider-risk flags.
-
-
-# <font size="5">Target QA</font>
-
-<details><summary>Expand</summary>
-<p>
-
-```{r Target_QA, echo=FALSE}
-if (exists("Target_QA")) {
-  Target_QA
-} else {
-  print("Target QA was not created. Provide a valid TargetVar to enable target-oriented analysis.")
-}
-```
-
-</p>
-</details>
-
-
 # <font size="5">Target Distribution Table</font>
 
 <details><summary>Expand</summary>
