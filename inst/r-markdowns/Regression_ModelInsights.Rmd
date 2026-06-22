@@ -561,6 +561,7 @@ a:hover {
 }
 
 ```
+
 ```{r ModelObject_DataSets_And_MetaData, echo = FALSE}
 if(!is.null(ModelObject)) {
   
@@ -589,7 +590,7 @@ if(!is.null(ModelObject)) {
   GridMetrics <- ModelObject[['GridMetrics']]
   
 }
-``` 
+```
 
 ```{r ModelObject_Evaluation_Metrics, echo = FALSE}
 if(!is.null(ModelObject)) {
@@ -699,7 +700,7 @@ if(!is.null(ModelObject)) {
     All_Interaction <- NULL
   }
 }
-``` 
+```
 
 ```{r Generic_Evaluation_Plots, echo = FALSE}
 
@@ -708,75 +709,35 @@ if(!is.null(ModelObject)) {
 ## EvaluationPlots_ResidualHistogram ----
 
 ### Test
-Test_ResidualHistogram <- AutoPlots::Plot.Residuals.Histogram(
+Test_ResidualHistogram <- AutoPlots::Residuals.Histogram(
   dt = TestData,
   AggMethod = "mean",
   SampleSize = 100000,
   XVar = PredictionColumnName,
   YVar = TargetColumnName,
-  GroupVar = NULL,
-  YVarTrans = "Identity",
-  XVarTrans = "Identity",
-  FacetRows = 1,
-  FacetCols = 1,
-  FacetLevels = NULL,
   NumberBins = 20,
-  #Height = "600px",
-  #Width = "975px",
-  Title = "Residuals Histogram: Test Data",
-  ShowLabels = FALSE,
-  Title.YAxis = TargetColumnName,
-  Title.XAxis = PredictionColumnName,
-  EchartsTheme = "wef",
-  TimeLine = FALSE,
-  
-  
-  TextColor = "white",
-  title.fontSize = 22,
-  title.fontWeight = "bold",
-  title.textShadowColor = "#63aeff",
-  title.textShadowBlur = 3,
-  title.textShadowOffsetY = 1,
-  title.textShadowOffsetX = -1,
-  xaxis.fontSize = 14,
-  yaxis.fontSize = 14,
-  Debug = FALSE)
+  title.text = "Residuals Histogram: Test Data",
+  yAxis.title = TargetColumnName,
+  xAxis.title = PredictionColumnName,
+  Theme = "dark",
+  TimeLine = FALSE
+)
 
 ### Train
 if(length(TrainData) > 0L) {
-  Train_ResidualHistogram <- AutoPlots::Plot.Residuals.Histogram(
+  Train_ResidualHistogram <- AutoPlots::Residuals.Histogram(
     dt = TrainData,
     AggMethod = "mean",
     SampleSize = 100000,
     XVar = PredictionColumnName,
     YVar = TargetColumnName,
-    GroupVar = NULL,
-    YVarTrans = "Identity",
-    XVarTrans = "Identity",
-    FacetRows = 1,
-    FacetCols = 1,
-    FacetLevels = NULL,
     NumberBins = 20,
-    #Height = "600px",
-    #Width = "975px",
-    Title = "Residuals Histogram: Train Data",
-    ShowLabels = FALSE,
-    Title.YAxis = TargetColumnName,
-    Title.XAxis = 'Predict',
-    EchartsTheme = "wef",
-    TimeLine = FALSE,
-    
-    
-    TextColor = "white",
-    title.fontSize = 22,
-    title.fontWeight = "bold",
-    title.textShadowColor = "#63aeff",
-    title.textShadowBlur = 3,
-    title.textShadowOffsetY = 1,
-    title.textShadowOffsetX = -1,
-    xaxis.fontSize = 14,
-    yaxis.fontSize = 14,
-    Debug = FALSE)
+    title.text = "Residuals Histogram: Train Data",
+    yAxis.title = TargetColumnName,
+    xAxis.title = 'Predict',
+    Theme = "dark",
+    TimeLine = FALSE
+  )
 } else {
   Train_ResidualHistogram <- NULL
 }
@@ -784,56 +745,33 @@ if(length(TrainData) > 0L) {
 ## EvaluationPlots_CalibrationPlot ----
 
 ### Test
-Test_EvaluationPlot <- AutoPlots::Plot.Calibration.Line(
+Test_EvaluationPlot <- AutoPlots::Calibration.Line(
   dt = TestData,
   AggMethod = "mean",
   XVar = PredictionColumnName,
   YVar = TargetColumnName,
-  GroupVar = NULL,
-  YVarTrans = "Identity",
-  XVarTrans = "Identity",
-  FacetRows = 1,
-  FacetCols = 1,
-  FacetLevels = NULL,
   NumberBins = 21,
-  #Height = "600px",
-  #Width = "975px",
-  Title = "Calibration Line Plot: Test Data",
-  ShowLabels = FALSE,
-  Title.YAxis = TargetColumnName,
-  Title.XAxis = "Predict",
-  EchartsTheme = "wef",
-  TimeLine = TRUE,
-  
-  
-  TextColor = "white",
-  Debug = FALSE)
+  title.text = "Calibration Line Plot: Test Data",
+  yAxis.title = TargetColumnName,
+  xAxis.title = "Predict",
+  Theme = "dark",
+  TimeLine = TRUE
+)
 
 ### Train
 if(!is.null(TrainData)) {
-  Train_EvaluationPlot <- AutoPlots::Plot.Calibration.Line(
+  Train_EvaluationPlot <- AutoPlots::Calibration.Line(
     dt = TrainData,
     AggMethod = "mean",
     XVar = PredictionColumnName,
     YVar = TargetColumnName,
-    GroupVar = NULL,
-    YVarTrans = "Identity",
-    XVarTrans = "Identity",
-    FacetRows = 1,
-    FacetCols = 1,
-    FacetLevels = NULL,
     NumberBins = 21,
-    #Height = "600px",
-    #Width = "975px",
-    Title = "Calibration Line Plot: Train Data",
-    Title.YAxis = TargetColumnName,
-    Title.XAxis = "Predict",
-    EchartsTheme = "wef",
-    TimeLine = TRUE,
-    
-    
-    TextColor = "white",
-    Debug = FALSE)
+    title.text = "Calibration Line Plot: Train Data",
+    yAxis.title = TargetColumnName,
+    xAxis.title = "Predict",
+    Theme = "dark",
+    TimeLine = TRUE
+  )
 } else {
   Train_EvaluationPlot <- NULL
 }
@@ -841,60 +779,35 @@ if(!is.null(TrainData)) {
 ## EvaluationPlots_CalibrationBoxPlot ----
 
 ### Test
-Test_EvaluationBoxPlot <- AutoPlots::Plot.Calibration.Box(
+Test_EvaluationBoxPlot <- AutoPlots::Calibration.Box(
   dt = TestData,
   SampleSize = 100000L,
   AggMethod = "mean",
   XVar = PredictionColumnName,
   YVar = TargetColumnName,
-  GroupVar = NULL,
-  YVarTrans = "Identity",
-  XVarTrans = "Identity",
-  FacetRows = 1,
-  FacetCols = 1,
-  FacetLevels = NULL,
   NumberBins = 21,
-  #Height = "600px",
-  #Width = "975px",
-  Title = "Calibration Plot: Test Data",
-  ShowLabels = FALSE,
-  Title.YAxis = TargetColumnName,
-  Title.XAxis = "Predict",
-  EchartsTheme = "wef",
-  TimeLine = TRUE,
-  
-  
-  TextColor = "white",
-  Debug = FALSE)
+  title.text = "Calibration Plot: Test Data",
+  yAxis.title = TargetColumnName,
+  xAxis.title = "Predict",
+  Theme = "dark",
+  TimeLine = TRUE
+)
 
 ### Train
 if(!is.null(TrainData)) {
-  Train_EvaluationBoxPlot <- AutoPlots::Plot.Calibration.Box(
+  Train_EvaluationBoxPlot <- AutoPlots::Calibration.Box(
     dt = TrainData,
     SampleSize = 100000L,
     AggMethod = "mean",
     XVar = PredictionColumnName,
     YVar = TargetColumnName,
-    GroupVar = NULL,
-    YVarTrans = "Identity",
-    XVarTrans = "Identity",
-    FacetRows = 1,
-    FacetCols = 1,
-    FacetLevels = NULL,
     NumberBins = 21,
-    #Height = "600px",
-    #Width = "975px",
-    Title = "Calibration Plot: Train Data",
-    ShowLabels = FALSE,
-    Title.YAxis = TargetColumnName,
-    Title.XAxis = "Predict",
-    EchartsTheme = "wef",
-    
-    TimeLine = TRUE,
-    
-    
-    TextColor = "white",
-    Debug = FALSE)
+    title.text = "Calibration Plot: Train Data",
+    yAxis.title = TargetColumnName,
+    xAxis.title = "Predict",
+    Theme = "dark",
+    TimeLine = TRUE
+  )
 } else {
   Train_EvaluationBoxPlot <- NULL
 }
@@ -918,32 +831,19 @@ Test_ParDepPlots <- list()
 if(!is.null(TestData) && !is.null(FeatureColumnNames)) {
   for(g in FeatureColumnNames) {
     if(is.numeric(TestData[[g]])) {
-      Test_ParDepPlots[[g]] <- tryCatch({AutoPlots::Plot.PartialDependence.Line(
+      Test_ParDepPlots[[g]] <- tryCatch({AutoPlots::PartialDependence.Line(
         dt = TestData,
         XVar = g,
         YVar = TargetColumnName,
         ZVar = 'Predict',
-        YVarTrans = "Identity",
-        XVarTrans = "Identity",
-        ZVarTrans = "Identity",
-        FacetRows = 1,
-        FacetCols = 1,
-        FacetLevels = NULL,
-        GroupVar = NULL,
         NumberBins = 20,
         AggMethod = "mean",
-        #Height = "600px",
-        #Width = "975px",
-        Title = "Partial Dependence Line: Test Data",
-        ShowLabels = FALSE,
-        Title.YAxis = TargetColumnName,
-        Title.XAxis = g,
-        EchartsTheme = "wef",
-        TimeLine = TRUE,
-        
-        
-        TextColor = "white",
-        Debug = FALSE)}, error = function(x) NULL)
+        title.text = "Partial Dependence Line: Test Data",
+        yAxis.title = TargetColumnName,
+        xAxis.title = g,
+        Theme = "dark",
+        TimeLine = TRUE
+      )}, error = function(x) NULL)
     }
   }
 }
@@ -959,32 +859,19 @@ Train_ParDepPlots <- list() # ModelObject[['PlotList']][['Train_ParDepPlots']]
 if(!is.null(TrainData) && !is.null(FeatureColumnNames)) {
   for(g in FeatureColumnNames) {
     if(is.numeric(TrainData[[g]])) {
-      Train_ParDepPlots[[g]] <- tryCatch({AutoPlots::Plot.PartialDependence.Line(
+      Train_ParDepPlots[[g]] <- tryCatch({AutoPlots::PartialDependence.Line(
         dt = TrainData,
         XVar = g,
         YVar = TargetColumnName,
         ZVar = 'Predict',
-        YVarTrans = "Identity",
-        XVarTrans = "Identity",
-        ZVarTrans = "Identity",
-        FacetRows = 1,
-        FacetCols = 1,
-        FacetLevels = NULL,
-        GroupVar = NULL,
         NumberBins = 20,
         AggMethod = "mean",
-        #Height = "600px",
-        #Width = "975px",
-        Title = "Partial Dependence Line: Train Data",
-        ShowLabels = FALSE,
-        Title.YAxis = TargetColumnName,
-        Title.XAxis = g,
-        EchartsTheme = "wef",
-        TimeLine = TRUE,
-        
-        
-        TextColor = "white",
-        Debug = FALSE)}, error = function(x) NULL)
+        title.text = "Partial Dependence Line: Train Data",
+        yAxis.title = TargetColumnName,
+        xAxis.title = g,
+        Theme = "dark",
+        TimeLine = TRUE
+      )}, error = function(x) NULL)
     }
   }
 }
@@ -1000,32 +887,19 @@ Test_ParDepBoxPlots <- list()
 if(!is.null(TestData) && !is.null(FeatureColumnNames)) {
   for(g in FeatureColumnNames) {
     if(is.numeric(TestData[[g]])) {
-      Test_ParDepBoxPlots[[g]] <- tryCatch({AutoPlots::Plot.PartialDependence.Box(
+      Test_ParDepBoxPlots[[g]] <- tryCatch({AutoPlots::PartialDependence.Box(
         dt = TestData,
         XVar = g,
         YVar = TargetColumnName,
         ZVar = 'Predict',
-        YVarTrans = "Identity",
-        XVarTrans = "Identity",
-        ZVarTrans = "Identity",
-        FacetRows = 1,
-        FacetCols = 1,
-        FacetLevels = NULL,
-        GroupVar = NULL,
         NumberBins = 20,
         AggMethod = "mean",
-        #Height = "600px",
-        #Width = "975px",
-        Title = "Partial Dependence Line: Test Data",
-        ShowLabels = FALSE,
-        Title.YAxis = TargetColumnName,
-        Title.XAxis = g,
-        EchartsTheme = "wef",
-        TimeLine = TRUE,
-        
-        
-        TextColor = "white",
-        Debug = FALSE)}, error = function(x) NULL)
+        title.text = "Partial Dependence Line: Test Data",
+        yAxis.title = TargetColumnName,
+        xAxis.title = g,
+        Theme = "dark",
+        TimeLine = TRUE
+      )}, error = function(x) NULL)
     }
   }
 }
@@ -1039,32 +913,19 @@ Train_ParDepBoxPlots <- list()
 if(!is.null(TrainData) && !is.null(FeatureColumnNames)) {
   for(g in FeatureColumnNames) {
     if(is.numeric(TrainData[[g]])) {
-      Train_ParDepBoxPlots[[g]] <- tryCatch({AutoPlots::Plot.PartialDependence.Box(
+      Train_ParDepBoxPlots[[g]] <- tryCatch({AutoPlots::PartialDependence.Box(
         dt = TrainData,
         XVar = g,
         YVar = TargetColumnName,
         ZVar = 'Predict',
-        YVarTrans = "Identity",
-        XVarTrans = "Identity",
-        ZVarTrans = "Identity",
-        FacetRows = 1,
-        FacetCols = 1,
-        FacetLevels = NULL,
-        GroupVar = NULL,
         NumberBins = 20,
         AggMethod = "mean",
-        #Height = "600px",
-        #Width = "975px",
-        Title = "Partial Dependence Line: Train Data",
-        ShowLabels = FALSE,
-        Title.YAxis = TargetColumnName,
-        Title.XAxis = g,
-        EchartsTheme = "wef",
-        TimeLine = TRUE,
-        
-        
-        TextColor = "white",
-        Debug = FALSE)}, error = function(x) NULL)
+        title.text = "Partial Dependence Line: Train Data",
+        yAxis.title = TargetColumnName,
+        xAxis.title = g,
+        Theme = "dark",
+        TimeLine = TRUE
+      )}, error = function(x) NULL)
     }
   }
 }
@@ -1080,32 +941,19 @@ Test_ParDepCatPlots <- list()
 if(!is.null(TestData) && !is.null(FeatureColumnNames)) {
   for(g in FeatureColumnNames) {
     if(is.character(TestData[[g]]) || is.factor(TestData[[g]])) {
-      Test_ParDepCatPlots[[g]] <- tryCatch({AutoPlots::Plot.PartialDependence.HeatMap(
+      Test_ParDepCatPlots[[g]] <- tryCatch({AutoPlots::PartialDependence.HeatMap(
         dt = TestData,
         XVar = g,
         YVar = TargetColumnName,
         ZVar = 'Predict',
-        YVarTrans = "Identity",
-        XVarTrans = "Identity",
-        ZVarTrans = "Identity",
-        FacetRows = 1,
-        FacetCols = 1,
-        FacetLevels = NULL,
-        GroupVar = NULL,
         NumberBins = 20,
         AggMethod = "mean",
-        #Height = "600px",
-        #Width = "975px",
-        Title = "Partial Dependence Bar Plot: Test Data",
-        ShowLabels = FALSE,
-        Title.YAxis = TargetColumnName,
-        Title.XAxis = g,
-        EchartsTheme = "wef",
-        TimeLine = TRUE,
-        
-        
-        TextColor = "white",
-        Debug = FALSE)}, error = function(x) NULL)
+        title.text = "Partial Dependence Bar Plot: Test Data",
+        yAxis.title = TargetColumnName,
+        xAxis.title = g,
+        Theme = "dark",
+        TimeLine = TRUE
+      )}, error = function(x) NULL)
     }
   }
 }
@@ -1119,32 +967,19 @@ Train_ParDepCatPlots <- list()
 if(!is.null(TrainData) && !is.null(FeatureColumnNames)) {
   for(g in FeatureColumnNames) {
     if(is.character(TrainData[[g]]) || is.factor(TrainData[[g]])) {
-      Train_ParDepCatPlots[[g]] <- tryCatch({AutoPlots::Plot.PartialDependence.HeatMap(
+      Train_ParDepCatPlots[[g]] <- tryCatch({AutoPlots::PartialDependence.HeatMap(
         dt = TrainData,
         XVar = g,
         YVar = TargetColumnName,
         ZVar = 'Predict',
-        YVarTrans = "Identity",
-        XVarTrans = "Identity",
-        ZVarTrans = "Identity",
-        FacetRows = 1,
-        FacetCols = 1,
-        FacetLevels = NULL,
-        GroupVar = NULL,
         NumberBins = 20,
         AggMethod = "mean",
-        #Height = "600px",
-        #Width = "975px",
-        Title = "Partial Dependence Bar Plot: Train Data",
-        ShowLabels = FALSE,
-        Title.YAxis = TargetColumnName,
-        Title.XAxis = g,
-        EchartsTheme = "wef",
-        TimeLine = TRUE,
-        
-        
-        TextColor = "white",
-        Debug = FALSE)}, error = function(x) NULL)
+        title.text = "Partial Dependence Bar Plot: Train Data",
+        yAxis.title = TargetColumnName,
+        xAxis.title = g,
+        Theme = "dark",
+        TimeLine = TRUE
+      )}, error = function(x) NULL)
     }
   }
 }
@@ -1153,38 +988,46 @@ if(!is.null(TrainData) && !is.null(FeatureColumnNames)) {
 
 # <font size="6">ML Report Descriptions:</font>
 
-The two main goals with this document are to provide a wide range of output to investigate high level performance and insights, and to deliver a high quality report design layout to increase user experience. The metrics provided are intended to be semi-comprehensive. One can always dig deeper into results to gain further insights. In light of that, the results are intended to provide information that one can come to a reasonable conclusion about their model or to find the areas where they need to dig a little deeper. 
+The two main goals with this document are to provide a wide range of output to investigate high level performance and insights, and to deliver a high quality report design layout to increase user experience. The metrics provided are intended to be semi-comprehensive. One can always dig deeper into results to gain further insights. In light of that, the results are intended to provide information that one can come to a reasonable conclusion about their model or to find the areas where they need to dig a little deeper.
 
 ## Evaluation Metrics
+
 This section contains statistics and variable importance measures to help the user understand model performance at a high level. Train Data results are included and can be used to compare against the Test Data results to identify over / under fitting of models.
 
-## Evaluation Plots 
+## Evaluation Plots
+
 This section contains visualizations that span the range of predicted values and the associated accuracies across that range. The predicted values range is broken up into every 5th percentile to provide a wide range for evaluation.
 
-## Model Interpretation sections 
-This section contains visualizations intended to open up the black box of your algorithm. When one inspects coefficients from a regression model, the insights they gain are two-fold: 
-- get an understanding about statistics significance
-- gain an understanding of the variable's effect on the target variable
-However, not all relationships are linear and sometimes the user doesn't specifiy an appropriate model structure to fully capture the nature of the relationship, which can lead to incorrect conclusions about both statistical signifance and the nature of the relationship. These visualizations provide a way to understand what the exact nature of those relationships are (in a visual manner) and if the user chooses, they can attempt to fit the relationship more precisely with an appropriate statistical model in order to gain a better understanding of statistical significance.
+## Model Interpretation sections
+
+This section contains visualizations intended to open up the black box of your algorithm. When one inspects coefficients from a regression model, the insights they gain are two-fold: - get an understanding about statistics significance - gain an understanding of the variable's effect on the target variable However, not all relationships are linear and sometimes the user doesn't specifiy an appropriate model structure to fully capture the nature of the relationship, which can lead to incorrect conclusions about both statistical signifance and the nature of the relationship. These visualizations provide a way to understand what the exact nature of those relationships are (in a visual manner) and if the user chooses, they can attempt to fit the relationship more precisely with an appropriate statistical model in order to gain a better understanding of statistical significance.
 
 # <font size="6">Evaluation Metrics</font>
+
 <p>
 
-<details><summary>Expand</summary>
+<details>
+
+<summary>Expand</summary>
+
 <p>
 
+## <font size="5">Evaluation Metrics Tables</font>
 
+<details>
 
-##  <font size="5">Evaluation Metrics Tables</font>
+<summary>Model Metrics Tables</summary>
 
-<details><summary>Model Metrics Tables</summary>
 <p>
-
 
 ### **TestData**
+
 <p>
 
-<details><summary>Performance Metrics</summary>
+<details>
+
+<summary>Performance Metrics</summary>
+
 <p>
 
 ```{r Model_Evaluation_Metrics, echo=FALSE}
@@ -1215,13 +1058,17 @@ if(!is.null(Test_EvalMetrics)) {
 ```
 
 </details>
+
 </p>
 
-
 ### **TrainData + ValidationData**
+
 <p>
 
-<details><summary>Performance Metrics</summary>
+<details>
+
+<summary>Performance Metrics</summary>
+
 <p>
 
 ```{r Model_Evaluation_Metrics_Train, echo=FALSE}
@@ -1253,14 +1100,17 @@ if(!is.null(Train_EvalMetrics)) {
 ```
 
 </details>
+
 </p>
 
+## <font size="5">Variable Importance Tables</font>
 
-
-##  <font size="5">Variable Importance Tables</font>
 <p>
 
-<details><summary>Variable Importance Table</summary>
+<details>
+
+<summary>Variable Importance Table</summary>
+
 <p>
 
 ```{r Model_VarImportanceTable, echo=FALSE}
@@ -1293,16 +1143,16 @@ if(!is.null(All_Importance)) {
 ```
 
 </details>
+
 </p>
 
+## <font size="5">Interaction Importance Tables</font>
 
+<details>
 
+<summary>Interaction Importance Tables</summary>
 
-##  <font size="5">Interaction Importance Tables</font>
-
-<details><summary>Interaction Importance Tables</summary>
 <p>
-
 
 ```{r Model_IntImportanceTable, echo=FALSE}
 if(exists("All_Interaction") && !is.null(All_Interaction)) {
@@ -1333,155 +1183,94 @@ if(exists("All_Interaction") && !is.null(All_Interaction)) {
 }
 ```
 
-
-
 </details>
+
 </p>
 
-
-
 </details>
+
 </p>
-
-
-
-
 
 # <font size="6">Evaluation Plots</font>
+
 <p>
 
-<details><summary>Expand</summary>
+<details>
+
+<summary>Expand</summary>
+
 <p>
-
-
 
 ## <font size="5">Variable Importance Plots</font>
+
 <p>
 
-<details><summary>Expand</summary>
-<p>
+<details>
 
+<summary>Expand</summary>
+
+<p>
 
 ```{r EvaluationPlots_VIPlot, echo=FALSE}
 if(!is.null(Test_Importance)) {
   if("Train_Importance" %in% names(Test_Importance)) data.table::setnames(Test_Importance, 'Train_Importance', 'Importance', skip_absent = TRUE)
   if("Test_Importance" %in% names(Test_Importance)) data.table::setnames(Test_Importance, "Test_Importance", "Importance", skip_absent = TRUE)
-  AutoPlots::Plot.VariableImportance(
+  AutoPlots::VariableImportance(
     dt = Test_Importance,
     XVar = "Importance",
     YVar = "Variable",
-    GroupVar = NULL,
-    YVarTrans = "Identity",
-    XVarTrans = "Identity",
-    FacetRows = 1,
-    FacetCols = 1,
-    FacetLevels = NULL,
     AggMethod = "mean",
-    #Height = "600px",
-    #Width = "975px",
-    Title = "Variable Importance Plot: Test Data",
-    ShowLabels = FALSE,
-    Title.YAxis = NULL,
-    Title.XAxis = NULL,
-    EchartsTheme = "wef",
-    TimeLine = FALSE,
-    
-    
-    TextColor = "white",
-    title.fontSize = 22,
-    title.fontWeight = "bold",
-    title.textShadowColor = "#63aeff",
-    title.textShadowBlur = 3,
-    title.textShadowOffsetY = 1,
-    title.textShadowOffsetX = -1,
-    xaxis.fontSize = 14,
-    yaxis.fontSize = 14,
-    Debug = FALSE)
+    title.text = "Variable Importance Plot: Test Data",
+    xAxis.title = NULL,
+    Theme = "dark",
+    TimeLine = FALSE
+  )
 } else {
   print("Test Importance is NULL")
 }
 if(!is.null(Validation_Importance)) {
   if("Validation_Importance" %in% names(Validation_Importance)) data.table::setnames(Validation_Importance, 'Validation_Importance', 'Importance', skip_absent = TRUE)
   if("Test_Importance" %in% names(Validation_Importance)) data.table::setnames(Validation_Importance, "Test_Importance", "Importance", skip_absent = TRUE)
-  AutoPlots::Plot.VariableImportance(
+  AutoPlots::VariableImportance(
     dt = Validation_Importance,
     XVar = "Importance",
     YVar = "Variable",
-    GroupVar = NULL,
-    YVarTrans = "Identity",
-    XVarTrans = "Identity",
-    FacetRows = 1,
-    FacetCols = 1,
-    FacetLevels = NULL,
     AggMethod = "mean",
-    #Height = "600px",
-    #Width = "975px",
-    Title = "Variable Importance Plot: Validation Data",
-    ShowLabels = FALSE,
-    Title.YAxis = NULL,
-    Title.XAxis = NULL,
-    EchartsTheme = "wef",
-    TimeLine = FALSE,
-    
-    
-    TextColor = "white",
-    title.fontSize = 22,
-    title.fontWeight = "bold",
-    title.textShadowColor = "#63aeff",
-    title.textShadowBlur = 3,
-    title.textShadowOffsetY = 1,
-    title.textShadowOffsetX = -1,
-    xaxis.fontSize = 14,
-    yaxis.fontSize = 14,
-    Debug = FALSE)
+    title.text = "Variable Importance Plot: Validation Data",
+    xAxis.title = NULL,
+    Theme = "dark",
+    TimeLine = FALSE
+  )
 }
 if(!is.null(Train_Importance)) {
   if("Train_Importance" %in% names(Train_Importance)) data.table::setnames(Train_Importance, 'Train_Importance', 'Importance', skip_absent = TRUE)
   if("Test_Importance" %in% names(Train_Importance)) data.table::setnames(Train_Importance, "Test_Importance", "Importance", skip_absent = TRUE)
-  AutoPlots::Plot.VariableImportance(
+  AutoPlots::VariableImportance(
     dt = Train_Importance,
     XVar = "Importance",
     YVar = "Variable",
-    GroupVar = NULL,
-    YVarTrans = "Identity",
-    XVarTrans = "Identity",
-    FacetRows = 1,
-    FacetCols = 1,
-    FacetLevels = NULL,
     AggMethod = "mean",
-    #Height = "600px",
-    #Width = "975px",
-    Title = "Variable Importance Plot: Train Data",
-    ShowLabels = FALSE,
-    Title.YAxis = NULL,
-    Title.XAxis = NULL,
-    EchartsTheme = "wef",
-    TimeLine = FALSE,
-    
-    
-    TextColor = "white",
-    title.fontSize = 22,
-    title.fontWeight = "bold",
-    title.textShadowColor = "#63aeff",
-    title.textShadowBlur = 3,
-    title.textShadowOffsetY = 1,
-    title.textShadowOffsetX = -1,
-    xaxis.fontSize = 14,
-    yaxis.fontSize = 14,
-    Debug = FALSE)
+    title.text = "Variable Importance Plot: Train Data",
+    xAxis.title = NULL,
+    Theme = "dark",
+    TimeLine = FALSE
+  )
   
 }
 ```
 
 </details>
+
 </p>
 
-
-
 ## <font size="5">Residual Histograms</font>
+
 <p>
 
-<details><summary>Expand</summary>
+<details>
+
+<summary>Expand</summary>
+
 <p>
 
 ```{r EvaluationPlots_ResidualHistogram, echo=FALSE}
@@ -1496,15 +1285,17 @@ if(!is.null(Train_ResidualHistogram)) {
 ```
 
 </details>
+
 </p>
 
-
-
-
 ## <font size="5">Calibration Plots</font>
+
 <p>
 
-<details><summary>Expand</summary>
+<details>
+
+<summary>Expand</summary>
+
 <p>
 
 ```{r EvaluationPlots_CalibrationPlot, echo=FALSE}
@@ -1519,17 +1310,18 @@ if(!is.null(Train_EvaluationPlot)) {
 ```
 
 </details>
+
 </p>
 
-
-
 ## <font size="5">Calibration BoxPlots</font>
+
 <p>
 
+<details>
 
-<details><summary>Expand</summary>
+<summary>Expand</summary>
+
 <p>
-
 
 ```{r EvaluationPlots_CalibrationBoxPlot, echo=FALSE}
 if(!is.null(Test_EvaluationBoxPlot)) {
@@ -1543,43 +1335,51 @@ if(!is.null(Train_EvaluationBoxPlot)) {
 ```
 
 </details>
+
 </p>
-
-
-
-
-
 
 </details>
+
 </p>
 
-
 # <font size="6">Model Interpretation</font>
+
 <p>
 
-<details><summary>Expand</summary>
+<details>
+
+<summary>Expand</summary>
+
 <p>
-
-
 
 ## <font size="5">Partial Dependence Plots: Numeric-Features</font>
+
 <p>
 
-<details><summary>Expand</summary>
-<p>
+<details>
 
+<summary>Expand</summary>
+
+<p>
 
 ### Partial Dependence Line Plots
+
 <p>
 
-<details><summary>Expand</summary>
-<p>
+<details>
 
+<summary>Expand</summary>
+
+<p>
 
 #### **TestData**
+
 <p>
 
-<details><summary>Partital Dependence Line Plots</summary>
+<details>
+
+<summary>Partital Dependence Line Plots</summary>
+
 <p>
 
 ```{r Model_Evaluation_Metrics_NumericVariables, echo=FALSE}
@@ -1593,13 +1393,17 @@ options(warn = 1)
 ```
 
 </details>
+
 </p>
 
-
 #### **TrainData** + **ValidationData**
+
 <p>
 
-<details><summary>Partital Dependence Line Plots</summary>
+<details>
+
+<summary>Partital Dependence Line Plots</summary>
+
 <p>
 
 ```{r Model_Evaluation_Metrics_NumericVariables_Train, echo=FALSE}
@@ -1613,21 +1417,27 @@ options(warn = 1)
 ```
 
 </details>
+
 </p>
 
-
-
 ### Partial Dependence Box Plots
+
 <p>
 
-<details><summary>Expand</summary>
-<p>
+<details>
 
+<summary>Expand</summary>
+
+<p>
 
 #### **TestData**
+
 <p>
 
-<details><summary>Partital Dependence Box Plots</summary>
+<details>
+
+<summary>Partital Dependence Box Plots</summary>
+
 <p>
 
 ```{r Model_Evaluation_Metrics_NumericVariables_Box, echo=FALSE}
@@ -1641,13 +1451,17 @@ options(warn = 1)
 ```
 
 </details>
+
 </p>
 
-
 #### **TrainData** + **ValidationData**
+
 <p>
 
-<details><summary>Partital Dependence Box Plots</summary>
+<details>
+
+<summary>Partital Dependence Box Plots</summary>
+
 <p>
 
 ```{r Model_Evaluation_Metrics_NumericVariables_Train_Box, echo=FALSE}
@@ -1661,21 +1475,27 @@ options(warn = 1)
 ```
 
 </details>
+
 </p>
 
+## <font size="5">Partial Partial Dependence Plots: Categorical-Features</font>
 
-
-## <font size="5">Partial Partial Dependence Plots: Categorical-Features</font> 
 <p>
 
-<details><summary>Expand</summary>
-<p>
+<details>
 
+<summary>Expand</summary>
+
+<p>
 
 ### **TestData**
+
 <p>
 
-<details><summary>Partital Dependence Bar Plots</summary>
+<details>
+
+<summary>Partital Dependence Bar Plots</summary>
+
 <p>
 
 ```{r Model_Evaluation_Metrics_CategoricalVariables, echo=FALSE}
@@ -1689,13 +1509,17 @@ options(warn = 1)
 ```
 
 </details>
+
 </p>
 
-
 ### **TrainData** + **ValidationData**
+
 <p>
 
-<details><summary>Partital Dependence Bar Plots</summary>
+<details>
+
+<summary>Partital Dependence Bar Plots</summary>
+
 <p>
 
 ```{r Model_Evaluation_Metrics_CategoricalVariables_Train, echo=FALSE}
@@ -1709,31 +1533,33 @@ options(warn = 1)
 ```
 
 </details>
-</p>
 
+</p>
 
 </details>
+
 </p>
-
-
 
 </details>
+
 </p>
-
-
-
 
 # <font size="6">Model MetaData</font>
+
 <p>
 
-<details><summary>Expand</summary>
+<details>
+
+<summary>Expand</summary>
+
 <p>
 
+## <font size="5">Parameters and Settings</font>
 
+<details>
 
-## <font size="5">Parameters and Settings</font> 
+<summary>Model Parameters</summary>
 
-<details><summary>Model Parameters</summary>
 <p>
 
 ```{r Model_MetaData_Parameters, echo=FALSE}
@@ -1745,10 +1571,12 @@ if(!is.null(ArgsList)) {
 }
 ```
 
-
 ## <font size="5">Grid Tuning Metrics</font>
 
-<details><summary>Grid Tuning Metrics</summary>
+<details>
+
+<summary>Grid Tuning Metrics</summary>
+
 <p>
 
 ```{r Model_MetaData_GridMetrics, echo=FALSE}
@@ -1781,14 +1609,12 @@ if(!is.null(GridMetrics)) {
 ```
 
 </details>
+
 </p>
-
-
 
 </details>
+
 </p>
-
-
 
 ```{js, echo=FALSE}
 setTimeout(function() {
@@ -1808,7 +1634,6 @@ setTimeout(function() {
   }
 });
 ```
-
 
 ```{js, echo=FALSE}
 <script>
