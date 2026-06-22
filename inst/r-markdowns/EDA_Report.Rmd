@@ -2441,7 +2441,7 @@ if (length(UnivariateNumericVars) > 0L) {
         yAxis.title = i,
         xAxis.title = NULL,
         Theme = Theme
-      ) |> echarts4r::e_flip_coords()
+      )
 
       UnivariatePlotList[[i]] <- UnivariateBoxPlotList[[i]]
       UnivariatePlots$BoxPlots[[i]] <- UnivariateBoxPlotList[[i]]
@@ -2848,7 +2848,7 @@ corr_numeric_cell <- function(value, digits = 3L) {
   } else {
     htmltools::tags$span(
       style = "font-variant-numeric:tabular-nums;color:#E2E8F0;",
-      corr_fmt_num(value, digits)
+      safe_format_digits(value, digits)
     )
   }
 }
@@ -2883,7 +2883,7 @@ corr_value_cell <- function(value) {
     "neutral"
   }
 
-  corr_badge(corr_fmt_num(value, 3L), type)
+  corr_badge(safe_format_digits(value, 3L), type)
 }
 
 corr_abs_value_cell <- function(value) {
@@ -2903,7 +2903,7 @@ corr_abs_value_cell <- function(value) {
     "neutral"
   }
 
-  corr_badge(corr_fmt_num(value, 3L), type)
+  corr_badge(safe_format_digits(value, 3L), type)
 }
 
 corr_p_value_cell <- function(value) {
@@ -2923,7 +2923,7 @@ corr_p_value_cell <- function(value) {
     "neutral"
   }
 
-  corr_badge(corr_fmt_num(value, 4L), type)
+  corr_badge(safe_format_digits(value, 4L), type)
 }
 
 corr_strength_cell <- function(value) {
