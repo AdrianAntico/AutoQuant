@@ -2441,7 +2441,7 @@ if (length(UnivariateNumericVars) > 0L) {
         yAxis.title = i,
         xAxis.title = NULL,
         Theme = Theme
-      )
+      ) |> echarts4r::e_flip_coords()
 
       UnivariatePlotList[[i]] <- UnivariateBoxPlotList[[i]]
       UnivariatePlots$BoxPlots[[i]] <- UnivariateBoxPlotList[[i]]
@@ -2473,7 +2473,7 @@ if (has_trend_group && length(UnivariateNumericVars) > 0L) {
         yAxis.title = i,
         xAxis.title = TrendGroupVar,
         Theme = Theme
-      )
+      ) |> echarts4r::e_flip_coords()
 
       UnivariatePlots$GroupedBoxPlots[[i]] <- UnivariateGroupedBoxPlotList[[i]]
     }
@@ -2522,7 +2522,7 @@ if (length(UnivariateNumericVars) > 0L) {
         yAxis.title = "Count",
         xAxis.title = i,
         Theme = Theme
-      )
+      ) |> echarts4r::e_flip_coords()
 
       UnivariatePlots$DiscreteNumericBarPlots[[i]] <- UnivariateDiscreteNumericPlotList[[i]]
     }
@@ -2583,58 +2583,14 @@ if (length(UnivariateCategoricalVars) > 0L) {
       yAxis.title = "Count",
       xAxis.title = i,
       Theme = Theme
-    )
+    ) |> echarts4r::e_flip_coords()
 
     UnivariateCharacterPlotList[[i]] <- UnivariateCategoricalTopNPlotList[[i]]
     UnivariatePlots$CategoricalTopNBarPlots[[i]] <- UnivariateCategoricalTopNPlotList[[i]]
   }
 }
 
-# ----------------------------
-# Plot QA table
-# ----------------------------
 
-UnivariatePlotQA <- data.table::data.table(
-  PlotSection = c(
-    "Requested Variables",
-    "Valid Variables",
-    "Missing Variables",
-    "Numeric Variables",
-    "Categorical Variables",
-    "Skipped Variables",
-    "Histogram Plots",
-    "Box Plots",
-    "Grouped Box Plots",
-    "Discrete Numeric Bar Plots",
-    "Categorical Bar Plots"
-  ),
-  Count = c(
-    length(UnivariateVars_PlotRequested),
-    length(UnivariateVars_PlotValid),
-    length(UnivariateVars_PlotMissing),
-    length(UnivariateNumericVars),
-    length(UnivariateCategoricalVars),
-    length(UnivariatePlotSkippedVars),
-    length(UnivariateHistogramPlotList),
-    length(UnivariateBoxPlotList),
-    length(UnivariateGroupedBoxPlotList),
-    length(UnivariateDiscreteNumericPlotList),
-    length(UnivariateCategoricalTopNPlotList)
-  ),
-  Values = c(
-    paste(UnivariateVars_PlotRequested, collapse = ", "),
-    paste(UnivariateVars_PlotValid, collapse = ", "),
-    paste(UnivariateVars_PlotMissing, collapse = ", "),
-    paste(UnivariateNumericVars, collapse = ", "),
-    paste(UnivariateCategoricalVars, collapse = ", "),
-    paste(UnivariatePlotSkippedVars, collapse = ", "),
-    paste(names(UnivariateHistogramPlotList), collapse = ", "),
-    paste(names(UnivariateBoxPlotList), collapse = ", "),
-    paste(names(UnivariateGroupedBoxPlotList), collapse = ", "),
-    paste(names(UnivariateDiscreteNumericPlotList), collapse = ", "),
-    paste(names(UnivariateCategoricalTopNPlotList), collapse = ", ")
-  )
-)
 ```
 
 ```{r UnivariatePlotLayoutSettings, echo=FALSE}
