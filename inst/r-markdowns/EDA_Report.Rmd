@@ -12,15 +12,6 @@ output:
 classoption: landscape
 ---
 
-```{r Environment, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-temp <- globalenv()
-TempNames <- names(temp)
-for(nam in TempNames) {
-  assign(x = nam, value = eval(temp[[nam]]), envir = .GlobalEnv)
-}
-```
-
 ```{css, echo=FALSE}
 @import url('https://fonts.googleapis.com/css2?family=Yusei+Magic&display=swap');
 
@@ -478,7 +469,35 @@ a:hover {
 
 ```
 
+```{r Environment, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+temp <- globalenv()
+TempNames <- names(temp)
+for(nam in TempNames) {
+  assign(x = nam, value = eval(temp[[nam]]), envir = .GlobalEnv)
+}
+```
+
 ```{r Describe Data and Table Creation, echo = FALSE}
+# ============================================================
+# Shared Formatting Safety Helper
+# ============================================================
+
+safe_format_digits <- function(digits = NULL, default = 3L, max_digits = 8L) {
+
+  if (is.null(digits) || length(digits) == 0L) {
+    return(as.integer(default))
+  }
+
+  digits <- suppressWarnings(as.integer(digits[1L]))
+
+  if (is.na(digits) || digits < 0L) {
+    return(as.integer(default))
+  }
+
+  as.integer(min(digits, max_digits))
+}
+
 # ============================================================
 # Data Description / Column Audit
 # ============================================================
@@ -2806,20 +2825,6 @@ corr_pair_name <- function(x, y) {
 # Correlation Formatting Helpers
 # ============================================================
 
-corr_fmt_num <- function(x, digits = 3L) {
-  if (corr_is_empty(x)) {
-    return(NA_character_)
-  }
-
-  x <- suppressWarnings(as.numeric(x))
-
-  if (length(x) == 0L || is.na(x[1L])) {
-    return(NA_character_)
-  }
-
-  formatC(x[1L], format = "f", big.mark = ",", digits = digits)
-}
-
 corr_fmt_int <- function(x) {
   if (corr_is_empty(x)) {
     return(NA_character_)
@@ -4203,20 +4208,6 @@ target_mode_value <- function(x) {
   names(tab)[1L]
 }
 
-target_fmt_num <- function(x, digits = 3L) {
-  if (target_is_empty(x)) {
-    return(NA_character_)
-  }
-
-  x <- suppressWarnings(as.numeric(x))
-
-  if (!length(x) || is.na(x[1L])) {
-    return(NA_character_)
-  }
-
-  formatC(x[1L], format = "f", big.mark = ",", digits = digits)
-}
-
 target_fmt_int <- function(x) {
   if (target_is_empty(x)) {
     return(NA_character_)
@@ -4576,7 +4567,7 @@ target_numeric_cell <- function(value, digits = 3L) {
   } else {
     htmltools::tags$span(
       style = "font-variant-numeric:tabular-nums;color:#E2E8F0;",
-      target_fmt_num(value, digits)
+      safe_format_digits(value, digits)
     )
   }
 }
@@ -4611,7 +4602,7 @@ target_corr_cell <- function(value) {
     "neutral"
   }
 
-  target_badge(target_fmt_num(value, 3L), type)
+  target_badge(safe_format_digits(value, 3L), type)
 }
 
 target_abs_corr_cell <- function(value) {
@@ -4631,7 +4622,7 @@ target_abs_corr_cell <- function(value) {
     "neutral"
   }
 
-  target_badge(target_fmt_num(value, 3L), type)
+  target_badge(safe_format_digits(value, 3L), type)
 }
 
 target_lift_cell <- function(value) {
@@ -4649,7 +4640,7 @@ target_lift_cell <- function(value) {
     "neutral"
   }
 
-  target_badge(target_fmt_num(value, 3L), type)
+  target_badge(safe_format_digits(value, 3L), type)
 }
 
 target_flag_cell <- function(value) {
@@ -5429,7 +5420,7 @@ if (TargetVar_Valid && TargetVar_Usable) {
           RiskType = "Extreme numeric target association",
           RiskLevel = "High",
           Reason = "Numeric feature has extremely high absolute association with the target.",
-          Evidence = paste0("Abs correlation = ", target_fmt_num(`Abs Correlation`, 3L))
+          Evidence = paste0("Abs correlation = ", safe_format_digits(`Abs Correlation`, 3L))
         )
       ]
 
@@ -5455,9 +5446,9 @@ if (TargetVar_Valid && TargetVar_Usable) {
           RiskLevel,
           Reason = "Categorical feature has levels with unusually large target-rate or target-mean separation.",
           Evidence = paste0(
-            "Max lift = ", target_fmt_num(`Max Lift`, 3L),
-            "; min lift = ", target_fmt_num(`Min Lift`, 3L),
-            "; target mean range = ", target_fmt_num(`Target Mean Range`, 3L)
+            "Max lift = ", safe_format_digits(`Max Lift`, 3L),
+            "; min lift = ", safe_format_digits(`Min Lift`, 3L),
+            "; target mean range = ", safe_format_digits(`Target Mean Range`, 3L)
           )
         )
       ]
@@ -5484,9 +5475,9 @@ if (TargetVar_Valid && TargetVar_Usable) {
           RiskLevel = ifelse(`Abs Correlation Change` >= 0.50, "High", "Medium"),
           Reason = "Feature-target relationship changed materially between early and recent periods.",
           Evidence = paste0(
-            "Early corr = ", target_fmt_num(`Early Correlation`, 3L),
-            "; recent corr = ", target_fmt_num(`Recent Correlation`, 3L),
-            "; change = ", target_fmt_num(`Correlation Change`, 3L)
+            "Early corr = ", safe_format_digits(`Early Correlation`, 3L),
+            "; recent corr = ", safe_format_digits(`Recent Correlation`, 3L),
+            "; change = ", safe_format_digits(`Correlation Change`, 3L)
           )
         )
       ]
@@ -5867,7 +5858,7 @@ if (exists("TargetNumericAssociationStats") && nrow(TargetNumericAssociationStat
       yAxis.title = "|Spearman Correlation|",
       xAxis.title = NULL,
       Theme = Theme
-    )
+    ) |> echarts4r::e_flip_coords()
   }
 }
 
@@ -5905,7 +5896,7 @@ if (exists("TargetCategoricalAssociationStats") && nrow(TargetCategoricalAssocia
       yAxis.title = "Max |Lift - 1|",
       xAxis.title = NULL,
       Theme = Theme
-    )
+    ) |> echarts4r::e_flip_coords()
   }
 }
 
@@ -5948,7 +5939,7 @@ if (exists("TargetCategoricalLevelStats") && nrow(TargetCategoricalLevelStats) >
       yAxis.title = "|Lift - 1|",
       xAxis.title = NULL,
       Theme = Theme
-    )
+    ) |> echarts4r::e_flip_coords()
   }
 }
 
