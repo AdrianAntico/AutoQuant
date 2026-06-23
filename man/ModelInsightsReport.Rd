@@ -40,7 +40,8 @@ ModelInsightsReport is an Rmarkdown report for viewing the model insights genera
 }
 \seealso{
 Other Reports: 
-\code{\link{EDAReport}()}
+\code{\link{EDAReport}()},
+\code{\link{TargetAnalysisReport}()}
 }
 \author{
 Adrian Antico

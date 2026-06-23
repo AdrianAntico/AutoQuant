@@ -12,7 +12,6 @@ EDAReport(
   TrendVars = NULL,
   TrendDateVar = NULL,
   TrendGroupVar = NULL,
-  TargetVar = NULL,
   OutputPath = NULL,
   Theme = "dark"
 )
@@ -40,12 +39,6 @@ variable used to aggregate trend plots and drift diagnostics.}
 \item{TrendGroupVar}{Optional character value identifying a grouping variable
 used to split grouped trend plots, grouped target trends, and grouped
 distribution diagnostics where applicable.}
-
-\item{TargetVar}{Optional character value identifying the target variable for
-target-oriented analysis. When supplied, the report creates target QA,
-target distribution summaries, target association diagnostics, target trend
-diagnostics, feature drift diagnostics, concept drift diagnostics, and
-potential leakage, collider, or post-treatment risk flags.}
 
 \item{OutputPath}{Character value specifying the directory or file path where
 the rendered report should be written.}
@@ -77,18 +70,12 @@ The report contains the following major sections:
   \item Univariate distribution, box, grouped box, discrete numeric, and categorical plots
   \item Correlation input diagnostics, pairwise correlation statistics, and correlation plots
   \item Overall trend area plots and grouped trend line plots
-  \item Optional target-oriented analysis when `TargetVar` is supplied
 }
-
-Target-oriented analysis supports binary, multiclass, and continuous target
-variables where possible. The diagnostics are intended to surface useful
-modeling signals and risks, but leakage, collider, and concept drift flags are
-heuristic indicators and should be reviewed before being treated as causal or
-definitive.
 }
 \seealso{
 Other Reports: 
-\code{\link{ModelInsightsReport}()}
+\code{\link{ModelInsightsReport}()},
+\code{\link{TargetAnalysisReport}()}
 }
 \author{
 Adrian Antico

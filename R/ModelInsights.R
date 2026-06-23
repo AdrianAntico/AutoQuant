@@ -169,7 +169,6 @@ ModelInsightsReport <- function(TrainDataInclude = FALSE,
 #' @param TrendVars NULL
 #' @param TrendDateVar NULL
 #' @param TrendGroupVar NULL
-#' @param TargetVar NULL
 #' @param OutputPath Path to directory where the html will be saved
 #' @param Theme AutoPlots Theme parameter value
 #'
@@ -181,7 +180,6 @@ Run_EDA_Report <- function(data = NULL,
                            TrendVars = NULL,
                            TrendDateVar = NULL,
                            TrendGroupVar = NULL,
-                           TargetVar = NULL,
                            OutputPath = NULL,
                            Theme = "dark") {
 
@@ -192,7 +190,6 @@ Run_EDA_Report <- function(data = NULL,
   TrendVars <- TrendVars
   TrendDateVar <- TrendDateVar[1]
   TrendGroupVar <- TrendGroupVar[1]
-  TargetVar <- TargetVar[1]
   Theme <- Theme
 
   if(length(TrendDateVar) > 0L) {
@@ -246,11 +243,6 @@ Run_EDA_Report <- function(data = NULL,
 #' @param TrendGroupVar Optional character value identifying a grouping variable
 #'   used to split grouped trend plots, grouped target trends, and grouped
 #'   distribution diagnostics where applicable.
-#' @param TargetVar Optional character value identifying the target variable for
-#'   target-oriented analysis. When supplied, the report creates target QA,
-#'   target distribution summaries, target association diagnostics, target trend
-#'   diagnostics, feature drift diagnostics, concept drift diagnostics, and
-#'   potential leakage, collider, or post-treatment risk flags.
 #' @param OutputPath Character value specifying the directory or file path where
 #'   the rendered report should be written.
 #' @param Theme Character value passed to AutoPlots plotting functions to control
@@ -269,14 +261,7 @@ Run_EDA_Report <- function(data = NULL,
 #'   \item Univariate distribution, box, grouped box, discrete numeric, and categorical plots
 #'   \item Correlation input diagnostics, pairwise correlation statistics, and correlation plots
 #'   \item Overall trend area plots and grouped trend line plots
-#'   \item Optional target-oriented analysis when `TargetVar` is supplied
 #' }
-#'
-#' Target-oriented analysis supports binary, multiclass, and continuous target
-#' variables where possible. The diagnostics are intended to surface useful
-#' modeling signals and risks, but leakage, collider, and concept drift flags are
-#' heuristic indicators and should be reviewed before being treated as causal or
-#' definitive.
 #'
 #' @export
 EDAReport <- function(data = NULL,
@@ -286,7 +271,6 @@ EDAReport <- function(data = NULL,
                       TrendVars = NULL,
                       TrendDateVar = NULL,
                       TrendGroupVar = NULL,
-                      TargetVar = NULL,
                       OutputPath = NULL,
                       Theme = "dark") {
 
@@ -298,7 +282,92 @@ EDAReport <- function(data = NULL,
     TrendVars = TrendVars,
     TrendDateVar = TrendDateVar,
     TrendGroupVar = TrendGroupVar,
+    OutputPath = OutputPath,
+    Theme = Theme
+  )
+}
+
+#' @title Run_Target_Analysis_Report
+#'
+#' @description Run_Target_Analysis_Report is an Rmarkdown report for EDA
+#'
+#' @author Adrian Antico
+#' @family Reports
+#'
+#' @param data NULL
+#' @param DataName NULL
+#' @param TargetVar NULL
+#' @param TrendDateVar NULL
+#' @param TrendGroupVar NULL
+#' @param OutputPath Path to directory where the html will be saved
+#' @param Theme AutoPlots Theme parameter value
+#'
+#' @noRd
+Run_Target_Analysis_Report <- function(data = NULL,
+                                       DataName = NULL,
+                                       TargetVar = NULL,
+                                       TrendDateVar = NULL,
+                                       TrendGroupVar = NULL,
+                                       OutputPath = NULL,
+                                       Theme = "dark") {
+
+  appDir <- system.file("r-markdowns", package = "AutoQuant")
+  data <- data
+  TrendDateVar <- TrendDateVar[1]
+  TrendGroupVar <- TrendGroupVar
+  TargetVar <- TargetVar[1]
+  Theme <- Theme
+
+  OutputPathName <- file.path(OutputPath, paste0('TargetAnalysis-', DataName, '.html'))
+  rmarkdown::render(
+    input = file.path(appDir, 'Target_Analysis_Report.Rmd'),
+    output_file = OutputPathName
+  )
+}
+
+#' @title Target Analysis Report
+#'
+#' @description
+#' Generates an HTML R Markdown target analysis report for a supplied
+#'
+#' @author Adrian Antico
+#'
+#' @family Reports
+#'
+#' @param data A data.frame or data.table containing the dataset to profile.
+#' @param DataName Optional character value used as the display name for the
+#'   dataset in the report.
+#' @param TargetVar Character value identifying the target variable for
+#'   target-oriented analysis. When supplied, the report creates target QA,
+#'   target distribution summaries, target association diagnostics, target trend
+#'   diagnostics, feature drift diagnostics, concept drift diagnostics, and
+#'   potential leakage, collider, or post-treatment risk flags.
+#' @param TrendDateVar Character value for the date column name
+#' @param TrendGroupVar Character value for the categorical column name
+#' @param OutputPath Character value specifying the directory or file path where
+#'   the rendered report should be written.
+#' @param Theme Character value passed to AutoPlots plotting functions to control
+#'   the visual theme of generated plots.
+#'
+#' @return
+#' Invisibly returns the output path of the rendered report. The primary side
+#' effect is an HTML Target Analysis report written to `OutputPath`.
+#'
+#' @export
+TargetAnalysisReport <- function(data = NULL,
+                                 DataName = NULL,
+                                 TargetVar = NULL,
+                                 TrendDateVar = NULL,
+                                 TrendGroupVar = NULL,
+                                 OutputPath = NULL,
+                                 Theme = "dark") {
+
+  Run_Target_Analysis_Report(
+    data = data,
+    DataName = DataName,
     TargetVar = TargetVar,
+    TrendDateVar = TrendDateVar,
+    TrendGroupVar = TrendGroupVar,
     OutputPath = OutputPath,
     Theme = Theme
   )
