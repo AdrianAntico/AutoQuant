@@ -157,6 +157,288 @@ install.packages("https://github.com/AdrianAntico/AutoQuant/archive/refs/tags/<v
 
 # Code Examples
 
+## EDA <img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/EDA.png" align="right" width="80" />
+
+<details><summary>Expand to view content</summary>
+<p>
+
+<br>
+
+```r
+# ============================================================
+# Fake EDA Report QA Data for AutoQuant::EDAReport()
+# ============================================================
+
+set.seed(8675309)
+
+library(data.table)
+library(AutoQuant)
+
+# ----------------------------
+# 1. Create fake data
+# ----------------------------
+
+n <- 5000
+
+dates <- seq.Date(
+  from = as.Date("2023-01-01"),
+  to   = as.Date("2025-12-31"),
+  by   = "day"
+)
+
+dt <- data.table(
+  id = seq_len(n),
+
+  # Date / trend fields
+  event_date = sample(dates, n, replace = TRUE),
+
+  # Grouping fields
+  channel = sample(
+    c("Search", "Social", "Email", "Direct", "Affiliate"),
+    n,
+    replace = TRUE,
+    prob = c(0.34, 0.24, 0.16, 0.18, 0.08)
+  ),
+
+  region = sample(
+    c("West", "South", "Midwest", "Northeast"),
+    n,
+    replace = TRUE,
+    prob = c(0.35, 0.28, 0.20, 0.17)
+  ),
+
+  customer_segment = sample(
+    c("Budget", "Standard", "Premium", "Enterprise"),
+    n,
+    replace = TRUE,
+    prob = c(0.35, 0.40, 0.20, 0.05)
+  )
+)
+
+# Date features for synthetic signal
+dt[, month_num := as.integer(format(event_date, "%m"))]
+dt[, year_num  := as.integer(format(event_date, "%Y"))]
+dt[, day_index := as.integer(event_date - min(event_date))]
+
+# Base effects
+channel_effect <- c(
+  Search    = 1.20,
+  Social    = 0.85,
+  Email     = 1.35,
+  Direct    = 1.00,
+  Affiliate = 0.65
+)
+
+segment_effect <- c(
+  Budget     = 0.70,
+  Standard   = 1.00,
+  Premium    = 1.55,
+  Enterprise = 2.40
+)
+
+region_effect <- c(
+  West      = 1.10,
+  South     = 0.95,
+  Midwest   = 0.85,
+  Northeast = 1.05
+)
+
+# Seasonality and trend
+dt[, seasonality := 1 + 0.25 * sin(2 * pi * month_num / 12)]
+dt[, trend       := 1 + day_index / max(day_index) * 0.35]
+
+# Numeric variables with structure
+dt[, impressions := round(
+  rgamma(.N, shape = 8, scale = 1200) *
+    channel_effect[channel] *
+    seasonality *
+    trend
+)]
+
+dt[, clicks := round(
+  impressions * pmin(
+    pmax(rnorm(.N, mean = 0.035, sd = 0.012), 0.002),
+    0.12
+  )
+)]
+
+dt[, spend := round(
+  impressions * runif(.N, 0.008, 0.025) *
+    channel_effect[channel] *
+    region_effect[region],
+  2
+)]
+
+dt[, conversions := rpois(
+  .N,
+  lambda = pmax(
+    clicks *
+      runif(.N, 0.025, 0.12) *
+      segment_effect[customer_segment] *
+      region_effect[region],
+    0.01
+  )
+)]
+
+dt[, revenue := round(
+  conversions *
+    rgamma(.N, shape = 4, scale = 90) *
+    segment_effect[customer_segment] *
+    runif(.N, 0.75, 1.35),
+  2
+)]
+
+dt[, ctr := clicks / pmax(impressions, 1)]
+dt[, cvr := conversions / pmax(clicks, 1)]
+dt[, cpc := spend / pmax(clicks, 1)]
+dt[, roas := revenue / pmax(spend, 1)]
+
+# Some less-behaved variables for QA
+dt[, noise_normal := rnorm(.N, mean = 100, sd = 15)]
+dt[, skewed_score := rgamma(.N, shape = 2, scale = 20)]
+dt[, binary_flag := rbinom(.N, size = 1, prob = 0.28)]
+
+# Deliberate correlated variables
+dt[, spend_lag_proxy := spend * runif(.N, 0.85, 1.15) + rnorm(.N, 0, 25)]
+dt[, revenue_proxy   := revenue * runif(.N, 0.90, 1.10) + rnorm(.N, 0, 100)]
+
+# Deliberate outliers
+outlier_rows <- sample(seq_len(n), size = 35)
+dt[outlier_rows, spend := spend * runif(.N, 4, 9)]
+dt[outlier_rows, revenue := revenue * runif(.N, 3, 7)]
+dt[outlier_rows, impressions := round(impressions * runif(.N, 2, 5))]
+
+# Deliberate missingness
+dt[sample(.N, 150), revenue := NA_real_]
+dt[sample(.N, 120), cpc := NA_real_]
+dt[sample(.N, 90), customer_segment := NA_character_]
+dt[sample(.N, 80), ctr := NA_real_]
+
+# Deliberate zero-heavy variable
+dt[, zero_heavy_metric := fifelse(
+  runif(.N) < 0.72,
+  0,
+  round(rgamma(.N, shape = 2, scale = 15), 2)
+)]
+
+# Clean helper columns if you do not want them in report
+# Keeping them can also help QA univariate behavior.
+# dt[, c("month_num", "year_num", "day_index", "seasonality", "trend") := NULL]
+
+
+# ----------------------------
+# 2. Define report inputs
+# ----------------------------
+
+UnivariateVars <- c(
+  "impressions",
+  "clicks",
+  "spend",
+  "conversions",
+  "revenue",
+  "ctr",
+  "cvr",
+  "cpc",
+  "roas",
+  "noise_normal",
+  "skewed_score",
+  "binary_flag",
+  "zero_heavy_metric",
+  "channel",
+  "region",
+  "customer_segment"
+)
+
+CorrVars <- c(
+  "impressions",
+  "clicks",
+  "spend",
+  "spend_lag_proxy",
+  "conversions",
+  "revenue",
+  "revenue_proxy",
+  "ctr",
+  "cvr",
+  "cpc",
+  "roas",
+  "noise_normal",
+  "skewed_score",
+  "zero_heavy_metric"
+)
+
+TrendVars <- c(
+  "impressions",
+  "clicks",
+  "spend",
+  "conversions",
+  "revenue",
+  "ctr",
+  "cvr",
+  "cpc",
+  "roas"
+)
+
+OutputPath <- getwd()
+
+
+# ----------------------------
+# 3. Full report: all options
+# ----------------------------
+
+artifacts <- generate_eda_artifacts(
+  data = dt,
+  DataName = "EDA Data",
+
+  # Variable inputs
+  UnivariateVars = UnivariateVars,
+  CorrVars = CorrVars,
+  TrendVars = TrendVars,
+  TrendDateVar = "event_date",
+  TrendGroupVar = "channel",
+
+  # Theme
+  Theme = "dark",
+
+  # Plot/table generation settings
+  MaxCategoricalLevels = 25L,
+  MaxDiscreteNumericLevels = 20L,
+  CorrelationMethod = "spearman",
+  MaxCorrelationPairsToPlot = 25L,
+  HighCorrelationThreshold = 0.70,
+
+  # Layout settings for RMarkdown display
+  HistogramPlotCols = 2L,
+  BoxPlotCols = 2L,
+  GroupedBoxPlotCols = 2L,
+  DiscreteNumericBarPlotCols = 2L,
+  CategoricalBarPlotCols = 1L,
+
+  # Artifact sidecar export settings
+  OutputPath = "eda_artifacts",
+  ExportPNG = FALSE,
+  ExportHTML = FALSE,
+  IncludeDataURL = FALSE,
+
+  # PNG export settings
+  PNGWidth = 1400,
+  PNGHeight = 900,
+  PNGDPI = 150,
+  PNGBackground = "white"
+)
+
+# Generate Report
+EDAReport(
+  artifacts,
+  DataName = "AutoQuant Fake Marketing QA Dataset",
+  OutputPath = OutputPath,
+  Theme = "dark"
+)
+```
+
+</p>
+</details>
+
+<br>
 
 ## Supervised Learning <img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/SupervisedLearningImage.png" align="right" width="80" />
 
