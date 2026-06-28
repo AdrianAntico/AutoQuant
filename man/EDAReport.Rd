@@ -5,71 +5,58 @@
 \title{Exploratory Data Analysis Report}
 \usage{
 EDAReport(
-  data = NULL,
-  DataName = NULL,
-  UnivariateVars = NULL,
-  CorrVars = NULL,
-  TrendVars = NULL,
-  TrendDateVar = NULL,
-  TrendGroupVar = NULL,
+  artifacts,
   OutputPath = NULL,
-  Theme = "dark"
+  DataName = NULL,
+  Theme = "dark",
+  OutputFile = NULL
 )
 }
 \arguments{
-\item{data}{A data.frame or data.table containing the dataset to profile.}
+\item{artifacts}{Output object returned by `generate_eda_artifacts()`.}
 
-\item{DataName}{Optional character value used as the display name for the
-dataset in the report.}
+\item{OutputPath}{Directory where the rendered HTML report should be saved.
+If `NULL`, the current working directory is used.}
 
-\item{UnivariateVars}{Optional character vector of variables to include in
-the univariate statistics and univariate plot sections. If NULL, variables
-are selected from the supplied dataset based on supported data types.}
+\item{DataName}{Optional report/data name. If `NULL`, attempts to use
+`artifacts$metadata$DataName`, then falls back to `"EDA Data"`.}
 
-\item{CorrVars}{Optional character vector of variables to include in the
-correlation analysis section. Non-numeric, missing, and constant variables
-are diagnosed and skipped where appropriate.}
+\item{Theme}{Character value passed through to the RMarkdown report.}
 
-\item{TrendVars}{Optional character vector of numeric variables to include in
-the trend analysis section.}
-
-\item{TrendDateVar}{Optional character value identifying the date or datetime
-variable used to aggregate trend plots and drift diagnostics.}
-
-\item{TrendGroupVar}{Optional character value identifying a grouping variable
-used to split grouped trend plots, grouped target trends, and grouped
-distribution diagnostics where applicable.}
-
-\item{OutputPath}{Character value specifying the directory or file path where
-the rendered report should be written.}
-
-\item{Theme}{Character value passed to AutoPlots plotting functions to control
-the visual theme of generated plots.}
+\item{OutputFile}{Optional full output file path. If `NULL`, a file name is
+generated as `"EDAReport-{DataName}.html"` inside `OutputPath`.}
 }
 \value{
-Invisibly returns the output path of the rendered report. The primary side
-effect is an HTML EDA report written to `OutputPath`.
+Invisibly returns the rendered HTML file path.
 }
 \description{
-Generates an HTML R Markdown exploratory data analysis report for a supplied
-dataset. The report includes dataset-level diagnostics, univariate summaries,
-univariate plots, correlation analysis, trend analysis, and optional
-target-oriented diagnostics when a target variable is supplied.
-
-The report is designed to provide a broad pre-modeling view of data quality,
-variable distributions, relationships between numeric variables, temporal
-movement, grouped trend behavior, target associations, feature drift, concept
-drift, and potential leakage or collider-risk indicators.
+Renders an HTML exploratory data analysis report from a pre-generated EDA
+artifact object created by `generate_eda_artifacts()`.
 }
 \details{
-The report contains the following major sections:
+This function does not compute EDA artifacts. It only renders the report from
+artifacts that were already generated. This separates artifact generation from
+report rendering, allowing the same artifact object to be reused for
+RMarkdown, Shiny, PNG export, HTML export, or LLM/API workflows.
 
-\itemize{
-  \item Data description and column-level diagnostics
-  \item Univariate statistics
-  \item Univariate distribution, box, grouped box, discrete numeric, and categorical plots
-  \item Correlation input diagnostics, pairwise correlation statistics, and correlation plots
-  \item Overall trend area plots and grouped trend line plots
+Typical usage:
+
+\preformatted{
+artifacts <- generate_eda_artifacts(
+  data = dt,
+  DataName = "EDA Data",
+  UnivariateVars = UnivariateVars,
+  CorrVars = CorrVars,
+  TrendVars = TrendVars,
+  TrendDateVar = "event_date",
+  TrendGroupVar = "channel",
+  Theme = "dark"
+)
+
+EDAReport(
+  artifacts = artifacts,
+  OutputPath = "reports"
+)
 }
 }
 \seealso{

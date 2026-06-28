@@ -155,136 +155,163 @@ ModelInsightsReport <- function(TrainDataInclude = FALSE,
   rm(list = c(setdiff(GlobalVarsNew, c(GlobalVars, KeepOutput))))
 }
 
-#' @title Run_EDA_Report
-#'
-#' @description Run_EDA_Report is an Rmarkdown report for EDA
-#'
-#' @author Adrian Antico
-#' @family Reports
-#'
-#' @param data NULL
-#' @param DataName NULL
-#' @param UnivariateVars NULL
-#' @param CorrVars NULL
-#' @param TrendVars NULL
-#' @param TrendDateVar NULL
-#' @param TrendGroupVar NULL
-#' @param OutputPath Path to directory where the html will be saved
-#' @param Theme AutoPlots Theme parameter value
-#'
-#' @noRd
-Run_EDA_Report <- function(data = NULL,
-                           DataName = NULL,
-                           UnivariateVars = NULL,
-                           CorrVars = NULL,
-                           TrendVars = NULL,
-                           TrendDateVar = NULL,
-                           TrendGroupVar = NULL,
-                           OutputPath = NULL,
-                           Theme = "dark") {
-
-  appDir <- system.file("r-markdowns", package = "AutoQuant")
-  data <- data
-  UnivariateVars <- UnivariateVars
-  CorrVars <- CorrVars
-  TrendVars <- TrendVars
-  TrendDateVar <- TrendDateVar[1]
-  TrendGroupVar <- TrendGroupVar[1]
-  Theme <- Theme
-
-  if(length(TrendDateVar) > 0L) {
-    if(!class(data[[TrendDateVar]])[1L] %in% c("Date", "posix", "IDate", "IDateTime")) {
-      x <- data[1L, get(TrendDateVar)]
-      x1 <- lubridate::guess_formats(x, orders = c('mdY', 'BdY', 'Bdy', 'bdY', 'bdy', 'mdy', 'dby', 'Ymd', 'Ydm', 'dmy'))
-      data[, eval(TrendDateVar) := as.Date(get(TrendDateVar), tryFormats = x1)]
-      if(!class(data[[TrendDateVar]])[1L] %in% c("Date", "posix", "IDate", "IDateTime")) {
-        TrendDateVar <- NULL
-      }
-    }
-  }
-
-  OutputPathName <- file.path(OutputPath, paste0('EDAReport-', DataName, '.html'))
-  rmarkdown::render(
-    input = file.path(appDir, 'EDA_Report.Rmd'),
-    output_file = OutputPathName
-  )
-}
-
 #' @title Exploratory Data Analysis Report
 #'
 #' @description
-#' Generates an HTML R Markdown exploratory data analysis report for a supplied
-#' dataset. The report includes dataset-level diagnostics, univariate summaries,
-#' univariate plots, correlation analysis, trend analysis, and optional
-#' target-oriented diagnostics when a target variable is supplied.
-#'
-#' The report is designed to provide a broad pre-modeling view of data quality,
-#' variable distributions, relationships between numeric variables, temporal
-#' movement, grouped trend behavior, target associations, feature drift, concept
-#' drift, and potential leakage or collider-risk indicators.
+#' Renders an HTML exploratory data analysis report from a pre-generated EDA
+#' artifact object created by `generate_eda_artifacts()`.
 #'
 #' @author Adrian Antico
-#'
 #' @family Reports
 #'
-#' @param data A data.frame or data.table containing the dataset to profile.
-#' @param DataName Optional character value used as the display name for the
-#'   dataset in the report.
-#' @param UnivariateVars Optional character vector of variables to include in
-#'   the univariate statistics and univariate plot sections. If NULL, variables
-#'   are selected from the supplied dataset based on supported data types.
-#' @param CorrVars Optional character vector of variables to include in the
-#'   correlation analysis section. Non-numeric, missing, and constant variables
-#'   are diagnosed and skipped where appropriate.
-#' @param TrendVars Optional character vector of numeric variables to include in
-#'   the trend analysis section.
-#' @param TrendDateVar Optional character value identifying the date or datetime
-#'   variable used to aggregate trend plots and drift diagnostics.
-#' @param TrendGroupVar Optional character value identifying a grouping variable
-#'   used to split grouped trend plots, grouped target trends, and grouped
-#'   distribution diagnostics where applicable.
-#' @param OutputPath Character value specifying the directory or file path where
-#'   the rendered report should be written.
-#' @param Theme Character value passed to AutoPlots plotting functions to control
-#'   the visual theme of generated plots.
+#' @param artifacts Output object returned by `generate_eda_artifacts()`.
+#' @param OutputPath Directory where the rendered HTML report should be saved.
+#'   If `NULL`, the current working directory is used.
+#' @param DataName Optional report/data name. If `NULL`, attempts to use
+#'   `artifacts$metadata$DataName`, then falls back to `"EDA Data"`.
+#' @param Theme Character value passed through to the RMarkdown report.
+#' @param OutputFile Optional full output file path. If `NULL`, a file name is
+#'   generated as `"EDAReport-{DataName}.html"` inside `OutputPath`.
 #'
-#' @return
-#' Invisibly returns the output path of the rendered report. The primary side
-#' effect is an HTML EDA report written to `OutputPath`.
+#' @return Invisibly returns the rendered HTML file path.
 #'
 #' @details
-#' The report contains the following major sections:
+#' This function does not compute EDA artifacts. It only renders the report from
+#' artifacts that were already generated. This separates artifact generation from
+#' report rendering, allowing the same artifact object to be reused for
+#' RMarkdown, Shiny, PNG export, HTML export, or LLM/API workflows.
 #'
-#' \itemize{
-#'   \item Data description and column-level diagnostics
-#'   \item Univariate statistics
-#'   \item Univariate distribution, box, grouped box, discrete numeric, and categorical plots
-#'   \item Correlation input diagnostics, pairwise correlation statistics, and correlation plots
-#'   \item Overall trend area plots and grouped trend line plots
+#' Typical usage:
+#'
+#' \preformatted{
+#' artifacts <- generate_eda_artifacts(
+#'   data = dt,
+#'   DataName = "EDA Data",
+#'   UnivariateVars = UnivariateVars,
+#'   CorrVars = CorrVars,
+#'   TrendVars = TrendVars,
+#'   TrendDateVar = "event_date",
+#'   TrendGroupVar = "channel",
+#'   Theme = "dark"
+#' )
+#'
+#' EDAReport(
+#'   artifacts = artifacts,
+#'   OutputPath = "reports"
+#' )
 #' }
 #'
 #' @export
-EDAReport <- function(data = NULL,
-                      DataName = NULL,
-                      UnivariateVars = NULL,
-                      CorrVars = NULL,
-                      TrendVars = NULL,
-                      TrendDateVar = NULL,
-                      TrendGroupVar = NULL,
-                      OutputPath = NULL,
-                      Theme = "dark") {
+EDAReport <- function(
+    artifacts,
+    OutputPath = NULL,
+    DataName = NULL,
+    Theme = "dark",
+    OutputFile = NULL
+) {
 
-  Run_EDA_Report(
-    data = data,
-    DataName = DataName,
-    UnivariateVars = UnivariateVars,
-    CorrVars = CorrVars,
-    TrendVars = TrendVars,
-    TrendDateVar = TrendDateVar,
-    TrendGroupVar = TrendGroupVar,
-    OutputPath = OutputPath,
-    Theme = Theme
+  if (missing(artifacts) || is.null(artifacts)) {
+    stop(
+      "`artifacts` must be supplied. Use `generate_eda_artifacts()` first.",
+      call. = FALSE
+    )
+  }
+
+  appDir <- system.file("r-markdowns", package = "AutoQuant")
+
+  if (!nzchar(appDir)) {
+    stop(
+      "Could not find the AutoQuant RMarkdown directory: inst/r-markdowns.",
+      call. = FALSE
+    )
+  }
+
+  rmd_file <- file.path(appDir, "EDA_Report.Rmd")
+
+  if (!file.exists(rmd_file)) {
+    stop(
+      "Could not find the EDA report RMarkdown file: ",
+      rmd_file,
+      call. = FALSE
+    )
+  }
+
+  if (is.null(OutputPath)) {
+    OutputPath <- getwd()
+  }
+
+  OutputPath <- normalizePath(
+    OutputPath,
+    winslash = "/",
+    mustWork = FALSE
   )
+
+  if (!dir.exists(OutputPath)) {
+    dir.create(OutputPath, recursive = TRUE, showWarnings = FALSE)
+  }
+
+  if (is.null(DataName)) {
+    DataName <- tryCatch(
+      artifacts$metadata$DataName,
+      error = function(e) NULL
+    )
+  }
+
+  if (
+    is.null(DataName) ||
+    length(DataName) == 0L ||
+    is.na(DataName[1L]) ||
+    !nzchar(as.character(DataName[1L]))
+  ) {
+    DataName <- "EDA Data"
+  }
+
+  DataName <- as.character(DataName[1L])
+
+  safe_data_name <- gsub("[^A-Za-z0-9_-]+", "_", DataName)
+  safe_data_name <- gsub("_+", "_", safe_data_name)
+  safe_data_name <- gsub("^_|_$", "", safe_data_name)
+
+  if (!nzchar(safe_data_name)) {
+    safe_data_name <- "EDA_Data"
+  }
+
+  if (is.null(OutputFile)) {
+
+    OutputFile <- file.path(
+      OutputPath,
+      paste0("EDAReport-", safe_data_name, ".html")
+    )
+
+  } else {
+
+    OutputFile <- path.expand(OutputFile)
+
+    output_file_dir <- dirname(OutputFile)
+
+    if (!dir.exists(output_file_dir)) {
+      dir.create(output_file_dir, recursive = TRUE, showWarnings = FALSE)
+    }
+
+    OutputFile <- normalizePath(
+      OutputFile,
+      winslash = "/",
+      mustWork = FALSE
+    )
+  }
+
+  rmarkdown::render(
+    input = rmd_file,
+    output_file = OutputFile,
+    params = list(
+      artifacts = artifacts,
+      DataName = DataName,
+      Theme = Theme
+    ),
+    envir = new.env(parent = globalenv())
+  )
+
+  invisible(OutputFile)
 }
 
 #' @title Run_Target_Analysis_Report
