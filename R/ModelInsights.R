@@ -314,88 +314,159 @@ EDAReport <- function(
   invisible(OutputFile)
 }
 
-#' @title Run_Target_Analysis_Report
-#'
-#' @description Run_Target_Analysis_Report is an Rmarkdown report for EDA
-#'
-#' @author Adrian Antico
-#' @family Reports
-#'
-#' @param data NULL
-#' @param DataName NULL
-#' @param TargetVar NULL
-#' @param TrendDateVar NULL
-#' @param TrendGroupVar NULL
-#' @param OutputPath Path to directory where the html will be saved
-#' @param Theme AutoPlots Theme parameter value
-#'
-#' @noRd
-Run_Target_Analysis_Report <- function(data = NULL,
-                                       DataName = NULL,
-                                       TargetVar = NULL,
-                                       TrendDateVar = NULL,
-                                       TrendGroupVar = NULL,
-                                       OutputPath = NULL,
-                                       Theme = "dark") {
-
-  appDir <- system.file("r-markdowns", package = "AutoQuant")
-  data <- data
-  TrendDateVar <- TrendDateVar[1]
-  TrendGroupVar <- TrendGroupVar
-  TargetVar <- TargetVar[1]
-  Theme <- Theme
-
-  OutputPathName <- file.path(OutputPath, paste0('TargetAnalysis-', DataName, '.html'))
-  rmarkdown::render(
-    input = file.path(appDir, 'Target_Analysis_Report.Rmd'),
-    output_file = OutputPathName
-  )
-}
-
 #' @title Target Analysis Report
 #'
 #' @description
-#' Generates an HTML R Markdown target analysis report for a supplied
+#' Renders an HTML target analysis / model readiness report from a pre-generated
+#' artifact object created by `generate_target_analysis_artifacts()`.
 #'
 #' @author Adrian Antico
-#'
 #' @family Reports
 #'
-#' @param data A data.frame or data.table containing the dataset to profile.
-#' @param DataName Optional character value used as the display name for the
-#'   dataset in the report.
-#' @param TargetVar Character value identifying the target variable for
-#'   target-oriented analysis. When supplied, the report creates target QA,
-#'   target distribution summaries, target association diagnostics, target trend
-#'   diagnostics, feature drift diagnostics, concept drift diagnostics, and
-#'   potential leakage, collider, or post-treatment risk flags.
-#' @param TrendDateVar Character value for the date column name
-#' @param TrendGroupVar Character value for the categorical column name
-#' @param OutputPath Character value specifying the directory or file path where
-#'   the rendered report should be written.
-#' @param Theme Character value passed to AutoPlots plotting functions to control
-#'   the visual theme of generated plots.
+#' @param artifacts Output object returned by `generate_target_analysis_artifacts()`.
+#' @param OutputPath Directory where the rendered HTML report should be saved.
+#'   If `NULL`, the current working directory is used.
+#' @param DataName Optional report/data name. If `NULL`, attempts to use
+#'   `artifacts$metadata$DataName`, then falls back to `"Modeling Data"`.
+#' @param Theme Character value passed through to the RMarkdown report.
+#' @param OutputFile Optional full output file path. If `NULL`, a file name is
+#'   generated as `"TargetAnalysis-{DataName}.html"` inside `OutputPath`.
 #'
-#' @return
-#' Invisibly returns the output path of the rendered report. The primary side
-#' effect is an HTML Target Analysis report written to `OutputPath`.
+#' @return Invisibly returns the rendered HTML file path.
+#'
+#' @details
+#' This function does not compute target analysis artifacts. It only renders the
+#' report from artifacts that were already generated. This separates evidence
+#' generation from report rendering, allowing the same artifact object to be
+#' reused for RMarkdown, Shiny, static exports, or LLM/API workflows.
+#'
+#' Typical usage:
+#'
+#' \preformatted{
+#' artifacts <- generate_target_analysis_artifacts(
+#'   data = dt,
+#'   DataName = "Modeling Data",
+#'   TargetVar = "conversions",
+#'   TrendDateVar = "event_date",
+#'   TrendGroupVar = c("channel", "market"),
+#'   Theme = "dark"
+#' )
+#'
+#' TargetAnalysisReport(
+#'   artifacts = artifacts,
+#'   OutputPath = "reports"
+#' )
+#' }
 #'
 #' @export
-TargetAnalysisReport <- function(data = NULL,
-                                 DataName = NULL,
-                                 TargetVar = NULL,
-                                 TrendDateVar = NULL,
-                                 TrendGroupVar = NULL,
-                                 OutputPath = NULL,
-                                 Theme = "dark") {
+TargetAnalysisReport <- function(
+    artifacts,
+    OutputPath = NULL,
+    DataName = NULL,
+    Theme = "dark",
+    OutputFile = NULL
+) {
 
-  Run_Target_Analysis_Report(
-    data = data,
-    DataName = DataName,
-    TargetVar = TargetVar,
-    TrendDateVar = TrendDateVar,
-    TrendGroupVar = TrendGroupVar,
-    OutputPath = OutputPath,
-    Theme = Theme
+  if (missing(artifacts) || is.null(artifacts)) {
+    stop(
+      "`artifacts` must be supplied. Use `generate_target_analysis_artifacts()` first.",
+      call. = FALSE
+    )
+  }
+
+  appDir <- system.file("r-markdowns", package = "AutoQuant")
+
+  if (!nzchar(appDir)) {
+    stop(
+      "Could not find the AutoQuant RMarkdown directory: inst/r-markdowns.",
+      call. = FALSE
+    )
+  }
+
+  rmd_file <- file.path(appDir, "Target_Analysis_Report.Rmd")
+
+  if (!file.exists(rmd_file)) {
+    stop(
+      "Could not find the Target Analysis report RMarkdown file: ",
+      rmd_file,
+      call. = FALSE
+    )
+  }
+
+  if (is.null(OutputPath)) {
+    OutputPath <- getwd()
+  }
+
+  OutputPath <- normalizePath(
+    OutputPath,
+    winslash = "/",
+    mustWork = FALSE
   )
+
+  if (!dir.exists(OutputPath)) {
+    dir.create(OutputPath, recursive = TRUE, showWarnings = FALSE)
+  }
+
+  if (is.null(DataName)) {
+    DataName <- tryCatch(
+      artifacts$metadata$DataName,
+      error = function(e) NULL
+    )
+  }
+
+  if (
+    is.null(DataName) ||
+    length(DataName) == 0L ||
+    is.na(DataName[1L]) ||
+    !nzchar(as.character(DataName[1L]))
+  ) {
+    DataName <- "Modeling Data"
+  }
+
+  DataName <- as.character(DataName[1L])
+
+  safe_data_name <- gsub("[^A-Za-z0-9_-]+", "_", DataName)
+  safe_data_name <- gsub("_+", "_", safe_data_name)
+  safe_data_name <- gsub("^_|_$", "", safe_data_name)
+
+  if (!nzchar(safe_data_name)) {
+    safe_data_name <- "Modeling_Data"
+  }
+
+  if (is.null(OutputFile)) {
+
+    OutputFile <- file.path(
+      OutputPath,
+      paste0("TargetAnalysis-", safe_data_name, ".html")
+    )
+
+  } else {
+
+    OutputFile <- path.expand(OutputFile)
+
+    output_file_dir <- dirname(OutputFile)
+
+    if (!dir.exists(output_file_dir)) {
+      dir.create(output_file_dir, recursive = TRUE, showWarnings = FALSE)
+    }
+
+    OutputFile <- normalizePath(
+      OutputFile,
+      winslash = "/",
+      mustWork = FALSE
+    )
+  }
+
+  rmarkdown::render(
+    input = rmd_file,
+    output_file = OutputFile,
+    params = list(
+      artifacts = artifacts,
+      DataName = DataName,
+      Theme = Theme
+    ),
+    envir = new.env(parent = globalenv())
+  )
+
+  invisible(OutputFile)
 }

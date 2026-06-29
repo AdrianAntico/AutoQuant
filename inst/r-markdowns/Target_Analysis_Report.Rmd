@@ -12,7 +12,7 @@ output:
 classoption: landscape
 params:
   artifacts: NULL
-  DataName: "Target Analysis  Data"
+  DataName: "Modeling Data"
   Theme: "dark"
 ---
 
@@ -473,29 +473,51 @@ a:hover {
 
 ```
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  warning = FALSE,
+  message = FALSE
+)
+
+artifacts <- params$artifacts
+DataName <- params$DataName
+Theme <- params$Theme
+
+if (is.null(artifacts)) {
+  stop("`params$artifacts` is NULL. Pass an artifact object into the report renderer.")
+}
+```
+
 ## <font size="5">Target Analysis Report Descriptions</font>
 
 <details><summary>Expand</summary>
 <p>
 
-This report is designed to provide a focused, structured, and user-friendly target-variable analysis workflow for evaluating a dataset from a modeling-readiness perspective. The goal is to summarize target behavior, identify feature relationships with the target, surface target distribution issues, evaluate temporal stability, detect potential drift, and flag variables that may require additional review before modeling.
+This report is designed to provide a comprehensive model-readiness assessment by exhaustively evaluating the target variable, candidate predictor variables, temporal characteristics, and potential production considerations before any model is trained. The objective is to characterize the modeling problem as completely as possible so that feature engineering, model development, validation, deployment, and long-term monitoring decisions can be made using evidence rather than intuition.
 
-The outputs are intended to help users understand how candidate features relate to the target variable through numeric association statistics, categorical target-rate or target-mean summaries, feature-level lift diagnostics, target trend analysis, feature drift diagnostics, concept drift diagnostics, and risk flags for potential leakage, collider effects, or post-treatment variables. These diagnostics are intended to highlight modeling-relevant patterns that may affect feature selection, validation strategy, model interpretation, and production stability.
+The report examines the target variable from multiple perspectives, including target quality, target distribution, target associations, temporal behavior, feature drift, concept drift, and potential risks such as data leakage, collider variables, post-treatment variables, proxy variables, and production instability. Numeric, categorical, and calendar variables are evaluated independently to identify nonlinear relationships, categorical separation, encoding opportunities, feature engineering candidates, seasonality, trend behavior, and other modeling-relevant characteristics that may influence both predictive performance and explanatory validity.
 
-The report should be treated as a pre-modeling investigation tool rather than a final modeling decision engine. Strong target associations, extreme categorical separation, drift signals, suspicious feature names, and leakage or collider-risk flags are heuristic indicators that require domain review. They can help identify promising predictors, unstable features, suspicious variables, and areas where additional validation is needed, but they do not prove causality, leakage, model suitability, or business relevance on their own.
+Rather than recommending a single modeling algorithm, the report focuses on generating exhaustive evidence that supports informed modeling decisions. The diagnostics are intended to identify variables that are well suited for explanatory modeling, variables that may be more appropriate for predictive modeling, variables that require additional engineering or validation, and variables that should be reviewed or excluded due to instability or potential bias. The report also provides guidance for feature engineering opportunities, validation strategy considerations, production monitoring priorities, and expected retraining considerations.
+
+The report should be viewed as a model design and readiness assessment rather than a model evaluation report. The diagnostics are heuristic and evidence-based rather than definitive. Strong target associations, nonlinear relationships, categorical separation, drift signals, suspicious variable names, and other risk indicators do not prove causality, leakage, instability, or production risk on their own. Instead, they provide a structured framework for prioritizing further investigation and supporting statistically sound, interpretable, and production-ready modeling workflows.
+
+The long-term philosophy of this report is exhaustive evidence generation. Every statistic, visualization, diagnostic, and recommendation is intended to contribute an independent piece of evidence describing the modeling problem. These artifacts can be consumed directly by analysts, incorporated into interactive reports and dashboards, or synthesized by large language models to produce comprehensive modeling narratives, feature engineering recommendations, model design guidance, and production monitoring strategies.
 
 
 </details>
 </p>
 
-# <font size="5">Describe Data</font>
 
+## <font size="5">Describe Data</font>
 <details><summary>Expand</summary>
 <p>
 
-```{r Model_Evaluation_Metrics, echo=FALSE}
-if(!is.null(Describe_Data)) {
-  eval(Describe_Data)
+```{r Describe_Data, echo=FALSE}
+if (!is.null(artifacts$widgets$describe_data)) {
+artifacts$widgets$describe_data
+} else {
+  cat("Describe Data was not created.")
 }
 ```
 
@@ -503,321 +525,396 @@ if(!is.null(Describe_Data)) {
 </p>
 
 
+## <font size="5">Target QA</font>
+
+<details><summary>Expand</summary>
+<p>
+
+```{r Target_QA, echo=FALSE}
+if (!is.null(artifacts$widgets$target_qa)) {
+  artifacts$widgets$target_qa
+} else {
+  cat("Target QA was not created.")
+}
+```
+
+</details>
+</p>
 
 
-
-# <font size="5">Target Distribution Table</font>
+## <font size="5">Target Distribution</font>
 
 <details><summary>Expand</summary>
 <p>
 
 ```{r Target_Distribution, echo=FALSE}
-if (exists("Target_Distribution")) {
-  Target_Distribution
+if (!is.null(artifacts$widgets$target_distribution)) {
+  artifacts$widgets$target_distribution
 } else {
-  print("Target distribution table was not created.")
+  cat("Target Distribution was not created.")
 }
 ```
 
-</p>
 </details>
+</p>
 
 
-# <font size="5">Target Distribution Plot</font>
+## <font size="5">Numeric Association</font>
 
 <details><summary>Expand</summary>
 <p>
 
-```{r TargetDistributionPlot, echo=FALSE}
-if (exists("TargetDistributionPlot") && !is.null(TargetDistributionPlot)) {
-  TargetDistributionPlot
-} else if (exists("TargetPlotList") && "Target Distribution" %in% names(TargetPlotList)) {
-  TargetPlotList[["Target Distribution"]]
+```{r Numeric_Association, echo=FALSE}
+if (!is.null(artifacts$widgets$numeric_association)) {
+  artifacts$widgets$numeric_association
 } else {
-  print("Target distribution plot was not generated.")
+  cat("Numeric Association was not created.")
 }
 ```
 
-</p>
 </details>
+</p>
 
 
-# <font size="5">Target Association Plots</font>
+## <font size="5">Categorical Association</font>
 
 <details><summary>Expand</summary>
 <p>
 
-```{r TargetAssociationPlotList, echo=FALSE}
-if (exists("TargetAssociationPlotList") && length(TargetAssociationPlotList) > 0L) {
-  AutoPlots::display_plots_grid(TargetAssociationPlotList, cols = 1)
+```{r Categorical_Association, echo=FALSE}
+if (!is.null(artifacts$widgets$categorical_association)) {
+  artifacts$widgets$categorical_association
 } else {
-  print("No target association plots were generated.")
+  cat("Categorical Association was not created.")
 }
 ```
 
-</p>
 </details>
+</p>
 
 
-# <font size="5">Target Overall Trend Plots</font>
+## <font size="5">Categorical Level Association</font>
 
 <details><summary>Expand</summary>
 <p>
 
-```{r TargetTrendPlotList, echo=FALSE}
-if (exists("TargetTrendPlotList") && length(TargetTrendPlotList) > 0L) {
-  AutoPlots::display_plots_grid(TargetTrendPlotList, cols = 2)
+```{r Categorical_Level_Association, echo=FALSE}
+if (!is.null(artifacts$widgets$categorical_level_association)) {
+  artifacts$widgets$categorical_level_association
 } else {
-  print("No target trend plots were generated. Provide a valid TargetVar and TrendDateVar to enable this section.")
+  cat("Categorical Level Association was not created.")
 }
 ```
 
-</p>
 </details>
+</p>
 
 
-# <font size="5">Target Grouped Trend Plots</font>
+## <font size="5">Feature Drift</font>
 
 <details><summary>Expand</summary>
 <p>
 
-```{r TargetGroupedTrendPlotList, echo=FALSE}
-if (exists("TargetGroupedTrendPlotList") && length(TargetGroupedTrendPlotList) > 0L) {
-  AutoPlots::display_plots_grid(TargetGroupedTrendPlotList, cols = 2)
+```{r Feature_Drift, echo=FALSE}
+if (!is.null(artifacts$widgets$feature_drift)) {
+  artifacts$widgets$feature_drift
 } else {
-  print("No grouped target trend plots were generated. Provide a valid TargetVar, TrendDateVar, and TrendGroupVar to enable this section.")
+  cat("Feature Drift was not created.")
 }
 ```
 
-</p>
 </details>
+</p>
 
 
-# <font size="5">Target Drift Plots</font>
+## <font size="5">Concept Drift</font>
 
 <details><summary>Expand</summary>
 <p>
 
-```{r TargetDriftPlotList, echo=FALSE}
-if (exists("TargetDriftPlotList") && length(TargetDriftPlotList) > 0L) {
-  AutoPlots::display_plots_grid(TargetDriftPlotList, cols = 1)
+```{r Concept_Drift, echo=FALSE}
+if (!is.null(artifacts$widgets$concept_drift)) {
+  artifacts$widgets$concept_drift
 } else {
-  print("No target drift plots were generated. Provide a valid TrendDateVar to enable drift diagnostics.")
+  cat("Concept Drift was not created.")
 }
 ```
 
-</p>
 </details>
+</p>
 
 
-# <font size="5">Target Risk Flag Plots</font>
+
+## <font size="5">Risk Flags</font>
 
 <details><summary>Expand</summary>
 <p>
 
-```{r TargetRiskPlotList, echo=FALSE}
-if (exists("TargetRiskPlotList") && length(TargetRiskPlotList) > 0L) {
-  AutoPlots::display_plots_grid(TargetRiskPlotList, cols = 1)
+```{r Risk_Flags, echo=FALSE}
+if (!is.null(artifacts$widgets$risk_flags)) {
+  artifacts$widgets$risk_flags
 } else {
-  print("No target risk flag plots were generated.")
+  cat("Risk Flags was not created.")
 }
 ```
 
-</p>
 </details>
+</p>
 
 
-# <font size="5">All Target Plots</font>
+## <font size="5">Target Suitability Assessment</font>
 
 <details><summary>Expand</summary>
 <p>
 
-```{r TargetPlotList, echo=FALSE}
-if (exists("TargetPlotList") && length(TargetPlotList) > 0L) {
-  AutoPlots::display_plots_grid(TargetPlotList, cols = 1)
+```{r Target_Suitability_Assessment, echo=FALSE}
+if (!is.null(artifacts$widgets$target_suitability_assessment)) {
+  artifacts$widgets$target_suitability_assessment
 } else {
-  print("No target-oriented plots were generated.")
+  cat("Target Suitability Assessment was not created.")
 }
 ```
 
-</p>
 </details>
+</p>
 
 
-# <font size="5">Numeric Feature Association With Target</font>
+## <font size="5">Feature Risk Registry</font>
 
 <details><summary>Expand</summary>
 <p>
 
-```{r Target_Numeric_Association, echo=FALSE}
-if (exists("Target_Numeric_Association")) {
-  Target_Numeric_Association
+```{r Feature_Risk_Registry, echo=FALSE}
+if (!is.null(artifacts$widgets$feature_risk_registry)) {
+  artifacts$widgets$feature_risk_registry
 } else {
-  print("Numeric feature association table was not created.")
+  cat("Feature Risk Registry was not created.")
 }
 ```
 
-</p>
 </details>
+</p>
 
 
-# <font size="5">Categorical Feature Association With Target</font>
+## <font size="5">Numeric Feature Diagnostics</font>
 
 <details><summary>Expand</summary>
 <p>
 
-```{r Target_Categorical_Association, echo=FALSE}
-if (exists("Target_Categorical_Association")) {
-  Target_Categorical_Association
+```{r Numeric_Feature_Diagnostics, echo=FALSE}
+if (!is.null(artifacts$widgets$numeric_feature_diagnostics)) {
+  artifacts$widgets$numeric_feature_diagnostics
 } else {
-  print("Categorical feature association table was not created.")
+  cat("Numeric Feature Diagnostics was not created.")
 }
 ```
 
-</p>
 </details>
+</p>
 
 
-# <font size="5">Categorical Level Association With Target</font>
+## <font size="5">Numeric Shape Diagnostics</font>
 
 <details><summary>Expand</summary>
 <p>
 
-```{r Target_Categorical_Level_Association, echo=FALSE}
-if (exists("Target_Categorical_Level_Association")) {
-  Target_Categorical_Level_Association
+```{r Numeric_Shape_Diagnostics, echo=FALSE}
+if (!is.null(artifacts$widgets$numeric_shape_diagnostics)) {
+  artifacts$widgets$numeric_shape_diagnostics
 } else {
-  print("Categorical level association table was not created.")
+  cat("Numeric Shape Diagnostics was not created.")
 }
 ```
 
-</p>
 </details>
+</p>
 
 
-# <font size="5">Target Trend Statistics</font>
+## <font size="5">Numeric Engineering Recommendations</font>
 
 <details><summary>Expand</summary>
 <p>
 
-```{r TargetTrendStats, echo=FALSE}
-if (exists("TargetTrendStats") && nrow(TargetTrendStats) > 0L) {
-  reactable::reactable(
-    TargetTrendStats,
-    compact = TRUE,
-    defaultPageSize = 25,
-    pageSizeOptions = c(10, 25, 50, 100),
-    wrap = FALSE,
-    filterable = TRUE,
-    searchable = TRUE,
-    fullWidth = TRUE,
-    highlight = TRUE,
-    pagination = TRUE,
-    resizable = TRUE,
-    sortable = TRUE,
-    striped = FALSE,
-    rowStyle = if (exists("target_dark_row_style")) target_dark_row_style else NULL,
-    defaultColDef = reactable::colDef(
-      headerStyle = if (exists("target_default_header_style")) target_default_header_style else NULL,
-      style = if (exists("target_dark_cell_style")) target_dark_cell_style else NULL
-    ),
-    theme = if (exists("target_theme")) target_theme else reactable::reactableTheme()
-  )
+```{r Numeric_Engineering_Recommendations, echo=FALSE}
+if (!is.null(artifacts$widgets$numeric_engineering_recommendations)) {
+  artifacts$widgets$numeric_engineering_recommendations
 } else {
-  print("Target trend statistics were not created.")
+  cat("Numeric Engineering Recommendations was not created.")
 }
 ```
 
-</p>
 </details>
+</p>
 
 
-# <font size="5">Target Grouped Trend Statistics</font>
+## <font size="5">Categorical Feature Diagnostics</font>
 
 <details><summary>Expand</summary>
 <p>
 
-```{r TargetGroupedTrendStats, echo=FALSE}
-if (exists("TargetGroupedTrendStats") && nrow(TargetGroupedTrendStats) > 0L) {
-  reactable::reactable(
-    TargetGroupedTrendStats,
-    compact = TRUE,
-    defaultPageSize = 25,
-    pageSizeOptions = c(10, 25, 50, 100),
-    wrap = FALSE,
-    filterable = TRUE,
-    searchable = TRUE,
-    fullWidth = TRUE,
-    highlight = TRUE,
-    pagination = TRUE,
-    resizable = TRUE,
-    sortable = TRUE,
-    striped = FALSE,
-    rowStyle = if (exists("target_dark_row_style")) target_dark_row_style else NULL,
-    defaultColDef = reactable::colDef(
-      headerStyle = if (exists("target_default_header_style")) target_default_header_style else NULL,
-      style = if (exists("target_dark_cell_style")) target_dark_cell_style else NULL
-    ),
-    theme = if (exists("target_theme")) target_theme else reactable::reactableTheme()
-  )
+```{r Categorical_Feature_Diagnostics, echo=FALSE}
+if (!is.null(artifacts$widgets$categorical_feature_diagnostics)) {
+  artifacts$widgets$categorical_feature_diagnostics
 } else {
-  print("Grouped target trend statistics were not created.")
+  cat("Categorical Feature Diagnostics was not created.")
 }
 ```
 
-</p>
 </details>
+</p>
 
 
-# <font size="5">Feature Drift Diagnostics</font>
+## <font size="5">Categorical Encoding Recommendations</font>
 
 <details><summary>Expand</summary>
 <p>
 
-```{r Target_Feature_Drift, echo=FALSE}
-if (exists("Target_Feature_Drift")) {
-  Target_Feature_Drift
+```{r Categorical_Encoding_Recommendations, echo=FALSE}
+if (!is.null(artifacts$widgets$categorical_encoding_recommendations)) {
+  artifacts$widgets$categorical_encoding_recommendations
 } else {
-  print("Feature drift diagnostics were not created.")
+  cat("Categorical Encoding Recommendations was not created.")
 }
 ```
 
-</p>
 </details>
+</p>
 
 
-# <font size="5">Concept Drift Diagnostics</font>
+## <font size="5">Calendar Feature Diagnostics</font>
 
 <details><summary>Expand</summary>
 <p>
 
-```{r Target_Concept_Drift, echo=FALSE}
-if (exists("Target_Concept_Drift")) {
-  Target_Concept_Drift
+```{r Calendar_Feature_Diagnostics, echo=FALSE}
+if (!is.null(artifacts$widgets$calendar_feature_diagnostics)) {
+  artifacts$widgets$calendar_feature_diagnostics
 } else {
-  print("Concept drift diagnostics were not created.")
+  cat("Calendar Feature Diagnostics was not created.")
 }
 ```
 
-</p>
 </details>
+</p>
 
 
-# <font size="5">Potential Leakage / Collider Risk Flags</font>
+## <font size="5">Calendar Engineering Recommendations</font>
 
 <details><summary>Expand</summary>
 <p>
 
-```{r Target_Risk_Flags, echo=FALSE}
-if (exists("Target_Risk_Flags")) {
-  Target_Risk_Flags
+```{r Calendar_Engineering_Recommendations, echo=FALSE}
+if (!is.null(artifacts$widgets$calendar_engineering_recommendations)) {
+  artifacts$widgets$calendar_engineering_recommendations
 } else {
-  print("Target risk flags were not created.")
+  cat("Calendar Engineering Recommendations was not created.")
 }
 ```
 
-</p>
 </details>
+</p>
+
+
+## <font size="5">Validation Recommendations</font>
+
+<details><summary>Expand</summary>
+<p>
+
+```{r Validation_Recommendations, echo=FALSE}
+if (!is.null(artifacts$widgets$validation_recommendations)) {
+  artifacts$widgets$validation_recommendations
+} else {
+  cat("Validation Recommendations was not created.")
+}
+```
+
+</details>
+</p>
+
+
+## <font size="5">Monitoring Recommendations</font>
+
+<details><summary>Expand</summary>
+<p>
+
+```{r Monitoring_Recommendations, echo=FALSE}
+if (!is.null(artifacts$widgets$monitoring_recommendations)) {
+  artifacts$widgets$monitoring_recommendations
+} else {
+  cat("Monitoring Recommendations was not created.")
+}
+```
+
+</details>
+</p>
+
+
+## <font size="5">Modeling Strategy Recommendations</font>
+
+<details><summary>Expand</summary>
+<p>
+
+```{r Modeling_Strategy_Recommendations, echo=FALSE}
+if (!is.null(artifacts$widgets$modeling_strategy_recommendations)) {
+  artifacts$widgets$modeling_strategy_recommendations
+} else {
+  cat("Modeling Strategy Recommendations was not created.")
+}
+```
+
+</details>
+</p>
+
+
+## <font size="5">Retraining Cadence Recommendation</font>
+
+<details><summary>Expand</summary>
+<p>
+
+```{r Retraining_Cadence_Recommendation, echo=FALSE}
+if (!is.null(artifacts$widgets$retraining_cadence_recommendation)) {
+  artifacts$widgets$retraining_cadence_recommendation
+} else {
+  cat("Retraining Cadence Recommendation was not created.")
+}
+```
+
+</details>
+</p>
+
+
+## <font size="5">Model Readiness Summary</font>
+
+<details><summary>Expand</summary>
+<p>
+
+```{r Model_Readiness_Summary, echo=FALSE}
+if (!is.null(artifacts$widgets$model_readiness_summary)) {
+  artifacts$widgets$model_readiness_summary
+} else {
+  cat("Model Readiness Summary was not created.")
+}
+```
+
+</details>
+</p>
+
+
+## <font size="5">Schema Issues</font>
+
+<details><summary>Expand</summary>
+<p>
+
+```{r Schema_Issues, echo=FALSE}
+if (!is.null(artifacts$widgets$schema_issues)) {
+  artifacts$widgets$schema_issues
+} else {
+  cat("Schema Issues was not created.")
+}
+```
+
+</details>
+</p>
 
 
 

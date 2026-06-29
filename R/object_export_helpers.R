@@ -23,6 +23,28 @@
 # ============================================================
 
 
+make_artifact_rmd_chunk <- function(key, object_path = "artifacts$widgets") {
+  title <- gsub("_", " ", key)
+  title <- tools::toTitleCase(title)
+
+  chunk_name <- gsub("[^A-Za-z0-9_]", "_", title)
+
+  paste0(
+    '# <font size="5">', title, '</font>\n\n',
+    '<details><summary>Expand</summary>\n',
+    '<p>\n\n',
+    '```{r ', chunk_name, ', echo=FALSE}\n',
+    'if (!is.null(', object_path, '$', key, ')) {\n',
+    '  ', object_path, '$', key, '\n',
+    '} else {\n',
+    '  cat("', title, ' was not created.")\n',
+    '}\n',
+    '```\n\n',
+    '</details>\n',
+    '</p>\n'
+  )
+}
+
 #' Check Whether an Object Is an HTML Widget
 #'
 #' Internal helper used by the object export functions.

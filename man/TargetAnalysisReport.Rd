@@ -5,43 +5,57 @@
 \title{Target Analysis Report}
 \usage{
 TargetAnalysisReport(
-  data = NULL,
-  DataName = NULL,
-  TargetVar = NULL,
-  TrendDateVar = NULL,
-  TrendGroupVar = NULL,
+  artifacts,
   OutputPath = NULL,
-  Theme = "dark"
+  DataName = NULL,
+  Theme = "dark",
+  OutputFile = NULL
 )
 }
 \arguments{
-\item{data}{A data.frame or data.table containing the dataset to profile.}
+\item{artifacts}{Output object returned by `generate_target_analysis_artifacts()`.}
 
-\item{DataName}{Optional character value used as the display name for the
-dataset in the report.}
+\item{OutputPath}{Directory where the rendered HTML report should be saved.
+If `NULL`, the current working directory is used.}
 
-\item{TargetVar}{Character value identifying the target variable for
-target-oriented analysis. When supplied, the report creates target QA,
-target distribution summaries, target association diagnostics, target trend
-diagnostics, feature drift diagnostics, concept drift diagnostics, and
-potential leakage, collider, or post-treatment risk flags.}
+\item{DataName}{Optional report/data name. If `NULL`, attempts to use
+`artifacts$metadata$DataName`, then falls back to `"Modeling Data"`.}
 
-\item{TrendDateVar}{Character value for the date column name}
+\item{Theme}{Character value passed through to the RMarkdown report.}
 
-\item{TrendGroupVar}{Character value for the categorical column name}
-
-\item{OutputPath}{Character value specifying the directory or file path where
-the rendered report should be written.}
-
-\item{Theme}{Character value passed to AutoPlots plotting functions to control
-the visual theme of generated plots.}
+\item{OutputFile}{Optional full output file path. If `NULL`, a file name is
+generated as `"TargetAnalysis-{DataName}.html"` inside `OutputPath`.}
 }
 \value{
-Invisibly returns the output path of the rendered report. The primary side
-effect is an HTML Target Analysis report written to `OutputPath`.
+Invisibly returns the rendered HTML file path.
 }
 \description{
-Generates an HTML R Markdown target analysis report for a supplied
+Renders an HTML target analysis / model readiness report from a pre-generated
+artifact object created by `generate_target_analysis_artifacts()`.
+}
+\details{
+This function does not compute target analysis artifacts. It only renders the
+report from artifacts that were already generated. This separates evidence
+generation from report rendering, allowing the same artifact object to be
+reused for RMarkdown, Shiny, static exports, or LLM/API workflows.
+
+Typical usage:
+
+\preformatted{
+artifacts <- generate_target_analysis_artifacts(
+  data = dt,
+  DataName = "Modeling Data",
+  TargetVar = "conversions",
+  TrendDateVar = "event_date",
+  TrendGroupVar = c("channel", "market"),
+  Theme = "dark"
+)
+
+TargetAnalysisReport(
+  artifacts = artifacts,
+  OutputPath = "reports"
+)
+}
 }
 \seealso{
 Other Reports: 
