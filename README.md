@@ -388,42 +388,14 @@ OutputPath <- getwd()
 eda_artifacts <- generate_eda_artifacts(
   data = dt,
   DataName = "EDA Data",
-
-  # Variable inputs
   UnivariateVars = UnivariateVars,
   CorrVars = CorrVars,
   TrendVars = TrendVars,
   TrendDateVar = "event_date",
   TrendGroupVar = "channel",
-
-  # Theme
   Theme = "dark",
-
-  # Plot/table generation settings
-  MaxCategoricalLevels = 25L,
-  MaxDiscreteNumericLevels = 20L,
-  CorrelationMethod = "spearman",
-  MaxCorrelationPairsToPlot = 25L,
-  HighCorrelationThreshold = 0.70,
-
-  # Layout settings for RMarkdown display
-  HistogramPlotCols = 2L,
-  BoxPlotCols = 2L,
-  GroupedBoxPlotCols = 2L,
-  DiscreteNumericBarPlotCols = 2L,
-  CategoricalBarPlotCols = 1L,
-
-  # Artifact sidecar export settings
   OutputPath = "eda_artifacts",
-  ExportPNG = FALSE,
-  ExportHTML = FALSE,
-  IncludeDataURL = FALSE,
-
-  # PNG export settings
-  PNGWidth = 1400,
-  PNGHeight = 900,
-  PNGDPI = 150,
-  PNGBackground = "white"
+  ExportPNG = FALSE
 )
 
 # Generate Report
