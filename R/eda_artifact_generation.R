@@ -313,11 +313,13 @@ eda_collect_llm_image_manifest <- function(tree, path = character()) {
 #' @param PNGBackground Character scalar. Background color used when rasterizing.
 #' @param WebshotDelay Numeric. Delay in seconds before capturing htmlwidgets
 #'   with webshot2.
-#' @param IncludeDataURL Logical. If `TRUE`, include Base64 data URLs in the
-#'   artifact tree. Defaults to `FALSE` to avoid bloating memory/RDS files.
+#' @param IncludeDataURL Logical. If `TRUE`, include Base64 data URLs during
+#'   sidecar export. Defaults to `FALSE` to avoid bloating memory/RDS files.
 #'
-#' @return A named list with `metadata`, `qa`, `tables`, `widgets`, `plots`,
-#'   `artifacts`, `layout`, and `llm_context`.
+#' @return A named list with `report_type`, `metadata`, `qa`, `tables`,
+#'   `widgets`, `plots`, `layout`, `exports`, and `context`. The returned
+#'   object contains one canonical copy of each table/widget/plot; PNG/HTML
+#'   sidecar paths are stored in `exports$image_manifest`.
 #'
 #' @examples
 #' \dontrun{
@@ -329,10 +331,10 @@ eda_collect_llm_image_manifest <- function(tree, path = character()) {
 #' )
 #'
 #' # Dynamic RMarkdown object:
-#' artifacts$artifacts$plots$univariate$Histograms[[1]]$object
+#' artifacts$plots$univariate$Histograms[[1]]
 #'
-#' # PNG sidecar path:
-#' artifacts$artifacts$plots$univariate$Histograms[[1]]$png
+#' # PNG/HTML sidecar manifest:
+#' artifacts$exports$image_manifest
 #' }
 #'
 #' @export
@@ -4181,6 +4183,8 @@ generate_eda_artifacts <- function(
   )
 
   list(
+    report_type = "eda",
+
     metadata = list(
       DataName = DataName,
       n_rows = nrow(data),
@@ -4189,7 +4193,8 @@ generate_eda_artifacts <- function(
       output_path = OutputPath,
       export_png = ExportPNG,
       export_html = ExportHTML,
-      image_manifest = image_manifest
+      include_data_url = IncludeDataURL,
+      created_at = as.character(Sys.time())
     ),
 
     qa = list(
@@ -4201,7 +4206,6 @@ generate_eda_artifacts <- function(
     tables = legacy_tables,
     widgets = legacy_widgets,
     plots = legacy_plots,
-    artifacts = artifact_objects,
 
     layout = list(
       HistogramPlotCols = HistogramPlotCols,
@@ -4211,7 +4215,11 @@ generate_eda_artifacts <- function(
       CategoricalBarPlotCols = CategoricalBarPlotCols
     ),
 
-    llm_context = llm_context
+    exports = list(
+      image_manifest = image_manifest
+    ),
+
+    context = llm_context
   )
 }
 
@@ -4236,13 +4244,10 @@ generate_eda_artifacts <- function(
 # artifacts$widgets$univariate_stats
 # artifacts$plots$univariate$Histograms[[1]]
 #
-# Dynamic object from wrapped artifact tree:
-# artifacts$artifacts$plots$univariate$Histograms[[1]]$object
+# PNG/HTML sidecar manifest when ExportPNG/ExportHTML = TRUE:
+# artifacts$exports$image_manifest
 #
-# PNG sidecar path when ExportPNG = TRUE:
-# artifacts$artifacts$plots$univariate$Histograms[[1]]$png
-#
-# LLM commentary:
-# artifacts$llm_context
-# artifacts$llm_context$ImageManifest
+# LLM/commentary context:
+# artifacts$context
+# artifacts$context$ImageManifest
 # ============================================================

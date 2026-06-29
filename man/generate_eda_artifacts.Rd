@@ -84,12 +84,14 @@ is `TRUE`. Sidecars are written under `images/` and `html/` subdirectories.}
 \item{WebshotDelay}{Numeric. Delay in seconds before capturing htmlwidgets
 with webshot2.}
 
-\item{IncludeDataURL}{Logical. If `TRUE`, include Base64 data URLs in the
-artifact tree. Defaults to `FALSE` to avoid bloating memory/RDS files.}
+\item{IncludeDataURL}{Logical. If `TRUE`, include Base64 data URLs during
+sidecar export. Defaults to `FALSE` to avoid bloating memory/RDS files.}
 }
 \value{
-A named list with `metadata`, `qa`, `tables`, `widgets`, `plots`,
-  `artifacts`, `layout`, and `llm_context`.
+A named list with `report_type`, `metadata`, `qa`, `tables`,
+  `widgets`, `plots`, `layout`, `exports`, and `context`. The returned
+  object contains one canonical copy of each table/widget/plot; PNG/HTML
+  sidecar paths are stored in `exports$image_manifest`.
 }
 \description{
 Generates tables, widgets, plots, QA outputs, and LLM-friendly context for an
@@ -113,10 +115,10 @@ artifacts <- generate_eda_artifacts(
 )
 
 # Dynamic RMarkdown object:
-artifacts$artifacts$plots$univariate$Histograms[[1]]$object
+artifacts$plots$univariate$Histograms[[1]]
 
-# PNG sidecar path:
-artifacts$artifacts$plots$univariate$Histograms[[1]]$png
+# PNG/HTML sidecar manifest:
+artifacts$exports$image_manifest
 }
 
 }
