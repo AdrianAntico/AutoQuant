@@ -4318,29 +4318,7 @@ ModelInsightsArtifacts <- generate_regression_model_insights_artifacts(
   Theme = "dark",
 
   # First run: keep everything dynamic, no exports
-  OutputPath = NULL,
-  ExportPNG = FALSE,
-  ExportHTML = FALSE,
-  IncludeDataURL = FALSE,
-
-  # Controls
-  GenerateCalibrationPDP = TRUE,
-  GenerateUpliftPDP = TRUE,
-  GenerateStratifiedEffects = TRUE,
-  DetectSimpsonsParadox = TRUE,
-
-  SampleSize = 100000L,
-  NumberBins = 20L,
-  CalibrationBins = 21L,
-  UpliftBins = 20L,
-  MaxPDPFeatures = 50L,
-  MaxByLevels = 10L,
-  MaxCategoricalLevels = 25L,
-  MaxSegmentLevels = 25L,
-  MinByGroupN = 50L,
-  MinSegmentN = 25L,
-  MaxTopErrors = 100L,
-  MaxInteractionRows = 200L
+  OutputPath = NULL
 )
 
 ReportPath <- RegressionModelInsightsReport(
