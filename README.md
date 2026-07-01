@@ -4037,53 +4037,319 @@ Preds <- AutoQuant::AutoXGBoostScoring(
 <p>
 
 ```r
-# Create some dummy correlated data
-data <- AutoQuant::FakeDataGenerator(
-  Correlation = 0.85,
-  N = 10000,
-  ID = 2,
-  ZIP = 0,
-  AddDate = FALSE,
-  Classification = FALSE,
-  MultiClass = FALSE)
+set.seed(8675309)
 
-# Copy data
-data1 <- data.table::copy(data)
+library(data.table)
+library(AutoQuant)
 
-# Define features names
-Features <- c(names(data1)[!names(data1) %in% c('IDcol_1','IDcol_2','Adrian')])
+# ----------------------------
+# 1. Create fake data
+# ----------------------------
+
+n <- 5000
+
+dates <- seq.Date(
+  from = as.Date("2023-01-01"),
+  to   = as.Date("2025-12-31"),
+  by   = "day"
+)
+
+dt <- data.table(
+  id = seq_len(n),
+
+  # Date / trend fields
+  event_date = sample(dates, n, replace = TRUE),
+
+  # Grouping fields
+  channel = sample(
+    c("Search", "Social", "Email", "Direct", "Affiliate"),
+    n,
+    replace = TRUE,
+    prob = c(0.34, 0.24, 0.16, 0.18, 0.08)
+  ),
+
+  region = sample(
+    c("West", "South", "Midwest", "Northeast"),
+    n,
+    replace = TRUE,
+    prob = c(0.35, 0.28, 0.20, 0.17)
+  ),
+
+  customer_segment = sample(
+    c("Budget", "Standard", "Premium", "Enterprise"),
+    n,
+    replace = TRUE,
+    prob = c(0.35, 0.40, 0.20, 0.05)
+  )
+)
+
+# Date features for synthetic signal
+dt[, month_num := as.integer(format(event_date, "%m"))]
+dt[, year_num  := as.integer(format(event_date, "%Y"))]
+dt[, day_index := as.integer(event_date - min(event_date))]
+
+# Base effects
+channel_effect <- c(
+  Search    = 1.20,
+  Social    = 0.85,
+  Email     = 1.35,
+  Direct    = 1.00,
+  Affiliate = 0.65
+)
+
+segment_effect <- c(
+  Budget     = 0.70,
+  Standard   = 1.00,
+  Premium    = 1.55,
+  Enterprise = 2.40
+)
+
+region_effect <- c(
+  West      = 1.10,
+  South     = 0.95,
+  Midwest   = 0.85,
+  Northeast = 1.05
+)
+
+# Seasonality and trend
+dt[, seasonality := 1 + 0.25 * sin(2 * pi * month_num / 12)]
+dt[, trend       := 1 + day_index / max(day_index) * 0.35]
+
+# Numeric variables with structure
+dt[, impressions := round(
+  rgamma(.N, shape = 8, scale = 1200) *
+    channel_effect[channel] *
+    seasonality *
+    trend
+)]
+
+dt[, clicks := round(
+  impressions * pmin(
+    pmax(rnorm(.N, mean = 0.035, sd = 0.012), 0.002),
+    0.12
+  )
+)]
+
+dt[, spend := round(
+  impressions * runif(.N, 0.008, 0.025) *
+    channel_effect[channel] *
+    region_effect[region],
+  2
+)]
+
+dt[, conversions := rpois(
+  .N,
+  lambda = pmax(
+    clicks *
+      runif(.N, 0.025, 0.12) *
+      segment_effect[customer_segment] *
+      region_effect[region],
+    0.01
+  )
+)]
+
+dt[, revenue := round(
+  conversions *
+    rgamma(.N, shape = 4, scale = 90) *
+    segment_effect[customer_segment] *
+    runif(.N, 0.75, 1.35),
+  2
+)]
+
+dt[, ctr := clicks / pmax(impressions, 1)]
+dt[, cvr := conversions / pmax(clicks, 1)]
+dt[, cpc := spend / pmax(clicks, 1)]
+dt[, roas := revenue / pmax(spend, 1)]
+
+# Some less-behaved variables for QA
+dt[, noise_normal := rnorm(.N, mean = 100, sd = 15)]
+dt[, skewed_score := rgamma(.N, shape = 2, scale = 20)]
+dt[, binary_flag := rbinom(.N, size = 1, prob = 0.28)]
+
+# Deliberate correlated variables
+dt[, spend_lag_proxy := spend * runif(.N, 0.85, 1.15) + rnorm(.N, 0, 25)]
+dt[, revenue_proxy   := revenue * runif(.N, 0.90, 1.10) + rnorm(.N, 0, 100)]
+
+# Deliberate outliers
+outlier_rows <- sample(seq_len(n), size = 35)
+dt[outlier_rows, spend := spend * runif(.N, 4, 9)]
+dt[outlier_rows, revenue := revenue * runif(.N, 3, 7)]
+dt[outlier_rows, impressions := round(impressions * runif(.N, 2, 5))]
+
+# Deliberate missingness
+dt[sample(.N, 150), revenue := NA_real_]
+dt[sample(.N, 120), cpc := NA_real_]
+dt[sample(.N, 90), customer_segment := NA_character_]
+dt[sample(.N, 80), ctr := NA_real_]
+
+# Deliberate zero-heavy variable
+dt[, zero_heavy_metric := fifelse(
+  runif(.N) < 0.72,
+  0,
+  round(rgamma(.N, shape = 2, scale = 15), 2)
+)]
+
+# Clean helper columns if you do not want them in report
+# Keeping them can also help QA univariate behavior.
+# dt[, c("month_num", "year_num", "day_index", "seasonality", "trend") := NULL]
+
+
+# ----------------------------
+# 2. Define report inputs
+# ----------------------------
+
+UnivariateVars <- c(
+  "impressions",
+  "clicks",
+  "spend",
+  "conversions",
+  "revenue",
+  "ctr",
+  "cvr",
+  "cpc",
+  "roas",
+  "noise_normal",
+  "skewed_score",
+  "binary_flag",
+  "zero_heavy_metric",
+  "channel",
+  "region",
+  "customer_segment"
+)
+
+CorrVars <- c(
+  "impressions",
+  "clicks",
+  "spend",
+  "spend_lag_proxy",
+  "conversions",
+  "revenue",
+  "revenue_proxy",
+  "ctr",
+  "cvr",
+  "cpc",
+  "roas",
+  "noise_normal",
+  "skewed_score",
+  "zero_heavy_metric"
+)
+
+TrendVars <- c(
+  "impressions",
+  "clicks",
+  "spend",
+  "conversions",
+  "revenue",
+  "ctr",
+  "cvr",
+  "cpc",
+  "roas"
+)
+
+OutputPath <- getwd()
+
+
+# ----------------------------
+# 4. Build Catboost model
+# ----------------------------
+
+target <- "conversions"
+features <- c(
+  "impressions", "clicks", "spend",
+  "seasonality", "trend",
+  "channel", "region", "customer_segment"
+)
+
+id_cols <- setdiff(names(dt), c(target, features))
 
 # Run function
 ModelObject <- AutoQuant::AutoCatBoostRegression(
-  
+
   # GPU or CPU and the number of available GPUs
   task_type = 'GPU',
   NumGPUs = 1,
-  NumOfParDepPlots = length(Features),
-  
+  NumOfParDepPlots = 0,
+
   # Metadata args
-  OutputSelection = c('Importances','EvalPlots','EvalMetrics','Score_TrainData'),
+  OutputSelection = c('Importances','EvalMetrics','Score_TrainData'),
   ModelID = 'Test_Model_1',
   model_path = getwd(),
   metadata_path = getwd(),
   ReturnModelObjects = TRUE,
-  
-  # Data args
-  data = data1,
-  TargetColumnName = 'Adrian',
-  FeatureColNames = Features,
-  IDcols = c('IDcol_1','IDcol_2'),
-  TransformNumericColumns = 'Adrian',
-  Methods = c('Asinh','Asin','Log','LogPlus1','Sqrt','Logit'))
 
-# Build report
-AutoQuant::ModelInsightsReport(
-  TrainDataInclude = TRUE,
-  FeatureColumnNames = Features,
-  SampleSize = 100000,
+  # Data args
+  data = dt,
+  TargetColumnName = "conversions",
+  FeatureColNames = features,
+  IDcols = id_cols,
+  TransformNumericColumns = NULL,
+  Methods = c('Asinh','Asin','Log','LogPlus1','Sqrt','Logit'),
+  Trees = 200
+)
+
+# ----------------------------
+# 5. Run artifact generator
+# ----------------------------
+
+ModelInsightsArtifacts <- generate_regression_model_insights_artifacts(
+
+  # Model object from AutoCatBoostRegression()
   ModelObject = ModelObject,
-  ModelID = 'Test_Model_1',
-  OutputPath = getwd())
+
+  # Important for CatBoost-specific importance / interaction handling
+  Algo = "catboost",
+
+  # Explicitly pass these so the generator does not have to infer
+  TargetColumnName = target,
+  PredictionColumnName = "Predict",
+  FeatureColumnNames = features,
+
+  # Good candidates for segment and Simpson's Paradox / by-variable checks
+  SegmentVars = c("channel", "region", "customer_segment"),
+  ByVars = c("channel", "region", "customer_segment"),
+
+  # Optional, only use this if one of your columns is truly a date/time var
+  DateVar = NULL,
+
+  # Optional ID columns retained in top-error tables
+  IDColumn = if (length(id_cols) > 0L) id_cols[1L] else NULL,
+
+  # Visual theme
+  Theme = "dark",
+
+  # First run: keep everything dynamic, no exports
+  OutputPath = NULL,
+  ExportPNG = FALSE,
+  ExportHTML = FALSE,
+  IncludeDataURL = FALSE,
+
+  # Controls
+  GenerateCalibrationPDP = TRUE,
+  GenerateUpliftPDP = TRUE,
+  GenerateStratifiedEffects = TRUE,
+  DetectSimpsonsParadox = TRUE,
+
+  SampleSize = 100000L,
+  NumberBins = 20L,
+  CalibrationBins = 21L,
+  UpliftBins = 20L,
+  MaxPDPFeatures = 50L,
+  MaxByLevels = 10L,
+  MaxCategoricalLevels = 25L,
+  MaxSegmentLevels = 25L,
+  MinByGroupN = 50L,
+  MinSegmentN = 25L,
+  MaxTopErrors = 100L,
+  MaxInteractionRows = 200L
+)
+
+ReportPath <- RegressionModelInsightsReport(
+  artifacts = ModelInsightsArtifacts,
+  OutputPath = getwd(),
+  OutputFile = "Regression_ModelInsights_Report.html",
+  Quiet = FALSE
+)
+
 ```
 
 </p>
