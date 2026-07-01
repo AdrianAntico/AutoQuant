@@ -2554,8 +2554,8 @@ model_insights_build_stratified_categorical_effect <- function(
     GlobalEffect = global_effect,
     GlobalDirection = model_insights_metric_direction(global_effect),
     GroupDirection = model_insights_metric_direction(GroupEffect),
-    DirectionMatchesGlobal = sign(GlobalEffect) == sign(GroupEffect),
-    EffectDifference = GroupEffect - GlobalEffect
+    DirectionMatchesGlobal = sign(global_effect) == sign(GroupEffect),
+    EffectDifference = GroupEffect - global_effect
   )]
 
   data.table::setcolorder(
