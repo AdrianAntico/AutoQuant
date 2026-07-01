@@ -1,0 +1,321 @@
+---
+title: "Regression Model Insights"
+author: "Provided by AutoQuant"
+date: "`r format(Sys.time(), '%Y-%m-%d')`"
+output:
+  prettydoc::html_pretty:
+    theme: cayman
+    toc: yes
+    toc_depth: 3
+    fig_caption: yes
+    number_sections: no
+classoption: landscape
+params:
+  artifacts: NULL
+  Theme: "dark"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, fig.align = "center")
+
+required_pkgs <- c("data.table", "htmltools", "reactable", "echarts4r")
+missing_pkgs <- required_pkgs[!vapply(required_pkgs, requireNamespace, logical(1L), quietly = TRUE)]
+if (length(missing_pkgs)) stop(paste("Missing packages:", paste(missing_pkgs, collapse = ", ")), call. = FALSE)
+
+# Artifact resolution: prefer params, then common object names in the render environment.
+artifacts <- params$artifacts
+if (is.null(artifacts) && exists("ModelInsightsArtifacts", envir = .GlobalEnv)) artifacts <- get("ModelInsightsArtifacts", envir = .GlobalEnv)
+if (is.null(artifacts) && exists("artifacts", envir = .GlobalEnv)) artifacts <- get("artifacts", envir = .GlobalEnv)
+if (is.null(artifacts)) stop("No artifacts object found. Pass params$artifacts or create ModelInsightsArtifacts before rendering.", call. = FALSE)
+
+metadata <- artifacts$metadata
+qa <- artifacts$qa
+tables <- artifacts$tables
+plots <- artifacts$plots
+exports <- artifacts$exports
+context <- artifacts$context
+artifact_counts <- metadata$artifact_counts
+
+rt_theme_neon <- reactable::reactableTheme(
+  color = "#E7ECFF",
+  backgroundColor = "rgba(16, 24, 61, 0.55)",
+  borderColor = "rgba(140, 170, 255, 0.22)",
+  stripedColor = "rgba(255, 255, 255, 0.035)",
+  highlightColor = "rgba(72, 145, 255, 0.12)",
+  cellPadding = "10px 12px",
+  style = list(
+    fontFamily = "-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif",
+    fontSize = "14px",
+    borderRadius = "14px",
+    boxShadow = "0 10px 26px rgba(0,0,0,0.30), 0 0 18px rgba(72,145,255,0.18)",
+    backdropFilter = "blur(10px)"
+  ),
+  headerStyle = list(
+    backgroundColor = "rgba(5, 7, 26, 0.75)",
+    color = "#E7ECFF",
+    fontWeight = 800,
+    borderBottom = "1px solid rgba(140,170,255,0.25)"
+  ),
+  rowStyle = list(borderBottom = "1px solid rgba(231,236,255,0.10)"),
+  searchInputStyle = list(width = "100%", color = "#E7ECFF", backgroundColor = "rgba(0,0,0,0.20)", border = "1px solid rgba(140,170,255,0.30)", borderRadius = "12px", padding = "10px 12px", outline = "none"),
+  filterInputStyle = list(color = "#E7ECFF", backgroundColor = "rgba(0,0,0,0.20)", border = "1px solid rgba(140,170,255,0.28)", borderRadius = "10px", padding = "7px 10px", outline = "none"),
+  selectStyle = list(color = "#E7ECFF", backgroundColor = "rgba(0,0,0,0.20)", border = "1px solid rgba(140,170,255,0.28)", borderRadius = "10px"),
+  paginationStyle = list(color = "rgba(231,236,255,0.80)"),
+  pageButtonStyle = list(background = "rgba(72,145,255,0.12)", color = "#E7ECFF", border = "1px solid rgba(140,170,255,0.35)", borderRadius = "10px", padding = "6px 10px"),
+  pageButtonHoverStyle = list(background = "rgba(72,145,255,0.20)", border = "1px solid rgba(140,170,255,0.60)", boxShadow = "0 0 14px rgba(72,145,255,0.28)"),
+  pageButtonActiveStyle = list(background = "rgba(72,145,255,0.26)", border = "1px solid rgba(140,170,255,0.70)", boxShadow = "0 0 18px rgba(72,145,255,0.40)")
+)
+
+mi_empty <- function(label = "No artifact available.") htmltools::div(class = "mi-empty", label)
+mi_val <- function(x, missing = "—") if (is.null(x) || !length(x) || is.na(x[1L])) missing else as.character(x[1L])
+mi_num <- function(x, digits = 3L) if (is.null(x) || !length(x) || is.na(x[1L])) "—" else if (is.numeric(x)) formatC(x[1L], format = "f", big.mark = ",", digits = digits) else as.character(x[1L])
+
+mi_table <- function(data, defaultPageSize = 10L, empty = "No rows available.") {
+  if (is.null(data)) return(mi_empty(empty))
+  data <- data.table::as.data.table(data)
+  if (!nrow(data)) return(mi_empty(empty))
+  reactable::reactable(
+    data = data,
+    width = "100%",
+    fullWidth = TRUE,
+    compact = TRUE,
+    defaultPageSize = defaultPageSize,
+    pageSizeOptions = c(10, 15, 25, 50, 100),
+    wrap = FALSE,
+    filterable = TRUE,
+    highlight = TRUE,
+    pagination = TRUE,
+    resizable = TRUE,
+    searchable = TRUE,
+    selection = "multiple",
+    showPagination = TRUE,
+    showPageSizeOptions = TRUE,
+    showSortable = TRUE,
+    showSortIcon = TRUE,
+    sortable = TRUE,
+    striped = TRUE,
+    theme = rt_theme_neon
+  )
+}
+
+mi_renderable <- function(x) inherits(x, "htmlwidget") || inherits(x, "ggplot") || inherits(x, "recordedplot") || is.function(x)
+mi_flatten_plots <- function(x) {
+  if (is.null(x)) return(list())
+  if (mi_renderable(x)) return(list(x))
+  if (!is.list(x)) return(list())
+  unlist(lapply(x, mi_flatten_plots), recursive = FALSE)
+}
+mi_grid <- function(x, cols = 2L, empty = "No plots available.") {
+  p <- mi_flatten_plots(x)
+  if (!length(p)) return(mi_empty(empty))
+  if (length(p) == 1L) return(p[[1L]])
+  if (requireNamespace("AutoPlots", quietly = TRUE) && "display_plots_grid" %in% getNamespaceExports("AutoPlots")) return(AutoPlots::display_plots_grid(p, cols = cols))
+  echarts4r::e_arrange(p, cols = cols)
+}
+mi_plot <- function(x, empty = "No plot available.") if (is.null(x)) mi_empty(empty) else x
+mi_card <- function(title, value, subtitle = NULL, type = "neutral") htmltools::div(class = "mi-card", htmltools::div(class = "mi-card-title", title), htmltools::div(class = paste("mi-card-value", paste0("mi-card-value-", type)), value), if (!is.null(subtitle)) htmltools::div(class = "mi-card-subtitle", subtitle))
+mi_note <- function(...) htmltools::div(class = "mi-note", ...)
+mi_panel <- function(title, ...) htmltools::div(class = "mi-panel", htmltools::div(class = "mi-panel-title", title), ...)
+mi_details <- function(summary, ..., open = FALSE) htmltools::tags$details(class = "mi-details", if (open) htmltools::HTML(" open") else NULL, htmltools::tags$summary(summary), htmltools::div(class = "mi-details-body", ...))
+mi_metric <- function(metric, split = NULL) {
+  dt <- tables$evaluation$computed_metrics_combined
+  if (is.null(dt) || !nrow(dt)) return(NA_real_)
+  dt <- data.table::as.data.table(dt)
+  if (!is.null(split) && "Split" %in% names(dt)) dt <- dt[Split == split]
+  out <- dt[Metric == metric]$Value
+  if (!length(out)) NA_real_ else out[1L]
+}
+mi_flag_count <- function(x) {
+  if (is.null(x) || !nrow(x) || !"Status" %in% names(x)) return(0L)
+  x[Status %in% c("Fail", "Warning", "Review"), .N]
+}
+```
+
+```{css, echo=FALSE}
+:root{--bg0:#070A14;--bg1:#0B1030;--panel:rgba(16,24,61,.74);--panel2:rgba(10,14,32,.72);--text:#E7ECFF;--muted:rgba(231,236,255,.72);--muted2:rgba(231,236,255,.55);--link:#9EC5FF;--linkHover:#CFE3FF;--border:rgba(140,170,255,.30);--glow:rgba(72,145,255,.38);--good:#10B981;--warning:#F59E0B;--danger:#EF4444;--info:#60A5FA}*{box-sizing:border-box}body{padding:0;margin:0;font-family:"Open Sans","Helvetica Neue",Helvetica,Arial,sans-serif;font-size:16px;line-height:1.55;color:var(--text);background:radial-gradient(1200px 600px at 20% -10%,rgba(72,145,255,.20),transparent 60%),radial-gradient(900px 500px at 90% 10%,rgba(168,80,255,.14),transparent 55%),linear-gradient(180deg,var(--bg1),var(--bg0));background-attachment:fixed;background-size:cover}a{color:var(--link);text-decoration:none}a:hover{color:var(--linkHover);text-decoration:underline}.page-header{color:var(--text);text-align:center;background-color:#05071A;background-image:radial-gradient(900px 400px at 50% 0%,rgba(72,145,255,.18),transparent 70%),linear-gradient(120deg,#05071A,#0E1B4E);padding:1.5rem 2rem;border-bottom:1px solid rgba(140,170,255,.15)}.project-name{margin-top:0;margin-bottom:.1rem;font-size:2rem}.project-tagline{margin-bottom:2rem;font-weight:400;opacity:.8;font-size:1.5rem;color:var(--muted)}.project-author,.project-date{font-weight:400;opacity:.85;font-size:1.2rem;color:var(--muted)}.main-content,.toc{max-width:95%;padding:2rem 4rem;margin:0 auto;font-size:1.06rem}.toc{padding-bottom:0}.toc .toc-box{padding:44px;background:linear-gradient(90deg,rgba(5,7,26,.90),rgba(16,24,61,.70));border:1px solid rgba(140,170,255,.20);border-radius:38px;color:var(--text);box-shadow:0 10px 30px rgba(0,0,0,.35),0 0 24px var(--glow);backdrop-filter:blur(10px)}.main-content h1,.main-content h2,.main-content h3{font-weight:800;letter-spacing:.2px;color:var(--text)}.main-content h1{font-size:2rem;padding-bottom:.4rem;border-bottom:1px solid rgba(140,170,255,.20)}.main-content h2{font-size:1.55rem}.main-content h3{font-size:1.25rem}.mi-hero{margin:1rem 0 1.5rem;padding:1.35rem 1.45rem;border-radius:24px;background:radial-gradient(700px 280px at 0% 0%,rgba(96,165,250,.20),transparent 65%),linear-gradient(180deg,rgba(16,24,61,.84),rgba(10,14,32,.78));border:1px solid rgba(140,170,255,.26);box-shadow:0 14px 36px rgba(0,0,0,.36),0 0 24px rgba(72,145,255,.20)}.mi-hero-title{font-size:1.45rem;font-weight:900;margin-bottom:.35rem}.mi-hero-text{color:var(--muted);max-width:1200px}.mi-grid{display:grid;grid-template-columns:repeat(4,minmax(180px,1fr));gap:14px;margin:1rem 0 1.25rem}.mi-card{padding:1rem 1.05rem;border-radius:18px;background:linear-gradient(180deg,rgba(16,24,61,.78),rgba(10,14,32,.72));border:1px solid rgba(140,170,255,.24);box-shadow:0 10px 26px rgba(0,0,0,.28),0 0 18px rgba(72,145,255,.13)}.mi-card-title{color:var(--muted);font-size:.86rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em}.mi-card-value{color:var(--text);font-size:1.7rem;font-weight:900;line-height:1.15;margin-top:.35rem}.mi-card-value-good{color:#A7F3D0}.mi-card-value-warning{color:#FDE68A}.mi-card-value-danger{color:#FECACA}.mi-card-value-info{color:#BFDBFE}.mi-card-subtitle{color:var(--muted2);font-size:.9rem;margin-top:.25rem}.mi-note{margin:.85rem 0 1.1rem;padding:.95rem 1.05rem;border-radius:16px;color:var(--muted);background:rgba(96,165,250,.08);border:1px solid rgba(96,165,250,.22)}.mi-empty{padding:.85rem 1rem;color:var(--muted);background:rgba(255,255,255,.045);border:1px dashed rgba(140,170,255,.28);border-radius:14px}.mi-panel{margin:1rem 0 1.3rem;padding:1.05rem;border-radius:20px;background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--border);box-shadow:0 10px 26px rgba(0,0,0,.32),0 0 18px rgba(72,145,255,.16)}.mi-panel-title{font-weight:900;font-size:1.1rem;margin-bottom:.7rem}.main-content details.mi-details{margin:1rem 0;padding:.9rem 1rem;border-radius:18px;background:linear-gradient(180deg,rgba(16,24,61,.76),rgba(10,14,32,.72));border:1px solid rgba(140,170,255,.26);box-shadow:0 10px 26px rgba(0,0,0,.30),0 0 16px rgba(72,145,255,.13);transition:transform 140ms ease,box-shadow 140ms ease,border-color 140ms ease}.main-content details.mi-details:hover{transform:translateY(-1px);border-color:rgba(140,170,255,.52);box-shadow:0 14px 34px rgba(0,0,0,.42),0 0 22px rgba(72,145,255,.32)}.main-content details.mi-details[open]{border-color:rgba(140,170,255,.58);box-shadow:0 14px 34px rgba(0,0,0,.42),0 0 24px rgba(72,145,255,.34)}.main-content details.mi-details>summary{cursor:pointer;user-select:none;font-weight:900;color:var(--text);list-style:none;display:flex;align-items:center;gap:10px}.main-content details.mi-details>summary::-webkit-details-marker{display:none}.main-content details.mi-details>summary::before{content:"▸";display:inline-block;transform:translateY(-1px);opacity:.85;transition:transform 140ms ease}.main-content details.mi-details[open]>summary::before{transform:rotate(90deg) translateY(-1px)}.mi-details-body{margin-top:.9rem}.table-wrap{margin:1rem 0 1.25rem;padding:.75rem .9rem;border-radius:.95rem;background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid rgba(140,170,255,.22);box-shadow:0 10px 26px rgba(0,0,0,.30),0 0 18px rgba(72,145,255,.18)}.table-toolbar{display:flex;justify-content:flex-end;gap:10px;margin-bottom:.6rem}.table-btn{appearance:none;border:1px solid rgba(140,170,255,.40);background:rgba(72,145,255,.14);color:var(--text);padding:7px 10px;border-radius:.7rem;cursor:pointer;font-weight:800;letter-spacing:.2px}.table-btn:hover{transform:translateY(-1px);border-color:rgba(140,170,255,.70);background:rgba(72,145,255,.22);box-shadow:0 0 18px rgba(72,145,255,.35)}.reactable{position:relative;border-radius:16px;overflow:hidden}.reactable::before{content:"";position:absolute;inset:0;border-radius:16px;padding:1px;background:linear-gradient(135deg,rgba(72,145,255,.7),rgba(168,80,255,.5),rgba(72,145,255,.7));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}.reactable .rt-tbody .rt-tr:hover{background:rgba(72,145,255,.12)!important;box-shadow:inset 0 0 18px rgba(72,145,255,.18)}@media screen and (max-width:900px){.main-content,.toc{padding:2rem 1rem;max-width:100%}.mi-grid{grid-template-columns:1fr}}
+```
+
+```{js, echo=FALSE}
+(function(){function tableToCSV(table){const rows=Array.from(table.querySelectorAll('tr'));return rows.map(row=>{const cells=Array.from(row.querySelectorAll('th,td'));return cells.map(cell=>{let text=(cell.innerText||'').replace(/\r?\n|\r/g,' ').trim();text='"'+text.replace(/"/g,'""')+'"';return text}).join(',')}).join('\n')}function downloadText(filename,text){const blob=new Blob([text],{type:'text/csv;charset=utf-8;'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.style.display='none';a.href=url;a.download=filename;document.body.appendChild(a);a.click();URL.revokeObjectURL(url);a.remove()}function safeName(s){return(s||'table').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'').slice(0,80)||'table'}function nearestHeading(table,idx){const headings=Array.from(document.querySelectorAll('.main-content h1,.main-content h2,.main-content h3,.main-content h4'));const tableTop=table.getBoundingClientRect().top+window.scrollY;let best=null;for(const h of headings){const top=h.getBoundingClientRect().top+window.scrollY;if(top<tableTop)best=h}if(best&&best.textContent.trim())return safeName(best.textContent)+'.csv';return 'table_'+(idx+1)+'.csv'}function wrapTable(table,idx){if(table.closest('.table-wrap'))return;const wrap=document.createElement('div');wrap.className='table-wrap';const toolbar=document.createElement('div');toolbar.className='table-toolbar';const btn=document.createElement('button');btn.type='button';btn.className='table-btn';btn.textContent='Download CSV';toolbar.appendChild(btn);table.parentNode.insertBefore(wrap,table);wrap.appendChild(toolbar);wrap.appendChild(table);btn.addEventListener('click',function(){downloadText(nearestHeading(table,idx),tableToCSV(table))})}document.addEventListener('DOMContentLoaded',function(){document.querySelectorAll('.main-content table').forEach((table,i)=>wrapTable(table,i))})})();
+```
+
+# Report Overview
+
+```{r overview, results='asis'}
+test_rmse <- mi_metric("RMSE", "Test")
+train_rmse <- mi_metric("RMSE", "Train")
+test_r2 <- mi_metric("R2", "Test")
+qa_status <- if (isTRUE(qa$has_failures)) "Fail" else if (isTRUE(qa$has_warnings)) "Warning" else "Pass"
+risk_count <- mi_flag_count(tables$deployment_readiness$risk_flags)
+simpson_count <- if (!is.null(tables$stratified_effects$simpsons_paradox_flags) && nrow(tables$stratified_effects$simpsons_paradox_flags) && "SimpsonsFlag" %in% names(tables$stratified_effects$simpsons_paradox_flags)) tables$stratified_effects$simpsons_paradox_flags[SimpsonsFlag == TRUE, .N] else 0L
+htmltools::tagList(
+  htmltools::div(class="mi-hero", htmltools::div(class="mi-hero-title", "Regression model assessment, calibration, and interpretation"), htmltools::div(class="mi-hero-text", "This report renders a precomputed model-insights artifact object. It combines model performance, residual diagnostics, calibration, uplift-by-feature estimates, stratified effect checks, possible Simpson's Paradox flags, segment performance, stability checks, and model metadata. SHAP outputs are intentionally excluded and should be handled by the dedicated SHAP artifact generator.")),
+  htmltools::div(class="mi-grid", mi_card("Algorithm", mi_val(metadata$algo), "Model family", "info"), mi_card("Target", mi_val(metadata$target_column), "Response variable", "info"), mi_card("Train / Test Rows", paste0(mi_val(metadata$train_rows), " / ", mi_val(metadata$test_rows)), "Scored rows"), mi_card("QA Status", qa_status, "Input validation", if (qa_status == "Pass") "good" else "warning"), mi_card("Test RMSE", mi_num(test_rmse, 4L), "Computed metric"), mi_card("Train RMSE", mi_num(train_rmse, 4L), "Computed metric"), mi_card("Test R²", mi_num(test_r2, 4L), "Computed metric"), mi_card("Risk / Simpson Flags", paste0(risk_count, " / ", simpson_count), "Review items", if (risk_count + simpson_count == 0L) "good" else "warning"))
+)
+```
+
+```{r artifact_inventory, results='asis'}
+mi_details("Artifact inventory", mi_note("Plot counts represent renderable plot/widget objects, not htmlwidget internals."), mi_table(artifact_counts, defaultPageSize = 25L))
+```
+
+# Executive QA
+
+```{r executive_qa, results='asis'}
+htmltools::tagList(
+  mi_note("The readiness section is the fastest read. It summarizes failures, warnings, review items, feature drift signals, possible Simpson's Paradox flags, and metric degradation indicators."),
+  mi_panel("Risk flags", mi_table(tables$deployment_readiness$risk_flags, defaultPageSize = 15L)),
+  mi_details("Recommended actions", mi_table(tables$deployment_readiness$recommended_actions, defaultPageSize = 15L)),
+  mi_panel("Validation checks", mi_table(qa$validation, defaultPageSize = 20L)),
+  mi_details("Feature availability", mi_table(qa$feature_qa, defaultPageSize = 25L))
+)
+```
+
+# Model Performance
+
+## Evaluation Metrics
+
+```{r evaluation_metrics, results='asis'}
+htmltools::tagList(
+  mi_note("Evaluation metrics combine provided AutoQuant outputs with standardized computed metrics. Train/test gaps help surface overfitting, degradation, or split instability."),
+  mi_panel("Computed metrics", mi_table(tables$evaluation$computed_metrics_combined, defaultPageSize = 25L)),
+  mi_panel("Train / test metric gap", mi_table(tables$evaluation$train_test_metric_gap, defaultPageSize = 25L)),
+  mi_details("Provided AutoQuant metrics", htmltools::h3("Test data"), mi_table(tables$evaluation$provided_metrics_test, defaultPageSize = 15L), htmltools::h3("Train data"), mi_table(tables$evaluation$provided_metrics_train, defaultPageSize = 15L))
+)
+```
+
+## Evaluation Plots
+
+```{r evaluation_plots, results='asis'}
+htmltools::tagList(
+  mi_panel("Test evaluation plots", mi_grid(plots$evaluation$test, cols = 2L)),
+  mi_details("Train evaluation plots", mi_grid(plots$evaluation$train, cols = 2L))
+)
+```
+
+# Residual Diagnostics
+
+```{r residuals, results='asis'}
+htmltools::tagList(
+  mi_note("Residual diagnostics expose error shape, bias, tail behavior, and systematic error patterns across actual/predicted ranges."),
+  mi_panel("Residual summary", mi_table(data.table::rbindlist(list(tables$residuals$residual_summary_test, tables$residuals$residual_summary_train), fill = TRUE), defaultPageSize = 10L)),
+  mi_panel("Test residual plots", mi_grid(plots$residuals$test, cols = 2L)),
+  mi_details("Train residual plots", mi_grid(plots$residuals$train, cols = 2L)),
+  mi_details("Residuals by bins", htmltools::h3("Test: prediction bins"), mi_table(tables$residuals$residual_by_prediction_bin_test, defaultPageSize = 20L), htmltools::h3("Test: actual bins"), mi_table(tables$residuals$residual_by_actual_bin_test, defaultPageSize = 20L), htmltools::h3("Train: prediction bins"), mi_table(tables$residuals$residual_by_prediction_bin_train, defaultPageSize = 20L), htmltools::h3("Train: actual bins"), mi_table(tables$residuals$residual_by_actual_bin_train, defaultPageSize = 20L))
+)
+```
+
+# Calibration
+
+```{r calibration, results='asis'}
+htmltools::tagList(
+  mi_note("Calibration compares actuals and predictions across the prediction distribution. Calibration-by-feature plots diagnose actual-vs-predicted alignment across feature values."),
+  mi_panel("Calibration summary", mi_table(tables$calibration$calibration_error_summary, defaultPageSize = 10L)),
+  mi_panel("Test calibration plots", mi_grid(plots$calibration$test, cols = 2L)),
+  mi_details("Train calibration plots", mi_grid(plots$calibration$train, cols = 2L)),
+  mi_details("Calibration bins", htmltools::h3("Test data"), mi_table(tables$calibration$calibration_bins_test, defaultPageSize = 25L), htmltools::h3("Train data"), mi_table(tables$calibration$calibration_bins_train, defaultPageSize = 25L))
+)
+```
+
+## Calibration by Feature
+
+```{r calibration_by_feature, results='asis'}
+htmltools::tagList(
+  mi_panel("Test numeric calibration PDP lines", mi_grid(plots$calibration_by_feature$numeric_line$test, cols = 2L)),
+  mi_details("Test numeric calibration PDP boxes", mi_grid(plots$calibration_by_feature$numeric_box$test, cols = 2L)),
+  mi_details("Test categorical calibration heatmaps", mi_grid(plots$calibration_by_feature$categorical_heatmap$test, cols = 2L)),
+  mi_details("Train calibration-by-feature plots", htmltools::h3("Numeric PDP lines"), mi_grid(plots$calibration_by_feature$numeric_line$train, cols = 2L), htmltools::h3("Numeric PDP boxes"), mi_grid(plots$calibration_by_feature$numeric_box$train, cols = 2L), htmltools::h3("Categorical heatmaps"), mi_grid(plots$calibration_by_feature$categorical_heatmap$train, cols = 2L)),
+  mi_details("Calibration-by-feature generation details", mi_table(tables$calibration_by_feature$feature_summary, defaultPageSize = 10L), htmltools::h3("Failures"), mi_table(tables$calibration_by_feature$failures, defaultPageSize = 25L))
+)
+```
+
+# Error Analysis
+
+```{r error_analysis, results='asis'}
+htmltools::tagList(
+  mi_note("Error analysis identifies the worst individual observations and the parts of the error distribution where model performance breaks down."),
+  mi_panel("Test error plots", mi_grid(plots$error_analysis$test, cols = 2L)),
+  mi_details("Train error plots", mi_grid(plots$error_analysis$train, cols = 2L)),
+  mi_details("Largest test errors", htmltools::h3("Absolute errors"), mi_table(tables$error_analysis$largest_absolute_errors_test, defaultPageSize = 25L), htmltools::h3("Positive residuals"), mi_table(tables$error_analysis$largest_positive_errors_test, defaultPageSize = 25L), htmltools::h3("Negative residuals"), mi_table(tables$error_analysis$largest_negative_errors_test, defaultPageSize = 25L)),
+  mi_details("Largest train errors", htmltools::h3("Absolute errors"), mi_table(tables$error_analysis$largest_absolute_errors_train, defaultPageSize = 25L), htmltools::h3("Positive residuals"), mi_table(tables$error_analysis$largest_positive_errors_train, defaultPageSize = 25L), htmltools::h3("Negative residuals"), mi_table(tables$error_analysis$largest_negative_errors_train, defaultPageSize = 25L))
+)
+```
+
+# Feature Effects and Uplift
+
+```{r uplift, results='asis'}
+htmltools::tagList(
+  mi_note("Uplift-by-feature artifacts summarize modeled prediction deltas across feature bins or levels. These are effect/ranking artifacts, not calibration artifacts."),
+  mi_panel("Feature effect range", mi_plot(plots$uplift_by_feature$effect_range_bar)),
+  mi_panel("Uplift summary", mi_table(tables$uplift_by_feature$summary, defaultPageSize = 25L)),
+  mi_details("Test numeric uplift curves", mi_grid(plots$uplift_by_feature$numeric_line$test, cols = 2L)),
+  mi_details("Test categorical uplift bars", mi_grid(plots$uplift_by_feature$categorical_bar$test, cols = 2L)),
+  mi_details("Train uplift plots", htmltools::h3("Numeric uplift curves"), mi_grid(plots$uplift_by_feature$numeric_line$train, cols = 2L), htmltools::h3("Categorical uplift bars"), mi_grid(plots$uplift_by_feature$categorical_bar$train, cols = 2L)),
+  mi_details("Uplift data tables", htmltools::h3("Numeric uplift"), mi_table(tables$uplift_by_feature$numeric, defaultPageSize = 25L), htmltools::h3("Categorical uplift"), mi_table(tables$uplift_by_feature$categorical, defaultPageSize = 25L), htmltools::h3("Top positive uplift features"), mi_table(tables$uplift_by_feature$top_positive_uplift_features, defaultPageSize = 25L), htmltools::h3("Top negative uplift features"), mi_table(tables$uplift_by_feature$top_negative_uplift_features, defaultPageSize = 25L))
+)
+```
+
+## Stratified Effects and Simpson's Paradox
+
+```{r stratified_effects, results='asis'}
+htmltools::tagList(
+  mi_note("Global feature-effect claims can be misleading when effects reverse inside important groups. Review these tables before making global feature-effect claims."),
+  mi_panel("Possible Simpson's Paradox flags", mi_table(tables$stratified_effects$simpsons_paradox_flags, defaultPageSize = 25L)),
+  mi_panel("Stratified effect plots", mi_grid(plots$stratified_effects, cols = 1L)),
+  mi_details("Effect heterogeneity summary", mi_table(tables$stratified_effects$effect_heterogeneity_summary, defaultPageSize = 25L)),
+  mi_details("Full stratified effects table", mi_table(tables$stratified_effects$stratified_effects, defaultPageSize = 25L))
+)
+```
+
+# Model Interpretation
+
+```{r interpretation, results='asis'}
+htmltools::tagList(
+  mi_note("Importance artifacts summarize model-level feature contribution rankings. For CatBoost, train, validation, and test importances are merged when available."),
+  mi_panel("Variable importance plots", mi_grid(plots$importance, cols = 2L)),
+  mi_panel("Variable importance table", mi_table(tables$importance$variable_importance, defaultPageSize = 25L)),
+  mi_details("Interaction importance", mi_grid(plots$interactions, cols = 1L), htmltools::h3("Interaction importance table"), mi_table(tables$interactions$interaction_importance, defaultPageSize = 25L), htmltools::h3("Feature interaction degree"), mi_table(tables$interactions$feature_interaction_degree, defaultPageSize = 25L))
+)
+```
+
+# Segment Performance
+
+```{r segment_performance, results='asis'}
+htmltools::tagList(
+  mi_note("Segment performance identifies where the model succeeds or fails across user-selected categorical groups."),
+  mi_panel("Segment performance plots", mi_grid(plots$segment_performance, cols = 1L)),
+  mi_panel("Segment metric summary", mi_table(tables$segment_performance$segment_metric_summary, defaultPageSize = 25L)),
+  mi_details("Worst segments", htmltools::h3("Worst by RMSE"), mi_table(tables$segment_performance$worst_segments_by_rmse, defaultPageSize = 25L), htmltools::h3("Worst by bias"), mi_table(tables$segment_performance$worst_segments_by_bias, defaultPageSize = 25L))
+)
+```
+
+# Stability and Drift
+
+```{r stability, results='asis'}
+htmltools::tagList(
+  mi_note("Stability artifacts compare train/test feature distributions, prediction distributions, target distributions, and residual distributions. PSI is used as a compact shift signal for numeric variables."),
+  mi_panel("Stability plots", mi_grid(plots$stability, cols = 1L)),
+  mi_panel("Train/test feature shift", mi_table(tables$stability$train_test_feature_shift, defaultPageSize = 25L)),
+  mi_details("Prediction / target / residual shift", mi_table(tables$stability$train_test_prediction_shift, defaultPageSize = 10L)),
+  mi_details("Metrics over time", mi_table(tables$stability$metric_by_time, defaultPageSize = 25L))
+)
+```
+
+# Model Metadata
+
+```{r metadata, results='asis'}
+htmltools::tagList(
+  mi_panel("Model summary", mi_table(tables$model_metadata$model_summary, defaultPageSize = 20L)),
+  mi_details("Model arguments", mi_table(tables$model_metadata$args_list, defaultPageSize = 25L)),
+  mi_details("Grid metrics", mi_table(tables$model_metadata$grid_metrics, defaultPageSize = 25L)),
+  mi_details("Data audit", htmltools::h3("Column audit"), mi_table(tables$data_audit$column_audit, defaultPageSize = 25L), htmltools::h3("Target / prediction summary"), mi_table(tables$data_audit$target_prediction_summary, defaultPageSize = 20L))
+)
+```
+
+# Export Manifest
+
+```{r export_manifest, results='asis'}
+htmltools::tagList(
+  mi_note("When PNG/HTML sidecar export is enabled, the image manifest stores exported file paths, metadata, and export errors."),
+  mi_table(exports$image_manifest, defaultPageSize = 25L)
+)
+```

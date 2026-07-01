@@ -60,7 +60,9 @@ TargetAnalysisReport(
 \seealso{
 Other Reports: 
 \code{\link{EDAReport}()},
-\code{\link{ModelInsightsReport}()}
+\code{\link{ModelInsightsReport}()},
+\code{\link{RegressionModelInsightsReport}()},
+\code{\link{generate_regression_model_insights_artifacts}()}
 }
 \author{
 Adrian Antico

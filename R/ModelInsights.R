@@ -470,3 +470,146 @@ TargetAnalysisReport <- function(
 
   invisible(OutputFile)
 }
+
+# ============================================================
+# Render Regression Model Insights Report from Artifacts
+#
+# RMarkdown template expected at:
+#   inst/r-markdowns/Regression_ModelInsights_Artifact_Renderer.Rmd
+#
+# This function intentionally does only one thing:
+#   take a precomputed artifacts object and render the report.
+# ============================================================
+
+#' Render Regression Model Insights Report
+#'
+#' Takes a precomputed regression model-insights artifact object and renders
+#' the artifact-based RMarkdown report.
+#'
+#' @param artifacts Artifact object returned by
+#'   `generate_regression_model_insights_artifacts()`.
+#' @param OutputPath Directory where the rendered HTML report should be written.
+#' @param OutputFile Output HTML filename.
+#' @param RmdFile RMarkdown filename located in `inst/r-markdowns`.
+#' @param Package Package name used to locate installed RMarkdown files.
+#' @param TemplatePath Optional explicit path to the RMarkdown file. If supplied,
+#'   this takes precedence over the package/system.file lookup.
+#' @param Quiet Passed to `rmarkdown::render()`.
+#' @param Clean Passed to `rmarkdown::render()`.
+#' @param Envir Optional render environment. If NULL, a clean child environment
+#'   of `.GlobalEnv` is created.
+#' @param SelfContained Passed to `rmarkdown::render()` through output_options.
+#'
+#' @return Invisibly returns the rendered report path.
+#'
+#' @family Reports
+#' @export
+RegressionModelInsightsReport <- function(
+    artifacts,
+    OutputPath = getwd(),
+    OutputFile = "Regression_ModelInsights_Report.html",
+    RmdFile = "Regression_ModelInsights_Artifact_Renderer.Rmd",
+    Package = "AutoQuant",
+    TemplatePath = NULL,
+    Quiet = FALSE,
+    Clean = TRUE,
+    Envir = NULL,
+    SelfContained = TRUE
+) {
+
+  if (missing(artifacts) || is.null(artifacts)) {
+    stop("`artifacts` must be supplied.", call. = FALSE)
+  }
+
+  if (!requireNamespace("rmarkdown", quietly = TRUE)) {
+    stop("Package 'rmarkdown' is required.", call. = FALSE)
+  }
+
+  if (!requireNamespace("data.table", quietly = TRUE)) {
+    stop("Package 'data.table' is required.", call. = FALSE)
+  }
+
+  if (!requireNamespace("htmltools", quietly = TRUE)) {
+    stop("Package 'htmltools' is required.", call. = FALSE)
+  }
+
+  if (!requireNamespace("reactable", quietly = TRUE)) {
+    stop("Package 'reactable' is required.", call. = FALSE)
+  }
+
+  if (!requireNamespace("echarts4r", quietly = TRUE)) {
+    stop("Package 'echarts4r' is required.", call. = FALSE)
+  }
+
+  OutputPath <- normalizePath(OutputPath, winslash = "/", mustWork = FALSE)
+  dir.create(OutputPath, recursive = TRUE, showWarnings = FALSE)
+
+  if (!is.null(TemplatePath) && nzchar(TemplatePath)) {
+
+    TemplatePath <- normalizePath(TemplatePath, winslash = "/", mustWork = FALSE)
+
+  } else {
+
+    TemplatePath <- system.file(
+      "r-markdowns",
+      RmdFile,
+      package = Package
+    )
+
+    # Development fallback before package installation.
+    if (!nzchar(TemplatePath) || !file.exists(TemplatePath)) {
+      TemplatePath <- file.path(
+        getwd(),
+        "inst",
+        "r-markdowns",
+        RmdFile
+      )
+      TemplatePath <- normalizePath(TemplatePath, winslash = "/", mustWork = FALSE)
+    }
+
+    # Working-directory fallback for ad hoc testing.
+    if (!file.exists(TemplatePath)) {
+      TemplatePath <- file.path(getwd(), RmdFile)
+      TemplatePath <- normalizePath(TemplatePath, winslash = "/", mustWork = FALSE)
+    }
+  }
+
+  if (!file.exists(TemplatePath)) {
+    stop(
+      paste0(
+        "RMarkdown template not found. Expected one of:\n",
+        "1. ", file.path("inst", "r-markdowns", RmdFile), "\n",
+        "2. system.file('r-markdowns', '", RmdFile, "', package = '", Package, "')\n",
+        "3. Explicit `TemplatePath`."
+      ),
+      call. = FALSE
+    )
+  }
+
+  if (is.null(Envir)) {
+    Envir <- new.env(parent = .GlobalEnv)
+  }
+
+  # Expose both names because the Rmd supports either lookup pattern.
+  assign("artifacts", artifacts, envir = Envir)
+  assign("ModelInsightsArtifacts", artifacts, envir = Envir)
+
+  RenderedFile <- rmarkdown::render(
+    input = TemplatePath,
+    output_file = OutputFile,
+    output_dir = OutputPath,
+    params = list(
+      artifacts = artifacts
+    ),
+    envir = Envir,
+    quiet = Quiet,
+    clean = Clean,
+    output_options = list(
+      self_contained = isTRUE(SelfContained)
+    )
+  )
+
+  RenderedFile <- normalizePath(RenderedFile, winslash = "/", mustWork = FALSE)
+
+  invisible(RenderedFile)
+}

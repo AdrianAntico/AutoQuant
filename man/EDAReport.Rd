@@ -62,7 +62,9 @@ EDAReport(
 \seealso{
 Other Reports: 
 \code{\link{ModelInsightsReport}()},
-\code{\link{TargetAnalysisReport}()}
+\code{\link{RegressionModelInsightsReport}()},
+\code{\link{TargetAnalysisReport}()},
+\code{\link{generate_regression_model_insights_artifacts}()}
 }
 \author{
 Adrian Antico
