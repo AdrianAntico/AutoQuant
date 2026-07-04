@@ -1,0 +1,177 @@
+---
+title: "Binary Classification Model Insights"
+author: "Provided by AutoQuant"
+date: "`r format(Sys.time(), '%Y-%m-%d')`"
+output:
+  prettydoc::html_pretty:
+    theme: cayman
+    toc: yes
+    toc_depth: 3
+    fig_caption: yes
+    number_sections: no
+params:
+  artifacts: NULL
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, fig.align = "center")
+
+required_pkgs <- c("data.table", "htmltools", "reactable")
+missing_pkgs <- required_pkgs[!vapply(required_pkgs, requireNamespace, logical(1L), quietly = TRUE)]
+if (length(missing_pkgs)) stop(paste("Missing packages:", paste(missing_pkgs, collapse = ", ")), call. = FALSE)
+
+artifacts <- params$artifacts
+if (is.null(artifacts) && exists("BinaryClassificationModelInsightsArtifacts", envir = .GlobalEnv)) artifacts <- get("BinaryClassificationModelInsightsArtifacts", envir = .GlobalEnv)
+if (is.null(artifacts) && exists("artifacts", envir = .GlobalEnv)) artifacts <- get("artifacts", envir = .GlobalEnv)
+if (is.null(artifacts)) stop("No artifacts object found. Pass params$artifacts or create BinaryClassificationModelInsightsArtifacts before rendering.", call. = FALSE)
+
+metadata <- artifacts$metadata
+artifact_list <- artifacts$artifacts
+tables <- artifacts$tables
+plots <- artifacts$plots
+layout <- artifacts$layout
+
+bc_empty <- function(label = "No artifact available.") htmltools::div(class = "bc-empty", label)
+bc_val <- function(x, missing = "-") if (is.null(x) || !length(x) || is.na(x[1L])) missing else as.character(x[1L])
+bc_num <- function(x, digits = 3L) if (is.null(x) || !length(x) || is.na(x[1L])) "-" else if (is.numeric(x)) formatC(x[1L], format = "f", big.mark = ",", digits = digits) else as.character(x[1L])
+
+bc_table <- function(data, defaultPageSize = 10L, empty = "No rows available.") {
+  if (is.null(data)) return(bc_empty(empty))
+  data <- data.table::as.data.table(data)
+  if (!nrow(data)) return(bc_empty(empty))
+  reactable::reactable(
+    data = data,
+    width = "100%",
+    fullWidth = TRUE,
+    compact = TRUE,
+    defaultPageSize = defaultPageSize,
+    pageSizeOptions = c(10, 15, 25, 50, 100),
+    wrap = FALSE,
+    filterable = TRUE,
+    highlight = TRUE,
+    pagination = TRUE,
+    resizable = TRUE,
+    searchable = TRUE,
+    sortable = TRUE,
+    striped = TRUE
+  )
+}
+
+bc_renderable <- function(x) inherits(x, "htmlwidget") || inherits(x, "recordedplot") || is.function(x)
+bc_plot <- function(x, empty = "No plot available.") if (is.null(x)) bc_empty(empty) else x
+bc_card <- function(title, value, subtitle = NULL, type = "neutral") {
+  htmltools::div(
+    class = paste("bc-card", paste0("bc-card-", type)),
+    htmltools::div(class = "bc-card-title", title),
+    htmltools::div(class = "bc-card-value", value),
+    if (!is.null(subtitle)) htmltools::div(class = "bc-card-subtitle", subtitle)
+  )
+}
+bc_panel <- function(title, ...) htmltools::div(class = "bc-panel", htmltools::div(class = "bc-panel-title", title), ...)
+bc_details <- function(summary, ..., open = FALSE) htmltools::tags$details(class = "bc-details", if (open) htmltools::HTML(" open") else NULL, htmltools::tags$summary(summary), htmltools::div(class = "bc-details-body", ...))
+bc_artifact <- function(name) {
+  artifact <- artifact_list[[name]]
+  if (is.null(artifact)) return(bc_empty(paste("Artifact not found:", name)))
+  artifact$object
+}
+```
+
+```{css, echo=FALSE}
+body{font-family:"Open Sans","Helvetica Neue",Helvetica,Arial,sans-serif}.main-content{max-width:95%;padding:2rem 4rem}.bc-hero{margin:1rem 0 1.5rem;padding:1.3rem 1.5rem;border-radius:18px;background:linear-gradient(135deg,#08152f,#113d68);color:#fff}.bc-hero-title{font-size:1.55rem;font-weight:800;margin-bottom:.35rem}.bc-hero-text{opacity:.86;max-width:1100px}.bc-grid{display:grid;grid-template-columns:repeat(4,minmax(180px,1fr));gap:14px;margin:1rem 0 1.25rem}.bc-card{padding:1rem;border-radius:14px;border:1px solid rgba(0,0,0,.12);background:#fff;box-shadow:0 8px 22px rgba(0,0,0,.08)}.bc-card-title{font-size:.78rem;text-transform:uppercase;font-weight:800;color:#53606f}.bc-card-value{font-size:1.5rem;font-weight:900;color:#152238}.bc-card-subtitle{font-size:.9rem;color:#6b7280}.bc-card-good .bc-card-value{color:#047857}.bc-card-warning .bc-card-value{color:#b45309}.bc-card-info .bc-card-value{color:#1d4ed8}.bc-panel{margin:1rem 0 1.3rem;padding:1rem;border-radius:16px;border:1px solid rgba(0,0,0,.1);background:#fff;box-shadow:0 8px 22px rgba(0,0,0,.07)}.bc-panel-title{font-weight:900;font-size:1.1rem;margin-bottom:.7rem}.bc-empty{padding:.85rem 1rem;border:1px dashed #cbd5e1;border-radius:12px;color:#64748b;background:#f8fafc}.bc-details{margin:1rem 0;padding:.9rem 1rem;border-radius:14px;border:1px solid #d8e1ee;background:#fff}.bc-details>summary{cursor:pointer;font-weight:900}.bc-details-body{margin-top:.85rem}@media screen and (max-width:900px){.main-content{padding:2rem 1rem}.bc-grid{grid-template-columns:1fr}}
+```
+
+# Report Overview
+
+```{r overview, results='asis'}
+htmltools::tagList(
+  htmltools::div(
+    class = "bc-hero",
+    htmltools::div(class = "bc-hero-title", "Binary classification model assessment and threshold diagnostics"),
+    htmltools::div(class = "bc-hero-text", "This report renders precomputed structured artifacts from generate_binary_classification_model_insights_artifacts(). It does not rerun model logic or create an independent report system.")
+  ),
+  htmltools::div(
+    class = "bc-grid",
+    bc_card("Model ID", bc_val(metadata$model_id), "Model identifier", "info"),
+    bc_card("Target", bc_val(metadata$target_column), "Binary outcome", "info"),
+    bc_card("Prediction", bc_val(metadata$prediction_column), "Probability column", "info"),
+    bc_card("Positive Class", bc_val(metadata$positive_class), "Optimized class", "info"),
+    bc_card("Default Threshold", bc_num(metadata$threshold, 3L), "Configured", "neutral"),
+    bc_card("Optimized Threshold", bc_num(metadata$optimized_threshold, 3L), bc_val(metadata$optimize_metric), "good"),
+    bc_card("Artifacts", bc_val(metadata$artifact_count), "Structured outputs", "info"),
+    bc_card("Plots / Tables", paste0(bc_val(metadata$plot_count), " / ", bc_val(metadata$table_count)), "Artifact mix", "info")
+  )
+)
+```
+
+```{r artifact_inventory, results='asis'}
+bc_panel("Artifact Inventory", bc_table(metadata$artifact_index, defaultPageSize = 25L))
+```
+
+# Classification Metrics
+
+```{r classification_metrics, results='asis'}
+htmltools::tagList(
+  bc_panel("Classification Metrics", bc_table(tables$classification_metrics, defaultPageSize = 10L)),
+  bc_panel("Model Overview", bc_table(tables$model_overview, defaultPageSize = 10L))
+)
+```
+
+# Threshold Diagnostics
+
+```{r threshold_diagnostics, results='asis'}
+htmltools::tagList(
+  bc_panel("Threshold Optimizer", bc_plot(bc_artifact("threshold_optimizer"))),
+  bc_panel("Selected Threshold Summary", bc_table(tables$selected_threshold_summary, defaultPageSize = 10L)),
+  bc_panel("Optimized Confusion Matrix", bc_table(tables$optimized_confusion_matrix, defaultPageSize = 10L)),
+  bc_details("Threshold Metrics", bc_table(tables$threshold_metrics, defaultPageSize = 25L), open = FALSE)
+)
+```
+
+# ROC / PR Analysis
+
+```{r roc_pr, results='asis'}
+htmltools::tagList(
+  bc_panel("ROC Curve", bc_plot(bc_artifact("roc_curve"))),
+  bc_panel("Precision-Recall Curve", bc_plot(bc_artifact("precision_recall_curve")))
+)
+```
+
+# Calibration
+
+```{r calibration, results='asis'}
+htmltools::tagList(
+  bc_panel("Calibration Plot", bc_plot(bc_artifact("calibration_plot"))),
+  bc_panel("Calibration Table", bc_table(tables$calibration, defaultPageSize = 20L))
+)
+```
+
+# Lift / Gains
+
+```{r lift_gains, results='asis'}
+htmltools::tagList(
+  bc_panel("Gains Plot", bc_plot(bc_artifact("gains_plot"))),
+  bc_panel("Lift Plot", bc_plot(bc_artifact("lift_plot"))),
+  bc_details("Gains Table", bc_table(tables$gains, defaultPageSize = 20L))
+)
+```
+
+# Global Importance
+
+```{r global_importance, results='asis'}
+bc_panel("Feature Importance Proxy", bc_table(tables$feature_importance_proxy, defaultPageSize = 25L))
+```
+
+# Feature Effects
+
+```{r feature_effects, results='asis'}
+feature_effect_artifacts <- artifact_list[vapply(artifact_list, function(x) identical(x$section, "Feature Effects"), logical(1L))]
+htmltools::tagList(lapply(feature_effect_artifacts, function(artifact) {
+  bc_panel(artifact$label, bc_plot(artifact$object))
+}))
+```
+
+# Appendix
+
+```{r appendix, results='asis'}
+bc_details("Metadata", bc_table(data.table::as.data.table(metadata[!names(metadata) %in% c("artifact_index", "utility", "feature_columns")]), defaultPageSize = 25L), open = FALSE)
+```
