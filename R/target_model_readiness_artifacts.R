@@ -1,13 +1,13 @@
 # ============================================================
-# Target Analysis Artifact Generation
+# Model Assessment Artifact Generation
 # ============================================================
 
-#' Generate Target Analysis Artifacts
+#' Generate Model Assessment Artifacts
 #'
-#' Generates target-oriented analysis artifacts from a data set and target
-#' variable. This function performs the calculations that previously lived
-#' inside the Target Analysis R Markdown report and returns reusable tables,
-#' widgets, plots, metadata, and optional export sidecars.
+#' Generates model assessment and model-readiness artifacts from a data set
+#' and target variable. The current implementation supports target-oriented
+#' diagnostics, model-readiness evidence, optional trend/drift checks, and
+#' feature engineering guidance.
 #'
 #' This function does not call any LLM provider. It only prepares artifacts that
 #' can be rendered by R Markdown, Shiny, Quarto, or passed to an LLM workflow
@@ -66,20 +66,20 @@
 #'
 #' @examples
 #' \dontrun{
-#' target_artifacts <- generate_target_analysis_artifacts(
+#' model_assessment_artifacts <- generate_model_assessment_artifacts(
 #'   data = dt,
 #'   DataName = "Modeling Data",
 #'   TargetVar = "converted",
 #'   TrendDateVar = "event_date",
 #'   TrendGroupVar = c("channel", "market"),
 #'   Theme = "dark",
-#'   OutputPath = "target_artifacts",
+#'   OutputPath = "model_assessment_artifacts",
 #'   ExportPNG = TRUE
 #' )
 #' }
 #'
 #' @export
-generate_target_analysis_artifacts <- function(
+generate_model_assessment_artifacts <- function(
     data,
     DataName = "Target Analysis Data",
     TargetVar = NULL,
@@ -4812,7 +4812,7 @@ generate_target_analysis_artifacts <- function(
     target_artifacts$artifacts <- target_build_wrapped_target_artifacts(target_artifacts)
 
     target_artifacts <- target_export_target_artifact_sidecars(
-      artifacts = target_artifacts,
+      artifacts = model_assessment_artifacts,
       output_path = OutputPath,
       export_png = ExportPNG,
       export_html = ExportHTML,
@@ -4838,7 +4838,7 @@ generate_target_analysis_artifacts <- function(
     target_artifacts$export_manifest <- NULL
   }
 
-  class(target_artifacts) <- c("target_analysis_artifacts", class(target_artifacts))
+  class(target_artifacts) <- c("model_assessment_artifacts", class(target_artifacts))
 
   target_artifacts
 }
@@ -4968,7 +4968,7 @@ target_export_target_artifact_sidecars <- function(
 ) {
 
   if (is.null(output_path)) {
-    output_path <- file.path(getwd(), "target_analysis_artifacts")
+    output_path <- file.path(getwd(), "model_assessment_artifacts")
   }
 
   image_dir <- file.path(output_path, "images")

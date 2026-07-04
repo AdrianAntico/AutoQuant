@@ -640,19 +640,19 @@ OutputPath <- getwd()
 # 3. Full report: all options
 # ----------------------------
 
-target_artifacts <- generate_target_analysis_artifacts(
+model_assessment_artifacts <- generate_model_assessment_artifacts(
   data = dt,
   DataName = "Modeling Data",
   TargetVar = "conversions",
   TrendDateVar = "event_date",
   TrendGroupVar = c("channel", "market"),
   Theme = "dark",
-  OutputPath = "target_artifacts",
+  OutputPath = "model_assessment_artifacts",
   ExportPNG = FALSE
 )
 
 TargetAnalysisReport(
-  artifacts = target_artifacts,
+  artifacts = model_assessment_artifacts,
   OutputPath = OutputPath
 )
 

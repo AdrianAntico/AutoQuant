@@ -13,7 +13,7 @@ TargetAnalysisReport(
 )
 }
 \arguments{
-\item{artifacts}{Output object returned by `generate_target_analysis_artifacts()`.}
+\item{artifacts}{Output object returned by `generate_model_assessment_artifacts()`.}
 
 \item{OutputPath}{Directory where the rendered HTML report should be saved.
 If `NULL`, the current working directory is used.}
@@ -31,7 +31,7 @@ Invisibly returns the rendered HTML file path.
 }
 \description{
 Renders an HTML target analysis / model readiness report from a pre-generated
-artifact object created by `generate_target_analysis_artifacts()`.
+artifact object created by `generate_model_assessment_artifacts()`.
 }
 \details{
 This function does not compute target analysis artifacts. It only renders the
@@ -42,7 +42,7 @@ reused for RMarkdown, Shiny, static exports, or LLM/API workflows.
 Typical usage:
 
 \preformatted{
-artifacts <- generate_target_analysis_artifacts(
+artifacts <- generate_model_assessment_artifacts(
   data = dt,
   DataName = "Modeling Data",
   TargetVar = "conversions",

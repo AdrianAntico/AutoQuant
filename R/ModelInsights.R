@@ -318,12 +318,12 @@ EDAReport <- function(
 #'
 #' @description
 #' Renders an HTML target analysis / model readiness report from a pre-generated
-#' artifact object created by `generate_target_analysis_artifacts()`.
+#' artifact object created by `generate_model_assessment_artifacts()`.
 #'
 #' @author Adrian Antico
 #' @family Reports
 #'
-#' @param artifacts Output object returned by `generate_target_analysis_artifacts()`.
+#' @param artifacts Output object returned by `generate_model_assessment_artifacts()`.
 #' @param OutputPath Directory where the rendered HTML report should be saved.
 #'   If `NULL`, the current working directory is used.
 #' @param DataName Optional report/data name. If `NULL`, attempts to use
@@ -343,7 +343,7 @@ EDAReport <- function(
 #' Typical usage:
 #'
 #' \preformatted{
-#' artifacts <- generate_target_analysis_artifacts(
+#' artifacts <- generate_model_assessment_artifacts(
 #'   data = dt,
 #'   DataName = "Modeling Data",
 #'   TargetVar = "conversions",
@@ -369,7 +369,7 @@ TargetAnalysisReport <- function(
 
   if (missing(artifacts) || is.null(artifacts)) {
     stop(
-      "`artifacts` must be supplied. Use `generate_target_analysis_artifacts()` first.",
+      "`artifacts` must be supplied. Use `generate_model_assessment_artifacts()` first.",
       call. = FALSE
     )
   }
