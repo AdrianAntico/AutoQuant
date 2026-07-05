@@ -4787,55 +4787,59 @@ Binary SHAP artifacts include positive-class overview text, diagnostics/config t
 </details>
 
 
-<details><summary>Classification ModelInsightsReport() Example</summary>
+<details><summary>BinaryClassificationModelInsightsReport() Example</summary>
 <p>
 
 ```r
-# Create some dummy correlated data
-data <- AutoQuant::FakeDataGenerator(
-  Correlation = 0.85,
-  N = 10000,
-  ID = 2,
-  ZIP = 0,
-  AddDate = FALSE,
-  Classification = TRUE,
-  MultiClass = FALSE)
+library(data.table)
+library(AutoQuant)
 
-# Copy data
-data1 <- data.table::copy(data)
+set.seed(321)
+n <- 1000L
 
-# Feature names
-Features <- c(names(data1)[!names(data1) %in% c('IDcol_1','IDcol_2','Adrian')])
+scored_dt <- data.table(
+  Date = as.Date("2025-01-01") + sample(0:240, n, TRUE),
+  Channel = sample(c("Direct", "Search", "Social", "Email"), n, TRUE),
+  Region = sample(c("West", "Midwest", "South", "Northeast"), n, TRUE),
+  Spend = rgamma(n, shape = 5, scale = 40),
+  Clicks = rpois(n, lambda = 60),
+  CustomerTier = sample(c("Bronze", "Silver", "Gold", "Platinum"), n, TRUE)
+)
 
-# Run function
-ModelObject <- AutoQuant::AutoCatBoostClassifier(
-  
-  # GPU or CPU and the number of available GPUs
-  task_type = 'GPU',
-  NumGPUs = 1,
-  
-  # Metadata args
-  OutputSelection = c('Score_TrainData', 'Importances', 'EvalPlots', 'EvalMetrics'),
-  ModelID = 'Test_Model_1',
-  model_path = getwd(),
-  metadata_path = getwd(),
-  ReturnModelObjects = TRUE,
-  NumOfParDepPlots = length(Features),
+scored_dt[, score_linear :=
+  -1.2 +
+  0.008 * Spend +
+  0.015 * Clicks +
+  fifelse(Channel == "Search", 0.55, 0) +
+  fifelse(CustomerTier == "Platinum", 0.7, 0) +
+  fifelse(Region == "West", 0.25, 0)
+]
+scored_dt[, Predict := 1 / (1 + exp(-score_linear))]
+scored_dt[, Target := fifelse(runif(.N) <= Predict, "Yes", "No")]
+scored_dt[, PredictedClass := fifelse(Predict >= 0.5, "Yes", "No")]
 
-  # Data args
-  data = data1,
-  TargetColumnName = 'Adrian',
-  FeatureColNames = Features,
-  IDcols = c('IDcol_1','IDcol_2'))
+BinaryArtifacts <- AutoQuant::generate_binary_classification_model_insights_artifacts(
+  data = scored_dt,
+  target_col = "Target",
+  prediction_col = "Predict",
+  predicted_class_col = "PredictedClass",
+  positive_class = "Yes",
+  feature_cols = c("Spend", "Clicks", "Channel", "Region", "CustomerTier"),
+  model_name = "Binary_Model_Insights_QA_Model",
+  data_name = "Binary scored QA data",
+  DateVar = "Date",
+  date_aggregation = "month",
+  ByVars = c("Channel", "Region", "CustomerTier"),
+  Threshold = 0.5,
+  OptimizeMetric = "F1"
+)
 
-# Build report
-AutoQuant::ModelInsightsReport(
-  TrainDataInclude = TRUE,
-  FeatureColumnNames = Features,
-  SampleSize = 100000,
-  ModelObject = ModelObject,
-  ModelID = 'Test_Model_1',
-  OutputPath = getwd())
+ReportPath <- AutoQuant::BinaryClassificationModelInsightsReport(
+  artifacts = BinaryArtifacts,
+  OutputPath = normalizePath("./"),
+  OutputFile = "binary_classification_model_insights_report.html",
+  Quiet = FALSE
+)
 ```
 
 </p>
