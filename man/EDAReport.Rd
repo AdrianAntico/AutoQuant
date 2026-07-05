@@ -61,10 +61,13 @@ EDAReport(
 }
 \seealso{
 Other Reports: 
+\code{\link{BinaryClassificationModelInsightsReport}()},
 \code{\link{ModelInsightsReport}()},
 \code{\link{RegressionModelInsightsReport}()},
 \code{\link{TargetAnalysisReport}()},
-\code{\link{generate_regression_model_insights_artifacts}()}
+\code{\link{generate_binary_classification_model_insights_artifacts}()},
+\code{\link{generate_regression_model_insights_artifacts}()},
+\code{\link{qa_generate_binary_classification_model_insights_artifacts}()}
 }
 \author{
 Adrian Antico

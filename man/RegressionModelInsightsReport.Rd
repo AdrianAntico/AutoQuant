@@ -50,9 +50,12 @@ the artifact-based RMarkdown report.
 }
 \seealso{
 Other Reports: 
+\code{\link{BinaryClassificationModelInsightsReport}()},
 \code{\link{EDAReport}()},
 \code{\link{ModelInsightsReport}()},
 \code{\link{TargetAnalysisReport}()},
-\code{\link{generate_regression_model_insights_artifacts}()}
+\code{\link{generate_binary_classification_model_insights_artifacts}()},
+\code{\link{generate_regression_model_insights_artifacts}()},
+\code{\link{qa_generate_binary_classification_model_insights_artifacts}()}
 }
 \concept{Reports}
