@@ -4610,6 +4610,182 @@ The `Shap_` prefix maps each contribution column to the source model variable by
 </p>
 </details>
 
+<details><summary>Binary Classification Model Insights Artifact Generator Example</summary>
+<p>
+
+`generate_binary_classification_model_insights_artifacts()` consumes scored binary classification output data. It does not require a full model object. The generator creates structured plot/table artifacts for threshold diagnostics, ROC / PR, calibration, lift/gains, prediction distribution, feature effects, segment diagnostics, and time diagnostics. Native report rendering should use the artifact result through `BinaryClassificationModelInsightsReport()`.
+
+```r
+library(data.table)
+library(AutoQuant)
+
+set.seed(321)
+n <- 1000L
+
+dt <- data.table(
+  Date = as.Date("2025-01-01") + sample(0:240, n, TRUE),
+  Channel = sample(c("Direct", "Search", "Social", "Email"), n, TRUE),
+  Region = sample(c("West", "Midwest", "South", "Northeast"), n, TRUE),
+  Spend = rgamma(n, shape = 5, scale = 40),
+  Clicks = rpois(n, lambda = 60),
+  CustomerTier = sample(c("Bronze", "Silver", "Gold", "Platinum"), n, TRUE)
+)
+
+dt[, score_linear :=
+  -1.2 +
+  0.008 * Spend +
+  0.015 * Clicks +
+  fifelse(Channel == "Search", 0.55, 0) +
+  fifelse(CustomerTier == "Platinum", 0.7, 0) +
+  fifelse(Region == "West", 0.25, 0)
+]
+dt[, Predict := 1 / (1 + exp(-score_linear))]
+dt[, Target := fifelse(runif(.N) <= Predict, "Yes", "No")]
+dt[, PredictedClass := fifelse(Predict >= 0.5, "Yes", "No")]
+
+BinaryModelInsightsArtifacts <- AutoQuant::generate_binary_classification_model_insights_artifacts(
+  data = dt,
+  target_col = "Target",
+  prediction_col = "Predict",
+  predicted_class_col = "PredictedClass",
+  positive_class = "Yes",
+  feature_cols = c("Spend", "Clicks", "Channel", "Region", "CustomerTier"),
+  model_name = "Binary_Model_Insights_QA_Model",
+  data_name = "Binary scored QA data",
+  DateVar = "Date",
+  date_aggregation = "month",
+  ByVars = c("Channel", "Region", "CustomerTier"),
+  Threshold = 0.5,
+  OptimizeMetric = "F1"
+)
+
+print(BinaryModelInsightsArtifacts$metadata$artifact_index)
+
+ReportPath <- AutoQuant::BinaryClassificationModelInsightsReport(
+  artifacts = BinaryModelInsightsArtifacts,
+  OutputPath = normalizePath("./"),
+  OutputFile = "binary_classification_model_insights_report.html",
+  Quiet = FALSE
+)
+```
+
+</p>
+</details>
+
+<details><summary>Binary Classification SHAP Artifact Generator Example</summary>
+<p>
+
+`generate_binary_classification_shap_analysis_artifacts()` consumes precomputed `Shap_` columns from binary classification modeling/scoring outputs. It does not compute SHAP values, call `predict()`, require a model object, or use a SHAP backend package. `positive_class` and `prediction_scale` are explicit so the report can describe whether SHAP values are contributions toward the positive class on probability, logit, margin, or unknown scale.
+
+```r
+library(data.table)
+library(AutoQuant)
+
+set.seed(123)
+n <- 300L
+x1 <- runif(n, 0, 100)
+x2 <- runif(n, 0, 50)
+seg <- sample(c("A", "B", "C"), n, TRUE)
+date <- as.Date("2024-01-01") + sample(0:180, n, TRUE)
+eta <- -1 + 0.025 * x1 + 0.03 * x2 + ifelse(seg == "A", 0.7, ifelse(seg == "B", -0.2, 0))
+p <- 1 / (1 + exp(-eta))
+
+dt <- data.table(
+  Target = ifelse(runif(n) < p, "Yes", "No"),
+  Predict = p,
+  PredictedClass = ifelse(p >= 0.5, "Yes", "No"),
+  Independent_Variable1 = x1,
+  Independent_Variable2 = x2,
+  Factor_1 = seg,
+  IDCol_1 = seq_len(n),
+  IDCol_2 = sample(1000:9999, n, TRUE),
+  Date = date,
+  Shap_Independent_Variable1 = 0.01 * x1 + ifelse(x2 > 25, 0.15, -0.05) + ifelse(seg == "A", 0.08, 0) + rnorm(n, 0, 0.02),
+  Shap_Independent_Variable2 = 0.01 * x2 + ifelse(x1 > 50, 0.1, -0.04) + rnorm(n, 0, 0.02),
+  Shap_Factor_1 = ifelse(seg == "A", 0.15, ifelse(seg == "B", -0.05, 0.02)) + rnorm(n, 0, 0.02)
+)
+
+BinaryShapArtifacts <- AutoQuant::generate_binary_classification_shap_analysis_artifacts(
+  data = dt,
+  target_col = "Target",
+  prediction_col = "Predict",
+  predicted_class_col = "PredictedClass",
+  positive_class = "Yes",
+  prediction_scale = "probability",
+  threshold = 0.5,
+  DateVar = "Date",
+  date_aggregation = "month",
+  ByVars = "Factor_1",
+  id_cols = c("IDCol_1", "IDCol_2"),
+  selected_features = c("Independent_Variable1", "Independent_Variable2", "Factor_1"),
+  local_row_ids = c(1L, 2L),
+  top_n = 3L,
+  include_dependence = TRUE,
+  include_segments = TRUE,
+  include_time = TRUE,
+  include_local = TRUE,
+  include_interactions = TRUE,
+  include_threshold_context = TRUE,
+  include_class_balance = TRUE,
+  include_plots = TRUE
+)
+
+or_na <- function(x) if (is.null(x)) NA_character_ else x
+artifact_inventory <- rbindlist(lapply(names(BinaryShapArtifacts$artifacts), function(nm) {
+  a <- BinaryShapArtifacts$artifacts[[nm]]
+  data.table(
+    artifact = nm,
+    label = a$label,
+    type = a$type,
+    section = a$section,
+    lens = or_na(a$metadata$lens),
+    plot_type = or_na(a$metadata$plot_type)
+  )
+}), fill = TRUE)
+
+print(artifact_inventory)
+
+# Render native AutoQuant Binary Classification SHAP HTML report
+BinaryShapReportPath <- AutoQuant::BinaryClassificationShapAnalysisReport(
+  data = dt,
+  artifact_result = BinaryShapArtifacts,
+  output_dir = normalizePath("./"),
+  output_file = "binary_classification_shap_analysis_full_qa_report.html",
+  title = "Binary Classification SHAP Analysis Full QA Report",
+
+  target_col = "Target",
+  prediction_col = "Predict",
+  predicted_class_col = "PredictedClass",
+  positive_class = "Yes",
+  prediction_scale = "probability",
+  threshold = 0.5,
+
+  DateVar = "Date",
+  date_aggregation = "month",
+  ByVars = "Factor_1",
+  id_cols = c("IDCol_1", "IDCol_2"),
+  selected_features = c("Independent_Variable1", "Independent_Variable2", "Factor_1"),
+  local_row_ids = c(1L, 2L),
+  top_n = 3L,
+
+  include_dependence = TRUE,
+  include_segments = TRUE,
+  include_time = TRUE,
+  include_local = TRUE,
+  include_interactions = TRUE,
+  include_threshold_context = TRUE,
+  include_class_balance = TRUE,
+
+  open = TRUE,
+  quiet = FALSE
+)
+```
+
+Binary SHAP artifacts include positive-class overview text, diagnostics/config tables, global importance, categorical/binned numeric level importance, dependence, segment, time, threshold context, class balance/outcome context, local explanations, and binned/leveled interaction diagnostics. Interaction surfaces use actual source feature bins/levels on the axes and signed mean SHAP as the heatmap value. They are not exact pairwise SHAP interaction decompositions. Multiclass SHAP is deferred.
+
+</p>
+</details>
+
 
 <details><summary>Classification ModelInsightsReport() Example</summary>
 <p>

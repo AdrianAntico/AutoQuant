@@ -78,6 +78,20 @@ binary_model_insights_add_artifact <- function(artifacts, artifact) {
   base_name <- binary_model_insights_slug(artifact$name)
   artifact$name <- base_name
   artifact$metadata$artifact_index <- length(artifacts) + 1L
+  artifact$metadata$source_package <- binary_model_insights_null_coalesce(artifact$metadata$source_package, "AutoQuant")
+  artifact$metadata$source_function <- binary_model_insights_null_coalesce(
+    artifact$metadata$source_function,
+    "generate_binary_classification_model_insights_artifacts"
+  )
+  artifact$metadata$problem_type <- binary_model_insights_null_coalesce(artifact$metadata$problem_type, "binary_classification")
+  artifact$metadata$source_module <- binary_model_insights_null_coalesce(
+    artifact$metadata$source_module,
+    "autoquant_binary_model_insights"
+  )
+  artifact$metadata$original_name <- binary_model_insights_null_coalesce(artifact$metadata$original_name, artifact$name)
+  artifact$metadata$original_section <- binary_model_insights_null_coalesce(artifact$metadata$original_section, artifact$section)
+  artifact$metadata$normalized_section <- binary_model_insights_null_coalesce(artifact$metadata$normalized_section, artifact$section)
+  artifact$metadata$created_by_module <- TRUE
   if (artifact$name %in% names(artifacts)) {
     suffix <- 2L
     candidate <- paste0(base_name, "_", suffix)
@@ -483,6 +497,172 @@ binary_model_insights_build_lift_plot <- function(gains_table) {
   )
 }
 
+binary_model_insights_round_table <- function(dt, digits = 4L) {
+  dt <- data.table::as.data.table(dt)
+  numeric_cols <- names(dt)[vapply(dt, is.numeric, logical(1L))]
+  for (col in numeric_cols) {
+    data.table::set(dt, j = col, value = round(dt[[col]], digits))
+  }
+  dt[]
+}
+
+binary_model_insights_build_prediction_distribution <- function(scored, bins = 20L) {
+  dt <- data.table::copy(scored)
+  breaks <- seq(0, 1, length.out = bins + 1L)
+  dt[, prediction_bin := cut(
+    prediction,
+    breaks = breaks,
+    include.lowest = TRUE,
+    dig.lab = 4L
+  )]
+  out <- dt[!is.na(prediction_bin), .(
+    n = .N,
+    positive_count = sum(actual_binary == 1L, na.rm = TRUE),
+    observed_rate = mean(actual_binary, na.rm = TRUE),
+    mean_prediction = mean(prediction, na.rm = TRUE)
+  ), by = prediction_bin][order(prediction_bin)]
+  binary_model_insights_round_table(out)
+}
+
+binary_model_insights_build_prediction_distribution_plot <- function(prediction_distribution) {
+  if (!nrow(prediction_distribution)) {
+    return(NULL)
+  }
+
+  AutoPlots::Bar(
+    dt = prediction_distribution,
+    PreAgg = TRUE,
+    XVar = "prediction_bin",
+    YVar = "n",
+    Theme = "dark",
+    title.text = "Prediction Distribution",
+    xAxis.title = "Predicted Probability Bin",
+    yAxis.title = "Rows"
+  )
+}
+
+binary_model_insights_date_bucket <- function(x, aggregation = "month") {
+  date_values <- as.Date(x)
+  aggregation <- tolower(binary_model_insights_null_coalesce(aggregation, "month"))
+  if (identical(aggregation, "day")) {
+    return(date_values)
+  }
+  if (identical(aggregation, "week")) {
+    return(date_values - as.integer(format(date_values, "%u")) + 1L)
+  }
+  if (identical(aggregation, "quarter")) {
+    month <- as.integer(format(date_values, "%m"))
+    quarter_month <- ((month - 1L) %/% 3L) * 3L + 1L
+    return(as.Date(sprintf("%s-%02d-01", format(date_values, "%Y"), quarter_month)))
+  }
+  as.Date(sprintf("%s-%s-01", format(date_values, "%Y"), format(date_values, "%m")))
+}
+
+binary_model_insights_build_segment_diagnostics <- function(scored, ByVars = character(), threshold = 0.5, max_levels = 25L) {
+  ByVars <- intersect(unique(as.character(ByVars)), names(scored))
+  if (!length(ByVars)) {
+    return(data.table::data.table())
+  }
+
+  out <- data.table::rbindlist(lapply(ByVars, function(by_var) {
+    segment_dt <- data.table::copy(scored)
+    segment_dt[, segment := as.character(get(by_var))]
+    segment_dt[is.na(segment) | !nzchar(segment), segment := "(Missing)"]
+    segment_dt[, predicted_binary := as.integer(prediction >= threshold)]
+    segment_summary <- segment_dt[, .(
+      n = .N,
+      positive_count = sum(actual_binary == 1L, na.rm = TRUE),
+      predicted_positive_count = sum(predicted_binary == 1L, na.rm = TRUE),
+      observed_rate = mean(actual_binary, na.rm = TRUE),
+      mean_prediction = mean(prediction, na.rm = TRUE),
+      precision = binary_model_insights_safe_div(sum(predicted_binary == 1L & actual_binary == 1L), sum(predicted_binary == 1L)),
+      recall = binary_model_insights_safe_div(sum(predicted_binary == 1L & actual_binary == 1L), sum(actual_binary == 1L)),
+      false_positive_rate = binary_model_insights_safe_div(sum(predicted_binary == 1L & actual_binary == 0L), sum(actual_binary == 0L))
+    ), by = segment][order(-n)]
+    segment_summary <- segment_summary[seq_len(min(.N, max_levels))]
+    segment_summary[, by_var := by_var]
+    data.table::setcolorder(segment_summary, c("by_var", "segment", setdiff(names(segment_summary), c("by_var", "segment"))))
+    segment_summary
+  }), use.names = TRUE, fill = TRUE)
+
+  binary_model_insights_round_table(out)
+}
+
+binary_model_insights_build_segment_plot <- function(segment_diagnostics) {
+  if (!nrow(segment_diagnostics)) {
+    return(NULL)
+  }
+
+  plot_dt <- data.table::melt(
+    segment_diagnostics[, .(by_var, segment, observed_rate, mean_prediction)],
+    id.vars = c("by_var", "segment"),
+    variable.name = "metric",
+    value.name = "value"
+  )
+
+  AutoPlots::Bar(
+    dt = plot_dt,
+    PreAgg = TRUE,
+    XVar = "segment",
+    YVar = "value",
+    GroupVar = "metric",
+    FacetLevels = unique(plot_dt$by_var),
+    Theme = "dark",
+    title.text = "Segment Diagnostics",
+    xAxis.title = "Segment",
+    yAxis.title = "Rate / Mean Prediction"
+  )
+}
+
+binary_model_insights_build_time_diagnostics <- function(scored, DateVar = NULL, date_aggregation = "month", threshold = 0.5) {
+  if (is.null(DateVar) || !nzchar(DateVar) || !DateVar %in% names(scored)) {
+    return(data.table::data.table())
+  }
+
+  dt <- data.table::copy(scored)
+  dt[, time_period := binary_model_insights_date_bucket(get(DateVar), date_aggregation)]
+  dt <- dt[!is.na(time_period)]
+  if (!nrow(dt)) {
+    return(data.table::data.table())
+  }
+  dt[, predicted_binary := as.integer(prediction >= threshold)]
+  out <- dt[, .(
+    n = .N,
+    positive_count = sum(actual_binary == 1L, na.rm = TRUE),
+    predicted_positive_count = sum(predicted_binary == 1L, na.rm = TRUE),
+    observed_rate = mean(actual_binary, na.rm = TRUE),
+    mean_prediction = mean(prediction, na.rm = TRUE),
+    precision = binary_model_insights_safe_div(sum(predicted_binary == 1L & actual_binary == 1L), sum(predicted_binary == 1L)),
+    recall = binary_model_insights_safe_div(sum(predicted_binary == 1L & actual_binary == 1L), sum(actual_binary == 1L))
+  ), by = time_period][order(time_period)]
+  binary_model_insights_round_table(out)
+}
+
+binary_model_insights_build_time_plot <- function(time_diagnostics) {
+  if (!nrow(time_diagnostics)) {
+    return(NULL)
+  }
+
+  plot_dt <- data.table::melt(
+    time_diagnostics[, .(time_period, observed_rate, mean_prediction)],
+    id.vars = "time_period",
+    variable.name = "metric",
+    value.name = "value"
+  )
+
+  AutoPlots::Line(
+    dt = plot_dt,
+    PreAgg = TRUE,
+    XVar = "time_period",
+    YVar = "value",
+    GroupVar = "metric",
+    Theme = "dark",
+    title.text = "Time Diagnostics",
+    xAxis.title = "Time Period",
+    yAxis.title = "Rate / Mean Prediction"
+  )
+}
+
 binary_model_insights_feature_summary <- function(scored, feature_cols, max_features = 25L) {
   numeric_features <- feature_cols[vapply(feature_cols, function(col) is.numeric(scored[[col]]) || is.integer(scored[[col]]), logical(1L))]
   if (!length(numeric_features)) {
@@ -585,6 +765,18 @@ binary_model_insights_validate_artifacts <- function(artifacts) {
 #' @param TrainDataInclude Logical. Include train data when available.
 #' @param FeatureColumnNames Optional feature columns.
 #' @param SampleSize Maximum rows sampled from train/test data.
+#' @param data Optional scored/model-output data. When supplied, this is the
+#'   preferred artifact-generator-first path and should contain target and
+#'   prediction columns.
+#' @param target_col,prediction_col,predicted_class_col Modern aliases for the
+#'   target, probability, and optional predicted class columns.
+#' @param positive_class Modern alias for `PositiveClass`.
+#' @param feature_cols Modern alias for `FeatureColumnNames`.
+#' @param model_name,data_name Optional labels stored in report metadata.
+#' @param DateVar Optional date column used for time diagnostics.
+#' @param date_aggregation One of day, week, month, or quarter.
+#' @param ByVars Optional segment columns used for segment diagnostics.
+#' @param max_segment_levels Maximum segment levels retained per ByVar.
 #' @param ModelObject Optional AutoQuant model object.
 #' @param ModelID Optional model identifier.
 #' @param SourcePath Optional source directory for model outputs.
@@ -607,6 +799,18 @@ binary_model_insights_validate_artifacts <- function(artifacts) {
 #' @family Reports
 #' @export
 generate_binary_classification_model_insights_artifacts <- function(
+  data = NULL,
+  target_col = NULL,
+  prediction_col = NULL,
+  predicted_class_col = NULL,
+  positive_class = NULL,
+  feature_cols = NULL,
+  model_name = NULL,
+  data_name = NULL,
+  DateVar = NULL,
+  date_aggregation = "month",
+  ByVars = character(),
+  max_segment_levels = 25L,
   TrainDataInclude = FALSE,
   FeatureColumnNames = NULL,
   SampleSize = 100000L,
@@ -647,6 +851,33 @@ generate_binary_classification_model_insights_artifacts <- function(
   if (!is.numeric(SampleSize) || length(SampleSize) != 1L || !is.finite(SampleSize) || SampleSize <= 0) {
     stop("SampleSize must be a positive numeric value.", call. = FALSE)
   }
+  if (!is.numeric(max_segment_levels) || length(max_segment_levels) != 1L || !is.finite(max_segment_levels) || max_segment_levels <= 0) {
+    stop("max_segment_levels must be a positive numeric value.", call. = FALSE)
+  }
+
+  if (!is.null(data)) {
+    extra <- list(...)
+    if (is.null(extra$TestData)) {
+      extra$TestData <- data
+    }
+    if (is.null(TargetColumnName)) {
+      TargetColumnName <- target_col
+    }
+    if (is.null(PredictionColumnName)) {
+      PredictionColumnName <- prediction_col
+    }
+    if (is.null(PositiveClass)) {
+      PositiveClass <- positive_class
+    }
+    if (is.null(FeatureColumnNames)) {
+      FeatureColumnNames <- feature_cols
+    }
+    if (is.null(ModelID)) {
+      ModelID <- model_name
+    }
+  } else {
+    extra <- list(...)
+  }
 
   optimize_column <- binary_model_insights_resolve_optimize_metric(OptimizeMetric)
   inputs <- binary_model_insights_extract_inputs(
@@ -661,12 +892,18 @@ generate_binary_classification_model_insights_artifacts <- function(
     TargetColumnName = TargetColumnName,
     PositiveClass = PositiveClass,
     Theme = Theme,
-    ...
+    TrainData = extra$TrainData,
+    TestData = extra$TestData
   )
 
   scored <- data.table::copy(inputs$TestData)
   scored[, prediction := as.numeric(get(inputs$PredictionColumnName))]
   scored[, actual_binary := as.integer(as.character(get(inputs$TargetColumnName)) == as.character(inputs$PositiveClass))]
+  if (!is.null(predicted_class_col) && predicted_class_col %in% names(scored)) {
+    scored[, predicted_class := as.character(get(predicted_class_col))]
+  } else {
+    scored[, predicted_class := ifelse(prediction >= Threshold, as.character(inputs$PositiveClass), as.character(inputs$NegativeClass))]
+  }
   scored <- scored[is.finite(prediction) & !is.na(actual_binary)]
 
   thresholds <- sort(unique(c(seq(0, 1, by = 0.01), Threshold)))
@@ -747,16 +984,37 @@ generate_binary_classification_model_insights_artifacts <- function(
   calibration_table <- binary_model_insights_build_calibration_table(scored)
   gains_table <- binary_model_insights_build_gains_table(scored)
   feature_summary <- binary_model_insights_feature_summary(scored, inputs$FeatureColumnNames)
+  prediction_distribution <- binary_model_insights_build_prediction_distribution(scored)
+  segment_diagnostics <- binary_model_insights_build_segment_diagnostics(
+    scored,
+    ByVars = ByVars,
+    threshold = best_row$threshold,
+    max_levels = as.integer(max_segment_levels)
+  )
+  time_diagnostics <- binary_model_insights_build_time_diagnostics(
+    scored,
+    DateVar = DateVar,
+    date_aggregation = date_aggregation,
+    threshold = best_row$threshold
+  )
 
   tables <- list(
     model_overview = data.table::data.table(
-      model_id = if (is.null(inputs$ModelID)) NA_character_ else inputs$ModelID,
+      model_name = binary_model_insights_null_coalesce(
+        binary_model_insights_null_coalesce(inputs$ModelID, model_name),
+        NA_character_
+      ),
+      data_name = binary_model_insights_null_coalesce(data_name, NA_character_),
       target_column = inputs$TargetColumnName,
       prediction_column = inputs$PredictionColumnName,
+      predicted_class_column = binary_model_insights_null_coalesce(predicted_class_col, NA_character_),
       positive_class = as.character(inputs$PositiveClass),
       negative_class = as.character(inputs$NegativeClass),
       rows = nrow(scored),
-      features = length(inputs$FeatureColumnNames)
+      features = length(inputs$FeatureColumnNames),
+      date_var = binary_model_insights_null_coalesce(DateVar, NA_character_),
+      date_aggregation = binary_model_insights_null_coalesce(date_aggregation, NA_character_),
+      by_vars = paste(ByVars, collapse = ", ")
     ),
     classification_metrics = classification_metrics,
     threshold_metrics = threshold_metrics,
@@ -764,7 +1022,10 @@ generate_binary_classification_model_insights_artifacts <- function(
     optimized_confusion_matrix = confusion,
     calibration = calibration_table,
     gains = gains_table,
-    feature_importance_proxy = feature_summary
+    prediction_distribution = prediction_distribution,
+    feature_importance_proxy = feature_summary,
+    segment_diagnostics = segment_diagnostics,
+    time_diagnostics = time_diagnostics
   )
 
   plots <- list(
@@ -778,7 +1039,10 @@ generate_binary_classification_model_insights_artifacts <- function(
     precision_recall_curve = binary_model_insights_build_pr_plot(threshold_metrics),
     calibration_plot = binary_model_insights_build_calibration_plot(calibration_table),
     gains_plot = binary_model_insights_build_gains_plot(gains_table),
-    lift_plot = binary_model_insights_build_lift_plot(gains_table)
+    lift_plot = binary_model_insights_build_lift_plot(gains_table),
+    prediction_distribution = binary_model_insights_build_prediction_distribution_plot(prediction_distribution),
+    segment_diagnostics = binary_model_insights_build_segment_plot(segment_diagnostics),
+    time_diagnostics = binary_model_insights_build_time_plot(time_diagnostics)
   )
   plots <- Filter(Negate(is.null), plots)
   feature_plots <- binary_model_insights_build_feature_plots(
@@ -790,11 +1054,22 @@ generate_binary_classification_model_insights_artifacts <- function(
 
   artifacts <- list()
   common_metadata <- list(
-    model_id = inputs$ModelID,
+    source_package = "AutoQuant",
+    source_function = "generate_binary_classification_model_insights_artifacts",
+    problem_type = "binary_classification",
+    model_name = binary_model_insights_null_coalesce(
+      binary_model_insights_null_coalesce(inputs$ModelID, model_name),
+      NA_character_
+    ),
+    data_name = binary_model_insights_null_coalesce(data_name, NA_character_),
     source_path = inputs$SourcePath,
     target_column = inputs$TargetColumnName,
     prediction_column = inputs$PredictionColumnName,
+    predicted_class_column = predicted_class_col,
     positive_class = as.character(inputs$PositiveClass),
+    DateVar = DateVar,
+    date_aggregation = date_aggregation,
+    ByVars = ByVars,
     optimized_threshold = best_row$threshold,
     default_threshold = Threshold
   )
@@ -813,11 +1088,17 @@ generate_binary_classification_model_insights_artifacts <- function(
     list("gains_table", "Gains Table", "table", "Lift / Gains", tables$gains),
     list("gains_plot", "Gains Plot", "plot", "Lift / Gains", plots$gains_plot),
     list("lift_plot", "Lift Plot", "plot", "Lift / Gains", plots$lift_plot),
-    list("feature_importance_proxy", "Feature Importance Proxy", "table", "Global Importance", tables$feature_importance_proxy)
+    list("prediction_distribution_table", "Prediction Distribution Table", "table", "Prediction Distribution", tables$prediction_distribution),
+    list("prediction_distribution", "Prediction Distribution", "plot", "Prediction Distribution", plots$prediction_distribution),
+    list("feature_importance_proxy", "Feature Importance Proxy", "table", "Feature Effects", tables$feature_importance_proxy),
+    list("segment_diagnostics_table", "Segment Diagnostics Table", "table", "Segment Diagnostics", tables$segment_diagnostics),
+    list("segment_diagnostics", "Segment Diagnostics", "plot", "Segment Diagnostics", plots$segment_diagnostics),
+    list("time_diagnostics_table", "Time Diagnostics Table", "table", "Time Diagnostics", tables$time_diagnostics),
+    list("time_diagnostics", "Time Diagnostics", "plot", "Time Diagnostics", plots$time_diagnostics)
   )
 
   for (spec in artifact_specs) {
-    if (!is.null(spec[[5L]])) {
+    if (!is.null(spec[[5L]]) && (!data.table::is.data.table(spec[[5L]]) || nrow(spec[[5L]]))) {
       artifacts <- binary_model_insights_add_artifact(
         artifacts,
         binary_model_insights_artifact(spec[[1L]], spec[[2L]], spec[[3L]], spec[[4L]], spec[[5L]], common_metadata)
@@ -846,6 +1127,24 @@ generate_binary_classification_model_insights_artifacts <- function(
   metadata <- c(
     inputs$metadata,
     list(
+      source_package = "AutoQuant",
+      source_function = "generate_binary_classification_model_insights_artifacts",
+      problem_type = "binary_classification",
+      model_name = binary_model_insights_null_coalesce(
+        binary_model_insights_null_coalesce(inputs$ModelID, model_name),
+        NA_character_
+      ),
+      data_name = binary_model_insights_null_coalesce(data_name, NA_character_),
+      target_col = inputs$TargetColumnName,
+      prediction_col = inputs$PredictionColumnName,
+      predicted_class_col = predicted_class_col,
+      positive_class = as.character(inputs$PositiveClass),
+      DateVar = DateVar,
+      date_aggregation = date_aggregation,
+      ByVars = ByVars,
+      feature_cols = inputs$FeatureColumnNames,
+      selected_features = inputs$FeatureColumnNames,
+      generated_at = format(Sys.time(), "%Y-%m-%d %H:%M:%S"),
       threshold = Threshold,
       optimize_metric = OptimizeMetric,
       optimized_threshold = best_row$threshold,
@@ -855,6 +1154,7 @@ generate_binary_classification_model_insights_artifacts <- function(
       plot_count = sum(artifact_index$type == "plot"),
       table_count = sum(artifact_index$type == "table"),
       text_count = sum(artifact_index$type == "text"),
+      warnings_count = 0L,
       artifact_index = artifact_index
     )
   )
@@ -873,8 +1173,10 @@ generate_binary_classification_model_insights_artifacts <- function(
         "ROC / PR Analysis",
         "Calibration",
         "Lift / Gains",
-        "Global Importance",
+        "Prediction Distribution",
         "Feature Effects",
+        "Segment Diagnostics",
+        "Time Diagnostics",
         "Appendix"
       )
     ),
@@ -907,6 +1209,7 @@ qa_generate_binary_classification_model_insights_artifacts <- function() {
   set.seed(42)
   n <- 250L
   data <- data.table::data.table(
+    event_date = as.Date("2026-01-01") + sample(0:120, n, replace = TRUE),
     x1 = stats::rnorm(n),
     x2 = stats::runif(n),
     segment = sample(c("A", "B", "C"), n, replace = TRUE)
@@ -918,11 +1221,15 @@ qa_generate_binary_classification_model_insights_artifacts <- function() {
 
   result <- tryCatch(
     generate_binary_classification_model_insights_artifacts(
-      TestData = data,
-      TargetColumnName = "target",
-      PredictionColumnName = "p1",
-      PositiveClass = 1L,
-      FeatureColumnNames = c("x1", "x2", "segment"),
+      data = data,
+      target_col = "target",
+      prediction_col = "p1",
+      positive_class = 1L,
+      feature_cols = c("x1", "x2", "segment"),
+      DateVar = "event_date",
+      ByVars = "segment",
+      model_name = "qa_binary_model",
+      data_name = "qa_scored_data",
       OptimizeMetric = "Utility",
       Theme = "dark"
     ),
@@ -952,7 +1259,10 @@ qa_generate_binary_classification_model_insights_artifacts <- function() {
     "threshold_metrics",
     "threshold_optimizer",
     "selected_threshold_summary",
-    "optimized_confusion_matrix"
+    "optimized_confusion_matrix",
+    "prediction_distribution",
+    "segment_diagnostics",
+    "time_diagnostics"
   )
 
   data.table::data.table(
@@ -993,107 +1303,4 @@ qa_generate_binary_classification_model_insights_artifacts <- function() {
       "Artifact sections are non-empty."
     )
   )
-}
-
-#' Render Binary Classification Model Insights Report
-#'
-#' Takes a precomputed binary classification model-insights artifact object and
-#' renders the artifact-based standalone HTML report.
-#'
-#' @param artifacts Artifact object returned by
-#'   `generate_binary_classification_model_insights_artifacts()`.
-#' @param OutputPath Directory where the rendered HTML report should be written.
-#' @param OutputFile Output HTML filename.
-#' @param RmdFile RMarkdown filename located in `inst/r-markdowns`.
-#' @param Package Package name used to locate installed RMarkdown files.
-#' @param TemplatePath Optional explicit path to the RMarkdown file. If supplied,
-#'   this takes precedence over the package/system.file lookup.
-#' @param Quiet Passed to `rmarkdown::render()`.
-#' @param Clean Passed to `rmarkdown::render()`.
-#' @param Envir Optional render environment. If NULL, a clean child environment
-#'   of `.GlobalEnv` is created.
-#' @param SelfContained Passed to `rmarkdown::render()` through output_options.
-#'
-#' @return Invisibly returns the rendered report path.
-#'
-#' @family Reports
-#' @export
-BinaryClassificationModelInsightsReport <- function(
-  artifacts,
-  OutputPath = getwd(),
-  OutputFile = "Binary_Classification_ModelInsights_Report.html",
-  RmdFile = "Binary_Classification_ModelInsights_Artifact_Renderer.Rmd",
-  Package = "AutoQuant",
-  TemplatePath = NULL,
-  Quiet = FALSE,
-  Clean = TRUE,
-  Envir = NULL,
-  SelfContained = TRUE
-) {
-  if (missing(artifacts) || is.null(artifacts)) {
-    stop("`artifacts` must be supplied.", call. = FALSE)
-  }
-  if (!is.list(artifacts) || is.null(artifacts$artifacts) || is.null(artifacts$metadata)) {
-    stop("`artifacts` must be an object returned by generate_binary_classification_model_insights_artifacts().", call. = FALSE)
-  }
-  if (!requireNamespace("rmarkdown", quietly = TRUE)) {
-    stop("Package 'rmarkdown' is required.", call. = FALSE)
-  }
-  if (!requireNamespace("data.table", quietly = TRUE)) {
-    stop("Package 'data.table' is required.", call. = FALSE)
-  }
-  if (!requireNamespace("htmltools", quietly = TRUE)) {
-    stop("Package 'htmltools' is required.", call. = FALSE)
-  }
-  if (!requireNamespace("reactable", quietly = TRUE)) {
-    stop("Package 'reactable' is required.", call. = FALSE)
-  }
-
-  OutputPath <- normalizePath(OutputPath, winslash = "/", mustWork = FALSE)
-  dir.create(OutputPath, recursive = TRUE, showWarnings = FALSE)
-
-  if (!is.null(TemplatePath) && nzchar(TemplatePath)) {
-    TemplatePath <- normalizePath(TemplatePath, winslash = "/", mustWork = FALSE)
-  } else {
-    TemplatePath <- system.file("r-markdowns", RmdFile, package = Package)
-    if (!nzchar(TemplatePath) || !file.exists(TemplatePath)) {
-      TemplatePath <- normalizePath(file.path(getwd(), "inst", "r-markdowns", RmdFile), winslash = "/", mustWork = FALSE)
-    }
-    if (!file.exists(TemplatePath)) {
-      TemplatePath <- normalizePath(file.path(getwd(), RmdFile), winslash = "/", mustWork = FALSE)
-    }
-  }
-
-  if (!file.exists(TemplatePath)) {
-    stop(
-      paste0(
-        "RMarkdown template not found. Expected one of:\n",
-        "1. ", file.path("inst", "r-markdowns", RmdFile), "\n",
-        "2. system.file('r-markdowns', '", RmdFile, "', package = '", Package, "')\n",
-        "3. Explicit `TemplatePath`."
-      ),
-      call. = FALSE
-    )
-  }
-
-  if (is.null(Envir)) {
-    Envir <- new.env(parent = .GlobalEnv)
-  }
-
-  assign("artifacts", artifacts, envir = Envir)
-  assign("BinaryClassificationModelInsightsArtifacts", artifacts, envir = Envir)
-
-  RenderedFile <- rmarkdown::render(
-    input = TemplatePath,
-    output_file = OutputFile,
-    output_dir = OutputPath,
-    params = list(artifacts = artifacts),
-    envir = Envir,
-    quiet = Quiet,
-    clean = Clean,
-    output_options = list(self_contained = isTRUE(SelfContained))
-  )
-
-  RenderedFile <- normalizePath(RenderedFile, winslash = "/", mustWork = FALSE)
-  invisible(RenderedFile)
 }

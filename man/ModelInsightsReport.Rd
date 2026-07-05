@@ -41,6 +41,7 @@ ModelInsightsReport is an Rmarkdown report for viewing the model insights genera
 \seealso{
 Other Reports: 
 \code{\link{BinaryClassificationModelInsightsReport}()},
+\code{\link{BinaryClassificationShapAnalysisReport}()},
 \code{\link{EDAReport}()},
 \code{\link{RegressionModelInsightsReport}()},
 \code{\link{RegressionShapAnalysisReport}()},

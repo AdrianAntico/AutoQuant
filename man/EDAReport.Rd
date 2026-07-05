@@ -62,6 +62,7 @@ EDAReport(
 \seealso{
 Other Reports: 
 \code{\link{BinaryClassificationModelInsightsReport}()},
+\code{\link{BinaryClassificationShapAnalysisReport}()},
 \code{\link{ModelInsightsReport}()},
 \code{\link{RegressionModelInsightsReport}()},
 \code{\link{RegressionShapAnalysisReport}()},

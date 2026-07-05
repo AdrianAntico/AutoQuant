@@ -89,7 +89,9 @@ calls \code{generate_regression_shap_analysis_artifacts()}.
 \details{
 Input data must contain precomputed \code{Shap_} columns. This report function
 does not compute SHAP values, call \code{predict()}, require a model object, or
-use a SHAP backend package. Binary and multiclass SHAP reports are deferred.
+use a SHAP backend package. Binary SHAP has a dedicated
+\code{\link{BinaryClassificationShapAnalysisReport}()} renderer; multiclass
+SHAP remains deferred.
 Plot artifacts are AutoPlots-backed and the native report follows the same
 artifact renderer visual pattern used by existing AutoQuant reports.
 Interaction diagnostics in this report are candidate binned/leveled SHAP

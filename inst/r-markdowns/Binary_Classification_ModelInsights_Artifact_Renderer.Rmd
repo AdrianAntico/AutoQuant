@@ -91,7 +91,7 @@ htmltools::tagList(
   ),
   htmltools::div(
     class = "bc-grid",
-    bc_card("Model ID", bc_val(metadata$model_id), "Model identifier", "info"),
+    bc_card("Model", bc_val(metadata$model_name, bc_val(metadata$model_id)), "Model identifier", "info"),
     bc_card("Target", bc_val(metadata$target_column), "Binary outcome", "info"),
     bc_card("Prediction", bc_val(metadata$prediction_column), "Probability column", "info"),
     bc_card("Positive Class", bc_val(metadata$positive_class), "Optimized class", "info"),
@@ -155,19 +155,44 @@ htmltools::tagList(
 )
 ```
 
-# Global Importance
+# Prediction Distribution
+
+```{r prediction_distribution, results='asis'}
+htmltools::tagList(
+  bc_panel("Prediction Distribution", bc_plot(bc_artifact("prediction_distribution"))),
+  bc_details("Prediction Distribution Table", bc_table(tables$prediction_distribution, defaultPageSize = 20L), open = FALSE)
+)
+```
+
+# Feature Effects
 
 ```{r global_importance, results='asis'}
 bc_panel("Feature Importance Proxy", bc_table(tables$feature_importance_proxy, defaultPageSize = 25L))
 ```
-
-# Feature Effects
 
 ```{r feature_effects, results='asis'}
 feature_effect_artifacts <- artifact_list[vapply(artifact_list, function(x) identical(x$section, "Feature Effects"), logical(1L))]
 htmltools::tagList(lapply(feature_effect_artifacts, function(artifact) {
   bc_panel(artifact$label, bc_plot(artifact$object))
 }))
+```
+
+# Segment Diagnostics
+
+```{r segment_diagnostics, results='asis'}
+htmltools::tagList(
+  bc_panel("Segment Diagnostics", bc_plot(bc_artifact("segment_diagnostics"), "No segment diagnostics were generated. Supply ByVars to enable this section.")),
+  bc_details("Segment Diagnostics Table", bc_table(tables$segment_diagnostics, defaultPageSize = 25L, empty = "No segment diagnostics were generated."), open = FALSE)
+)
+```
+
+# Time Diagnostics
+
+```{r time_diagnostics, results='asis'}
+htmltools::tagList(
+  bc_panel("Time Diagnostics", bc_plot(bc_artifact("time_diagnostics"), "No time diagnostics were generated. Supply DateVar to enable this section.")),
+  bc_details("Time Diagnostics Table", bc_table(tables$time_diagnostics, defaultPageSize = 25L, empty = "No time diagnostics were generated."), open = FALSE)
+)
 ```
 
 # Appendix

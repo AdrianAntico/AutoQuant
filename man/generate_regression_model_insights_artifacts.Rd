@@ -148,6 +148,7 @@ stability/drift, and deployment-readiness flags.
 \seealso{
 Other Reports: 
 \code{\link{BinaryClassificationModelInsightsReport}()},
+\code{\link{BinaryClassificationShapAnalysisReport}()},
 \code{\link{EDAReport}()},
 \code{\link{ModelInsightsReport}()},
 \code{\link{RegressionModelInsightsReport}()},

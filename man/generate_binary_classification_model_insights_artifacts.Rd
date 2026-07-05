@@ -6,6 +6,18 @@
 \title{Generate Binary Classification Model Insights Artifacts}
 \usage{
 generate_binary_classification_model_insights_artifacts(
+  data = NULL,
+  target_col = NULL,
+  prediction_col = NULL,
+  predicted_class_col = NULL,
+  positive_class = NULL,
+  feature_cols = NULL,
+  model_name = NULL,
+  data_name = NULL,
+  DateVar = NULL,
+  date_aggregation = "month",
+  ByVars = character(),
+  max_segment_levels = 25L,
   TrainDataInclude = FALSE,
   FeatureColumnNames = NULL,
   SampleSize = 100000L,
@@ -28,6 +40,27 @@ generate_binary_classification_model_insights_artifacts(
 )
 }
 \arguments{
+\item{data}{Optional scored/model-output data. When supplied, this is the
+preferred artifact-generator-first path and should contain target and
+prediction columns.}
+
+\item{target_col, prediction_col, predicted_class_col}{Modern aliases for the
+target, probability, and optional predicted class columns.}
+
+\item{positive_class}{Modern alias for `PositiveClass`.}
+
+\item{feature_cols}{Modern alias for `FeatureColumnNames`.}
+
+\item{model_name, data_name}{Optional labels stored in report metadata.}
+
+\item{DateVar}{Optional date column used for time diagnostics.}
+
+\item{date_aggregation}{One of day, week, month, or quarter.}
+
+\item{ByVars}{Optional segment columns used for segment diagnostics.}
+
+\item{max_segment_levels}{Maximum segment levels retained per ByVar.}
+
 \item{TrainDataInclude}{Logical. Include train data when available.}
 
 \item{FeatureColumnNames}{Optional feature columns.}
@@ -78,6 +111,7 @@ scope for this generator.
 \seealso{
 Other Reports: 
 \code{\link{BinaryClassificationModelInsightsReport}()},
+\code{\link{BinaryClassificationShapAnalysisReport}()},
 \code{\link{EDAReport}()},
 \code{\link{ModelInsightsReport}()},
 \code{\link{RegressionModelInsightsReport}()},

@@ -51,6 +51,7 @@ the artifact-based RMarkdown report.
 \seealso{
 Other Reports: 
 \code{\link{BinaryClassificationModelInsightsReport}()},
+\code{\link{BinaryClassificationShapAnalysisReport}()},
 \code{\link{EDAReport}()},
 \code{\link{ModelInsightsReport}()},
 \code{\link{RegressionShapAnalysisReport}()},

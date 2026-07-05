@@ -16,6 +16,7 @@ QA for Binary Classification Model Insights Artifacts
 \seealso{
 Other Reports: 
 \code{\link{BinaryClassificationModelInsightsReport}()},
+\code{\link{BinaryClassificationShapAnalysisReport}()},
 \code{\link{EDAReport}()},
 \code{\link{ModelInsightsReport}()},
 \code{\link{RegressionModelInsightsReport}()},

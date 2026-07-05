@@ -60,6 +60,7 @@ TargetAnalysisReport(
 \seealso{
 Other Reports: 
 \code{\link{BinaryClassificationModelInsightsReport}()},
+\code{\link{BinaryClassificationShapAnalysisReport}()},
 \code{\link{EDAReport}()},
 \code{\link{ModelInsightsReport}()},
 \code{\link{RegressionModelInsightsReport}()},

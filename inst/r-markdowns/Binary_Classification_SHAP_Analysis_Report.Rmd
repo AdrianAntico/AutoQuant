@@ -1,0 +1,407 @@
+---
+title: "Binary Classification SHAP Analysis"
+author: "Provided by AutoQuant"
+date: "`r format(Sys.time(), '%Y-%m-%d')`"
+output:
+  prettydoc::html_pretty:
+    theme: cayman
+    toc: yes
+    toc_depth: 3
+    fig_caption: yes
+    number_sections: no
+classoption: landscape
+params:
+  title: "Binary Classification SHAP Analysis Report"
+  subtitle: NULL
+  generated_at: NULL
+  artifact_result: NULL
+  artifact_sections: NULL
+  metadata: NULL
+  warnings: NULL
+  diagnostics: NULL
+  top_n: 20
+  include_interactions: false
+  report_args: NULL
+  Theme: "dark"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, fig.align = "center")
+
+required_pkgs <- c("data.table", "htmltools", "reactable", "echarts4r", "AutoPlots")
+missing_pkgs <- required_pkgs[!vapply(required_pkgs, requireNamespace, logical(1L), quietly = TRUE)]
+if (length(missing_pkgs)) stop(paste("Missing packages:", paste(missing_pkgs, collapse = ", ")), call. = FALSE)
+
+artifact_result <- params$artifact_result
+if (is.null(artifact_result) && exists("BinaryClassificationShapArtifacts", envir = .GlobalEnv)) artifact_result <- get("BinaryClassificationShapArtifacts", envir = .GlobalEnv)
+if (is.null(artifact_result) && exists("artifact_result", envir = .GlobalEnv)) artifact_result <- get("artifact_result", envir = .GlobalEnv)
+if (is.null(artifact_result) || is.null(artifact_result$artifacts)) stop("No Binary Classification SHAP artifact_result found.", call. = FALSE)
+
+artifacts <- artifact_result$artifacts
+metadata <- params$metadata
+if (is.null(metadata)) metadata <- artifact_result$metadata
+warnings <- params$warnings
+if (is.null(warnings)) warnings <- artifact_result$warnings
+
+rt_theme_neon <- reactable::reactableTheme(
+  color = "#E7ECFF",
+  backgroundColor = "rgba(16, 24, 61, 0.55)",
+  borderColor = "rgba(140, 170, 255, 0.22)",
+  stripedColor = "rgba(255, 255, 255, 0.035)",
+  highlightColor = "rgba(72, 145, 255, 0.12)",
+  cellPadding = "10px 12px",
+  style = list(
+    fontFamily = "-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif",
+    fontSize = "14px",
+    borderRadius = "14px",
+    boxShadow = "0 10px 26px rgba(0,0,0,0.30), 0 0 18px rgba(72,145,255,0.18)",
+    backdropFilter = "blur(10px)"
+  ),
+  headerStyle = list(
+    backgroundColor = "rgba(5, 7, 26, 0.75)",
+    color = "#E7ECFF",
+    fontWeight = 800,
+    borderBottom = "1px solid rgba(140,170,255,0.25)"
+  ),
+  rowStyle = list(borderBottom = "1px solid rgba(231,236,255,0.10)"),
+  searchInputStyle = list(width = "100%", color = "#E7ECFF", backgroundColor = "rgba(0,0,0,0.20)", border = "1px solid rgba(140,170,255,0.30)", borderRadius = "12px", padding = "10px 12px", outline = "none"),
+  filterInputStyle = list(color = "#E7ECFF", backgroundColor = "rgba(0,0,0,0.20)", border = "1px solid rgba(140,170,255,0.28)", borderRadius = "10px", padding = "7px 10px", outline = "none"),
+  selectStyle = list(color = "#E7ECFF", backgroundColor = "rgba(0,0,0,0.20)", border = "1px solid rgba(140,170,255,0.28)", borderRadius = "10px"),
+  paginationStyle = list(color = "rgba(231,236,255,0.80)"),
+  pageButtonStyle = list(background = "rgba(72,145,255,0.12)", color = "#E7ECFF", border = "1px solid rgba(140,170,255,0.35)", borderRadius = "10px", padding = "6px 10px"),
+  pageButtonHoverStyle = list(background = "rgba(72,145,255,0.20)", border = "1px solid rgba(140,170,255,0.60)", boxShadow = "0 0 14px rgba(72,145,255,0.28)"),
+  pageButtonActiveStyle = list(background = "rgba(72,145,255,0.26)", border = "1px solid rgba(140,170,255,0.70)", boxShadow = "0 0 18px rgba(72,145,255,0.40)")
+)
+
+mi_empty <- function(label = "No artifact available.") htmltools::div(class = "mi-empty", label)
+mi_val <- function(x, missing = "-") if (is.null(x) || !length(x) || is.na(x[1L]) || !nzchar(as.character(x[1L]))) missing else as.character(x[1L])
+mi_num <- function(x, digits = 3L) if (is.null(x) || !length(x) || is.na(x[1L])) "-" else if (is.numeric(x)) formatC(x[1L], format = "f", big.mark = ",", digits = digits) else as.character(x[1L])
+mi_datetime <- function(x, missing = "-") {
+  if (is.null(x) || !length(x) || is.na(x[1L])) return(missing)
+  value <- x[[1L]]
+  if (!inherits(value, c("POSIXct", "POSIXlt"))) {
+    value <- suppressWarnings(as.POSIXct(value))
+  }
+  if (is.na(value)) return(mi_val(x, missing))
+  format(value, "%Y-%m-%d %H:%M:%S")
+}
+coalesce <- function(x, y) if (is.null(x) || length(x) == 0L) y else x
+
+artifact_type <- function(artifact) coalesce(coalesce(artifact$artifact_type, artifact$type), "text")
+artifact_label <- function(artifact) coalesce(coalesce(artifact$label, artifact$title), coalesce(artifact$name, "Artifact"))
+artifact_section <- function(artifact) coalesce(artifact$section, "Appendix")
+section_artifacts <- function(section) Filter(function(artifact) identical(artifact_section(artifact), section), artifacts)
+artifact_by_name <- function(name) {
+  if (name %in% names(artifacts)) artifacts[[name]] else NULL
+}
+
+mi_table <- function(data, defaultPageSize = 10L, empty = "No rows available.") {
+  if (is.null(data)) return(mi_empty(empty))
+  data <- data.table::as.data.table(data)
+  if (!nrow(data)) return(mi_empty(empty))
+  reactable::reactable(
+    data = data,
+    width = "100%",
+    fullWidth = TRUE,
+    compact = TRUE,
+    defaultPageSize = defaultPageSize,
+    pageSizeOptions = c(10, 15, 25, 50, 100),
+    wrap = FALSE,
+    filterable = TRUE,
+    highlight = TRUE,
+    pagination = TRUE,
+    resizable = TRUE,
+    searchable = TRUE,
+    selection = "multiple",
+    showPagination = TRUE,
+    showPageSizeOptions = TRUE,
+    showSortable = TRUE,
+    showSortIcon = TRUE,
+    sortable = TRUE,
+    striped = TRUE,
+    theme = rt_theme_neon
+  )
+}
+
+mi_renderable <- function(x) inherits(x, "htmlwidget") || inherits(x, "reactable") || is.function(x)
+mi_flatten_plots <- function(x) {
+  if (is.null(x)) return(list())
+  if (mi_renderable(x)) return(list(x))
+  if (!is.list(x)) return(list())
+  unlist(lapply(x, mi_flatten_plots), recursive = FALSE)
+}
+mi_grid <- function(x, titles = NULL, subtitles = NULL, cols = 2L, empty = "No plots available.") {
+  p <- mi_flatten_plots(x)
+  if (!length(p)) return(mi_empty(empty))
+  if (length(p) == 1L && is.null(titles) && is.null(subtitles)) return(p[[1L]])
+  AutoPlots::display_plots_grid(
+    plots = p,
+    cols = cols,
+    titles = titles,
+    subtitles = subtitles,
+    gap = "16px",
+    padding = "0px",
+    card = TRUE
+  )
+}
+mi_card <- function(title, value, subtitle = NULL, type = "neutral") htmltools::div(class = "mi-card", htmltools::div(class = "mi-card-title", title), htmltools::div(class = paste("mi-card-value", paste0("mi-card-value-", type)), value), if (!is.null(subtitle)) htmltools::div(class = "mi-card-subtitle", subtitle))
+mi_note <- function(...) htmltools::div(class = "mi-note", ...)
+mi_panel <- function(title, ...) htmltools::div(class = "mi-panel", htmltools::div(class = "mi-panel-title", title), ...)
+mi_details <- function(summary, ..., open = FALSE) htmltools::tags$details(class = "mi-details", if (isTRUE(open)) htmltools::HTML(" open") else NULL, htmltools::tags$summary(summary), htmltools::div(class = "mi-details-body", ...))
+
+shap_text <- function(artifact) {
+  if (is.null(artifact)) return(mi_empty())
+  value <- coalesce(artifact$content, artifact$object)
+  if (is.null(value)) return(mi_empty("No text available."))
+  htmltools::div(class = "mi-note", htmltools::HTML(gsub("\n", "<br/>", htmltools::htmlEscape(paste(as.character(value), collapse = "\n")))))
+}
+
+shap_table <- function(name, defaultPageSize = 15L, empty = "No table artifact available.") {
+  artifact <- artifact_by_name(name)
+  if (is.null(artifact)) return(mi_empty(empty))
+  mi_table(coalesce(coalesce(artifact$object, artifact$data), artifact$table), defaultPageSize = defaultPageSize, empty = empty)
+}
+
+shap_plot_artifacts <- function(section) {
+  Filter(function(artifact) identical(artifact_type(artifact), "plot"), section_artifacts(section))
+}
+
+shap_plot_grid <- function(section, cols = 2L) {
+  plot_items <- shap_plot_artifacts(section)
+  if (!length(plot_items)) return(mi_empty("No AutoPlots visualizations available for this section."))
+  plots <- lapply(plot_items, function(artifact) coalesce(coalesce(artifact$object, artifact$plot), artifact$data))
+  keep <- !vapply(plots, is.null, logical(1L))
+  plots <- plots[keep]
+  plot_items <- plot_items[keep]
+  if (!length(plots)) return(mi_empty("No plot objects available."))
+  titles <- vapply(plot_items, artifact_label, character(1L))
+  subtitles <- vapply(plot_items, function(artifact) {
+    meta <- coalesce(artifact$metadata, list())
+    paste(c(coalesce(meta$plot_type, ""), coalesce(meta$lens, "")), collapse = " / ")
+  }, character(1L))
+  mi_grid(plots, titles = titles, subtitles = subtitles, cols = cols)
+}
+
+shap_artifact_inventory <- function() {
+  data.table::rbindlist(lapply(seq_along(artifacts), function(i) {
+    artifact <- artifacts[[i]]
+    data.table::data.table(
+      artifact = names(artifacts)[[i]],
+      label = artifact_label(artifact),
+      type = artifact_type(artifact),
+      section = artifact_section(artifact),
+      lens = mi_val(coalesce(artifact$metadata$lens, NA_character_)),
+      plot_type = mi_val(coalesce(artifact$metadata$plot_type, NA_character_))
+    )
+  }), fill = TRUE)
+}
+
+metadata_table <- function() {
+  data.table::data.table(
+    field = names(metadata),
+    value = vapply(metadata, function(x) paste(as.character(x), collapse = ", "), character(1L))
+  )
+}
+```
+
+```{css, echo=FALSE}
+:root{--bg0:#070A14;--bg1:#0B1030;--panel:rgba(16,24,61,.74);--panel2:rgba(10,14,32,.72);--text:#E7ECFF;--muted:rgba(231,236,255,.72);--muted2:rgba(231,236,255,.55);--link:#9EC5FF;--linkHover:#CFE3FF;--border:rgba(140,170,255,.30);--glow:rgba(72,145,255,.38);--good:#10B981;--warning:#F59E0B;--danger:#EF4444;--info:#60A5FA}*{box-sizing:border-box}body{padding:0;margin:0;font-family:"Open Sans","Helvetica Neue",Helvetica,Arial,sans-serif;font-size:16px;line-height:1.55;color:var(--text);background:radial-gradient(1200px 600px at 20% -10%,rgba(72,145,255,.20),transparent 60%),radial-gradient(900px 500px at 90% 10%,rgba(168,80,255,.14),transparent 55%),linear-gradient(180deg,var(--bg1),var(--bg0));background-attachment:fixed;background-size:cover}a{color:var(--link);text-decoration:none}a:hover{color:var(--linkHover);text-decoration:underline}.page-header{color:var(--text);text-align:center;background-color:#05071A;background-image:radial-gradient(900px 400px at 50% 0%,rgba(72,145,255,.18),transparent 70%),linear-gradient(120deg,#05071A,#0E1B4E);padding:1.5rem 2rem;border-bottom:1px solid rgba(140,170,255,.15)}.project-name{margin-top:0;margin-bottom:.1rem;font-size:2rem}.project-tagline{margin-bottom:2rem;font-weight:400;opacity:.8;font-size:1.5rem;color:var(--muted)}.project-author,.project-date{font-weight:400;opacity:.85;font-size:1.2rem;color:var(--muted)}.main-content,.toc{max-width:95%;padding:2rem 4rem;margin:0 auto;font-size:1.06rem}.toc{padding-bottom:0}.toc .toc-box{padding:44px;background:linear-gradient(90deg,rgba(5,7,26,.90),rgba(16,24,61,.70));border:1px solid rgba(140,170,255,.20);border-radius:38px;color:var(--text);box-shadow:0 10px 30px rgba(0,0,0,.35),0 0 24px var(--glow);backdrop-filter:blur(10px)}.main-content h1,.main-content h2,.main-content h3{font-weight:800;letter-spacing:.2px;color:var(--text)}.main-content h1{font-size:2rem;padding-bottom:.4rem;border-bottom:1px solid rgba(140,170,255,.20)}.main-content h2{font-size:1.55rem}.main-content h3{font-size:1.25rem}.mi-hero{margin:1rem 0 1.5rem;padding:1.35rem 1.45rem;border-radius:24px;background:radial-gradient(700px 280px at 0% 0%,rgba(96,165,250,.20),transparent 65%),linear-gradient(180deg,rgba(16,24,61,.84),rgba(10,14,32,.78));border:1px solid rgba(140,170,255,.26);box-shadow:0 14px 36px rgba(0,0,0,.36),0 0 24px rgba(72,145,255,.20)}.mi-hero-title{font-size:1.45rem;font-weight:900;margin-bottom:.35rem}.mi-hero-text{color:var(--muted);max-width:1200px}.mi-grid{display:grid;grid-template-columns:repeat(4,minmax(180px,1fr));gap:14px;margin:1rem 0 1.25rem}.mi-card{padding:1rem 1.05rem;border-radius:18px;background:linear-gradient(180deg,rgba(16,24,61,.78),rgba(10,14,32,.72));border:1px solid rgba(140,170,255,.24);box-shadow:0 10px 26px rgba(0,0,0,.28),0 0 18px rgba(72,145,255,.13)}.mi-card-title{color:var(--muted);font-size:.86rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em}.mi-card-value{color:var(--text);font-size:1.7rem;font-weight:900;line-height:1.15;margin-top:.35rem}.mi-card-value-good{color:#A7F3D0}.mi-card-value-warning{color:#FDE68A}.mi-card-value-danger{color:#FECACA}.mi-card-value-info{color:#BFDBFE}.mi-card-subtitle{color:var(--muted2);font-size:.9rem;margin-top:.25rem}.mi-note{margin:.85rem 0 1.1rem;padding:.95rem 1.05rem;border-radius:16px;color:var(--muted);background:rgba(96,165,250,.08);border:1px solid rgba(96,165,250,.22)}.mi-empty{padding:.85rem 1rem;color:var(--muted);background:rgba(255,255,255,.045);border:1px dashed rgba(140,170,255,.28);border-radius:14px}.mi-panel{margin:1rem 0 1.3rem;padding:1.05rem;border-radius:20px;background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--border);box-shadow:0 10px 26px rgba(0,0,0,.32),0 0 18px rgba(72,145,255,.16)}.mi-panel-title{font-weight:900;font-size:1.1rem;margin-bottom:.7rem}.main-content details.mi-details{margin:1rem 0;padding:.9rem 1rem;border-radius:18px;background:linear-gradient(180deg,rgba(16,24,61,.76),rgba(10,14,32,.72));border:1px solid rgba(140,170,255,.26);box-shadow:0 10px 26px rgba(0,0,0,.30),0 0 16px rgba(72,145,255,.13);transition:transform 140ms ease,box-shadow 140ms ease,border-color 140ms ease}.main-content details.mi-details:hover{transform:translateY(-1px);border-color:rgba(140,170,255,.52);box-shadow:0 14px 34px rgba(0,0,0,.42),0 0 22px rgba(72,145,255,.32)}.main-content details.mi-details[open]{border-color:rgba(140,170,255,.58);box-shadow:0 14px 34px rgba(0,0,0,.42),0 0 24px rgba(72,145,255,.34)}.main-content details.mi-details>summary{cursor:pointer;user-select:none;font-weight:900;color:var(--text);list-style:none;display:flex;align-items:center;gap:10px}.main-content details.mi-details>summary::-webkit-details-marker{display:none}.main-content details.mi-details>summary::before{content:">";display:inline-block;transform:translateY(-1px);opacity:.85;transition:transform 140ms ease}.main-content details.mi-details[open]>summary::before{transform:rotate(90deg) translateY(-1px)}.mi-details-body{margin-top:.9rem}.table-wrap{margin:1rem 0 1.25rem;padding:.75rem .9rem;border-radius:.95rem;background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid rgba(140,170,255,.22);box-shadow:0 10px 26px rgba(0,0,0,.30),0 0 18px rgba(72,145,255,.18)}.table-toolbar{display:flex;justify-content:flex-end;gap:10px;margin-bottom:.6rem}.table-btn{appearance:none;border:1px solid rgba(140,170,255,.40);background:rgba(72,145,255,.14);color:var(--text);padding:7px 10px;border-radius:.7rem;cursor:pointer;font-weight:800;letter-spacing:.2px}.table-btn:hover{transform:translateY(-1px);border-color:rgba(140,170,255,.70);background:rgba(72,145,255,.22);box-shadow:0 0 18px rgba(72,145,255,.35)}.reactable{position:relative;border-radius:16px;overflow:hidden}.reactable::before{content:"";position:absolute;inset:0;border-radius:16px;padding:1px;background:linear-gradient(135deg,rgba(72,145,255,.7),rgba(168,80,255,.5),rgba(72,145,255,.7));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}.reactable .rt-tbody .rt-tr:hover{background:rgba(72,145,255,.12)!important;box-shadow:inset 0 0 18px rgba(72,145,255,.18)}@media screen and (max-width:900px){.main-content,.toc{padding:2rem 1rem;max-width:100%}.mi-grid{grid-template-columns:1fr}}
+```
+
+```{js, echo=FALSE}
+(function(){function tableToCSV(table){const rows=Array.from(table.querySelectorAll('tr'));return rows.map(row=>{const cells=Array.from(row.querySelectorAll('th,td'));return cells.map(cell=>{let text=(cell.innerText||'').replace(/\r?\n|\r/g,' ').trim();text='"'+text.replace(/"/g,'""')+'"';return text}).join(',')}).join('\n')}function downloadText(filename,text){const blob=new Blob([text],{type:'text/csv;charset=utf-8;'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.style.display='none';a.href=url;a.download=filename;document.body.appendChild(a);a.click();URL.revokeObjectURL(url);a.remove()}function safeName(s){return(s||'table').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'').slice(0,80)||'table'}function nearestHeading(table,idx){const headings=Array.from(document.querySelectorAll('.main-content h1,.main-content h2,.main-content h3,.main-content h4'));const tableTop=table.getBoundingClientRect().top+window.scrollY;let best=null;for(const h of headings){const top=h.getBoundingClientRect().top+window.scrollY;if(top<tableTop)best=h}if(best&&best.textContent.trim())return safeName(best.textContent)+'.csv';return 'table_'+(idx+1)+'.csv'}function wrapTable(table,idx){if(table.closest('.table-wrap'))return;const wrap=document.createElement('div');wrap.className='table-wrap';const toolbar=document.createElement('div');toolbar.className='table-toolbar';const btn=document.createElement('button');btn.type='button';btn.className='table-btn';btn.textContent='Download CSV';toolbar.appendChild(btn);table.parentNode.insertBefore(wrap,table);wrap.appendChild(toolbar);wrap.appendChild(table);btn.addEventListener('click',function(){downloadText(nearestHeading(table,idx),tableToCSV(table))})}document.addEventListener('DOMContentLoaded',function(){document.querySelectorAll('.main-content table').forEach((table,i)=>wrapTable(table,i))})})();
+```
+
+# Report Overview
+
+```{r overview, results='asis'}
+artifact_types <- vapply(artifacts, artifact_type, character(1L))
+htmltools::tagList(
+  htmltools::div(
+    class = "mi-hero",
+    htmltools::div(class = "mi-hero-title", mi_val(params$title, "Binary Classification SHAP Analysis Report")),
+    htmltools::div(class = "mi-hero-text", "This AutoQuant-native report renders precomputed Binary Classification SHAP artifacts. It summarizes existing Shap_ contribution columns toward the configured positive class; it does not compute SHAP values, call predict(), require a model object, or use a SHAP backend package.")
+  ),
+  htmltools::div(
+    class = "mi-grid",
+    mi_card("Generated", mi_datetime(coalesce(params$generated_at, metadata$generated_at)), "Report timestamp", "info"),
+    mi_card("Model", mi_val(metadata$model_name), "Supplied model label", "info"),
+    mi_card("Data", mi_val(metadata$data_name), "Supplied data label", "info"),
+    mi_card("Target", mi_val(metadata$target_col), "Actual column", "info"),
+    mi_card("Prediction", mi_val(metadata$prediction_col), "Prediction column", "info"),
+    mi_card("Positive Class", mi_val(metadata$positive_class), "Class explained by SHAP", "info"),
+    mi_card("Threshold", mi_num(metadata$threshold), "Classification cutoff", "info"),
+    mi_card("SHAP Columns", mi_val(length(metadata$shap_cols)), "Valid contribution columns", "good"),
+    mi_card("Artifacts", mi_val(length(artifacts)), paste0(sum(artifact_types == "plot"), " plots / ", sum(artifact_types == "table"), " tables")),
+    mi_card("Warnings", mi_val(length(warnings)), "Generation warnings", if (length(warnings)) "warning" else "good")
+  ),
+  mi_panel(
+    "Methodology",
+    mi_note("SHAP values are expected to be produced upstream by AutoQuant modeling or scoring workflows. This renderer consumes the structured artifact output from generate_binary_classification_shap_analysis_artifacts() and does not rebuild analysis inside the Rmd."),
+    mi_table(data.table::data.table(
+      Field = c("SHAP prefix", "Positive class", "Threshold", "Predicted class column", "DateVar", "Date aggregation", "ByVars", "Top N", "Prediction scale"),
+      Value = c(mi_val(metadata$shap_prefix), mi_val(metadata$positive_class), mi_num(metadata$threshold), mi_val(metadata$predicted_class_col), mi_val(metadata$DateVar), mi_val(metadata$date_aggregation), paste(coalesce(metadata$ByVars, character()), collapse = ", "), mi_val(metadata$top_n), mi_val(metadata$prediction_scale))
+    ), defaultPageSize = 10L)
+  )
+)
+```
+
+```{r artifact_inventory, results='asis'}
+mi_details("Artifact inventory", mi_note("Plot counts represent AutoPlots/htmlwidget artifacts. Tables are rendered with the same reactable/table-wrap pattern used by existing AutoQuant artifact reports."), mi_table(shap_artifact_inventory(), defaultPageSize = 25L))
+```
+
+# SHAP Overview
+
+```{r shap_overview, results='asis'}
+htmltools::tagList(
+  mi_panel("Overview", shap_text(artifact_by_name("shap_overview"))),
+  mi_details("Diagnostics / Config", shap_table("shap_diagnostics_config", defaultPageSize = 25L), open = FALSE),
+  mi_details("SHAP Column Map", shap_table("shap_column_map", defaultPageSize = 25L), open = FALSE)
+)
+```
+
+# Global Importance
+
+```{r global_importance, results='asis'}
+htmltools::tagList(
+  mi_note("Global importance ranks features by mean absolute SHAP contribution. Categorical levels and binned numeric levels are shown separately so level-specific effects are not hidden inside one feature-level total."),
+  mi_panel("Global importance visualizations", shap_plot_grid("Global Importance", cols = 2L)),
+  mi_details("Global importance table", shap_table("global_importance_table", defaultPageSize = 25L), open = TRUE),
+  mi_details("Categorical / binned numeric level importance table", shap_table("categorical_level_importance_table", defaultPageSize = 25L), open = TRUE)
+)
+```
+
+# Threshold Context
+
+```{r threshold_context, results='asis'}
+threshold_items <- section_artifacts("Threshold Context")
+if (length(threshold_items)) {
+  htmltools::tagList(
+    mi_note("Threshold context artifacts summarize prediction-score behavior around the configured classification threshold."),
+    mi_panel("Threshold visualizations", shap_plot_grid("Threshold Context", cols = 2L)),
+    mi_details("Threshold context table", shap_table("threshold_context_table", defaultPageSize = 25L), open = TRUE)
+  )
+} else {
+  mi_empty("No threshold context artifacts were generated. Supply valid prediction scores and threshold settings to enable this section.")
+}
+```
+
+# Class Balance / Outcome Context
+
+```{r class_balance_context, results='asis'}
+class_items <- section_artifacts("Class Balance / Outcome Context")
+if (length(class_items)) {
+  htmltools::tagList(
+    mi_note("Class balance and outcome context artifacts make the positive class, observed outcomes, predictions, and feature-level class differences explicit."),
+    mi_panel("Class balance visualizations", shap_plot_grid("Class Balance / Outcome Context", cols = 2L)),
+    mi_details("Class balance table", shap_table("class_balance_table", defaultPageSize = 25L), open = TRUE),
+    mi_details("Class feature importance table", shap_table("class_feature_importance_table", defaultPageSize = 25L), open = TRUE)
+  )
+} else {
+  mi_empty("No class balance or outcome context artifacts were generated.")
+}
+```
+
+# Single Feature Effects
+
+```{r single_feature_effects, results='asis'}
+htmltools::tagList(
+  mi_note("Single feature effects summarize SHAP contributions by source feature values or bins. Categorical bar charts use the same horizontal convention as importance charts."),
+  mi_panel("Single feature visualizations", shap_plot_grid("Single Feature Effects", cols = 2L)),
+  mi_details("Single feature effects table", shap_table("single_feature_effects_table", defaultPageSize = 25L))
+)
+```
+
+# SHAP Dependence
+
+```{r shap_dependence, results='asis'}
+htmltools::tagList(
+  mi_note("Dependence artifacts show feature values, SHAP contributions, and optional prediction, target, ID, date, or segment context."),
+  mi_panel("Dependence visualizations", shap_plot_grid("SHAP Dependence", cols = 2L)),
+  mi_details("Dependence table", shap_table("shap_dependence_table", defaultPageSize = 25L))
+)
+```
+
+# Segment Effects
+
+```{r segment_effects, results='asis'}
+segment_items <- section_artifacts("Segment Effects")
+if (length(segment_items)) {
+  htmltools::tagList(
+    mi_note("ByVars are segment lenses. Segment heatmaps show signed mean SHAP by feature and segment, so red/blue direction is retained instead of showing only magnitude."),
+    mi_panel("Segment visualizations", shap_plot_grid("Segment Effects", cols = 2L)),
+    mi_details("Segment effects table", shap_table("segment_effects_table", defaultPageSize = 25L))
+  )
+} else {
+  mi_empty("No segment effects were generated. Supply valid ByVars to enable this section.")
+}
+```
+
+# Time Effects
+
+```{r time_effects, results='asis'}
+time_items <- section_artifacts("Time Effects")
+if (length(time_items)) {
+  htmltools::tagList(
+    mi_note(paste0("Time effects use DateVar aggregation when available. Aggregation: ", mi_val(metadata$date_aggregation), ".")),
+    mi_panel("Time visualizations", shap_plot_grid("Time Effects", cols = 2L)),
+    mi_details("Time effects table", shap_table("time_effects_table", defaultPageSize = 25L))
+  )
+} else {
+  mi_empty("No time effects were generated. Supply a valid DateVar to enable this section.")
+}
+```
+
+# Local Explanations
+
+```{r local_explanations, results='asis'}
+local_items <- section_artifacts("Local Explanations")
+if (length(local_items)) {
+  htmltools::tagList(
+    mi_note("Local explanations summarize top contributors toward and away from the configured positive class for selected row indexes. Contribution bars use the same horizontal bar convention as global importance."),
+    mi_panel("Local explanation visualizations", shap_plot_grid("Local Explanations", cols = 2L)),
+    mi_details("Local explanations table", shap_table("local_explanations_table", defaultPageSize = 25L))
+  )
+} else {
+  mi_empty("Local explanations were not requested or no valid local rows were supplied.")
+}
+```
+
+# Interaction Importance
+
+```{r interaction_importance, results='asis'}
+interaction_items <- section_artifacts("Interaction Importance")
+if (length(interaction_items)) {
+  htmltools::tagList(
+    mi_panel("Methodology", shap_text(artifact_by_name("interaction_methodology"))),
+    mi_panel("Interaction visualizations", shap_plot_grid("Interaction Importance", cols = 2L)),
+    mi_details("Candidate interaction ranking", shap_table("candidate_interaction_ranking_table", defaultPageSize = 25L), open = TRUE),
+    mi_details("Two-way SHAP surface table", shap_table("two_way_shap_surface_table", defaultPageSize = 25L), open = FALSE),
+    mi_note("These are binned/leveled candidate interaction diagnostics from ordinary Shap_ columns. Surface axes are actual source feature value bins/levels, labeled with the pair variables. Heatmap values are signed mean SHAP for the attributed feature. They are not exact SHAP interaction value decompositions.")
+  )
+} else {
+  mi_empty("No interaction diagnostics were generated.")
+}
+```
+
+# Appendix
+
+```{r appendix, results='asis'}
+warning_panel <- if (length(warnings)) {
+  mi_panel("Warnings", mi_table(data.table::data.table(Warning = warnings), defaultPageSize = 25L))
+} else {
+  mi_note("No warnings were produced while generating Binary Classification SHAP artifacts.")
+}
+
+htmltools::tagList(
+  warning_panel,
+  mi_panel("Configuration metadata", mi_table(metadata_table(), defaultPageSize = 25L)),
+  mi_details("Appendix artifacts", htmltools::tagList(lapply(section_artifacts("Appendix"), function(artifact) {
+    if (identical(artifact_type(artifact), "table")) {
+      mi_panel(artifact_label(artifact), mi_table(coalesce(coalesce(artifact$object, artifact$data), artifact$table), defaultPageSize = 25L))
+    } else {
+      mi_panel(artifact_label(artifact), shap_text(artifact))
+    }
+  })))
+)
+```
