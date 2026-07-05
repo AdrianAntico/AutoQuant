@@ -4333,6 +4333,69 @@ ReportPath <- RegressionModelInsightsReport(
 </p>
 </details>
 
+<details><summary>Regression SHAP Artifact Generator Example</summary>
+<p>
+
+`generate_regression_shap_analysis_artifacts()` consumes precomputed `Shap_` columns from AutoQuant modeling/scoring outputs. It does not compute SHAP values, call `predict()`, require a model object, or use a SHAP backend package.
+
+```r
+set.seed(123)
+n <- 300
+x1 <- runif(n, 0, 100)
+x2 <- runif(n, 0, 50)
+seg <- sample(c("A", "B", "C"), n, TRUE)
+date <- as.Date("2024-01-01") + sample(0:180, n, TRUE)
+
+df <- data.table::data.table(
+  y = 10 + 0.2 * x1 + 0.1 * x2 + ifelse(seg == "A", 2, 0) + rnorm(n),
+  Predict = 10 + 0.2 * x1 + 0.1 * x2 + ifelse(seg == "A", 2, 0),
+  Independent_Variable1 = x1,
+  Independent_Variable2 = x2,
+  Factor_1 = seg,
+  IDCol_1 = seq_len(n),
+  IDCol_2 = sample(1000:9999, n, TRUE),
+  Date = date,
+  Shap_Independent_Variable1 = 0.02 * x1 + ifelse(x2 > 25, 0.3, -0.1) + ifelse(seg == "A", 0.2, 0) + rnorm(n, 0, 0.03),
+  Shap_Independent_Variable2 = 0.01 * x2 + ifelse(x1 > 50, 0.2, -0.05) + rnorm(n, 0, 0.03),
+  Shap_Factor_1 = ifelse(seg == "A", 0.2, ifelse(seg == "B", -0.05, 0.03)) + rnorm(n, 0, 0.02)
+)
+
+ShapArtifacts <- generate_regression_shap_analysis_artifacts(
+  data = df,
+  target_col = "y",
+  prediction_col = "Predict",
+  DateVar = "Date",
+  date_aggregation = "month",
+  ByVars = "Factor_1",
+  id_cols = c("IDCol_1", "IDCol_2"),
+  selected_features = c("Independent_Variable1", "Independent_Variable2", "Factor_1"),
+  local_row_ids = c(1L, 2L),
+  top_n = 3,
+  include_dependence = TRUE,
+  include_segments = TRUE,
+  include_time = TRUE,
+  include_local = TRUE,
+  include_interactions = TRUE,
+  include_plots = TRUE,
+  numeric_interaction_bins = 5L,
+  max_interaction_pairs = 10L,
+  max_interaction_surface_plots = 5L,
+  min_interaction_cell_n = 5L
+)
+
+RegressionShapAnalysisReport(
+  artifact_result = ShapArtifacts,
+  output_dir = tempdir(),
+  output_file = "regression_shap_analysis_report.html",
+  open = TRUE
+)
+```
+
+The `Shap_` prefix maps each contribution column to the source model variable by stripping the prefix, such as `Shap_Impressions` -> `Impressions`. ID, segment, date, target, and prediction columns may be present, but they are not treated as SHAP features unless they have matching `Shap_` columns. When `include_plots = TRUE`, plot artifacts are created with AutoPlots high-level functions. Segment heatmaps use signed mean SHAP. Interaction diagnostics are binned/leveled candidate interaction surfaces from ordinary `Shap_` columns; axes are actual source feature value bins/levels and heatmap values are signed mean SHAP for the attributed feature. They are not exact SHAP interaction value decompositions.
+
+</p>
+</details>
+
 
 <details><summary>Classification ModelInsightsReport() Example</summary>
 <p>

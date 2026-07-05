@@ -19,6 +19,7 @@ Other Reports:
 \code{\link{EDAReport}()},
 \code{\link{ModelInsightsReport}()},
 \code{\link{RegressionModelInsightsReport}()},
+\code{\link{RegressionShapAnalysisReport}()},
 \code{\link{TargetAnalysisReport}()},
 \code{\link{generate_binary_classification_model_insights_artifacts}()},
 \code{\link{generate_regression_model_insights_artifacts}()}

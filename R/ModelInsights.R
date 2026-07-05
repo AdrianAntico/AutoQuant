@@ -613,3 +613,244 @@ RegressionModelInsightsReport <- function(
 
   invisible(RenderedFile)
 }
+
+# ============================================================
+# Render Regression SHAP Analysis Report from Artifacts
+#
+# RMarkdown template expected at:
+#   inst/r-markdowns/Regression_SHAP_Analysis_Report.Rmd
+#
+# This function renders the AutoQuant-native standalone report path. It calls
+# generate_regression_shap_analysis_artifacts() when artifact_result is not
+# supplied, but it does not compute SHAP values itself.
+# ============================================================
+
+#' Render Regression SHAP Analysis Report
+#'
+#' Renders a standalone AutoQuant-native HTML report from Regression SHAP
+#' Analysis artifacts. If `artifact_result` is not supplied, this function calls
+#' `generate_regression_shap_analysis_artifacts()` first. Input data must contain
+#' precomputed `Shap_` columns; this report function does not compute SHAP
+#' values, call `predict()`, require a model object, or use a SHAP backend
+#' package.
+#'
+#' @param data A data.table containing precomputed `Shap_` columns.
+#' @param output_dir Directory where the rendered report should be written.
+#' @param output_file Output HTML filename.
+#' @param title Report title.
+#' @param subtitle Optional report subtitle.
+#' @param target_col Optional target/actual column.
+#' @param prediction_col Optional prediction column. Defaults to `Predict` when present.
+#' @param feature_cols Optional source features used to filter detected SHAP columns.
+#' @param shap_prefix Prefix for SHAP contribution columns.
+#' @param id_cols Optional ID/context columns.
+#' @param model_name Optional model name.
+#' @param data_name Optional data name.
+#' @param DateVar Optional date column.
+#' @param date_aggregation One of `day`, `week`, or `month`.
+#' @param ByVars Optional segment variables.
+#' @param selected_features Optional feature list for effect/dependence/local views.
+#' @param local_row_ids Optional 1-based row indexes for local explanations.
+#' @param top_n Number of top features used for display-oriented artifacts.
+#' @param max_dependence_rows Maximum source rows per selected feature in dependence output.
+#' @param max_segment_levels Maximum segment levels to keep per ByVar.
+#' @param max_byvars Maximum number of ByVars to use.
+#' @param include_dependence Whether to include dependence artifacts.
+#' @param include_segments Whether to include segment artifacts.
+#' @param include_time Whether to include time artifacts.
+#' @param include_local Whether to include local explanation artifacts.
+#' @param include_interactions Whether to include an interaction placeholder artifact.
+#' @param prediction_scale Prediction scale label, usually `response`.
+#' @param artifact_result Optional precomputed result returned by
+#'   `generate_regression_shap_analysis_artifacts()`.
+#' @param open If TRUE, open the rendered report in a browser.
+#' @param quiet Passed to `rmarkdown::render()`.
+#' @param self_contained Passed to `rmarkdown::render()` through output_options.
+#' @param RmdFile RMarkdown filename located in `inst/r-markdowns`.
+#' @param Package Package name used to locate installed RMarkdown files.
+#' @param TemplatePath Optional explicit path to the RMarkdown file. If supplied,
+#'   this takes precedence over the package/system.file lookup.
+#' @param Clean Passed to `rmarkdown::render()`.
+#' @param Envir Optional render environment. If NULL, a clean child environment
+#'   of `.GlobalEnv` is created.
+#' @param ... Additional arguments passed to the artifact generator.
+#'
+#' @return Invisibly returns the rendered report path.
+#'
+#' @family Reports
+#' @export
+RegressionShapAnalysisReport <- function(
+  data,
+  output_dir = getwd(),
+  output_file = NULL,
+  title = "Regression SHAP Analysis Report",
+  subtitle = NULL,
+  target_col = NULL,
+  prediction_col = NULL,
+  feature_cols = NULL,
+  shap_prefix = "Shap_",
+  id_cols = NULL,
+  model_name = NULL,
+  data_name = NULL,
+  DateVar = NULL,
+  date_aggregation = "month",
+  ByVars = character(),
+  selected_features = NULL,
+  local_row_ids = integer(),
+  top_n = 20L,
+  max_dependence_rows = 5000L,
+  max_segment_levels = 20L,
+  max_byvars = 3L,
+  include_dependence = TRUE,
+  include_segments = TRUE,
+  include_time = TRUE,
+  include_local = FALSE,
+  include_interactions = FALSE,
+  prediction_scale = "response",
+  artifact_result = NULL,
+  open = FALSE,
+  quiet = TRUE,
+  self_contained = TRUE,
+  RmdFile = "Regression_SHAP_Analysis_Report.Rmd",
+  Package = "AutoQuant",
+  TemplatePath = NULL,
+  Clean = TRUE,
+  Envir = NULL,
+  ...
+) {
+  if (!requireNamespace("rmarkdown", quietly = TRUE)) {
+    stop("Package 'rmarkdown' is required to render RegressionShapAnalysisReport().", call. = FALSE)
+  }
+
+  if (!requireNamespace("knitr", quietly = TRUE)) {
+    stop("Package 'knitr' is required to render RegressionShapAnalysisReport().", call. = FALSE)
+  }
+
+  for (pkg in c("data.table", "htmltools", "reactable", "echarts4r", "AutoPlots")) {
+    if (!requireNamespace(pkg, quietly = TRUE)) {
+      stop(paste0("Package '", pkg, "' is required to render RegressionShapAnalysisReport()."), call. = FALSE)
+    }
+  }
+
+  if (is.null(artifact_result)) {
+    if (missing(data) || is.null(data)) {
+      stop("`data` must be supplied when `artifact_result` is NULL.", call. = FALSE)
+    }
+    artifact_result <- generate_regression_shap_analysis_artifacts(
+      data = data,
+      target_col = target_col,
+      prediction_col = prediction_col,
+      feature_cols = feature_cols,
+      shap_prefix = shap_prefix,
+      id_cols = id_cols,
+      model_name = model_name,
+      data_name = data_name,
+      DateVar = DateVar,
+      date_aggregation = date_aggregation,
+      ByVars = ByVars,
+      selected_features = selected_features,
+      local_row_ids = local_row_ids,
+      top_n = top_n,
+      max_dependence_rows = max_dependence_rows,
+      max_segment_levels = max_segment_levels,
+      max_byvars = max_byvars,
+      include_dependence = include_dependence,
+      include_segments = include_segments,
+      include_time = include_time,
+      include_local = include_local,
+      include_interactions = include_interactions,
+      prediction_scale = prediction_scale,
+      ...
+    )
+  }
+
+  if (!is.list(artifact_result) || is.null(artifact_result$artifacts)) {
+    stop("`artifact_result` must be the structured output from generate_regression_shap_analysis_artifacts().", call. = FALSE)
+  }
+
+  output_dir <- normalizePath(output_dir, winslash = "/", mustWork = FALSE)
+  dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
+
+  if (is.null(output_file) || !nzchar(output_file)) {
+    output_file <- "regression_shap_analysis_report.html"
+  }
+  if (!grepl("\\.html?$", output_file, ignore.case = TRUE)) {
+    output_file <- paste0(output_file, ".html")
+  }
+
+  if (!is.null(TemplatePath) && nzchar(TemplatePath)) {
+    template_path <- normalizePath(TemplatePath, winslash = "/", mustWork = FALSE)
+  } else {
+    template_path <- system.file("r-markdowns", RmdFile, package = Package)
+    if (!nzchar(template_path) || !file.exists(template_path)) {
+      template_path <- file.path(getwd(), "inst", "r-markdowns", RmdFile)
+      template_path <- normalizePath(template_path, winslash = "/", mustWork = FALSE)
+    }
+  }
+  if (!file.exists(template_path)) {
+    template_path <- file.path(getwd(), RmdFile)
+    template_path <- normalizePath(template_path, winslash = "/", mustWork = FALSE)
+  }
+  if (!file.exists(template_path)) {
+    stop(
+      paste0(
+        "RMarkdown template not found. Expected one of:\n",
+        "1. ", file.path("inst", "r-markdowns", RmdFile), "\n",
+        "2. system.file('r-markdowns', '", RmdFile, "', package = '", Package, "')\n",
+        "3. Explicit `TemplatePath`."
+      ),
+      call. = FALSE
+    )
+  }
+
+  generated_at <- artifact_result$metadata$generated_at
+  if (is.null(generated_at)) {
+    generated_at <- Sys.time()
+  }
+
+  if (is.null(Envir)) {
+    Envir <- new.env(parent = .GlobalEnv)
+  }
+  assign("artifact_result", artifact_result, envir = Envir)
+  assign("RegressionShapArtifacts", artifact_result, envir = Envir)
+
+  rendered_file <- rmarkdown::render(
+    input = template_path,
+    output_file = output_file,
+    output_dir = output_dir,
+    params = list(
+      title = title,
+      subtitle = subtitle,
+      generated_at = generated_at,
+      artifact_result = artifact_result,
+      artifact_sections = regression_shap_sections(),
+      metadata = artifact_result$metadata,
+      warnings = artifact_result$warnings,
+      diagnostics = artifact_result$diagnostics,
+      top_n = top_n,
+      include_interactions = include_interactions,
+      report_args = list(
+        shap_prefix = shap_prefix,
+        target_col = target_col,
+        prediction_col = prediction_col,
+        DateVar = DateVar,
+        date_aggregation = date_aggregation,
+        ByVars = ByVars,
+        selected_features = selected_features,
+        prediction_scale = prediction_scale
+      )
+    ),
+    envir = Envir,
+    quiet = quiet,
+    clean = Clean,
+    output_options = list(self_contained = isTRUE(self_contained))
+  )
+
+  rendered_file <- normalizePath(rendered_file, winslash = "/", mustWork = FALSE)
+  attr(rendered_file, "artifact_result") <- artifact_result
+  if (isTRUE(open)) {
+    utils::browseURL(rendered_file)
+  }
+
+  invisible(rendered_file)
+}
