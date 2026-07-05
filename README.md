@@ -4339,55 +4339,269 @@ ReportPath <- RegressionModelInsightsReport(
 `generate_regression_shap_analysis_artifacts()` consumes precomputed `Shap_` columns from AutoQuant modeling/scoring outputs. It does not compute SHAP values, call `predict()`, require a model object, or use a SHAP backend package.
 
 ```r
-set.seed(123)
-n <- 300
-x1 <- runif(n, 0, 100)
-x2 <- runif(n, 0, 50)
-seg <- sample(c("A", "B", "C"), n, TRUE)
-date <- as.Date("2024-01-01") + sample(0:180, n, TRUE)
+library(data.table)
+library(AutoQuant)
 
-df <- data.table::data.table(
-  y = 10 + 0.2 * x1 + 0.1 * x2 + ifelse(seg == "A", 2, 0) + rnorm(n),
-  Predict = 10 + 0.2 * x1 + 0.1 * x2 + ifelse(seg == "A", 2, 0),
-  Independent_Variable1 = x1,
-  Independent_Variable2 = x2,
-  Factor_1 = seg,
-  IDCol_1 = seq_len(n),
-  IDCol_2 = sample(1000:9999, n, TRUE),
-  Date = date,
-  Shap_Independent_Variable1 = 0.02 * x1 + ifelse(x2 > 25, 0.3, -0.1) + ifelse(seg == "A", 0.2, 0) + rnorm(n, 0, 0.03),
-  Shap_Independent_Variable2 = 0.01 * x2 + ifelse(x1 > 50, 0.2, -0.05) + rnorm(n, 0, 0.03),
-  Shap_Factor_1 = ifelse(seg == "A", 0.2, ifelse(seg == "B", -0.05, 0.03)) + rnorm(n, 0, 0.02)
+set.seed(123)
+
+# Purpose-built regression QA dataset
+n <- 15000L
+
+dt <- data.table(
+  IDcol_1 = seq_len(n),
+  IDcol_2 = sample(100000:999999, n, TRUE),
+  Date = as.Date("2023-01-01") + sample(0:540, n, TRUE),
+  
+  Channel = sample(c("Search", "Social", "Email", "Direct", "Affiliate"), n, TRUE,
+                   prob = c(0.30, 0.24, 0.18, 0.18, 0.10)),
+  Region = sample(c("West", "Midwest", "South", "Northeast"), n, TRUE),
+  CustomerTier = sample(c("Bronze", "Silver", "Gold", "Platinum"), n, TRUE,
+                        prob = c(0.42, 0.30, 0.20, 0.08)),
+  
+  Spend = round(rgamma(n, shape = 4, scale = 60), 2),
+  Clicks = rpois(n, lambda = 40),
+  Impressions = rpois(n, lambda = 1800),
+  TenureMonths = sample(1:72, n, TRUE),
+  DiscountRate = pmin(pmax(rbeta(n, 2, 8), 0), 0.75),
+  CompetitorIndex = rnorm(n, 100, 15),
+  Seasonality = sin(2 * pi * as.integer(format(as.Date("2023-01-01") + sample(0:540, n, TRUE), "%j")) / 365)
 )
 
-ShapArtifacts <- generate_regression_shap_analysis_artifacts(
-  data = df,
-  target_col = "y",
+# Add correlated / engineered features
+dt[, CTR := Clicks / pmax(Impressions, 1)]
+dt[, SpendPerClick := Spend / pmax(Clicks, 1)]
+dt[, IsHolidaySeason := fifelse(format(Date, "%m") %in% c("11", "12"), "Yes", "No")]
+
+# Segment effects
+dt[, ChannelEffect := fifelse(Channel == "Search", 45,
+                              fifelse(Channel == "Social", 25,
+                                      fifelse(Channel == "Email", 18,
+                                              fifelse(Channel == "Affiliate", -10, 5))))]
+
+dt[, RegionEffect := fifelse(Region == "West", 20,
+                             fifelse(Region == "South", -12,
+                                     fifelse(Region == "Northeast", 8, 0)))]
+
+dt[, TierEffect := fifelse(CustomerTier == "Platinum", 80,
+                           fifelse(CustomerTier == "Gold", 45,
+                                   fifelse(CustomerTier == "Silver", 20, 0)))]
+
+# Explicit nonlinear and interaction-like signal for model to learn
+dt[, Spend_Channel_Interaction := fifelse(Channel == "Search", Spend * 0.12,
+                                          fifelse(Channel == "Social", Spend * 0.08,
+                                                  fifelse(Channel == "Affiliate", -Spend * 0.04, Spend * 0.03)))]
+
+dt[, Discount_Tier_Interaction := fifelse(CustomerTier %in% c("Gold", "Platinum"),
+                                          DiscountRate * 130,
+                                          -DiscountRate * 35)]
+
+dt[, Time_Channel_Interaction := fifelse(Channel == "Email", Seasonality * 35,
+                                         fifelse(Channel == "Search", Seasonality * 22, Seasonality * 8))]
+
+# Target
+dt[, Adrian :=
+     120 +
+     0.55 * Spend +
+     1.80 * Clicks +
+     0.015 * Impressions +
+     18 * log1p(TenureMonths) -
+     65 * DiscountRate -
+     0.30 * CompetitorIndex +
+     ChannelEffect +
+     RegionEffect +
+     TierEffect +
+     Spend_Channel_Interaction +
+     Discount_Tier_Interaction +
+     Time_Channel_Interaction +
+     rnorm(.N, 0, 35)
+]
+
+# Keep target positive-ish for transforms if desired
+dt[, Adrian := pmax(Adrian, 1)]
+
+FeatureCols <- setdiff(
+  names(dt),
+  c(
+    "IDcol_1", "IDcol_2", "Adrian",
+    "ChannelEffect", "RegionEffect", "TierEffect"
+  )
+)
+
+# Run model with SHAP
+TestModel <- AutoQuant::AutoCatBoostRegression(
+  ReturnShap = TRUE,
+  
+  TrainOnFull = FALSE,
+  task_type = "GPU",
+  NumGPUs = 1,
+  DebugMode = FALSE,
+  
+  OutputSelection = c(
+    "Importances",
+    "EvalPlots",
+    "EvalMetrics",
+    "Score_TrainData"
+  ),
+  ModelID = "Regression_SHAP_QA_Model",
+  model_path = normalizePath("./"),
+  metadata_path = normalizePath("./"),
+  SaveModelObjects = FALSE,
+  SaveInfoToPDF = FALSE,
+  ReturnModelObjects = TRUE,
+  
+  data = dt,
+  ValidationData = NULL,
+  TestData = NULL,
+  TargetColumnName = "Adrian",
+  FeatureColNames = FeatureCols,
+  PrimaryDateColumn = "Date",
+  WeightsColumnName = NULL,
+  IDcols = c("IDcol_1", "IDcol_2"),
+  TransformNumericColumns = "Adrian",
+  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit"),
+  
+  eval_metric = "RMSE",
+  eval_metric_value = 1.5,
+  loss_function = "RMSE",
+  loss_function_value = 1.5,
+  MetricPeriods = 10L,
+  NumOfParDepPlots = min(length(FeatureCols), 20L),
+  
+  PassInGrid = NULL,
+  GridTune = FALSE,
+  MaxModelsInGrid = 30L,
+  MaxRunsWithoutNewWinner = 20L,
+  MaxRunMinutes = 60 * 60,
+  BaselineComparison = "default",
+  
+  langevin = FALSE,
+  diffusion_temperature = 10000,
+  Trees = 700,
+  Depth = 8,
+  L2_Leaf_Reg = NULL,
+  RandomStrength = 1,
+  BorderCount = 128,
+  LearningRate = NULL,
+  RSM = 1,
+  BootStrapType = NULL,
+  GrowPolicy = "SymmetricTree",
+  model_size_reg = 0.5,
+  feature_border_type = "GreedyLogSum",
+  sampling_unit = "Object",
+  subsample = NULL,
+  score_function = "Cosine",
+  min_data_in_leaf = 1
+)
+
+scored_dt <- data.table::rbindlist(
+  list(TestModel$TrainData, TestModel$TestData),
+  use.names = TRUE,
+  fill = TRUE
+)
+
+# Generate all currently supported Regression SHAP artifacts
+ShapArtifacts <- AutoQuant::generate_regression_shap_analysis_artifacts(
+  data = scored_dt,
+  target_col = "Adrian",
   prediction_col = "Predict",
+  feature_cols = FeatureCols,
+  shap_prefix = "Shap_",
+  
+  id_cols = c("IDcol_1", "IDcol_2"),
+  model_name = "Regression_SHAP_QA_Model",
+  data_name = "Purpose-built SHAP QA dataset",
+  
   DateVar = "Date",
   date_aggregation = "month",
-  ByVars = "Factor_1",
-  id_cols = c("IDCol_1", "IDCol_2"),
-  selected_features = c("Independent_Variable1", "Independent_Variable2", "Factor_1"),
-  local_row_ids = c(1L, 2L),
-  top_n = 3,
+  
+  ByVars = c("Channel", "Region", "CustomerTier", "IsHolidaySeason"),
+  
+  selected_features = c(
+    "Spend",
+    "Clicks",
+    "Impressions",
+    "CTR",
+    "SpendPerClick",
+    "TenureMonths",
+    "DiscountRate",
+    "CompetitorIndex",
+    "Seasonality",
+    "Channel",
+    "Region",
+    "CustomerTier",
+    "IsHolidaySeason",
+    "Spend_Channel_Interaction",
+    "Discount_Tier_Interaction",
+    "Time_Channel_Interaction"
+  ),
+  
+  local_row_ids = c(1L, 25L, 100L, 500L, 1000L),
+  
+  top_n = 25L,
+  max_dependence_rows = 7000L,
+  max_segment_levels = 20L,
+  max_byvars = 4L,
+  
   include_dependence = TRUE,
   include_segments = TRUE,
   include_time = TRUE,
   include_local = TRUE,
   include_interactions = TRUE,
+  
   include_plots = TRUE,
-  numeric_interaction_bins = 5L,
-  max_interaction_pairs = 10L,
-  max_interaction_surface_plots = 5L,
-  min_interaction_cell_n = 5L
+  max_feature_effect_plots = 12L,
+  max_dependence_plots = 12L,
+  max_segment_plots = 4L,
+  max_time_plots = 4L,
+  max_local_plots = 5L,
+  plot_top_n = 15L
 )
 
-RegressionShapAnalysisReport(
+# Quick artifact inventory
+artifact_inventory <- rbindlist(lapply(names(ShapArtifacts$artifacts), function(nm) {
+  a <- ShapArtifacts$artifacts[[nm]]
+  data.table(
+    artifact = nm,
+    label = a$label,
+    type = a$type,
+    section = a$section,
+    lens = a$metadata$lens %||% NA_character_,
+    plot_type = a$metadata$plot_type %||% NA_character_
+  )
+}), fill = TRUE)
+
+print(artifact_inventory)
+
+# Render native AutoQuant Regression SHAP HTML report
+ReportPath <- AutoQuant::RegressionShapAnalysisReport(
+  data = scored_dt,
   artifact_result = ShapArtifacts,
-  output_dir = tempdir(),
-  output_file = "regression_shap_analysis_report.html",
-  open = TRUE
+  output_dir = normalizePath("./"),
+  output_file = "regression_shap_analysis_full_qa_report.html",
+  title = "Regression SHAP Analysis Full QA Report",
+  
+  target_col = "Adrian",
+  prediction_col = "Predict",
+  feature_cols = FeatureCols,
+  id_cols = c("IDcol_1", "IDcol_2"),
+  model_name = "Regression_SHAP_QA_Model",
+  data_name = "Purpose-built SHAP QA dataset",
+  
+  DateVar = "Date",
+  date_aggregation = "month",
+  ByVars = c("Channel", "Region", "CustomerTier", "IsHolidaySeason"),
+  selected_features = FeatureCols,
+  local_row_ids = c(1L, 25L, 100L, 500L, 1000L),
+  top_n = 25L,
+  
+  include_dependence = TRUE,
+  include_segments = TRUE,
+  include_time = TRUE,
+  include_local = TRUE,
+  include_interactions = TRUE,
+  
+  open = TRUE,
+  quiet = FALSE
 )
 ```
 
