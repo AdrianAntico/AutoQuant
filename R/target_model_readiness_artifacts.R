@@ -1795,6 +1795,12 @@ generate_model_assessment_artifacts <- function(
   TargetFeatureDriftStats <- data.table::data.table()
   TargetConceptDriftStats <- data.table::data.table()
   TargetRiskFlags <- data.table::data.table()
+  TargetTrendDiagnostics <- data.table::data.table(
+    Check = character(),
+    Status = character(),
+    Severity = character(),
+    Message = character()
+  )
   TargetPlotList <- list()
   TargetTrendPlotList <- list()
   TargetGroupedTrendPlotList <- list()
@@ -2221,6 +2227,62 @@ generate_model_assessment_artifacts <- function(
   TargetTrendGroupVar_Valid <- length(TargetTrendGroupVars_Valid) > 0L
 
   TargetGroupedTrendStatsList <- list()
+
+  target_add_trend_diagnostic <- function(check, status, severity, message) {
+    TargetTrendDiagnostics <<- data.table::rbindlist(
+      list(
+        TargetTrendDiagnostics,
+        data.table::data.table(
+          Check = as.character(check),
+          Status = as.character(status),
+          Severity = as.character(severity),
+          Message = as.character(message)
+        )
+      ),
+      fill = TRUE
+    )
+
+    invisible(NULL)
+  }
+
+  if (!TargetTrendDateVar_Valid) {
+    target_add_trend_diagnostic(
+      check = "target_trend",
+      status = "skipped",
+      severity = "warning",
+      message = if (is.null(TrendDateVar)) {
+        "TrendDateVar was not supplied; target trend, feature drift, and concept drift artifacts were skipped."
+      } else {
+        paste0("TrendDateVar `", TrendDateVar, "` is not a valid date variable; trend artifacts were skipped.")
+      }
+    )
+  }
+
+  if (length(TargetTrendGroupVars_Missing) > 0L) {
+    target_add_trend_diagnostic(
+      check = "target_grouped_trend",
+      status = "skipped",
+      severity = "warning",
+      message = paste0(
+        "TrendGroupVar value(s) were not found and were skipped: ",
+        paste(TargetTrendGroupVars_Missing, collapse = ", "),
+        "."
+      )
+    )
+  }
+
+  if (!TargetTrendGroupVar_Valid) {
+    target_add_trend_diagnostic(
+      check = "target_grouped_trend",
+      status = "skipped",
+      severity = "info",
+      message = if (is.null(TrendGroupVar) || length(TrendGroupVar) == 0L) {
+        "TrendGroupVar was not supplied; grouped target trend artifacts were skipped."
+      } else {
+        "No valid TrendGroupVar values were available; grouped target trend artifacts were skipped."
+      }
+    )
+  }
 
   if (TargetVar_Valid && TargetVar_Usable && TargetProblemType %in% c("Binary", "Regression") && TargetTrendDateVar_Valid) {
 
@@ -4750,6 +4812,7 @@ generate_model_assessment_artifacts <- function(
       modeling_strategy_recommendations = TargetModelingStrategyRecommendations,
       retraining_cadence_recommendation = TargetRetrainingCadenceRecommendation,
       model_readiness_summary = TargetModelReadinessSummary,
+      trend_diagnostics = TargetTrendDiagnostics,
       schema_issues = target_schema_issues,
       plot_qa = TargetPlotQA
     ),
@@ -4777,6 +4840,7 @@ generate_model_assessment_artifacts <- function(
       modeling_strategy_recommendations = Target_Modeling_Strategy_Recommendations,
       retraining_cadence_recommendation = Target_Retraining_Cadence_Recommendation,
       model_readiness_summary = Target_Model_Readiness_Summary,
+      trend_diagnostics = target_readiness_reactable(TargetTrendDiagnostics, default_page_size = 10L),
       schema_issues = target_readiness_reactable(target_schema_issues, default_page_size = 10L)
     ),
     plots = list(
@@ -4795,8 +4859,10 @@ generate_model_assessment_artifacts <- function(
       categorical_features = TargetCategoricalFeatureVars,
       calendar_features = TargetDateVars,
       skipped_features = TargetSkippedFeatureVars,
+      trend = TargetTrendDiagnostics,
       plot_qa = TargetPlotQA
     ),
+    warnings = TargetTrendDiagnostics[Severity == "warning", Message],
     context = TargetReadinessContext
   )
 
@@ -4812,7 +4878,7 @@ generate_model_assessment_artifacts <- function(
     target_artifacts$artifacts <- target_build_wrapped_target_artifacts(target_artifacts)
 
     target_artifacts <- target_export_target_artifact_sidecars(
-      artifacts = model_assessment_artifacts,
+      artifacts = target_artifacts,
       output_path = OutputPath,
       export_png = ExportPNG,
       export_html = ExportHTML,
@@ -5083,4 +5149,91 @@ target_export_target_artifact_sidecars <- function(
 
   artifacts$export_manifest <- image_manifest
   artifacts
+}
+
+
+#' QA checks for optional trend inputs in model readiness artifacts
+#'
+#' Exercises `generate_model_assessment_artifacts()` with missing and valid
+#' `TrendDateVar` / `TrendGroupVar` combinations for regression and binary
+#' targets. This is intentionally lightweight and returns a `data.table`
+#' summary so it can be used in local smoke checks without a test harness.
+#'
+#' @return A `data.table` with one row per QA case.
+#' @export
+qa_generate_model_assessment_artifacts_trend_optional <- function() {
+
+  n <- 80L
+  idx <- seq_len(n)
+
+  qa_dt <- data.table::data.table(
+    event_date = as.Date("2026-01-01") + (idx %% 20L),
+    segment = rep(c("A", "B", "C", "D"), length.out = n),
+    channel = rep(c("Search", "Email", "Direct", "Social"), length.out = n),
+    x_num = idx / 10,
+    x_num2 = sin(idx / 5),
+    x_cat = rep(c("low", "medium", "high"), length.out = n)
+  )
+
+  qa_dt[, target_reg := 10 + 0.4 * x_num - 1.2 * x_num2 + fifelse(segment %in% c("A", "C"), 2, -1)]
+  qa_dt[, target_bin := fifelse(target_reg > stats::median(target_reg), 1L, 0L)]
+
+  trend_cases <- list(
+    trend_date_null = list(TrendDateVar = NULL, TrendGroupVar = "segment"),
+    trend_group_null = list(TrendDateVar = "event_date", TrendGroupVar = NULL),
+    both_null = list(TrendDateVar = NULL, TrendGroupVar = NULL),
+    valid_date_only = list(TrendDateVar = "event_date", TrendGroupVar = NULL),
+    valid_date_group = list(TrendDateVar = "event_date", TrendGroupVar = "segment")
+  )
+
+  target_cases <- list(
+    regression = "target_reg",
+    binary = "target_bin"
+  )
+
+  rows <- list()
+
+  for (target_case in names(target_cases)) {
+    for (trend_case in names(trend_cases)) {
+
+      args <- trend_cases[[trend_case]]
+
+      result <- tryCatch(
+        generate_model_assessment_artifacts(
+          data = qa_dt,
+          DataName = paste("QA", target_case, trend_case),
+          TargetVar = target_cases[[target_case]],
+          TrendDateVar = args$TrendDateVar,
+          TrendGroupVar = args$TrendGroupVar,
+          TargetMaxCategoricalLevels = 10L,
+          TargetMaxAssociationRows = 10L,
+          TargetMaxPlotRows = 10L,
+          MaxCorrelationPairsToPlot = 10L,
+          RunGAMDiagnostics = FALSE,
+          ExportPNG = FALSE,
+          ExportHTML = FALSE
+        ),
+        error = function(e) e
+      )
+
+      ok <- !inherits(result, "error") &&
+        inherits(result, "model_assessment_artifacts") &&
+        is.list(result$tables) &&
+        data.table::is.data.table(result$tables$trend_diagnostics)
+
+      rows[[length(rows) + 1L]] <- data.table::data.table(
+        target_case = target_case,
+        trend_case = trend_case,
+        status = if (ok) "success" else "error",
+        artifact_class = if (inherits(result, "error")) NA_character_ else paste(class(result), collapse = ", "),
+        n_trend_rows = if (ok) nrow(result$tables$target_trend) else NA_integer_,
+        n_grouped_trend_rows = if (ok) nrow(result$tables$target_grouped_trend) else NA_integer_,
+        n_trend_diagnostics = if (ok) nrow(result$tables$trend_diagnostics) else NA_integer_,
+        n_warnings = if (ok && !is.null(result$warnings)) length(result$warnings) else NA_integer_,
+        message = if (inherits(result, "error")) conditionMessage(result) else ""
+      )
+    }
+  }
+
+  data.table::rbindlist(rows, fill = TRUE)
 }
