@@ -671,6 +671,50 @@ TargetAnalysisReport(
 
 <br>
 
+### CatBoost Builder Artifact Generator
+
+`AutoCatBoostRegression()` and `AutoCatBoostClassifier()` remain the core AutoQuant CatBoost training functions. `generate_catboost_builder_artifacts()` is the artifact-first wrapper for app/report workflows: it routes training through those existing functions, standardizes scored output with `Predict` and `.split`, and preserves `Shap_` contribution columns when the wrapped AutoCatBoost output includes them. The scored output is designed to feed Model Assessment, Model Insights, and SHAP Analysis; it does not run those downstream modules automatically. AnalyticsShinyApp should call `generate_catboost_builder_artifacts()`, not the lower-level training functions directly.
+
+```r
+library(data.table)
+
+set.seed(42)
+n <- 300L
+dt <- data.table(
+  id = seq_len(n),
+  event_date = as.Date("2025-01-01") + seq_len(n) - 1L,
+  channel = sample(c("Search", "Email", "Social", "Direct"), n, replace = TRUE),
+  region = sample(c("West", "Midwest", "South"), n, replace = TRUE),
+  spend = runif(n, 50, 500),
+  clicks = rpois(n, 40),
+  discount = runif(n, 0, 0.3)
+)
+
+dt[, revenue := 10 + 2.5 * spend + 1.8 * clicks - 120 * discount +
+  fifelse(channel == "Search", 80, 0) +
+  fifelse(region == "West", 40, 0) +
+  rnorm(.N, 0, 35)]
+
+builder <- AutoQuant::generate_catboost_builder_artifacts(
+  data = dt,
+  target_col = "revenue",
+  feature_cols = c("channel", "region", "spend", "clicks", "discount"),
+  problem_type = "regression",
+  id_cols = "id",
+  DateVar = "event_date",
+  ByVars = c("channel", "region"),
+  split_method = "time",
+  iterations = 30L,
+  depth = 4L,
+  learning_rate = 0.08,
+  compute_shap = TRUE
+)
+
+builder$metadata$artifact_index
+builder$value$scored_data
+builder$value$downstream_handoff
+```
+
 ### Regression
 
 <details><summary>click to expand</summary>
@@ -785,7 +829,8 @@ TestModel <- AutoQuant::AutoCatBoostRegression(
   score_function = 'Cosine',
   min_data_in_leaf = 1)
   
-# Build Training Report
+# Legacy compatibility training report.
+# New regression/binary workflows should use the artifact-first report functions.
 AutoQuant::ModelInsightsReport(
   TrainDataInclude = TRUE,
   FeatureColumnNames = names(data)[!names(data) %in% c('IDcol_1', 'IDcol_2','Adrian')],
@@ -1486,7 +1531,8 @@ TestModel <- AutoQuant::AutoCatBoostClassifier(
   score_function = 'Cosine',
   min_data_in_leaf = 1)
 
-# Build Training Report
+# Legacy compatibility training report.
+# New regression/binary workflows should use the artifact-first report functions.
 AutoQuant::ModelInsightsReport(
   TrainDataInclude = TRUE,
   FeatureColumnNames = names(data)[!names(data) %in% c('IDcol_1', 'IDcol_2','Adrian')],
@@ -2151,7 +2197,8 @@ TestModel <- AutoQuant::AutoCatBoostMultiClass(
   score_function = 'Cosine',
   min_data_in_leaf = 1)
 
-# Build Training Report
+# Legacy compatibility training report.
+# New regression/binary workflows should use the artifact-first report functions.
 AutoQuant::ModelInsightsReport(
   TrainDataInclude = TRUE,
   FeatureColumnNames = names(data)[!names(data) %in% c('IDcol_1', 'IDcol_2','Adrian')],
@@ -2793,7 +2840,8 @@ TestModel <- AutoQuant::AutoCatBoostRegression(
   min_data_in_leaf = 1)
 
 
-# Insights Report
+# Legacy compatibility insights report.
+# New regression/binary workflows should use the artifact-first report functions.
 AutoQuant::ModelInsightsReport(
   TrainDataInclude = TRUE,
   FeatureColumnNames = Features,
@@ -2933,7 +2981,8 @@ TestModel <- AutoQuant::AutoCatBoostClassifier(
   DebugMode = TRUE)
 
 
-# Insights Report
+# Legacy compatibility insights report.
+# New binary workflows should use BinaryClassificationModelInsightsReport().
 AutoQuant::ModelInsightsReport(
   TrainDataInclude = TRUE,
   FeatureColumnNames = Features,
@@ -3070,7 +3119,8 @@ TestModel <- AutoQuant::AutoCatBoostMultiClass(
   DebugMode = TRUE)
 
 
-# Insights Report
+# Legacy compatibility insights report.
+# Multiclass remains here until a multiclass artifact-first replacement exists.
 AutoQuant::ModelInsightsReport(
   TrainDataInclude = TRUE,
   FeatureColumnNames = Features,
@@ -4031,9 +4081,11 @@ Preds <- AutoQuant::AutoXGBoostScoring(
 <details><summary>Expand to view content</summary>
 <p>
 
+`ModelInsightsReport()` is a legacy compatibility wrapper for older supervised-learning examples. New regression workflows should use `generate_regression_model_insights_artifacts()` plus `RegressionModelInsightsReport()`. New binary classification workflows should use `generate_binary_classification_model_insights_artifacts()` plus `BinaryClassificationModelInsightsReport()`. Multiclass remains on the legacy wrapper until a multiclass artifact generator/report pair exists.
+
 <img src="https://github.com/AdrianAntico/AutoQuant/blob/master/Images/MLReports.png?raw=true" align="center" width="800" />
 
-<details><summary>Regression ModelInsightsReport() Example</summary>
+<details><summary>RegressionModelInsightsReport() Example</summary>
 <p>
 
 ```r
@@ -4847,7 +4899,7 @@ ReportPath <- AutoQuant::BinaryClassificationModelInsightsReport(
 
 
 
-<details><summary>MultiClass ModelInsightsReport() Example</summary>
+<details><summary>Legacy MultiClass ModelInsightsReport() Example</summary>
 <p>
 
 ```r
@@ -4888,7 +4940,8 @@ ModelObject <- AutoQuant::AutoCatBoostMultiClass(
   FeatureColNames = Features,
   IDcols = c('IDcol_1','IDcol_2'))
 
-# Create Model Insights Report
+# Legacy compatibility multiclass report.
+# Replace once a multiclass artifact-first report exists.
 AutoQuant::ModelInsightsReport(
   TrainDataInclude = TRUE,
   FeatureColumnNames = Features,

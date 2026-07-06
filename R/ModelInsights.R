@@ -814,7 +814,8 @@ BinaryClassificationModelInsightsReport <- function(
 #' @param include_segments Whether to include segment artifacts.
 #' @param include_time Whether to include time artifacts.
 #' @param include_local Whether to include local explanation artifacts.
-#' @param include_interactions Whether to include an interaction placeholder artifact.
+#' @param include_interactions Whether to include binned/leveled SHAP interaction
+#'   diagnostics from precomputed `Shap_` columns.
 #' @param prediction_scale Prediction scale label, usually `response`.
 #' @param artifact_result Optional precomputed result returned by
 #'   `generate_regression_shap_analysis_artifacts()`.
