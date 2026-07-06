@@ -1966,9 +1966,10 @@ generate_model_assessment_artifacts <- function(
       data.table::setorderv(TargetDistributionTable, "N", order = -1L)
 
       TargetDistributionTable[, Percent := N / sum(N) * 100]
+      TargetDistributionPlotData <- aq_report_sort_for_flipped_bar(TargetDistributionTable, "N", "TargetValue")
 
       TargetDistributionPlot <- AutoPlots::Bar(
-        dt = TargetDistributionTable,
+        dt = TargetDistributionPlotData,
         XVar = "TargetValue",
         YVar = "N",
         title.text = paste0(TargetVar_Name, " Distribution"),
@@ -3070,6 +3071,7 @@ generate_model_assessment_artifacts <- function(
     }
 
     if (nrow(TargetNumericAssociationPlotData) > 0L) {
+      TargetNumericAssociationPlotData <- aq_report_sort_for_flipped_bar(TargetNumericAssociationPlotData, "Abs Correlation", "Feature")
 
       TargetAssociationPlotList[["Top Numeric Target Associations"]] <- AutoPlots::Bar(
         dt = TargetNumericAssociationPlotData,
@@ -3108,6 +3110,7 @@ generate_model_assessment_artifacts <- function(
     }
 
     if (nrow(TargetCategoricalAssociationPlotData) > 0L) {
+      TargetCategoricalAssociationPlotData <- aq_report_sort_for_flipped_bar(TargetCategoricalAssociationPlotData, "Max Abs Lift From 1", "Feature")
 
       TargetAssociationPlotList[["Top Categorical Target Associations"]] <- AutoPlots::Bar(
         dt = TargetCategoricalAssociationPlotData,
@@ -3151,6 +3154,7 @@ generate_model_assessment_artifacts <- function(
     }
 
     if (nrow(TargetCategoricalLevelPlotData) > 0L) {
+      TargetCategoricalLevelPlotData <- aq_report_sort_for_flipped_bar(TargetCategoricalLevelPlotData, "Abs Lift From 1", "FeatureLevel")
 
       TargetAssociationPlotList[["Top Categorical Level Lifts"]] <- AutoPlots::Bar(
         dt = TargetCategoricalLevelPlotData,
@@ -3207,6 +3211,7 @@ generate_model_assessment_artifacts <- function(
       if (nrow(TargetNumericFeatureDriftPlotData) > MaxCorrelationPairsToPlot) {
         TargetNumericFeatureDriftPlotData <- TargetNumericFeatureDriftPlotData[seq_len(MaxCorrelationPairsToPlot)]
       }
+      TargetNumericFeatureDriftPlotData <- aq_report_sort_for_flipped_bar(TargetNumericFeatureDriftPlotData, "Abs Percent Change", "Feature")
 
       TargetDriftPlotList[["Top Numeric Feature Drift"]] <- AutoPlots::Bar(
         dt = TargetNumericFeatureDriftPlotData,
@@ -3251,6 +3256,7 @@ generate_model_assessment_artifacts <- function(
       if (nrow(TargetMissingDriftPlotData) > MaxCorrelationPairsToPlot) {
         TargetMissingDriftPlotData <- TargetMissingDriftPlotData[seq_len(MaxCorrelationPairsToPlot)]
       }
+      TargetMissingDriftPlotData <- aq_report_sort_for_flipped_bar(TargetMissingDriftPlotData, "Abs Missing % Change", "Feature")
 
       TargetDriftPlotList[["Top Missingness Drift"]] <- AutoPlots::Bar(
         dt = TargetMissingDriftPlotData,
@@ -3300,6 +3306,7 @@ generate_model_assessment_artifacts <- function(
       if (nrow(TargetCategoricalDriftPlotData) > MaxCorrelationPairsToPlot) {
         TargetCategoricalDriftPlotData <- TargetCategoricalDriftPlotData[seq_len(MaxCorrelationPairsToPlot)]
       }
+      TargetCategoricalDriftPlotData <- aq_report_sort_for_flipped_bar(TargetCategoricalDriftPlotData, "Abs Share Change", "FeatureLevel")
 
       TargetDriftPlotList[["Top Categorical Share Drift"]] <- AutoPlots::Bar(
         dt = TargetCategoricalDriftPlotData,
@@ -3338,6 +3345,7 @@ generate_model_assessment_artifacts <- function(
     }
 
     if (nrow(TargetConceptDriftPlotData) > 0L) {
+      TargetConceptDriftPlotData <- aq_report_sort_for_flipped_bar(TargetConceptDriftPlotData, "Abs Correlation Change", "Feature")
 
       TargetDriftPlotList[["Top Concept Drift"]] <- AutoPlots::Bar(
         dt = TargetConceptDriftPlotData,
@@ -3369,6 +3377,7 @@ generate_model_assessment_artifacts <- function(
       cols = "N",
       order = -1L
     )
+    TargetRiskLevelPlotData <- aq_report_sort_for_flipped_bar(TargetRiskLevelPlotData, "N", "RiskLevel")
 
     TargetRiskPlotList[["Risk Flags by Severity"]] <- AutoPlots::Bar(
       dt = TargetRiskLevelPlotData,
@@ -3391,6 +3400,7 @@ generate_model_assessment_artifacts <- function(
       cols = "N",
       order = -1L
     )
+    TargetRiskTypePlotData <- aq_report_sort_for_flipped_bar(TargetRiskTypePlotData, "N", "RiskType")
 
     TargetRiskPlotList[["Risk Flags by Type"]] <- AutoPlots::Bar(
       dt = TargetRiskTypePlotData,

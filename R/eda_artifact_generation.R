@@ -2349,7 +2349,8 @@ generate_eda_artifacts <- function(
           title.text = paste0(i, " Box Plot"),
           yAxis.title = i,
           xAxis.title = NULL,
-          Theme = Theme
+          Theme = Theme,
+          tooltip.show = FALSE
         )
 
         UnivariatePlotList[[i]] <- UnivariateBoxPlotList[[i]]
@@ -2381,7 +2382,8 @@ generate_eda_artifacts <- function(
           title.text = paste0(i, " by ", TrendGroupVar),
           yAxis.title = i,
           xAxis.title = TrendGroupVar,
-          Theme = Theme
+          Theme = Theme,
+          tooltip.show = FALSE
         ) |> echarts4r::e_flip_coords()
 
         UnivariatePlots$GroupedBoxPlots[[i]] <- UnivariateGroupedBoxPlotList[[i]]
@@ -2422,6 +2424,7 @@ generate_eda_artifacts <- function(
         data2[, SortValue := NULL]
 
         data.table::setnames(data2, "Value", i)
+        data2 <- aq_report_sort_for_flipped_bar(data2, "Counts", i)
 
         UnivariateDiscreteNumericPlotList[[i]] <- AutoPlots::Bar(
           dt = data2,
@@ -2483,6 +2486,7 @@ generate_eda_artifacts <- function(
       }
 
       data.table::setnames(data2, "Value", i)
+      data2 <- aq_report_sort_for_flipped_bar(data2, "Counts", i)
 
       UnivariateCategoricalTopNPlotList[[i]] <- AutoPlots::Bar(
         dt = data2,
@@ -3663,8 +3667,10 @@ generate_eda_artifacts <- function(
 
   if (nrow(TopAbsCorrelationStats) > 0L) {
 
+    TopAbsCorrelationStatsPlot <- aq_report_sort_for_flipped_bar(TopAbsCorrelationStats, "Abs Correlation", "Pair")
+
     CorrelationPlotList[["Top Absolute Correlations"]] <- AutoPlots::Bar(
-      dt = TopAbsCorrelationStats,
+      dt = TopAbsCorrelationStatsPlot,
       XVar = "Pair",
       YVar = "Abs Correlation",
       title.text = "Top Absolute Correlations",
@@ -3676,8 +3682,10 @@ generate_eda_artifacts <- function(
 
   if (nrow(TopPositiveCorrelationStats) > 0L) {
 
+    TopPositiveCorrelationStatsPlot <- aq_report_sort_for_flipped_bar(TopPositiveCorrelationStats, "Correlation", "Pair")
+
     CorrelationPlotList[["Top Positive Correlations"]] <- AutoPlots::Bar(
-      dt = TopPositiveCorrelationStats,
+      dt = TopPositiveCorrelationStatsPlot,
       XVar = "Pair",
       YVar = "Correlation",
       title.text = "Top Positive Correlations",
@@ -3691,6 +3699,7 @@ generate_eda_artifacts <- function(
 
     TopNegativeCorrelationStatsPlot <- data.table::copy(TopNegativeCorrelationStats)
     TopNegativeCorrelationStatsPlot[, `Negative Correlation Magnitude` := abs(Correlation)]
+    TopNegativeCorrelationStatsPlot <- aq_report_sort_for_flipped_bar(TopNegativeCorrelationStatsPlot, "Negative Correlation Magnitude", "Pair")
 
     CorrelationPlotList[["Top Negative Correlations"]] <- AutoPlots::Bar(
       dt = TopNegativeCorrelationStatsPlot,

@@ -736,7 +736,9 @@ binary_model_insights_build_feature_plots <- function(scored, feature_summary, t
         Theme = "dark",
         title.text = paste("Partial Dependence Heatmap:", feature),
         xAxis.title = feature,
-        yAxis.title = NULL
+        yAxis.title = NULL,
+        xAxis.axisLabel.rotate = 45,
+        tooltip.show = aq_report_dense_axis_tooltip(pdp, feature, "metric")
       )
     }
   }

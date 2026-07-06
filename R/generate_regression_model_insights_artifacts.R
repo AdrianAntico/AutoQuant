@@ -1261,7 +1261,9 @@ model_insights_build_regression_residual_artifacts <- function(
           title.text = paste0("Residual by Prediction Bin: ", split_label, " Data"),
           xAxis.title = "Prediction Bin",
           yAxis.title = "Residual",
-          Theme = Theme
+          Theme = Theme,
+          xAxis.axisLabel.rotate = 45,
+          tooltip.show = FALSE
         )
       )
     }
@@ -1646,6 +1648,7 @@ model_insights_build_regression_importance_artifacts <- function(
 
     if (!is.na(y_col) && y_col %in% names(variable_importance)) {
       top_vi <- utils::head(variable_importance[order(-get(y_col))], 50L)
+      top_vi <- aq_report_sort_for_flipped_bar(top_vi, y_col, "Variable")
 
       plots$variable_importance_bar <- model_insights_try_plot(
         AutoPlots::Bar(
@@ -1748,6 +1751,7 @@ model_insights_build_regression_interaction_artifacts <- function(
 
   if (nrow(interaction_importance)) {
     top_int <- utils::head(interaction_importance, 50L)
+    top_int <- aq_report_sort_for_flipped_bar(top_int, "Mean_Importance", "Pair")
 
     plots$interaction_importance_bar <- model_insights_try_plot(
       AutoPlots::Bar(
@@ -1764,9 +1768,11 @@ model_insights_build_regression_interaction_artifacts <- function(
   }
 
   if (nrow(degree)) {
+    degree_plot_data <- aq_report_sort_for_flipped_bar(utils::head(degree, 50L), "TotalInteractionImportance", "Feature")
+
     plots$feature_interaction_degree_bar <- model_insights_try_plot(
       AutoPlots::Bar(
-        dt = utils::head(degree, 50L),
+        dt = degree_plot_data,
         XVar = "Feature",
         YVar = "TotalInteractionImportance",
         title.text = "Feature Interaction Degree",
@@ -1936,7 +1942,9 @@ model_insights_build_calibration_by_feature_artifacts <- function(
           yAxis.title = inputs$TargetColumnName,
           xAxis.title = g,
           Theme = Theme,
-          TimeLine = TRUE
+          TimeLine = TRUE,
+          xAxis.axisLabel.rotate = 45,
+          tooltip.show = aq_report_dense_axis_tooltip(data.table::as.data.table(inputs$TestData), g, inputs$TargetColumnName)
         ),
         error = function(e) {
           failures <<- data.table::rbindlist(list(failures, add_failure(g, "Test", "categorical_heatmap", conditionMessage(e))), fill = TRUE)
@@ -1958,7 +1966,9 @@ model_insights_build_calibration_by_feature_artifacts <- function(
           yAxis.title = inputs$TargetColumnName,
           xAxis.title = g,
           Theme = Theme,
-          TimeLine = TRUE
+          TimeLine = TRUE,
+          xAxis.axisLabel.rotate = 45,
+          tooltip.show = aq_report_dense_axis_tooltip(data.table::as.data.table(inputs$TrainData), g, inputs$TargetColumnName)
         ),
         error = function(e) {
           failures <<- data.table::rbindlist(list(failures, add_failure(g, "Train", "categorical_heatmap", conditionMessage(e))), fill = TRUE)
@@ -2316,6 +2326,7 @@ model_insights_build_uplift_by_feature_artifacts <- function(
     for (sp in unique(categorical$Split)) {
       for (v in unique(categorical[Split == sp]$Variable)) {
         pd <- categorical[Split == sp & Variable == v][order(-PredictionUplift)]
+        pd <- aq_report_sort_for_flipped_bar(pd, "PredictionUplift", "FeatureLevel")
 
         split_name <- tolower(sp)
 
@@ -2336,9 +2347,11 @@ model_insights_build_uplift_by_feature_artifacts <- function(
   }
 
   if (nrow(summary)) {
+    effect_range_plot_data <- aq_report_sort_for_flipped_bar(utils::head(summary[order(-PredictionRange)], 50L), "PredictionRange", "Variable")
+
     plots$effect_range_bar <- model_insights_try_plot(
       AutoPlots::Bar(
-        dt = utils::head(summary[order(-PredictionRange)], 50L),
+        dt = effect_range_plot_data,
         XVar = "Variable",
         YVar = "PredictionRange",
         title.text = "Largest Modeled Prediction Ranges by Feature",
@@ -2723,10 +2736,11 @@ model_insights_build_stratified_effects_artifacts <- function(
 
   if (nrow(simpsons)) {
     simpsons_plot_data <- simpsons[, Feature_ByVariable := paste(Feature, ByVariable, sep = " by ")][]
+    simpsons_plot_data <- aq_report_sort_for_flipped_bar(utils::head(simpsons_plot_data[order(-OppositeDirectionShare)], 50L), "OppositeDirectionShare", "Feature_ByVariable")
 
     plots$simpsons_flags_bar <- model_insights_try_plot(
       AutoPlots::Bar(
-        dt = utils::head(simpsons_plot_data[order(-OppositeDirectionShare)], 50L),
+        dt = simpsons_plot_data,
         XVar = "Feature_ByVariable",
         YVar = "OppositeDirectionShare",
         title.text = "Possible Simpson's Paradox Flags",
@@ -2740,10 +2754,11 @@ model_insights_build_stratified_effects_artifacts <- function(
 
   if (nrow(heterogeneity)) {
     heterogeneity[, Feature_ByVariable := paste(Feature, ByVariable, sep = " by ")]
+    heterogeneity_plot_data <- aq_report_sort_for_flipped_bar(utils::head(heterogeneity[order(-EffectRange)], 50L), "EffectRange", "Feature_ByVariable")
 
     plots$effect_heterogeneity_bar <- model_insights_try_plot(
       AutoPlots::Bar(
-        dt = utils::head(heterogeneity[order(-EffectRange)], 50L),
+        dt = heterogeneity_plot_data,
         XVar = "Feature_ByVariable",
         YVar = "EffectRange",
         title.text = "Effect Heterogeneity by Segment",
@@ -2851,10 +2866,11 @@ model_insights_build_segment_performance_artifacts <- function(
 
   if (nrow(worst_rmse)) {
     worst_rmse[, SegmentLabel := paste(SegmentVariable, SegmentLevel, sep = ": ")]
+    worst_rmse_plot_data <- aq_report_sort_for_flipped_bar(worst_rmse, "RMSE", "SegmentLabel")
 
     plots$worst_segments_by_rmse <- model_insights_try_plot(
       AutoPlots::Bar(
-        dt = worst_rmse,
+        dt = worst_rmse_plot_data,
         XVar = "SegmentLabel",
         YVar = "RMSE",
         title.text = "Worst Segments by RMSE",
@@ -2868,10 +2884,11 @@ model_insights_build_segment_performance_artifacts <- function(
 
   if (nrow(worst_bias)) {
     worst_bias[, SegmentLabel := paste(SegmentVariable, SegmentLevel, sep = ": ")]
+    worst_bias_plot_data <- aq_report_sort_for_flipped_bar(worst_bias, "Bias", "SegmentLabel")
 
     plots$worst_segments_by_bias <- model_insights_try_plot(
       AutoPlots::Bar(
-        dt = worst_bias,
+        dt = worst_bias_plot_data,
         XVar = "SegmentLabel",
         YVar = "Bias",
         title.text = "Worst Segments by Bias",
@@ -3036,9 +3053,11 @@ model_insights_build_stability_artifacts <- function(
   plots <- list()
 
   if (nrow(feature_shift) && "PSI" %in% names(feature_shift)) {
+    feature_shift_plot_data <- aq_report_sort_for_flipped_bar(utils::head(feature_shift[!is.na(PSI)][order(-PSI)], 50L), "PSI", "Variable")
+
     plots$feature_shift_psi <- model_insights_try_plot(
       AutoPlots::Bar(
-        dt = utils::head(feature_shift[!is.na(PSI)][order(-PSI)], 50L),
+        dt = feature_shift_plot_data,
         XVar = "Variable",
         YVar = "PSI",
         title.text = "Train/Test Feature Shift PSI",
