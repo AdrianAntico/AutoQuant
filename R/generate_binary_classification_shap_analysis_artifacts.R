@@ -812,7 +812,7 @@ generate_binary_classification_shap_analysis_artifacts <- function(
       plot_result <- aq_safe_create_shap_plot(
         if (source_is_numeric) "line" else "bar",
         if (source_is_numeric) {
-          aq_create_shap_line_plot(effect_plot_data, "feature_value_or_bin", "mean_shap", title = paste("Binary SHAP Effect:", feature_name), auto_plots_theme = auto_plots_theme, plot_width = plot_width, plot_height = plot_height)
+          aq_create_shap_line_plot(effect_plot_data, "feature_value_or_bin", "mean_shap", title = paste("Binary SHAP Effect:", feature_name), auto_plots_theme = auto_plots_theme, plot_width = plot_width, plot_height = plot_height, x_axis_label_rotate = 45L)
         } else {
           aq_create_shap_bar_plot(effect_plot_data, "feature_value_or_bin", "mean_shap", title = paste("Binary SHAP Effect:", feature_name), auto_plots_theme = auto_plots_theme, plot_width = plot_width, plot_height = plot_height)
         }
@@ -923,7 +923,7 @@ generate_binary_classification_shap_analysis_artifacts <- function(
       time_plot_data <- data.table::copy(time_effects[rank_within_period <= plot_top_n])
       time_plot_data[, period := as.Date(period)]
       time_plot_data <- aq_smart_round_dt(time_plot_data, skip_cols = c("rank_within_period", "n"))
-      line_result <- aq_safe_create_shap_plot("line", aq_create_shap_line_plot(time_plot_data, "period", "mean_abs_shap", GroupVar = "feature", title = "Binary Time SHAP Effects", auto_plots_theme = auto_plots_theme, plot_width = plot_width, plot_height = plot_height))
+      line_result <- aq_safe_create_shap_plot("line", aq_create_shap_line_plot(time_plot_data, "period", "mean_abs_shap", GroupVar = "feature", title = "Binary Time SHAP Effects", auto_plots_theme = auto_plots_theme, plot_width = plot_width, plot_height = plot_height, x_axis_label_rotate = 45L))
       if (!is.null(line_result$object)) {
         line_result$object <- aq_style_shap_plot(line_result$object, rotate_x = TRUE, x_axis_title = DateVar)
         artifacts <- binary_shap_add_artifact(artifacts, aq_create_binary_shap_plot_artifact("time_effects_line_plot", "Binary Time SHAP Effects Plot", "Time Effects", "line", "time_effects", line_result$object, artifact_metadata("time_effects", "Time Effects", 17L)))

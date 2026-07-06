@@ -970,7 +970,8 @@ aq_shap_plot_args <- function(
   plot_width = NULL,
   plot_height = NULL,
   pre_agg = NULL,
-  tooltip_show = NULL
+  tooltip_show = NULL,
+  x_axis_label_rotate = NULL
 ) {
   args <- list(dt = dt, XVar = XVar)
   if (!is.null(YVar)) args$YVar <- YVar
@@ -982,6 +983,7 @@ aq_shap_plot_args <- function(
   if (!is.null(plot_height)) args$Height <- plot_height
   if (!is.null(pre_agg)) args$PreAgg <- pre_agg
   if (!is.null(tooltip_show)) args$tooltip.show <- tooltip_show
+  if (!is.null(x_axis_label_rotate)) args$xAxis.axisLabel.rotate <- x_axis_label_rotate
   args
 }
 
@@ -1009,20 +1011,20 @@ aq_create_shap_bar_plot <- function(dt, XVar, YVar, GroupVar = NULL, title = NUL
   aq_call_autoplot("Bar", aq_shap_plot_args(dt, XVar, YVar, GroupVar = GroupVar, title = title, auto_plots_theme = auto_plots_theme, plot_width = plot_width, plot_height = plot_height, pre_agg = TRUE))
 }
 
-aq_create_shap_box_plot <- function(dt, XVar, YVar, GroupVar = NULL, title = NULL, auto_plots_theme = NULL, plot_width = NULL, plot_height = NULL) {
-  aq_call_autoplot("Box", aq_shap_plot_args(dt, XVar, YVar, GroupVar = GroupVar, title = title, auto_plots_theme = auto_plots_theme, plot_width = plot_width, plot_height = plot_height, tooltip_show = FALSE))
+aq_create_shap_box_plot <- function(dt, XVar, YVar, GroupVar = NULL, title = NULL, auto_plots_theme = NULL, plot_width = NULL, plot_height = NULL, x_axis_label_rotate = NULL) {
+  aq_call_autoplot("Box", aq_shap_plot_args(dt, XVar, YVar, GroupVar = GroupVar, title = title, auto_plots_theme = auto_plots_theme, plot_width = plot_width, plot_height = plot_height, tooltip_show = FALSE, x_axis_label_rotate = x_axis_label_rotate))
 }
 
 aq_create_shap_scatter_plot <- function(dt, XVar, YVar, GroupVar = NULL, title = NULL, auto_plots_theme = NULL, plot_width = NULL, plot_height = NULL) {
   aq_call_autoplot("Scatter", aq_shap_plot_args(dt, XVar, YVar, GroupVar = GroupVar, title = title, auto_plots_theme = auto_plots_theme, plot_width = plot_width, plot_height = plot_height))
 }
 
-aq_create_shap_line_plot <- function(dt, XVar, YVar, GroupVar = NULL, title = NULL, auto_plots_theme = NULL, plot_width = NULL, plot_height = NULL) {
-  aq_call_autoplot("Line", aq_shap_plot_args(dt, XVar, YVar, GroupVar = GroupVar, title = title, auto_plots_theme = auto_plots_theme, plot_width = plot_width, plot_height = plot_height, pre_agg = TRUE))
+aq_create_shap_line_plot <- function(dt, XVar, YVar, GroupVar = NULL, title = NULL, auto_plots_theme = NULL, plot_width = NULL, plot_height = NULL, x_axis_label_rotate = NULL) {
+  aq_call_autoplot("Line", aq_shap_plot_args(dt, XVar, YVar, GroupVar = GroupVar, title = title, auto_plots_theme = auto_plots_theme, plot_width = plot_width, plot_height = plot_height, pre_agg = TRUE, x_axis_label_rotate = x_axis_label_rotate))
 }
 
-aq_create_shap_heatmap_plot <- function(dt, XVar, YVar, ZVar, title = NULL, auto_plots_theme = NULL, plot_width = NULL, plot_height = NULL) {
-  aq_call_autoplot("HeatMap", aq_shap_plot_args(dt, XVar, YVar, ZVar = ZVar, title = title, auto_plots_theme = auto_plots_theme, plot_width = plot_width, plot_height = plot_height, pre_agg = TRUE, tooltip_show = aq_shap_dense_axis_tooltip(dt, XVar, YVar)))
+aq_create_shap_heatmap_plot <- function(dt, XVar, YVar, ZVar, title = NULL, auto_plots_theme = NULL, plot_width = NULL, plot_height = NULL, x_axis_label_rotate = 45L) {
+  aq_call_autoplot("HeatMap", aq_shap_plot_args(dt, XVar, YVar, ZVar = ZVar, title = title, auto_plots_theme = auto_plots_theme, plot_width = plot_width, plot_height = plot_height, pre_agg = TRUE, tooltip_show = aq_shap_dense_axis_tooltip(dt, XVar, YVar), x_axis_label_rotate = x_axis_label_rotate))
 }
 
 aq_safe_create_shap_plot <- function(plot_type, create_expr) {
@@ -1733,7 +1735,8 @@ generate_regression_shap_analysis_artifacts <- function(
             title = paste("SHAP Effect:", feature_name),
             auto_plots_theme = auto_plots_theme,
             plot_width = plot_width,
-            plot_height = plot_height
+            plot_height = plot_height,
+            x_axis_label_rotate = 45L
           )
         } else {
           aq_create_shap_bar_plot(
@@ -1899,7 +1902,8 @@ generate_regression_shap_analysis_artifacts <- function(
           title = "Time SHAP Effects",
           auto_plots_theme = auto_plots_theme,
           plot_width = plot_width,
-          plot_height = plot_height
+          plot_height = plot_height,
+          x_axis_label_rotate = 45L
         )
       )
       if (!is.null(line_result$object)) {
@@ -2539,6 +2543,7 @@ qa_regression_shap_formatting_ordering <- function() {
       "skipped_integer_count_preserved",
       "plot_category_order_preserved",
       "autoplots_axis_label_theme_preserved",
+      "autoplots_x_axis_rotation_parameter_used",
       "box_tooltips_disabled",
       "heatmap_tooltips_disabled_when_crowded",
       "heatmap_tooltips_default_when_simple"
@@ -2550,7 +2555,8 @@ qa_regression_shap_formatting_ordering <- function() {
       if (rounded$small[[1L]] == signif(0.123456789, 4L) && rounded$regular[[1L]] == round(12.3456789, 2L)) "success" else "error",
       if (identical(rounded$n, c(1L, 2L))) "success" else "error",
       if (is.ordered(ordered_plot_data$feature) && identical(levels(ordered_plot_data$feature), c("b", "a", "c"))) "success" else "error",
-      if (!grepl("axisLabel", style_source, fixed = TRUE)) "success" else "error",
+      if (!grepl("axisLabel =", style_source, fixed = TRUE)) "success" else "error",
+      if (identical(aq_shap_plot_args(simple_heatmap_data, "x", "z", x_axis_label_rotate = 45L)$xAxis.axisLabel.rotate, 45L)) "success" else "error",
       if (identical(aq_shap_plot_args(simple_heatmap_data, "x", "z", tooltip_show = FALSE)$tooltip.show, FALSE)) "success" else "error",
       if (identical(aq_shap_dense_axis_tooltip(crowded_heatmap_data, "x", "y"), FALSE)) "success" else "error",
       if (is.null(aq_shap_dense_axis_tooltip(simple_heatmap_data, "x", "y"))) "success" else "error"
@@ -2563,6 +2569,7 @@ qa_regression_shap_formatting_ordering <- function() {
       "Skipped count columns are preserved.",
       "Plot category columns preserve the sorted row order through factor levels.",
       "SHAP report styling does not override AutoPlots axis label theme settings.",
+      "Categorical x-axis rotation is passed through AutoPlots xAxis.axisLabel.rotate.",
       "Box plot helpers pass tooltip.show = FALSE into AutoPlots.",
       "Heatmap helpers disable tooltips when axis labels are crowded.",
       "Heatmap helpers preserve default tooltips for simple axes."
@@ -2690,7 +2697,7 @@ qa_regression_shap_analysis_report <- function() {
       if (grepl("prettydoc::html_pretty", template, fixed = TRUE)) "success" else "error",
       if (all(vapply(c("mi-hero", "mi-panel", "table-wrap"), function(x) grepl(x, template, fixed = TRUE), logical(1L)))) "success" else "error",
       if (grepl("e_flip_coords", generator_source, fixed = TRUE)) "success" else "error",
-      if (!grepl("axisLabel", paste(deparse(aq_style_shap_plot), collapse = "\n"), fixed = TRUE)) "success" else "error",
+      if (!grepl("axisLabel =", paste(deparse(aq_style_shap_plot), collapse = "\n"), fixed = TRUE)) "success" else "error",
       if (file.exists(reuse_path) && file.info(reuse_path)$size > 0L) "success" else "error",
       "success",
       "success",
