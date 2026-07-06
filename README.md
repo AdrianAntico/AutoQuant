@@ -131,6 +131,14 @@ devtools::install_github('AdrianAntico/prettydoc', upgrade = FALSE, dependencies
 devtools::install_github('AdrianAntico/AutoQuant', upgrade = FALSE, dependencies = FALSE, force = TRUE)
 ```
 
+Reactable-backed report tables support text exclusion filters. In a text column filter, use:
+
+- `Impressions` to keep rows containing `Impressions`
+- `!Impressions` to exclude rows containing `Impressions`
+- `-Impressions` to exclude rows containing `Impressions`
+
+Text matching is case-insensitive. Numeric and date columns keep their standard reactable filtering behavior.
+
 #### Installation Troubleshooting 
 The most common issue some users are having when trying to install <code>AutoQuant</code> is the installation of the <code>catboost</code> package dependency. Since <code>catboost</code> is not on CRAN it can only be installed through GitHub. To install <code>catboost</code> without error (and consequently install <code>AutoQuant</code> without error), try running this line of code first, then restart your R session, then re-run the 2-step installation process above. (<a href="https://github.com/catboost/catboost/issues/612" target="_blank">Reference</a>):
 If you're still having trouble submit an issue and I'll work with you to get it installed.

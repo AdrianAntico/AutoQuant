@@ -2717,7 +2717,11 @@ generate_model_assessment_artifacts <- function(
       return(NULL)
     }
 
-    reactable::reactable(data = data, ...)
+    args <- list(...)
+    args$data <- data
+    args$columns <- aq_reactable_text_filter_columns(data, args$columns)
+
+    do.call(reactable::reactable, args)
   }
 
   Target_QA <- target_safe_reactable(
@@ -3460,6 +3464,7 @@ generate_model_assessment_artifacts <- function(
 
     reactable::reactable(
       data = dt,
+      columns = aq_reactable_text_filter_columns(dt),
       compact = TRUE,
       defaultPageSize = default_page_size,
       pageSizeOptions = c(10, 15, 25, 50, 100),
