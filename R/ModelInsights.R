@@ -899,9 +899,6 @@ aq_shap_report_template_path <- function(RmdFile, Package, TemplatePath = NULL) 
 
 aq_prepare_regression_shap_report_artifact_result <- function(data = NULL, artifact_result = NULL, generator_args = list()) {
   if (!is.null(artifact_result)) {
-    if (!is.null(data)) {
-      warning("Both `artifact_result` and `data` were supplied; rendering `artifact_result` without recomputing artifacts.", call. = FALSE)
-    }
     return(artifact_result)
   }
   if (is.null(data)) {
@@ -915,9 +912,6 @@ aq_prepare_regression_shap_report_artifact_result <- function(data = NULL, artif
 
 aq_prepare_binary_shap_report_artifact_result <- function(data = NULL, artifact_result = NULL, generator_args = list()) {
   if (!is.null(artifact_result)) {
-    if (!is.null(data)) {
-      warning("Both `artifact_result` and `data` were supplied; rendering `artifact_result` without recomputing artifacts.", call. = FALSE)
-    }
     return(artifact_result)
   }
   if (is.null(data)) {
@@ -1042,7 +1036,7 @@ RegressionShapAnalysisReport <- function(
     params = list(
       title = opts$Title,
       subtitle = opts$Subtitle,
-      theme = opts$Theme,
+      Theme = opts$Theme,
       generated_at = generated_at,
       artifact_result = artifact_result,
       artifact_sections = regression_shap_sections(),
@@ -1180,7 +1174,7 @@ BinaryClassificationShapAnalysisReport <- function(
     params = list(
       title = opts$Title,
       subtitle = opts$Subtitle,
-      theme = opts$Theme,
+      Theme = opts$Theme,
       generated_at = generated_at,
       artifact_result = artifact_result,
       artifact_sections = binary_shap_sections(),
