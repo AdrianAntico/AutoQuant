@@ -2,7 +2,7 @@
 % Please edit documentation in R/target_model_readiness_artifacts.R
 \name{generate_model_assessment_artifacts}
 \alias{generate_model_assessment_artifacts}
-\title{Generate Model Assessment Artifacts}
+\title{Generate Model Readiness Artifacts}
 \usage{
 generate_model_assessment_artifacts(
   data,
@@ -123,7 +123,7 @@ A list containing tables, widgets, plots, metadata, diagnostics, and
   optional export manifests.
 }
 \description{
-Generates model assessment and model-readiness artifacts from a data set
+Generates model-readiness artifacts from a data set
 and target variable. The current implementation supports target-oriented
 diagnostics, model-readiness evidence, optional trend/drift checks, and
 feature engineering guidance.
@@ -135,14 +135,14 @@ later.
 }
 \examples{
 \dontrun{
-model_assessment_artifacts <- generate_model_assessment_artifacts(
+model_readiness_artifacts <- generate_model_assessment_artifacts(
   data = dt,
   DataName = "Modeling Data",
   TargetVar = "converted",
   TrendDateVar = "event_date",
   TrendGroupVar = c("channel", "market"),
   Theme = "dark",
-  OutputPath = "model_assessment_artifacts",
+  OutputPath = "model_readiness_artifacts",
   ExportPNG = TRUE
 )
 }

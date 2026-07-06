@@ -385,7 +385,7 @@ catboost_builder_run_auto_catboost <- function(
     )]
 
     result <- AutoCatBoostClassifier(
-      OutputSelection = c("Importances", "EvalMetrics", "Score_TrainData"),
+      OutputSelection = c("Importances", "Score_TrainData"),
       data = train_dt,
       ValidationData = validate_dt,
       TestData = NULL,

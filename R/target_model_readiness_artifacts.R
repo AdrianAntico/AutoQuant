@@ -1,10 +1,10 @@
 # ============================================================
-# Model Assessment Artifact Generation
+# Model Readiness Artifact Generation
 # ============================================================
 
-#' Generate Model Assessment Artifacts
+#' Generate Model Readiness Artifacts
 #'
-#' Generates model assessment and model-readiness artifacts from a data set
+#' Generates model-readiness artifacts from a data set
 #' and target variable. The current implementation supports target-oriented
 #' diagnostics, model-readiness evidence, optional trend/drift checks, and
 #' feature engineering guidance.
@@ -66,14 +66,14 @@
 #'
 #' @examples
 #' \dontrun{
-#' model_assessment_artifacts <- generate_model_assessment_artifacts(
+#' model_readiness_artifacts <- generate_model_assessment_artifacts(
 #'   data = dt,
 #'   DataName = "Modeling Data",
 #'   TargetVar = "converted",
 #'   TrendDateVar = "event_date",
 #'   TrendGroupVar = c("channel", "market"),
 #'   Theme = "dark",
-#'   OutputPath = "model_assessment_artifacts",
+#'   OutputPath = "model_readiness_artifacts",
 #'   ExportPNG = TRUE
 #' )
 #' }
@@ -4968,7 +4968,7 @@ target_export_target_artifact_sidecars <- function(
 ) {
 
   if (is.null(output_path)) {
-    output_path <- file.path(getwd(), "model_assessment_artifacts")
+    output_path <- file.path(getwd(), "model_readiness_artifacts")
   }
 
   image_dir <- file.path(output_path, "images")
