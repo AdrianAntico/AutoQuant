@@ -784,160 +784,92 @@ BinaryClassificationModelInsightsReport <- function(
 # supplied, but it does not compute SHAP values itself.
 # ============================================================
 
-#' Render Regression SHAP Analysis Report
-#'
-#' Renders a standalone AutoQuant-native HTML report from Regression SHAP
-#' Analysis artifacts. If `artifact_result` is not supplied, this function calls
-#' `generate_regression_shap_analysis_artifacts()` first. Input data must contain
-#' precomputed `Shap_` columns; this report function does not compute SHAP
-#' values, call `predict()`, require a model object, or use a SHAP backend
-#' package.
-#'
-#' @param data A data.table containing precomputed `Shap_` columns.
-#' @param output_dir Directory where the rendered report should be written.
-#' @param output_file Output HTML filename.
-#' @param title Report title.
-#' @param subtitle Optional report subtitle.
-#' @param target_col Optional target/actual column.
-#' @param prediction_col Optional prediction column. Defaults to `Predict` when present.
-#' @param feature_cols Optional source features used to filter detected SHAP columns.
-#' @param shap_prefix Prefix for SHAP contribution columns.
-#' @param id_cols Optional ID/context columns.
-#' @param model_name Optional model name.
-#' @param data_name Optional data name.
-#' @param DateVar Optional date column.
-#' @param date_aggregation One of `day`, `week`, or `month`.
-#' @param ByVars Optional segment variables.
-#' @param selected_features Optional feature list for effect/dependence/local views.
-#' @param local_row_ids Optional 1-based row indexes for local explanations.
-#' @param top_n Number of top features used for display-oriented artifacts.
-#' @param max_dependence_rows Maximum source rows per selected feature in dependence output.
-#' @param max_segment_levels Maximum segment levels to keep per ByVar.
-#' @param max_byvars Maximum number of ByVars to use.
-#' @param include_dependence Whether to include dependence artifacts.
-#' @param include_segments Whether to include segment artifacts.
-#' @param include_time Whether to include time artifacts.
-#' @param include_local Whether to include local explanation artifacts.
-#' @param include_interactions Whether to include binned/leveled SHAP interaction
-#'   diagnostics from precomputed `Shap_` columns.
-#' @param prediction_scale Prediction scale label, usually `response`.
-#' @param artifact_result Optional precomputed result returned by
-#'   `generate_regression_shap_analysis_artifacts()`.
-#' @param open If TRUE, open the rendered report in a browser.
-#' @param quiet Passed to `rmarkdown::render()`.
-#' @param self_contained Passed to `rmarkdown::render()` through output_options.
-#' @param RmdFile RMarkdown filename located in `inst/r-markdowns`.
-#' @param Package Package name used to locate installed RMarkdown files.
-#' @param TemplatePath Optional explicit path to the RMarkdown file. If supplied,
-#'   this takes precedence over the package/system.file lookup.
-#' @param Clean Passed to `rmarkdown::render()`.
-#' @param Envir Optional render environment. If NULL, a clean child environment
-#'   of `.GlobalEnv` is created.
-#' @param ... Additional arguments passed to the artifact generator.
-#'
-#' @return Invisibly returns the rendered report path.
-#'
-#' @family Reports
-#' @export
-RegressionShapAnalysisReport <- function(
-  data,
-  output_dir = getwd(),
-  output_file = NULL,
-  title = "Regression SHAP Analysis Report",
-  subtitle = NULL,
-  target_col = NULL,
-  prediction_col = NULL,
-  feature_cols = NULL,
-  shap_prefix = "Shap_",
-  id_cols = NULL,
-  model_name = NULL,
-  data_name = NULL,
-  DateVar = NULL,
-  date_aggregation = "month",
-  ByVars = character(),
-  selected_features = NULL,
-  local_row_ids = integer(),
-  top_n = 20L,
-  max_dependence_rows = 5000L,
-  max_segment_levels = 20L,
-  max_byvars = 3L,
-  include_dependence = TRUE,
-  include_segments = TRUE,
-  include_time = TRUE,
-  include_local = FALSE,
-  include_interactions = FALSE,
-  prediction_scale = "response",
-  artifact_result = NULL,
-  open = FALSE,
-  quiet = TRUE,
-  self_contained = TRUE,
-  RmdFile = "Regression_SHAP_Analysis_Report.Rmd",
-  Package = "AutoQuant",
-  TemplatePath = NULL,
-  Clean = TRUE,
-  Envir = NULL,
-  ...
+aq_shap_report_pop_arg <- function(args, names, default = NULL) {
+  for (nm in names) {
+    if (nm %in% names(args)) {
+      return(args[[nm]])
+    }
+  }
+  default
+}
+
+aq_shap_report_drop_args <- function(args, names) {
+  args[setdiff(names(args), names)]
+}
+
+aq_shap_report_default <- function(value, default) {
+  if (is.null(value)) default else value
+}
+
+aq_shap_report_options <- function(
+  dots,
+  OutputPath,
+  OutputFile,
+  Title,
+  Subtitle,
+  Theme,
+  Open,
+  Quiet,
+  default_output_file,
+  default_rmd_file
 ) {
-  if (!requireNamespace("rmarkdown", quietly = TRUE)) {
-    stop("Package 'rmarkdown' is required to render RegressionShapAnalysisReport().", call. = FALSE)
-  }
+  render_names <- c(
+    "OutputPath", "output_path", "output_dir",
+    "OutputFile", "output_file",
+    "Title", "title",
+    "Subtitle", "subtitle",
+    "Theme", "theme",
+    "Open", "open",
+    "Quiet", "quiet",
+    "SelfContained", "self_contained",
+    "RmdFile", "Package", "TemplatePath", "Clean", "Envir"
+  )
 
-  if (!requireNamespace("knitr", quietly = TRUE)) {
-    stop("Package 'knitr' is required to render RegressionShapAnalysisReport().", call. = FALSE)
-  }
-
-  for (pkg in c("data.table", "htmltools", "reactable", "echarts4r", "AutoPlots")) {
-    if (!requireNamespace(pkg, quietly = TRUE)) {
-      stop(paste0("Package '", pkg, "' is required to render RegressionShapAnalysisReport()."), call. = FALSE)
-    }
-  }
-
-  if (is.null(artifact_result)) {
-    if (missing(data) || is.null(data)) {
-      stop("`data` must be supplied when `artifact_result` is NULL.", call. = FALSE)
-    }
-    artifact_result <- generate_regression_shap_analysis_artifacts(
-      data = data,
-      target_col = target_col,
-      prediction_col = prediction_col,
-      feature_cols = feature_cols,
-      shap_prefix = shap_prefix,
-      id_cols = id_cols,
-      model_name = model_name,
-      data_name = data_name,
-      DateVar = DateVar,
-      date_aggregation = date_aggregation,
-      ByVars = ByVars,
-      selected_features = selected_features,
-      local_row_ids = local_row_ids,
-      top_n = top_n,
-      max_dependence_rows = max_dependence_rows,
-      max_segment_levels = max_segment_levels,
-      max_byvars = max_byvars,
-      include_dependence = include_dependence,
-      include_segments = include_segments,
-      include_time = include_time,
-      include_local = include_local,
-      include_interactions = include_interactions,
-      prediction_scale = prediction_scale,
-      ...
-    )
-  }
-
-  if (!is.list(artifact_result) || is.null(artifact_result$artifacts)) {
-    stop("`artifact_result` must be the structured output from generate_regression_shap_analysis_artifacts().", call. = FALSE)
-  }
-
-  output_dir <- normalizePath(output_dir, winslash = "/", mustWork = FALSE)
-  dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
+  output_path <- aq_shap_report_pop_arg(dots, c("OutputPath", "output_path", "output_dir"), OutputPath)
+  output_file <- aq_shap_report_pop_arg(dots, c("OutputFile", "output_file"), OutputFile)
+  title <- aq_shap_report_pop_arg(dots, c("Title", "title"), Title)
+  subtitle <- aq_shap_report_pop_arg(dots, c("Subtitle", "subtitle"), Subtitle)
+  theme <- aq_shap_report_pop_arg(dots, c("Theme", "theme"), Theme)
+  open <- aq_shap_report_pop_arg(dots, c("Open", "open"), Open)
+  quiet <- aq_shap_report_pop_arg(dots, c("Quiet", "quiet"), Quiet)
+  self_contained <- aq_shap_report_pop_arg(dots, c("SelfContained", "self_contained"), TRUE)
+  rmd_file <- aq_shap_report_pop_arg(dots, "RmdFile", default_rmd_file)
+  package <- aq_shap_report_pop_arg(dots, "Package", "AutoQuant")
+  template_path <- aq_shap_report_pop_arg(dots, "TemplatePath", NULL)
+  clean <- aq_shap_report_pop_arg(dots, "Clean", TRUE)
+  envir <- aq_shap_report_pop_arg(dots, "Envir", NULL)
+  generator_args <- aq_shap_report_drop_args(dots, render_names)
 
   if (is.null(output_file) || !nzchar(output_file)) {
-    output_file <- "regression_shap_analysis_report.html"
+    output_file <- default_output_file
   }
   if (!grepl("\\.html?$", output_file, ignore.case = TRUE)) {
     output_file <- paste0(output_file, ".html")
   }
 
+  if (!("auto_plots_theme" %in% names(generator_args))) {
+    generator_args$auto_plots_theme <- theme
+  }
+
+  list(
+    OutputPath = output_path,
+    OutputFile = output_file,
+    Title = title,
+    Subtitle = subtitle,
+    Theme = theme,
+    Open = open,
+    Quiet = quiet,
+    SelfContained = self_contained,
+    RmdFile = rmd_file,
+    Package = package,
+    TemplatePath = template_path,
+    Clean = clean,
+    Envir = envir,
+    generator_args = generator_args
+  )
+}
+
+aq_shap_report_template_path <- function(RmdFile, Package, TemplatePath = NULL) {
   if (!is.null(TemplatePath) && nzchar(TemplatePath)) {
     template_path <- normalizePath(TemplatePath, winslash = "/", mustWork = FALSE)
   } else {
@@ -962,12 +894,141 @@ RegressionShapAnalysisReport <- function(
       call. = FALSE
     )
   }
+  template_path
+}
+
+aq_prepare_regression_shap_report_artifact_result <- function(data = NULL, artifact_result = NULL, generator_args = list()) {
+  if (!is.null(artifact_result)) {
+    if (!is.null(data)) {
+      warning("Both `artifact_result` and `data` were supplied; rendering `artifact_result` without recomputing artifacts.", call. = FALSE)
+    }
+    return(artifact_result)
+  }
+  if (is.null(data)) {
+    stop("`data` must be supplied when `artifact_result` is NULL.", call. = FALSE)
+  }
+  do.call(
+    generate_regression_shap_analysis_artifacts,
+    c(list(data = data), generator_args)
+  )
+}
+
+aq_prepare_binary_shap_report_artifact_result <- function(data = NULL, artifact_result = NULL, generator_args = list()) {
+  if (!is.null(artifact_result)) {
+    if (!is.null(data)) {
+      warning("Both `artifact_result` and `data` were supplied; rendering `artifact_result` without recomputing artifacts.", call. = FALSE)
+    }
+    return(artifact_result)
+  }
+  if (is.null(data)) {
+    stop("`data` must be supplied when `artifact_result` is NULL.", call. = FALSE)
+  }
+  do.call(
+    generate_binary_classification_shap_analysis_artifacts,
+    c(list(data = data), generator_args)
+  )
+}
+
+aq_validate_shap_report_artifact_result <- function(artifact_result, generator_name) {
+  if (!is.list(artifact_result) || is.null(artifact_result$artifacts)) {
+    stop(
+      paste0("`artifact_result` must be the structured output from ", generator_name, "()."),
+      call. = FALSE
+    )
+  }
+  invisible(TRUE)
+}
+
+#' Render Regression SHAP Analysis Report
+#'
+#' Renders a standalone AutoQuant-native HTML report from Regression SHAP
+#' Analysis artifacts. If `artifact_result` is not supplied, this function calls
+#' `generate_regression_shap_analysis_artifacts()` first. Input data must contain
+#' precomputed `Shap_` columns; this report function does not compute SHAP
+#' values, call `predict()`, require a model object, or use a SHAP backend
+#' package.
+#'
+#' @param data Optional data.table containing precomputed `Shap_` columns. Used
+#'   only when `artifact_result` is NULL.
+#' @param artifact_result Optional precomputed result returned by
+#'   `generate_regression_shap_analysis_artifacts()`.
+#' @param OutputPath Directory where the rendered report should be written.
+#' @param OutputFile Output HTML filename.
+#' @param Title Report title.
+#' @param Subtitle Optional report subtitle.
+#' @param Theme Report theme label stored in render params. If `auto_plots_theme`
+#'   is not supplied through `...`, this value is also passed to the artifact
+#'   generator as `auto_plots_theme`.
+#' @param Open If TRUE, open the rendered report in a browser.
+#' @param Quiet Passed to `rmarkdown::render()`.
+#' @param ... Analytical arguments passed to
+#'   `generate_regression_shap_analysis_artifacts()` when `artifact_result` is
+#'   NULL, plus optional render controls `self_contained`, `RmdFile`, `Package`,
+#'   `TemplatePath`, `Clean`, and `Envir`. Legacy lowercase render names such as
+#'   `output_dir`, `output_file`, `title`, `subtitle`, `open`, and `quiet` are
+#'   still accepted.
+#'
+#' @return Invisibly returns the rendered report path.
+#'
+#' @family Reports
+#' @export
+RegressionShapAnalysisReport <- function(
+  data = NULL,
+  artifact_result = NULL,
+  OutputPath = getwd(),
+  OutputFile = NULL,
+  Title = "Regression SHAP Analysis Report",
+  Subtitle = NULL,
+  Theme = "dark",
+  Open = FALSE,
+  Quiet = TRUE,
+  ...
+) {
+  if (!requireNamespace("rmarkdown", quietly = TRUE)) {
+    stop("Package 'rmarkdown' is required to render RegressionShapAnalysisReport().", call. = FALSE)
+  }
+
+  if (!requireNamespace("knitr", quietly = TRUE)) {
+    stop("Package 'knitr' is required to render RegressionShapAnalysisReport().", call. = FALSE)
+  }
+
+  for (pkg in c("data.table", "htmltools", "reactable", "echarts4r", "AutoPlots")) {
+    if (!requireNamespace(pkg, quietly = TRUE)) {
+      stop(paste0("Package '", pkg, "' is required to render RegressionShapAnalysisReport()."), call. = FALSE)
+    }
+  }
+
+  opts <- aq_shap_report_options(
+    dots = list(...),
+    OutputPath = OutputPath,
+    OutputFile = OutputFile,
+    Title = Title,
+    Subtitle = Subtitle,
+    Theme = Theme,
+    Open = Open,
+    Quiet = Quiet,
+    default_output_file = "regression_shap_analysis_report.html",
+    default_rmd_file = "Regression_SHAP_Analysis_Report.Rmd"
+  )
+
+  artifact_result <- aq_prepare_regression_shap_report_artifact_result(
+    data = data,
+    artifact_result = artifact_result,
+    generator_args = opts$generator_args
+  )
+  aq_validate_shap_report_artifact_result(artifact_result, "generate_regression_shap_analysis_artifacts")
+
+  output_dir <- normalizePath(opts$OutputPath, winslash = "/", mustWork = FALSE)
+  dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
+
+  template_path <- aq_shap_report_template_path(opts$RmdFile, opts$Package, opts$TemplatePath)
 
   generated_at <- artifact_result$metadata$generated_at
   if (is.null(generated_at)) {
     generated_at <- Sys.time()
   }
 
+  Envir <- opts$Envir
   if (is.null(Envir)) {
     Envir <- new.env(parent = .GlobalEnv)
   }
@@ -976,39 +1037,31 @@ RegressionShapAnalysisReport <- function(
 
   rendered_file <- rmarkdown::render(
     input = template_path,
-    output_file = output_file,
+    output_file = opts$OutputFile,
     output_dir = output_dir,
     params = list(
-      title = title,
-      subtitle = subtitle,
+      title = opts$Title,
+      subtitle = opts$Subtitle,
+      theme = opts$Theme,
       generated_at = generated_at,
       artifact_result = artifact_result,
-      artifact_sections = binary_shap_sections(),
+      artifact_sections = regression_shap_sections(),
       metadata = artifact_result$metadata,
       warnings = artifact_result$warnings,
       diagnostics = artifact_result$diagnostics,
-      top_n = top_n,
-      include_interactions = include_interactions,
-      report_args = list(
-        shap_prefix = shap_prefix,
-        target_col = target_col,
-        prediction_col = prediction_col,
-        DateVar = DateVar,
-        date_aggregation = date_aggregation,
-        ByVars = ByVars,
-        selected_features = selected_features,
-        prediction_scale = prediction_scale
-      )
+      top_n = aq_shap_report_default(opts$generator_args$top_n, 20L),
+      include_interactions = aq_shap_report_default(opts$generator_args$include_interactions, FALSE),
+      report_args = opts$generator_args
     ),
     envir = Envir,
-    quiet = quiet,
-    clean = Clean,
-    output_options = list(self_contained = isTRUE(self_contained))
+    quiet = opts$Quiet,
+    clean = opts$Clean,
+    output_options = list(self_contained = isTRUE(opts$SelfContained))
   )
 
   rendered_file <- normalizePath(rendered_file, winslash = "/", mustWork = FALSE)
   attr(rendered_file, "artifact_result") <- artifact_result
-  if (isTRUE(open)) {
+  if (isTRUE(opts$Open)) {
     utils::browseURL(rendered_file)
   }
 
@@ -1035,100 +1088,40 @@ RegressionShapAnalysisReport <- function(
 #' compute SHAP values, call `predict()`, require a model object, or use a SHAP
 #' backend package.
 #'
-#' @param data A data.table containing precomputed `Shap_` columns.
-#' @param output_dir Directory where the rendered report should be written.
-#' @param output_file Output HTML filename.
-#' @param title Report title.
-#' @param subtitle Optional report subtitle.
-#' @param target_col Optional binary target/actual column.
-#' @param prediction_col Optional prediction/probability column. Defaults to `Predict` when present.
-#' @param predicted_class_col Optional predicted class column.
-#' @param positive_class Positive class label used for binary interpretation.
-#' @param feature_cols Optional source features used to filter detected SHAP columns.
-#' @param shap_prefix Prefix for SHAP contribution columns.
-#' @param id_cols Optional ID/context columns.
-#' @param model_name Optional model name.
-#' @param data_name Optional data name.
-#' @param DateVar Optional date column.
-#' @param date_aggregation One of `day`, `week`, or `month`.
-#' @param ByVars Optional segment variables.
-#' @param selected_features Optional feature list for effect/dependence/local views.
-#' @param local_row_ids Optional 1-based row indexes for local explanations.
-#' @param threshold Classification threshold used for threshold context artifacts.
-#' @param threshold_bands Optional threshold bands passed to the artifact generator.
-#' @param top_n Number of top features used for display-oriented artifacts.
-#' @param max_dependence_rows Maximum source rows per selected feature in dependence output.
-#' @param max_segment_levels Maximum segment levels to keep per ByVar.
-#' @param max_byvars Maximum number of ByVars to use.
-#' @param include_dependence Whether to include dependence artifacts.
-#' @param include_segments Whether to include segment artifacts.
-#' @param include_time Whether to include time artifacts.
-#' @param include_local Whether to include local explanation artifacts.
-#' @param include_interactions Whether to include binned/leveled interaction diagnostics.
-#' @param include_threshold_context Whether to include threshold context artifacts.
-#' @param include_class_balance Whether to include class balance and outcome context artifacts.
-#' @param include_plots Whether to include AutoPlots-backed plot artifacts.
-#' @param prediction_scale Prediction scale label: `probability`, `logit`, `margin`, or `unknown`.
+#' @param data Optional data.table containing precomputed `Shap_` columns. Used
+#'   only when `artifact_result` is NULL.
 #' @param artifact_result Optional precomputed result returned by
 #'   `generate_binary_classification_shap_analysis_artifacts()`.
-#' @param open If TRUE, open the rendered report in a browser.
-#' @param quiet Passed to `rmarkdown::render()`.
-#' @param self_contained Passed to `rmarkdown::render()` through output_options.
-#' @param RmdFile RMarkdown filename located in `inst/r-markdowns`.
-#' @param Package Package name used to locate installed RMarkdown files.
-#' @param TemplatePath Optional explicit path to the RMarkdown file.
-#' @param Clean Passed to `rmarkdown::render()`.
-#' @param Envir Optional render environment.
-#' @param ... Additional arguments passed to the artifact generator.
+#' @param OutputPath Directory where the rendered report should be written.
+#' @param OutputFile Output HTML filename.
+#' @param Title Report title.
+#' @param Subtitle Optional report subtitle.
+#' @param Theme Report theme label stored in render params. If `auto_plots_theme`
+#'   is not supplied through `...`, this value is also passed to the artifact
+#'   generator as `auto_plots_theme`.
+#' @param Open If TRUE, open the rendered report in a browser.
+#' @param Quiet Passed to `rmarkdown::render()`.
+#' @param ... Analytical arguments passed to
+#'   `generate_binary_classification_shap_analysis_artifacts()` when
+#'   `artifact_result` is NULL, plus optional render controls `self_contained`,
+#'   `RmdFile`, `Package`, `TemplatePath`, `Clean`, and `Envir`. Legacy
+#'   lowercase render names such as `output_dir`, `output_file`, `title`,
+#'   `subtitle`, `open`, and `quiet` are still accepted.
 #'
 #' @return Invisibly returns the rendered report path.
 #'
 #' @family Reports
 #' @export
 BinaryClassificationShapAnalysisReport <- function(
-  data,
-  output_dir = getwd(),
-  output_file = NULL,
-  title = "Binary Classification SHAP Analysis Report",
-  subtitle = NULL,
-  target_col = NULL,
-  prediction_col = NULL,
-  predicted_class_col = NULL,
-  positive_class = NULL,
-  feature_cols = NULL,
-  shap_prefix = "Shap_",
-  id_cols = NULL,
-  model_name = NULL,
-  data_name = NULL,
-  DateVar = NULL,
-  date_aggregation = "month",
-  ByVars = character(),
-  selected_features = NULL,
-  local_row_ids = integer(),
-  threshold = 0.5,
-  threshold_bands = NULL,
-  top_n = 20L,
-  max_dependence_rows = 5000L,
-  max_segment_levels = 20L,
-  max_byvars = 3L,
-  include_dependence = TRUE,
-  include_segments = TRUE,
-  include_time = TRUE,
-  include_local = FALSE,
-  include_interactions = TRUE,
-  include_threshold_context = TRUE,
-  include_class_balance = TRUE,
-  include_plots = TRUE,
-  prediction_scale = "probability",
+  data = NULL,
   artifact_result = NULL,
-  open = FALSE,
-  quiet = TRUE,
-  self_contained = TRUE,
-  RmdFile = "Binary_Classification_SHAP_Analysis_Report.Rmd",
-  Package = "AutoQuant",
-  TemplatePath = NULL,
-  Clean = TRUE,
-  Envir = NULL,
+  OutputPath = getwd(),
+  OutputFile = NULL,
+  Title = "Binary Classification SHAP Analysis Report",
+  Subtitle = NULL,
+  Theme = "dark",
+  Open = FALSE,
+  Quiet = TRUE,
   ...
 ) {
   if (!requireNamespace("rmarkdown", quietly = TRUE)) {
@@ -1143,89 +1136,37 @@ BinaryClassificationShapAnalysisReport <- function(
     }
   }
 
-  if (is.null(artifact_result)) {
-    if (missing(data) || is.null(data)) {
-      stop("`data` must be supplied when `artifact_result` is NULL.", call. = FALSE)
-    }
-    artifact_result <- generate_binary_classification_shap_analysis_artifacts(
-      data = data,
-      target_col = target_col,
-      prediction_col = prediction_col,
-      predicted_class_col = predicted_class_col,
-      positive_class = positive_class,
-      feature_cols = feature_cols,
-      shap_prefix = shap_prefix,
-      id_cols = id_cols,
-      model_name = model_name,
-      data_name = data_name,
-      DateVar = DateVar,
-      date_aggregation = date_aggregation,
-      ByVars = ByVars,
-      selected_features = selected_features,
-      local_row_ids = local_row_ids,
-      threshold = threshold,
-      threshold_bands = threshold_bands,
-      top_n = top_n,
-      max_dependence_rows = max_dependence_rows,
-      max_segment_levels = max_segment_levels,
-      max_byvars = max_byvars,
-      include_dependence = include_dependence,
-      include_segments = include_segments,
-      include_time = include_time,
-      include_local = include_local,
-      include_interactions = include_interactions,
-      include_threshold_context = include_threshold_context,
-      include_class_balance = include_class_balance,
-      include_plots = include_plots,
-      prediction_scale = prediction_scale,
-      ...
-    )
-  }
+  opts <- aq_shap_report_options(
+    dots = list(...),
+    OutputPath = OutputPath,
+    OutputFile = OutputFile,
+    Title = Title,
+    Subtitle = Subtitle,
+    Theme = Theme,
+    Open = Open,
+    Quiet = Quiet,
+    default_output_file = "binary_classification_shap_analysis_report.html",
+    default_rmd_file = "Binary_Classification_SHAP_Analysis_Report.Rmd"
+  )
 
-  if (!is.list(artifact_result) || is.null(artifact_result$artifacts)) {
-    stop("`artifact_result` must be the structured output from generate_binary_classification_shap_analysis_artifacts().", call. = FALSE)
-  }
+  artifact_result <- aq_prepare_binary_shap_report_artifact_result(
+    data = data,
+    artifact_result = artifact_result,
+    generator_args = opts$generator_args
+  )
+  aq_validate_shap_report_artifact_result(artifact_result, "generate_binary_classification_shap_analysis_artifacts")
 
-  output_dir <- normalizePath(output_dir, winslash = "/", mustWork = FALSE)
+  output_dir <- normalizePath(opts$OutputPath, winslash = "/", mustWork = FALSE)
   dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
 
-  if (is.null(output_file) || !nzchar(output_file)) {
-    output_file <- "binary_classification_shap_analysis_report.html"
-  }
-  if (!grepl("\\.html?$", output_file, ignore.case = TRUE)) {
-    output_file <- paste0(output_file, ".html")
-  }
-
-  if (!is.null(TemplatePath) && nzchar(TemplatePath)) {
-    template_path <- normalizePath(TemplatePath, winslash = "/", mustWork = FALSE)
-  } else {
-    template_path <- system.file("r-markdowns", RmdFile, package = Package)
-    if (!nzchar(template_path) || !file.exists(template_path)) {
-      template_path <- file.path(getwd(), "inst", "r-markdowns", RmdFile)
-      template_path <- normalizePath(template_path, winslash = "/", mustWork = FALSE)
-    }
-  }
-  if (!file.exists(template_path)) {
-    template_path <- file.path(getwd(), RmdFile)
-    template_path <- normalizePath(template_path, winslash = "/", mustWork = FALSE)
-  }
-  if (!file.exists(template_path)) {
-    stop(
-      paste0(
-        "RMarkdown template not found. Expected one of:\n",
-        "1. ", file.path("inst", "r-markdowns", RmdFile), "\n",
-        "2. system.file('r-markdowns', '", RmdFile, "', package = '", Package, "')\n",
-        "3. Explicit `TemplatePath`."
-      ),
-      call. = FALSE
-    )
-  }
+  template_path <- aq_shap_report_template_path(opts$RmdFile, opts$Package, opts$TemplatePath)
 
   generated_at <- artifact_result$metadata$generated_at
   if (is.null(generated_at)) {
     generated_at <- Sys.time()
   }
 
+  Envir <- opts$Envir
   if (is.null(Envir)) {
     Envir <- new.env(parent = .GlobalEnv)
   }
@@ -1234,44 +1175,202 @@ BinaryClassificationShapAnalysisReport <- function(
 
   rendered_file <- rmarkdown::render(
     input = template_path,
-    output_file = output_file,
+    output_file = opts$OutputFile,
     output_dir = output_dir,
     params = list(
-      title = title,
-      subtitle = subtitle,
+      title = opts$Title,
+      subtitle = opts$Subtitle,
+      theme = opts$Theme,
       generated_at = generated_at,
       artifact_result = artifact_result,
-      artifact_sections = regression_shap_sections(),
+      artifact_sections = binary_shap_sections(),
       metadata = artifact_result$metadata,
       warnings = artifact_result$warnings,
       diagnostics = artifact_result$diagnostics,
-      top_n = top_n,
-      include_interactions = include_interactions,
-      report_args = list(
-        shap_prefix = shap_prefix,
-        target_col = target_col,
-        prediction_col = prediction_col,
-        predicted_class_col = predicted_class_col,
-        positive_class = positive_class,
-        threshold = threshold,
-        DateVar = DateVar,
-        date_aggregation = date_aggregation,
-        ByVars = ByVars,
-        selected_features = selected_features,
-        prediction_scale = prediction_scale
-      )
+      top_n = aq_shap_report_default(opts$generator_args$top_n, 20L),
+      include_interactions = aq_shap_report_default(opts$generator_args$include_interactions, TRUE),
+      report_args = opts$generator_args
     ),
     envir = Envir,
-    quiet = quiet,
-    clean = Clean,
-    output_options = list(self_contained = isTRUE(self_contained))
+    quiet = opts$Quiet,
+    clean = opts$Clean,
+    output_options = list(self_contained = isTRUE(opts$SelfContained))
   )
 
   rendered_file <- normalizePath(rendered_file, winslash = "/", mustWork = FALSE)
   attr(rendered_file, "artifact_result") <- artifact_result
-  if (isTRUE(open)) {
+  if (isTRUE(opts$Open)) {
     utils::browseURL(rendered_file)
   }
 
   invisible(rendered_file)
+}
+
+#' QA SHAP Report Wrapper Contracts
+#'
+#' Validates that the SHAP report wrappers use the generator-first contract:
+#' report functions accept concise rendering arguments, analytical arguments pass
+#' through `...`, and supplied artifact results are reused without recomputing.
+#'
+#' @return A data.table of QA checks.
+#'
+#' @family QA
+#' @export
+qa_shap_report_wrapper_contracts <- function() {
+  if (!requireNamespace("data.table", quietly = TRUE)) {
+    stop("Package 'data.table' is required for qa_shap_report_wrapper_contracts().", call. = FALSE)
+  }
+
+  set.seed(42)
+  n <- 80L
+  reg_dt <- data.table::data.table(
+    Target = stats::rnorm(n),
+    Predict = stats::rnorm(n),
+    Date = as.Date("2024-01-01") + sample(0:90, n, TRUE),
+    Segment = sample(c("A", "B"), n, TRUE),
+    FeatureA = stats::runif(n),
+    FeatureB = stats::rnorm(n)
+  )
+  reg_dt[, Shap_FeatureA := 0.15 * FeatureA + stats::rnorm(.N, 0, 0.01)]
+  reg_dt[, Shap_FeatureB := 0.05 * FeatureB + stats::rnorm(.N, 0, 0.01)]
+
+  bin_dt <- data.table::copy(reg_dt)
+  bin_dt[, Target := sample(c("Yes", "No"), .N, TRUE)]
+  bin_dt[, Predict := stats::runif(.N)]
+  bin_dt[, PredictedClass := ifelse(Predict >= 0.5, "Yes", "No")]
+
+  reg_artifacts <- generate_regression_shap_analysis_artifacts(
+    data = reg_dt,
+    target_col = "Target",
+    prediction_col = "Predict",
+    DateVar = "Date",
+    ByVars = "Segment",
+    selected_features = c("FeatureA", "FeatureB"),
+    top_n = 2L,
+    include_plots = FALSE
+  )
+  bin_artifacts <- generate_binary_classification_shap_analysis_artifacts(
+    data = bin_dt,
+    target_col = "Target",
+    prediction_col = "Predict",
+    predicted_class_col = "PredictedClass",
+    positive_class = "Yes",
+    prediction_scale = "probability",
+    threshold = 0.5,
+    DateVar = "Date",
+    ByVars = "Segment",
+    selected_features = c("FeatureA", "FeatureB"),
+    top_n = 2L,
+    include_plots = FALSE
+  )
+
+  bad_dt <- data.table::data.table(NotShap = 1:3)
+  reused_reg <- suppressWarnings(aq_prepare_regression_shap_report_artifact_result(
+    data = bad_dt,
+    artifact_result = reg_artifacts,
+    generator_args = list(target_col = "Missing")
+  ))
+  reused_bin <- suppressWarnings(aq_prepare_binary_shap_report_artifact_result(
+    data = bad_dt,
+    artifact_result = bin_artifacts,
+    generator_args = list(target_col = "Missing", positive_class = "Yes")
+  ))
+
+  direct_reg <- aq_prepare_regression_shap_report_artifact_result(
+    data = reg_dt,
+    artifact_result = NULL,
+    generator_args = list(
+      target_col = "Target",
+      prediction_col = "Predict",
+      DateVar = "Date",
+      ByVars = "Segment",
+      selected_features = c("FeatureA", "FeatureB"),
+      top_n = 2L,
+      include_plots = FALSE
+    )
+  )
+  direct_bin <- aq_prepare_binary_shap_report_artifact_result(
+    data = bin_dt,
+    artifact_result = NULL,
+    generator_args = list(
+      target_col = "Target",
+      prediction_col = "Predict",
+      predicted_class_col = "PredictedClass",
+      positive_class = "Yes",
+      prediction_scale = "probability",
+      threshold = 0.5,
+      DateVar = "Date",
+      ByVars = "Segment",
+      selected_features = c("FeatureA", "FeatureB"),
+      top_n = 2L,
+      include_plots = FALSE
+    )
+  )
+
+  reg_formals <- names(formals(RegressionShapAnalysisReport))
+  bin_formals <- names(formals(BinaryClassificationShapAnalysisReport))
+  expected_formals <- c("data", "artifact_result", "OutputPath", "OutputFile", "Title", "Subtitle", "Theme", "Open", "Quiet", "...")
+  legacy_opts <- aq_shap_report_options(
+    dots = list(output_dir = tempdir(), output_file = "legacy", title = "Legacy", quiet = FALSE, target_col = "Target"),
+    OutputPath = getwd(),
+    OutputFile = NULL,
+    Title = "Default",
+    Subtitle = NULL,
+    Theme = "dark",
+    Open = FALSE,
+    Quiet = TRUE,
+    default_output_file = "default.html",
+    default_rmd_file = "Regression_SHAP_Analysis_Report.Rmd"
+  )
+
+  reg_template <- aq_shap_report_template_path("Regression_SHAP_Analysis_Report.Rmd", "AutoQuant", NULL)
+  bin_template <- aq_shap_report_template_path("Binary_Classification_SHAP_Analysis_Report.Rmd", "AutoQuant", NULL)
+  readme <- if (file.exists("README.md")) paste(readLines("README.md", warn = FALSE), collapse = "\n") else ""
+
+  checks <- data.table::data.table(
+    check = c(
+      "regression_signature_simplified",
+      "binary_signature_simplified",
+      "regression_artifact_result_reused",
+      "binary_artifact_result_reused",
+      "regression_direct_data_dots_generated",
+      "binary_direct_data_dots_generated",
+      "legacy_render_aliases_removed_from_generator_args",
+      "legacy_analytical_args_preserved",
+      "regression_template_found",
+      "binary_template_found",
+      "readme_generator_first_example_present",
+      "readme_convenience_example_present"
+    ),
+    status = c(
+      if (identical(reg_formals, expected_formals)) "success" else "error",
+      if (identical(bin_formals, expected_formals)) "success" else "error",
+      if (identical(reused_reg, reg_artifacts)) "success" else "error",
+      if (identical(reused_bin, bin_artifacts)) "success" else "error",
+      if (is.list(direct_reg) && !is.null(direct_reg$artifacts)) "success" else "error",
+      if (is.list(direct_bin) && !is.null(direct_bin$artifacts)) "success" else "error",
+      if (!any(c("output_dir", "output_file", "title", "quiet") %in% names(legacy_opts$generator_args))) "success" else "error",
+      if (identical(legacy_opts$generator_args$target_col, "Target")) "success" else "error",
+      if (file.exists(reg_template)) "success" else "error",
+      if (file.exists(bin_template)) "success" else "error",
+      if (grepl("artifact_result = reg_artifacts", readme, fixed = TRUE) && grepl("artifact_result = binary_artifacts", readme, fixed = TRUE)) "success" else "error",
+      if (grepl("Convenience wrapper", readme, fixed = TRUE)) "success" else "error"
+    ),
+    message = c(
+      paste(reg_formals, collapse = ", "),
+      paste(bin_formals, collapse = ", "),
+      "Regression artifact_result path returns the supplied object.",
+      "Binary artifact_result path returns the supplied object.",
+      paste0("Regression artifacts: ", length(direct_reg$artifacts)),
+      paste0("Binary artifacts: ", length(direct_bin$artifacts)),
+      "Legacy render aliases are consumed by report options.",
+      "Analytical arguments remain in generator_args.",
+      reg_template,
+      bin_template,
+      "README includes artifact_result renderer examples.",
+      "README includes data + ... convenience wrapper examples."
+    )
+  )
+
+  checks
 }

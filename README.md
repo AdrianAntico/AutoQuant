@@ -4632,14 +4632,23 @@ artifact_inventory <- rbindlist(lapply(names(ShapArtifacts$artifacts), function(
 
 print(artifact_inventory)
 
-# Render native AutoQuant Regression SHAP HTML report
+# Preferred: render the existing artifact result without recomputing artifacts
+reg_artifacts <- ShapArtifacts
 ReportPath <- AutoQuant::RegressionShapAnalysisReport(
+  artifact_result = reg_artifacts,
+  OutputPath = normalizePath("./"),
+  OutputFile = "regression_shap_analysis_full_qa_report.html",
+  Title = "Regression SHAP Analysis Full QA Report",
+  Open = TRUE,
+  Quiet = FALSE
+)
+
+# Convenience wrapper: pass analytical arguments through ...
+ConvenienceReportPath <- AutoQuant::RegressionShapAnalysisReport(
   data = scored_dt,
-  artifact_result = ShapArtifacts,
-  output_dir = normalizePath("./"),
-  output_file = "regression_shap_analysis_full_qa_report.html",
-  title = "Regression SHAP Analysis Full QA Report",
-  
+  OutputPath = normalizePath("./"),
+  OutputFile = "regression_shap_analysis_convenience_report.html",
+  Title = "Regression SHAP Analysis Convenience Report",
   target_col = "Adrian",
   prediction_col = "Predict",
   feature_cols = FeatureCols,
@@ -4659,11 +4668,13 @@ ReportPath <- AutoQuant::RegressionShapAnalysisReport(
   include_time = TRUE,
   include_local = TRUE,
   include_interactions = TRUE,
-  
-  open = TRUE,
-  quiet = FALSE
+
+  Open = TRUE,
+  Quiet = FALSE
 )
 ```
+
+The generator-first workflow is preferred: use `generate_regression_shap_analysis_artifacts()` for analytical options, then pass the result to `RegressionShapAnalysisReport(artifact_result = reg_artifacts, ...)`. The report function is a renderer. It can still call the generator as a convenience wrapper by passing `data` plus analytical arguments through `...`, but `artifact_result` mode avoids recomputing artifacts.
 
 The `Shap_` prefix maps each contribution column to the source model variable by stripping the prefix, such as `Shap_Impressions` -> `Impressions`. ID, segment, date, target, and prediction columns may be present, but they are not treated as SHAP features unless they have matching `Shap_` columns. When `include_plots = TRUE`, plot artifacts are created with AutoPlots high-level functions. Segment heatmaps use signed mean SHAP. Interaction diagnostics are binned/leveled candidate interaction surfaces from ordinary `Shap_` columns; axes are actual source feature value bins/levels and heatmap values are signed mean SHAP for the attributed feature. They are not exact SHAP interaction value decompositions.
 
@@ -4805,14 +4816,23 @@ artifact_inventory <- rbindlist(lapply(names(BinaryShapArtifacts$artifacts), fun
 
 print(artifact_inventory)
 
-# Render native AutoQuant Binary Classification SHAP HTML report
+# Preferred: render the existing artifact result without recomputing artifacts
+binary_artifacts <- BinaryShapArtifacts
 BinaryShapReportPath <- AutoQuant::BinaryClassificationShapAnalysisReport(
-  data = dt,
-  artifact_result = BinaryShapArtifacts,
-  output_dir = normalizePath("./"),
-  output_file = "binary_classification_shap_analysis_full_qa_report.html",
-  title = "Binary Classification SHAP Analysis Full QA Report",
+  artifact_result = binary_artifacts,
+  OutputPath = normalizePath("./"),
+  OutputFile = "binary_classification_shap_analysis_full_qa_report.html",
+  Title = "Binary Classification SHAP Analysis Full QA Report",
+  Open = TRUE,
+  Quiet = FALSE
+)
 
+# Convenience wrapper: pass analytical arguments through ...
+BinaryShapConvenienceReportPath <- AutoQuant::BinaryClassificationShapAnalysisReport(
+  data = dt,
+  OutputPath = normalizePath("./"),
+  OutputFile = "binary_classification_shap_analysis_convenience_report.html",
+  Title = "Binary Classification SHAP Analysis Convenience Report",
   target_col = "Target",
   prediction_col = "Predict",
   predicted_class_col = "PredictedClass",
@@ -4836,10 +4856,12 @@ BinaryShapReportPath <- AutoQuant::BinaryClassificationShapAnalysisReport(
   include_threshold_context = TRUE,
   include_class_balance = TRUE,
 
-  open = TRUE,
-  quiet = FALSE
+  Open = TRUE,
+  Quiet = FALSE
 )
 ```
+
+The generator-first workflow is preferred: use `generate_binary_classification_shap_analysis_artifacts()` for analytical options, then pass the result to `BinaryClassificationShapAnalysisReport(artifact_result = binary_artifacts, ...)`. The report function is a renderer. It can still call the generator as a convenience wrapper by passing `data` plus analytical arguments through `...`, including `positive_class`, `prediction_scale`, `threshold`, and `predicted_class_col`, but `artifact_result` mode avoids recomputing artifacts.
 
 Binary SHAP artifacts include positive-class overview text, diagnostics/config tables, global importance, categorical/binned numeric level importance, dependence, segment, time, threshold context, class balance/outcome context, local explanations, and binned/leveled interaction diagnostics. Interaction surfaces use actual source feature bins/levels on the axes and signed mean SHAP as the heatmap value. They are not exact pairwise SHAP interaction decompositions. Multiclass SHAP is deferred.
 
