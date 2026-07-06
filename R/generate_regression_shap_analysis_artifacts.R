@@ -1027,6 +1027,15 @@ aq_order_for_flipped_box <- function(dt, category_col, value_col) {
   out[]
 }
 
+aq_shap_heatmap_height <- function(n_y_levels, base = 420L, per_level = 28L, min_height = 420L, max_height = 1200L) {
+  n_y_levels <- suppressWarnings(as.integer(n_y_levels[1L]))
+  if (is.na(n_y_levels) || n_y_levels < 0L) {
+    n_y_levels <- 0L
+  }
+
+  as.integer(max(min_height, min(max_height, base + per_level * max(0L, n_y_levels - 8L))))
+}
+
 aq_create_regression_shap_plot_artifact <- function(
   name,
   label,
@@ -1675,7 +1684,6 @@ generate_regression_shap_analysis_artifacts <- function(
     artifacts <- regression_shap_add_artifact(artifacts, regression_shap_artifact("shap_dependence_table", "SHAP Dependence", "table", "SHAP Dependence", object = aq_smart_round_dt(dependence, skip_cols = "row_id"), metadata = artifact_metadata("shap_dependence", "SHAP Dependence", 9L)))
     if (isTRUE(include_plots) && nrow(dependence)) {
       dependence_features <- head(intersect(global_importance$feature, unique(dependence$feature)), max_dependence_plots)
-      dependence_group <- if (length(ByVars)) ByVars[[1L]] else NULL
       for (feature_name in dependence_features) {
         shap_col <- column_map[feature == feature_name, shap_col][[1L]]
         row_index <- seq_len(nrow(data))
@@ -1688,9 +1696,6 @@ generate_regression_shap_analysis_artifacts <- function(
           feature_value = data[[feature_name]][row_index],
           shap_value = data[[shap_col]][row_index]
         )
-        if (!is.null(dependence_group) && dependence_group %in% names(data)) {
-          plot_data[, (dependence_group) := as.character(data[[dependence_group]][row_index])]
-        }
         if (!source_is_numeric) {
           plot_data[, feature_value := as.character(feature_value)]
           plot_data <- aq_order_for_flipped_box(plot_data, "feature_value", "shap_value")
@@ -1702,7 +1707,7 @@ generate_regression_shap_analysis_artifacts <- function(
               dt = plot_data,
               XVar = "feature_value",
               YVar = "shap_value",
-              GroupVar = dependence_group,
+              GroupVar = NULL,
               title = paste("SHAP Dependence:", feature_name),
               auto_plots_theme = auto_plots_theme,
               plot_width = plot_width,
@@ -1713,7 +1718,7 @@ generate_regression_shap_analysis_artifacts <- function(
               dt = plot_data,
               XVar = "feature_value",
               YVar = "shap_value",
-              GroupVar = dependence_group,
+              GroupVar = NULL,
               title = paste("SHAP Dependence:", feature_name),
               auto_plots_theme = auto_plots_theme,
               plot_width = plot_width,
@@ -1730,7 +1735,7 @@ generate_regression_shap_analysis_artifacts <- function(
             if (source_is_numeric) "scatter" else "box",
             "shap_dependence",
             plot_result$object,
-            c(artifact_metadata("shap_dependence", "SHAP Dependence", 10L), list(feature = feature_name))
+            c(artifact_metadata("shap_dependence", "SHAP Dependence", 10L), list(feature = feature_name, x_axis_source_column = feature_name, x_axis = "feature_value", group_var = NULL, ByVars_context_available = ByVars))
           ))
         } else {
           warnings <- regression_shap_warn(warnings, plot_result$warning)
@@ -1747,6 +1752,8 @@ generate_regression_shap_analysis_artifacts <- function(
       for (byvar in segment_byvars) {
         segment_plot_data <- data.table::copy(segments[ByVar == byvar & rank_within_segment <= plot_top_n])
         segment_plot_data <- aq_smart_round_dt(segment_plot_data, skip_cols = c("rank_within_segment", "n"))
+        segment_n_y_levels <- data.table::uniqueN(segment_plot_data$feature, na.rm = TRUE)
+        segment_plot_height <- aq_shap_heatmap_height(segment_n_y_levels)
 
         heatmap_result <- aq_safe_create_shap_plot(
           "heatmap",
@@ -1758,7 +1765,7 @@ generate_regression_shap_analysis_artifacts <- function(
             title = paste("Segment Mean SHAP Heatmap:", byvar),
             auto_plots_theme = auto_plots_theme,
             plot_width = plot_width,
-            plot_height = plot_height
+            plot_height = segment_plot_height
           )
         )
         if (!is.null(heatmap_result$object)) {
@@ -1770,7 +1777,7 @@ generate_regression_shap_analysis_artifacts <- function(
             "heatmap",
             "segment_effects",
             heatmap_result$object,
-            c(artifact_metadata("segment_effects", "Segment Effects", 13L), list(ByVar = byvar, heatmap_value = "mean_shap", heatmap_value_description = "Signed mean SHAP by feature and segment"))
+            c(artifact_metadata("segment_effects", "Segment Effects", 13L), list(ByVar = byvar, heatmap_value = "mean_shap", heatmap_value_description = "Signed mean SHAP by feature and segment", n_y_levels = segment_n_y_levels, plot_height = segment_plot_height))
           ))
         } else {
           warnings <- regression_shap_warn(warnings, heatmap_result$warning)
@@ -1816,20 +1823,24 @@ generate_regression_shap_analysis_artifacts <- function(
 
       heatmap_result <- aq_safe_create_shap_plot(
         "heatmap",
-        aq_create_shap_heatmap_plot(
-          dt = time_plot_data,
-          XVar = "period",
-          YVar = "feature",
-          ZVar = "mean_abs_shap",
-          title = "Time SHAP Effects Heatmap",
-          auto_plots_theme = auto_plots_theme,
-          plot_width = plot_width,
-          plot_height = plot_height
-        )
+        {
+          time_n_y_levels <- data.table::uniqueN(time_plot_data$feature, na.rm = TRUE)
+          time_plot_height <- aq_shap_heatmap_height(time_n_y_levels)
+          aq_create_shap_heatmap_plot(
+            dt = time_plot_data,
+            XVar = "period",
+            YVar = "feature",
+            ZVar = "mean_abs_shap",
+            title = "Time SHAP Effects Heatmap",
+            auto_plots_theme = auto_plots_theme,
+            plot_width = plot_width,
+            plot_height = time_plot_height
+          )
+        }
       )
       if (!is.null(heatmap_result$object)) {
         heatmap_result$object <- aq_style_shap_plot(heatmap_result$object, rotate_x = TRUE)
-        artifacts <- regression_shap_add_artifact(artifacts, aq_create_regression_shap_plot_artifact("time_effects_heatmap", "Time SHAP Effects Heatmap", "Time Effects", "heatmap", "time_effects", heatmap_result$object, artifact_metadata("time_effects", "Time Effects", 16L)))
+        artifacts <- regression_shap_add_artifact(artifacts, aq_create_regression_shap_plot_artifact("time_effects_heatmap", "Time SHAP Effects Heatmap", "Time Effects", "heatmap", "time_effects", heatmap_result$object, c(artifact_metadata("time_effects", "Time Effects", 16L), list(n_y_levels = time_n_y_levels, plot_height = time_plot_height))))
       } else {
         warnings <- regression_shap_warn(warnings, heatmap_result$warning)
       }
@@ -2013,6 +2024,8 @@ generate_regression_shap_analysis_artifacts <- function(
           surface_plot_data[, (interaction_axis) := interaction_feature_actual_value_bin]
           surface_plot_data[, (heatmap_axis) := heatmap_value]
           surface_title <- paste("Mean SHAP Surface:", surface_plot_data$shap_feature[[1L]], "by", surface_plot_data$interaction_feature[[1L]])
+          surface_n_y_levels <- data.table::uniqueN(surface_plot_data[[interaction_axis]], na.rm = TRUE)
+          surface_plot_height <- aq_shap_heatmap_height(surface_n_y_levels)
           heatmap_result <- aq_safe_create_shap_plot(
             "heatmap",
             aq_create_shap_heatmap_plot(
@@ -2023,7 +2036,7 @@ generate_regression_shap_analysis_artifacts <- function(
               title = surface_title,
               auto_plots_theme = auto_plots_theme,
               plot_width = plot_width,
-              plot_height = plot_height
+              plot_height = surface_plot_height
             )
           )
           if (!is.null(heatmap_result$object)) {
@@ -2035,82 +2048,10 @@ generate_regression_shap_analysis_artifacts <- function(
               "heatmap",
               "interaction_diagnostics",
               heatmap_result$object,
-              c(interaction_meta, list(pair_label = current_pair_label, x_axis = shap_axis, y_axis = interaction_axis, heatmap_value = "mean_shap", heatmap_value_description = surface_plot_data$heatmap_value_description[[1L]]))
+              c(interaction_meta, list(pair_label = current_pair_label, x_axis = shap_axis, y_axis = interaction_axis, heatmap_value = "mean_shap", heatmap_value_description = surface_plot_data$heatmap_value_description[[1L]], n_y_levels = surface_n_y_levels, plot_height = surface_plot_height))
             ))
           } else {
             warnings <- regression_shap_warn(warnings, heatmap_result$warning)
-          }
-        }
-
-        dependence_pairs <- head(interactions$scores$pair_label, max_dependence_plots)
-        for (current_pair_label in dependence_pairs) {
-          score_row <- interactions$scores[pair_label == current_pair_label][1L]
-          feature_name <- score_row$shap_feature[[1L]]
-          interaction_feature <- interactions$surfaces[pair_label == current_pair_label, interaction_feature_raw][[1L]]
-          if (!feature_name %in% names(data) || !interaction_feature %in% names(data)) next
-          shap_col <- column_map[feature == feature_name & included == TRUE, shap_col][[1L]]
-          row_index <- seq_len(nrow(data))
-          if (nrow(data) > max_dependence_rows) {
-            set.seed(123L)
-            row_index <- sort(sample(row_index, max_dependence_rows))
-          }
-          lens_levels <- aq_create_interaction_levels(
-            data[[interaction_feature]],
-            interaction_feature,
-            numeric_bins = numeric_interaction_bins,
-            max_levels = max_interaction_levels,
-            min_cell_n = min_interaction_cell_n,
-            collapse_rare_levels = collapse_rare_levels
-          )
-          plot_data <- data.table::data.table(
-            feature_value = data[[feature_name]][row_index],
-            shap_value = data[[shap_col]][row_index],
-            interaction_level = lens_levels$levels[row_index]
-          )
-          source_is_numeric <- is.numeric(data[[feature_name]]) || is.integer(data[[feature_name]])
-          if (!source_is_numeric) {
-            plot_data[, feature_value := as.character(feature_value)]
-            plot_data <- aq_order_for_flipped_box(plot_data, "feature_value", "shap_value")
-          }
-          plot_result <- aq_safe_create_shap_plot(
-            if (source_is_numeric) "scatter" else "box",
-            if (source_is_numeric) {
-              aq_create_shap_scatter_plot(
-                dt = aq_smart_round_dt(plot_data),
-                XVar = "feature_value",
-                YVar = "shap_value",
-                GroupVar = "interaction_level",
-                title = paste("SHAP Dependence Interaction:", current_pair_label),
-                auto_plots_theme = auto_plots_theme,
-                plot_width = plot_width,
-                plot_height = plot_height
-              )
-            } else {
-              aq_create_shap_box_plot(
-                dt = aq_smart_round_dt(plot_data),
-                XVar = "feature_value",
-                YVar = "shap_value",
-                GroupVar = "interaction_level",
-                title = paste("SHAP Dependence Interaction:", current_pair_label),
-                auto_plots_theme = auto_plots_theme,
-                plot_width = plot_width,
-                plot_height = plot_height
-              )
-            }
-          )
-          if (!is.null(plot_result$object)) {
-            plot_result$object <- aq_style_shap_plot(plot_result$object, horizontal = !source_is_numeric)
-            artifacts <- regression_shap_add_artifact(artifacts, aq_create_regression_shap_plot_artifact(
-              paste0("shap_dependence_interaction_", regression_shap_slug(current_pair_label), "_plot"),
-              paste("SHAP Dependence Interaction:", current_pair_label),
-              "SHAP Dependence",
-              if (source_is_numeric) "scatter" else "box",
-              "interaction_diagnostics",
-              plot_result$object,
-              c(interaction_meta, list(pair_label = current_pair_label))
-            ))
-          } else {
-            warnings <- regression_shap_warn(warnings, plot_result$warning)
           }
         }
       }
@@ -2354,6 +2295,116 @@ qa_generate_regression_shap_analysis_artifacts <- function() {
       "No-SHAP input returns structured warning output.",
       "Invalid DateVar warns without crashing.",
       "Invalid ByVars warn without crashing."
+    )
+  )
+}
+
+qa_regression_shap_dependence_interaction_display <- function() {
+  set.seed(321)
+  n <- 360L
+  channel <- sample(c("Search", "Email", "Direct", "Social"), n, TRUE)
+  unit_length <- sample(c(15L, 30L), n, TRUE)
+  spend <- stats::runif(n, 10, 500)
+  feature_names <- paste0("Feature_", sprintf("%02d", seq_len(12L)))
+
+  df <- data.table::data.table(
+    y = 20 + 0.05 * spend + ifelse(channel == "Search", 3, -1) + ifelse(unit_length == 30L, 1.5, -1.5) + stats::rnorm(n),
+    Predict = 20 + 0.05 * spend + ifelse(channel == "Search", 3, -1) + ifelse(unit_length == 30L, 1.5, -1.5),
+    Spend = spend,
+    Channel = channel,
+    Unit_Length = unit_length,
+    Date = as.Date("2026-01-01") + sample(0:90, n, TRUE),
+    ID = seq_len(n)
+  )
+
+  for (i in seq_along(feature_names)) {
+    feature_name <- feature_names[[i]]
+    df[, (feature_name) := stats::runif(.N, i, i + 100)]
+    df[, (paste0("Shap_", feature_name)) := 0.01 * get(feature_name) + stats::rnorm(.N, 0, 0.02)]
+  }
+
+  df[, Shap_Spend := 0.02 * Spend + ifelse(Channel == "Search", 0.4, -0.1) + stats::rnorm(.N, 0, 0.04)]
+  df[, Shap_Channel := ifelse(Channel == "Search", 0.4, ifelse(Channel == "Email", 0.1, -0.2)) + stats::rnorm(.N, 0, 0.03)]
+
+  selected_features <- c("Spend", "Channel", feature_names)
+
+  result <- generate_regression_shap_analysis_artifacts(
+    data = df,
+    target_col = "y",
+    prediction_col = "Predict",
+    DateVar = "Date",
+    date_aggregation = "month",
+    ByVars = "Unit_Length",
+    id_cols = "ID",
+    selected_features = selected_features,
+    top_n = 14L,
+    include_dependence = TRUE,
+    include_segments = TRUE,
+    include_time = TRUE,
+    include_local = FALSE,
+    include_interactions = TRUE,
+    include_plots = TRUE,
+    max_dependence_plots = 8L,
+    max_segment_plots = 2L,
+    max_time_plots = 2L,
+    max_interaction_pairs = 20L,
+    max_interaction_surface_plots = 4L,
+    numeric_interaction_bins = 5L,
+    max_interaction_levels = 12L,
+    min_interaction_cell_n = 3L,
+    plot_top_n = 14L
+  )
+
+  artifact_names <- names(result$artifacts)
+  artifact_labels <- vapply(result$artifacts, function(x) regression_shap_null_coalesce(x$label, ""), character(1L))
+  artifact_sections <- vapply(result$artifacts, function(x) regression_shap_null_coalesce(x$section, ""), character(1L))
+  artifact_types <- vapply(result$artifacts, function(x) regression_shap_null_coalesce(x$type, ""), character(1L))
+  plot_artifacts <- result$artifacts[artifact_types == "plot"]
+
+  dependence_table <- result$artifacts$shap_dependence_table$object
+  channel_dependence_values <- unique(as.character(dependence_table[feature == "Channel", feature_value]))
+  dependence_plot_artifacts <- plot_artifacts[grepl("^shap_dependence_.*_plot$", names(plot_artifacts))]
+  dependence_plot_group_vars <- vapply(dependence_plot_artifacts, function(x) {
+    if (is.null(x$metadata$group_var)) "" else as.character(x$metadata$group_var)
+  }, character(1L))
+  dependence_plot_axis_features <- vapply(dependence_plot_artifacts, function(x) {
+    regression_shap_null_coalesce(x$metadata$x_axis_source_column, "")
+  }, character(1L))
+
+  heatmap_artifacts <- plot_artifacts[vapply(plot_artifacts, function(x) {
+    identical(x$metadata$plot_type, "heatmap") &&
+      x$section %in% c("Interaction Importance", "Segment Effects", "Time Effects")
+  }, logical(1L))]
+
+  heatmap_height_ok <- length(heatmap_artifacts) > 0L && all(vapply(heatmap_artifacts, function(x) {
+    n_y <- suppressWarnings(as.integer(x$metadata$n_y_levels[[1L]]))
+    h <- suppressWarnings(as.integer(x$metadata$plot_height[[1L]]))
+    !is.na(n_y) && !is.na(h) && h == aq_shap_heatmap_height(n_y)
+  }, logical(1L)))
+
+  interaction_heatmaps <- plot_artifacts[grepl("^two_way_shap_surface_.*_heatmap$", names(plot_artifacts))]
+
+  data.table::data.table(
+    check = c(
+      "byvar_not_dependence_axis",
+      "dependence_plot_single_feature_axis",
+      "no_dependence_interaction_artifacts",
+      "interaction_heatmaps_in_interaction_importance",
+      "heatmap_dynamic_height_metadata"
+    ),
+    status = c(
+      if (!any(channel_dependence_values %in% c("15", "30"))) "success" else "error",
+      if (length(dependence_plot_artifacts) > 0L && all(!nzchar(dependence_plot_group_vars)) && all(dependence_plot_axis_features != "Unit_Length")) "success" else "error",
+      if (!any(grepl("SHAP Dependence Interaction", c(artifact_names, artifact_labels, artifact_sections), fixed = TRUE)) && !any(grepl("^shap_dependence_interaction_", artifact_names))) "success" else "error",
+      if (!length(interaction_heatmaps) || all(vapply(interaction_heatmaps, function(x) identical(x$section, "Interaction Importance"), logical(1L)))) "success" else "error",
+      if (heatmap_height_ok) "success" else "error"
+    ),
+    message = c(
+      "ByVar Unit_Length levels do not appear as Channel dependence x-axis values.",
+      "Dependence plot metadata uses the selected SHAP feature as the axis and no ByVar group axis.",
+      "Nonsensical SHAP Dependence Interaction artifacts are suppressed.",
+      "Two-way surface heatmaps are sectioned under Interaction Importance only.",
+      "SHAP heatmap artifacts include n_y_levels and matching dynamic plot_height metadata."
     )
   )
 }

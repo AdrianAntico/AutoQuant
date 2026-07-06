@@ -117,7 +117,11 @@ Other Reports:
 \code{\link{RegressionModelInsightsReport}()},
 \code{\link{RegressionShapAnalysisReport}()},
 \code{\link{TargetAnalysisReport}()},
+\code{\link{generate_catboost_builder_artifacts}()},
 \code{\link{generate_regression_model_insights_artifacts}()},
-\code{\link{qa_generate_binary_classification_model_insights_artifacts}()}
+\code{\link{qa_generate_binary_classification_model_insights_artifacts}()},
+\code{\link{qa_generate_catboost_builder_artifacts}()},
+\code{\link{qa_generate_catboost_builder_artifacts_binary}()},
+\code{\link{qa_generate_catboost_builder_artifacts_regression}()}
 }
 \concept{Reports}

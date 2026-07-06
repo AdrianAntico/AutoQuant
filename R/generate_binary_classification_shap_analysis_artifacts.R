@@ -827,7 +827,6 @@ generate_binary_classification_shap_analysis_artifacts <- function(
     artifacts <- binary_shap_add_artifact(artifacts, binary_shap_artifact("shap_dependence_table", "Binary SHAP Dependence", "table", "SHAP Dependence", object = aq_smart_round_dt(dependence, skip_cols = "row_id"), metadata = artifact_metadata("shap_dependence", "SHAP Dependence", 12L)))
     if (isTRUE(include_plots) && nrow(dependence)) {
       dependence_features <- head(intersect(global_importance$feature, unique(dependence$feature)), max_dependence_plots)
-      dependence_group <- if (length(ByVars)) ByVars[[1L]] else NULL
       for (feature_name in dependence_features) {
         shap_col <- column_map[feature == feature_name, shap_col][[1L]]
         row_index <- seq_len(nrow(data))
@@ -837,9 +836,6 @@ generate_binary_classification_shap_analysis_artifacts <- function(
         }
         source_is_numeric <- feature_name %in% names(data) && (is.numeric(data[[feature_name]]) || is.integer(data[[feature_name]]))
         plot_data <- data.table::data.table(feature_value = data[[feature_name]][row_index], shap_value = data[[shap_col]][row_index])
-        if (!is.null(dependence_group) && dependence_group %in% names(data)) {
-          plot_data[, (dependence_group) := as.character(data[[dependence_group]][row_index])]
-        }
         if (!source_is_numeric) {
           plot_data[, feature_value := as.character(feature_value)]
           plot_data <- aq_order_for_flipped_box(plot_data, "feature_value", "shap_value")
@@ -847,14 +843,14 @@ generate_binary_classification_shap_analysis_artifacts <- function(
         plot_result <- aq_safe_create_shap_plot(
           if (source_is_numeric) "scatter" else "box",
           if (source_is_numeric) {
-            aq_create_shap_scatter_plot(plot_data, "feature_value", "shap_value", GroupVar = dependence_group, title = paste("Binary SHAP Dependence:", feature_name), auto_plots_theme = auto_plots_theme, plot_width = plot_width, plot_height = plot_height)
+            aq_create_shap_scatter_plot(plot_data, "feature_value", "shap_value", GroupVar = NULL, title = paste("Binary SHAP Dependence:", feature_name), auto_plots_theme = auto_plots_theme, plot_width = plot_width, plot_height = plot_height)
           } else {
-            aq_create_shap_box_plot(plot_data, "feature_value", "shap_value", GroupVar = dependence_group, title = paste("Binary SHAP Dependence:", feature_name), auto_plots_theme = auto_plots_theme, plot_width = plot_width, plot_height = plot_height)
+            aq_create_shap_box_plot(plot_data, "feature_value", "shap_value", GroupVar = NULL, title = paste("Binary SHAP Dependence:", feature_name), auto_plots_theme = auto_plots_theme, plot_width = plot_width, plot_height = plot_height)
           }
         )
         if (!is.null(plot_result$object)) {
           plot_result$object <- aq_style_shap_plot(plot_result$object, horizontal = !source_is_numeric)
-          artifacts <- binary_shap_add_artifact(artifacts, aq_create_binary_shap_plot_artifact(paste0("shap_dependence_", regression_shap_slug(feature_name), "_plot"), paste("Binary SHAP Dependence:", feature_name), "SHAP Dependence", if (source_is_numeric) "scatter" else "box", "shap_dependence", plot_result$object, c(artifact_metadata("shap_dependence", "SHAP Dependence", 13L), list(feature = feature_name))))
+          artifacts <- binary_shap_add_artifact(artifacts, aq_create_binary_shap_plot_artifact(paste0("shap_dependence_", regression_shap_slug(feature_name), "_plot"), paste("Binary SHAP Dependence:", feature_name), "SHAP Dependence", if (source_is_numeric) "scatter" else "box", "shap_dependence", plot_result$object, c(artifact_metadata("shap_dependence", "SHAP Dependence", 13L), list(feature = feature_name, x_axis_source_column = feature_name, x_axis = "feature_value", group_var = NULL, ByVars_context_available = ByVars))))
         } else {
           warnings <- regression_shap_warn(warnings, plot_result$warning)
         }
@@ -885,13 +881,15 @@ generate_binary_classification_shap_analysis_artifacts <- function(
       for (byvar in segment_byvars) {
         segment_plot_data <- data.table::copy(segments[ByVar == byvar & rank_within_segment <= plot_top_n])
         segment_plot_data <- aq_smart_round_dt(segment_plot_data, skip_cols = c("rank_within_segment", "n"))
+        segment_n_y_levels <- data.table::uniqueN(segment_plot_data$feature, na.rm = TRUE)
+        segment_plot_height <- aq_shap_heatmap_height(segment_n_y_levels)
         heatmap_result <- aq_safe_create_shap_plot(
           "heatmap",
-          aq_create_shap_heatmap_plot(segment_plot_data, "segment", "feature", "mean_shap", title = paste("Binary Segment Mean SHAP Heatmap:", byvar), auto_plots_theme = auto_plots_theme, plot_width = plot_width, plot_height = plot_height)
+          aq_create_shap_heatmap_plot(segment_plot_data, "segment", "feature", "mean_shap", title = paste("Binary Segment Mean SHAP Heatmap:", byvar), auto_plots_theme = auto_plots_theme, plot_width = plot_width, plot_height = segment_plot_height)
         )
         if (!is.null(heatmap_result$object)) {
           heatmap_result$object <- aq_style_shap_plot(heatmap_result$object, rotate_x = TRUE)
-          artifacts <- binary_shap_add_artifact(artifacts, aq_create_binary_shap_plot_artifact(paste0("segment_effects_", regression_shap_slug(byvar), "_heatmap"), paste("Binary Segment Mean SHAP Heatmap:", byvar), "Segment Effects", "heatmap", "segment_effects", heatmap_result$object, c(artifact_metadata("segment_effects", "Segment Effects", 15L), list(ByVar = byvar, heatmap_value = "mean_shap", heatmap_value_description = "Signed mean SHAP by feature and segment"))))
+          artifacts <- binary_shap_add_artifact(artifacts, aq_create_binary_shap_plot_artifact(paste0("segment_effects_", regression_shap_slug(byvar), "_heatmap"), paste("Binary Segment Mean SHAP Heatmap:", byvar), "Segment Effects", "heatmap", "segment_effects", heatmap_result$object, c(artifact_metadata("segment_effects", "Segment Effects", 15L), list(ByVar = byvar, heatmap_value = "mean_shap", heatmap_value_description = "Signed mean SHAP by feature and segment", n_y_levels = segment_n_y_levels, plot_height = segment_plot_height))))
         } else {
           warnings <- regression_shap_warn(warnings, heatmap_result$warning)
         }
@@ -927,10 +925,12 @@ generate_binary_classification_shap_analysis_artifacts <- function(
       } else {
         warnings <- regression_shap_warn(warnings, line_result$warning)
       }
-      heatmap_result <- aq_safe_create_shap_plot("heatmap", aq_create_shap_heatmap_plot(time_plot_data, "period", "feature", "mean_abs_shap", title = "Binary Time SHAP Effects Heatmap", auto_plots_theme = auto_plots_theme, plot_width = plot_width, plot_height = plot_height))
+      time_n_y_levels <- data.table::uniqueN(time_plot_data$feature, na.rm = TRUE)
+      time_plot_height <- aq_shap_heatmap_height(time_n_y_levels)
+      heatmap_result <- aq_safe_create_shap_plot("heatmap", aq_create_shap_heatmap_plot(time_plot_data, "period", "feature", "mean_abs_shap", title = "Binary Time SHAP Effects Heatmap", auto_plots_theme = auto_plots_theme, plot_width = plot_width, plot_height = time_plot_height))
       if (!is.null(heatmap_result$object)) {
         heatmap_result$object <- aq_style_shap_plot(heatmap_result$object, rotate_x = TRUE)
-        artifacts <- binary_shap_add_artifact(artifacts, aq_create_binary_shap_plot_artifact("time_effects_heatmap", "Binary Time SHAP Effects Heatmap", "Time Effects", "heatmap", "time_effects", heatmap_result$object, artifact_metadata("time_effects", "Time Effects", 18L)))
+        artifacts <- binary_shap_add_artifact(artifacts, aq_create_binary_shap_plot_artifact("time_effects_heatmap", "Binary Time SHAP Effects Heatmap", "Time Effects", "heatmap", "time_effects", heatmap_result$object, c(artifact_metadata("time_effects", "Time Effects", 18L), list(n_y_levels = time_n_y_levels, plot_height = time_plot_height))))
       } else {
         warnings <- regression_shap_warn(warnings, heatmap_result$warning)
       }
@@ -1092,10 +1092,12 @@ generate_binary_classification_shap_analysis_artifacts <- function(
           surface_plot_data[, (interaction_axis) := interaction_feature_actual_value_bin]
           surface_plot_data[, (heatmap_axis) := heatmap_value]
           surface_title <- paste("Binary Mean SHAP Surface:", surface_plot_data$shap_feature[[1L]], "by", surface_plot_data$interaction_feature[[1L]])
-          heatmap_result <- aq_safe_create_shap_plot("heatmap", aq_create_shap_heatmap_plot(surface_plot_data, shap_axis, interaction_axis, heatmap_axis, title = surface_title, auto_plots_theme = auto_plots_theme, plot_width = plot_width, plot_height = plot_height))
+          surface_n_y_levels <- data.table::uniqueN(surface_plot_data[[interaction_axis]], na.rm = TRUE)
+          surface_plot_height <- aq_shap_heatmap_height(surface_n_y_levels)
+          heatmap_result <- aq_safe_create_shap_plot("heatmap", aq_create_shap_heatmap_plot(surface_plot_data, shap_axis, interaction_axis, heatmap_axis, title = surface_title, auto_plots_theme = auto_plots_theme, plot_width = plot_width, plot_height = surface_plot_height))
           if (!is.null(heatmap_result$object)) {
             heatmap_result$object <- aq_style_shap_plot(heatmap_result$object, rotate_x = TRUE)
-            artifacts <- binary_shap_add_artifact(artifacts, aq_create_binary_shap_plot_artifact(paste0("two_way_shap_surface_", regression_shap_slug(current_pair_label), "_heatmap"), surface_title, "Interaction Importance", "heatmap", "interaction_diagnostics", heatmap_result$object, c(interaction_meta, list(pair_label = current_pair_label, x_axis = shap_axis, y_axis = interaction_axis, heatmap_value = "mean_shap", heatmap_value_description = surface_plot_data$heatmap_value_description[[1L]]))))
+            artifacts <- binary_shap_add_artifact(artifacts, aq_create_binary_shap_plot_artifact(paste0("two_way_shap_surface_", regression_shap_slug(current_pair_label), "_heatmap"), surface_title, "Interaction Importance", "heatmap", "interaction_diagnostics", heatmap_result$object, c(interaction_meta, list(pair_label = current_pair_label, x_axis = shap_axis, y_axis = interaction_axis, heatmap_value = "mean_shap", heatmap_value_description = surface_plot_data$heatmap_value_description[[1L]], n_y_levels = surface_n_y_levels, plot_height = surface_plot_height))))
           } else {
             warnings <- regression_shap_warn(warnings, heatmap_result$warning)
           }

@@ -2,9 +2,6 @@
 % Please edit documentation in R/generate_catboost_builder_artifacts.R
 \name{generate_catboost_builder_artifacts}
 \alias{generate_catboost_builder_artifacts}
-\alias{qa_generate_catboost_builder_artifacts}
-\alias{qa_generate_catboost_builder_artifacts_binary}
-\alias{qa_generate_catboost_builder_artifacts_regression}
 \title{Generate CatBoost Builder Artifacts}
 \usage{
 generate_catboost_builder_artifacts(
@@ -39,12 +36,6 @@ generate_catboost_builder_artifacts(
   data_name = NULL,
   ...
 )
-
-qa_generate_catboost_builder_artifacts_regression()
-
-qa_generate_catboost_builder_artifacts_binary()
-
-qa_generate_catboost_builder_artifacts()
 }
 \arguments{
 \item{data}{Input data.}
@@ -53,7 +44,7 @@ qa_generate_catboost_builder_artifacts()
 
 \item{feature_cols}{Feature columns.}
 
-\item{problem_type}{One of \code{"regression"} or \code{"binary_classification"}.}
+\item{problem_type}{One of `"regression"` or `"binary_classification"`.}
 
 \item{positive_class}{Positive class for binary classification.}
 
@@ -65,7 +56,7 @@ qa_generate_catboost_builder_artifacts()
 
 \item{train_fraction}{Fraction of rows used for training.}
 
-\item{split_method}{\code{"random"} or \code{"time"}.}
+\item{split_method}{`"random"` or `"time"`.}
 
 \item{split_col}{Optional split column for time split.}
 
@@ -104,54 +95,27 @@ qa_generate_catboost_builder_artifacts()
 \item{...}{Reserved for future bounded CatBoost parameters.}
 }
 \value{
-A structured \code{autoquant_catboost_builder_artifacts} list. QA helpers
-return compact \code{data.table} results.
+A structured `autoquant_catboost_builder_artifacts` list.
 }
 \description{
 Wraps AutoQuant CatBoost regression or binary classification training and
 returns structured artifacts plus scored data for downstream AutoQuant and
 AnalyticsShinyApp workflows.
 }
-\details{
-CatBoost Builder v1 is intentionally narrow. It supports regression and
-binary classification and routes training through the existing
-\code{AutoCatBoostRegression()} and \code{AutoCatBoostClassifier()} functions.
-The generator standardizes train/test scored outputs with \code{Predict} and
-\code{.split}, preserves \code{Shap_} contribution columns when the wrapped
-AutoCatBoost output includes them, and returns downstream handoff metadata for
-Model Assessment, Model Insights, and SHAP Analysis. AnalyticsShinyApp should
-call this artifact wrapper rather than calling the lower-level training
-functions directly.
-}
-\examples{
-\dontrun{
-library(data.table)
-
-dt <- data.table(
-  id = 1:200,
-  channel = sample(c("Search", "Email", "Direct"), 200, TRUE),
-  spend = runif(200, 50, 500),
-  clicks = rpois(200, 40)
-)
-dt[, revenue := 20 + 2.5 * spend + 1.5 * clicks + rnorm(.N, 0, 25)]
-
-builder <- AutoQuant::generate_catboost_builder_artifacts(
-  data = dt,
-  target_col = "revenue",
-  feature_cols = c("channel", "spend", "clicks"),
-  problem_type = "regression",
-  iterations = 30L
-)
-
-builder$metadata$artifact_index
-builder$value$scored_data
-}
-}
 \seealso{
-Other Reports: \code{\link{generate_model_assessment_artifacts}()},
-\code{\link{generate_regression_model_insights_artifacts}()},
+Other Reports: 
+\code{\link{BinaryClassificationModelInsightsReport}()},
+\code{\link{BinaryClassificationShapAnalysisReport}()},
+\code{\link{EDAReport}()},
+\code{\link{ModelInsightsReport}()},
+\code{\link{RegressionModelInsightsReport}()},
+\code{\link{RegressionShapAnalysisReport}()},
+\code{\link{TargetAnalysisReport}()},
 \code{\link{generate_binary_classification_model_insights_artifacts}()},
-\code{\link{generate_regression_shap_analysis_artifacts}()},
-\code{\link{generate_binary_classification_shap_analysis_artifacts}()}
+\code{\link{generate_regression_model_insights_artifacts}()},
+\code{\link{qa_generate_binary_classification_model_insights_artifacts}()},
+\code{\link{qa_generate_catboost_builder_artifacts}()},
+\code{\link{qa_generate_catboost_builder_artifacts_binary}()},
+\code{\link{qa_generate_catboost_builder_artifacts_regression}()}
 }
 \concept{Reports}
