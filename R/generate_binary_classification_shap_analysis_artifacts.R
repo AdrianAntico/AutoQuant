@@ -712,7 +712,7 @@ generate_binary_classification_shap_analysis_artifacts <- function(
       )
     )
     if (!is.null(global_plot$object)) {
-      global_plot$object <- aq_style_shap_plot(global_plot$object, horizontal = TRUE)
+      global_plot$object <- aq_style_shap_plot(global_plot$object, horizontal = TRUE, x_axis_title = "")
       artifacts <- binary_shap_add_artifact(artifacts, aq_create_binary_shap_plot_artifact("global_importance_plot", "Binary Global SHAP Importance Plot", "Global Importance", "bar", "global_importance", global_plot$object, artifact_metadata("global_importance", "Global Importance", 6L)))
     } else {
       warnings <- regression_shap_warn(warnings, global_plot$warning)
@@ -734,7 +734,7 @@ generate_binary_classification_shap_analysis_artifacts <- function(
         )
       )
       if (!is.null(distribution_plot$object)) {
-        distribution_plot$object <- aq_style_shap_plot(distribution_plot$object, horizontal = TRUE)
+        distribution_plot$object <- aq_style_shap_plot(distribution_plot$object, horizontal = TRUE, x_axis_title = "")
         artifacts <- binary_shap_add_artifact(artifacts, aq_create_binary_shap_plot_artifact("shap_distribution_plot", "Binary SHAP Distribution Plot", "Global Importance", "box", "shap_distribution", distribution_plot$object, artifact_metadata("shap_distribution", "Global Importance", 7L)))
       } else {
         warnings <- regression_shap_warn(warnings, distribution_plot$warning)
@@ -759,7 +759,7 @@ generate_binary_classification_shap_analysis_artifacts <- function(
         )
       )
       if (!is.null(categorical_bar_plot$object)) {
-        categorical_bar_plot$object <- aq_style_shap_plot(categorical_bar_plot$object, horizontal = TRUE)
+        categorical_bar_plot$object <- aq_style_shap_plot(categorical_bar_plot$object, horizontal = TRUE, x_axis_title = "")
         artifacts <- binary_shap_add_artifact(artifacts, aq_create_binary_shap_plot_artifact("categorical_level_importance_plot", "Categorical / Binned Numeric Level SHAP Importance Plot", "Global Importance", "bar", "categorical_level_importance", categorical_bar_plot$object, artifact_metadata("categorical_level_importance", "Global Importance", 8L)))
       } else {
         warnings <- regression_shap_warn(warnings, categorical_bar_plot$warning)
@@ -781,7 +781,7 @@ generate_binary_classification_shap_analysis_artifacts <- function(
           )
         )
         if (!is.null(categorical_box_plot$object)) {
-          categorical_box_plot$object <- aq_style_shap_plot(categorical_box_plot$object, horizontal = TRUE)
+          categorical_box_plot$object <- aq_style_shap_plot(categorical_box_plot$object, horizontal = TRUE, x_axis_title = "")
           artifacts <- binary_shap_add_artifact(artifacts, aq_create_binary_shap_plot_artifact("categorical_level_distribution_plot", "Categorical / Binned Numeric Level SHAP Distribution Plot", "Global Importance", "box", "categorical_level_importance", categorical_box_plot$object, artifact_metadata("categorical_level_importance", "Global Importance", 9L)))
         } else {
           warnings <- regression_shap_warn(warnings, categorical_box_plot$warning)
@@ -818,7 +818,7 @@ generate_binary_classification_shap_analysis_artifacts <- function(
         }
       )
       if (!is.null(plot_result$object)) {
-        plot_result$object <- aq_style_shap_plot(plot_result$object, horizontal = !source_is_numeric, rotate_x = source_is_numeric)
+        plot_result$object <- aq_style_shap_plot(plot_result$object, horizontal = !source_is_numeric, rotate_x = source_is_numeric, x_axis_title = feature_name)
         artifacts <- binary_shap_add_artifact(artifacts, aq_create_binary_shap_plot_artifact(paste0("single_feature_effect_", regression_shap_slug(feature_name), "_plot"), paste("Binary SHAP Effect:", feature_name), "Single Feature Effects", if (source_is_numeric) "line" else "bar", "single_feature_effects", plot_result$object, c(artifact_metadata("single_feature_effects", "Single Feature Effects", 11L), list(feature = feature_name))))
       } else {
         warnings <- regression_shap_warn(warnings, plot_result$warning)
@@ -854,7 +854,7 @@ generate_binary_classification_shap_analysis_artifacts <- function(
           }
         )
         if (!is.null(plot_result$object)) {
-          plot_result$object <- aq_style_shap_plot(plot_result$object, horizontal = !source_is_numeric)
+          plot_result$object <- aq_style_shap_plot(plot_result$object, horizontal = !source_is_numeric, x_axis_title = feature_name)
           artifacts <- binary_shap_add_artifact(artifacts, aq_create_binary_shap_plot_artifact(paste0("shap_dependence_", regression_shap_slug(feature_name), "_plot"), paste("Binary SHAP Dependence:", feature_name), "SHAP Dependence", if (source_is_numeric) "scatter" else "box", "shap_dependence", plot_result$object, c(artifact_metadata("shap_dependence", "SHAP Dependence", 13L), list(feature = feature_name, x_axis_source_column = feature_name, x_axis = "feature_value", group_var = NULL, ByVars_context_available = ByVars))))
         } else {
           warnings <- regression_shap_warn(warnings, plot_result$warning)
@@ -893,7 +893,7 @@ generate_binary_classification_shap_analysis_artifacts <- function(
           aq_create_shap_heatmap_plot(segment_plot_data, "segment", "feature", "mean_shap", title = paste("Binary Segment Mean SHAP Heatmap:", byvar), auto_plots_theme = auto_plots_theme, plot_width = plot_width, plot_height = segment_plot_height)
         )
         if (!is.null(heatmap_result$object)) {
-          heatmap_result$object <- aq_style_shap_plot(heatmap_result$object, rotate_x = TRUE)
+          heatmap_result$object <- aq_style_shap_plot(heatmap_result$object, rotate_x = TRUE, x_axis_title = byvar, y_axis_title = "")
           artifacts <- binary_shap_add_artifact(artifacts, aq_create_binary_shap_plot_artifact(paste0("segment_effects_", regression_shap_slug(byvar), "_heatmap"), paste("Binary Segment Mean SHAP Heatmap:", byvar), "Segment Effects", "heatmap", "segment_effects", heatmap_result$object, c(artifact_metadata("segment_effects", "Segment Effects", 15L), list(ByVar = byvar, heatmap_value = "mean_shap", heatmap_value_description = "Signed mean SHAP by feature and segment", n_y_levels = segment_n_y_levels, plot_height = segment_plot_height))))
         } else {
           warnings <- regression_shap_warn(warnings, heatmap_result$warning)
@@ -925,7 +925,7 @@ generate_binary_classification_shap_analysis_artifacts <- function(
       time_plot_data <- aq_smart_round_dt(time_plot_data, skip_cols = c("rank_within_period", "n"))
       line_result <- aq_safe_create_shap_plot("line", aq_create_shap_line_plot(time_plot_data, "period", "mean_abs_shap", GroupVar = "feature", title = "Binary Time SHAP Effects", auto_plots_theme = auto_plots_theme, plot_width = plot_width, plot_height = plot_height))
       if (!is.null(line_result$object)) {
-        line_result$object <- aq_style_shap_plot(line_result$object, rotate_x = TRUE)
+        line_result$object <- aq_style_shap_plot(line_result$object, rotate_x = TRUE, x_axis_title = DateVar)
         artifacts <- binary_shap_add_artifact(artifacts, aq_create_binary_shap_plot_artifact("time_effects_line_plot", "Binary Time SHAP Effects Plot", "Time Effects", "line", "time_effects", line_result$object, artifact_metadata("time_effects", "Time Effects", 17L)))
       } else {
         warnings <- regression_shap_warn(warnings, line_result$warning)
@@ -934,7 +934,7 @@ generate_binary_classification_shap_analysis_artifacts <- function(
       time_plot_height <- aq_shap_heatmap_height(time_n_y_levels)
       heatmap_result <- aq_safe_create_shap_plot("heatmap", aq_create_shap_heatmap_plot(time_plot_data, "period", "feature", "mean_abs_shap", title = "Binary Time SHAP Effects Heatmap", auto_plots_theme = auto_plots_theme, plot_width = plot_width, plot_height = time_plot_height))
       if (!is.null(heatmap_result$object)) {
-        heatmap_result$object <- aq_style_shap_plot(heatmap_result$object, rotate_x = TRUE)
+        heatmap_result$object <- aq_style_shap_plot(heatmap_result$object, rotate_x = TRUE, x_axis_title = DateVar, y_axis_title = "")
         artifacts <- binary_shap_add_artifact(artifacts, aq_create_binary_shap_plot_artifact("time_effects_heatmap", "Binary Time SHAP Effects Heatmap", "Time Effects", "heatmap", "time_effects", heatmap_result$object, c(artifact_metadata("time_effects", "Time Effects", 18L), list(n_y_levels = time_n_y_levels, plot_height = time_plot_height))))
       } else {
         warnings <- regression_shap_warn(warnings, heatmap_result$warning)
@@ -953,7 +953,7 @@ generate_binary_classification_shap_analysis_artifacts <- function(
         data.table::setorderv(threshold_plot_data, c("prediction_band", "mean_abs_shap"), order = c(1L, 1L), na.last = TRUE)
         threshold_plot <- aq_safe_create_shap_plot("bar", aq_create_shap_bar_plot(threshold_plot_data, "feature", "mean_abs_shap", GroupVar = "prediction_band", title = "Binary SHAP Importance by Threshold Band", auto_plots_theme = auto_plots_theme, plot_width = plot_width, plot_height = plot_height))
         if (!is.null(threshold_plot$object)) {
-          threshold_plot$object <- aq_style_shap_plot(threshold_plot$object, horizontal = TRUE)
+          threshold_plot$object <- aq_style_shap_plot(threshold_plot$object, horizontal = TRUE, x_axis_title = "")
           artifacts <- binary_shap_add_artifact(artifacts, aq_create_binary_shap_plot_artifact("threshold_context_plot", "Binary Threshold SHAP Context Plot", "Threshold Context", "bar", "threshold_context", threshold_plot$object, artifact_metadata("threshold_context", "Threshold Context", 20L)))
         } else {
           warnings <- regression_shap_warn(warnings, threshold_plot$warning)
@@ -977,7 +977,7 @@ generate_binary_classification_shap_analysis_artifacts <- function(
         data.table::setorderv(class_plot_data, c("target", "mean_abs_shap"), order = c(1L, 1L), na.last = TRUE)
         class_plot <- aq_safe_create_shap_plot("bar", aq_create_shap_bar_plot(class_plot_data, "feature", "mean_abs_shap", GroupVar = "target", title = "Class-Specific Mean Absolute SHAP", auto_plots_theme = auto_plots_theme, plot_width = plot_width, plot_height = plot_height))
         if (!is.null(class_plot$object)) {
-          class_plot$object <- aq_style_shap_plot(class_plot$object, horizontal = TRUE)
+          class_plot$object <- aq_style_shap_plot(class_plot$object, horizontal = TRUE, x_axis_title = "")
           artifacts <- binary_shap_add_artifact(artifacts, aq_create_binary_shap_plot_artifact("class_feature_importance_plot", "Class-Specific SHAP Importance Plot", "Class Balance / Outcome Context", "bar", "class_balance", class_plot$object, artifact_metadata("class_balance", "Class Balance / Outcome Context", 23L)))
         } else {
           warnings <- regression_shap_warn(warnings, class_plot$warning)
@@ -1009,7 +1009,7 @@ generate_binary_classification_shap_analysis_artifacts <- function(
         local_plot_data <- aq_smart_round_dt(local_plot_data, skip_cols = c("row_id", "contribution_rank"))
         plot_result <- aq_safe_create_shap_plot("bar", aq_create_shap_bar_plot(local_plot_data, "feature", "shap_value", title = paste("Local Binary SHAP Contributions: Row", row_id), auto_plots_theme = auto_plots_theme, plot_width = plot_width, plot_height = plot_height))
         if (!is.null(plot_result$object)) {
-          plot_result$object <- aq_style_shap_plot(plot_result$object, horizontal = TRUE)
+          plot_result$object <- aq_style_shap_plot(plot_result$object, horizontal = TRUE, x_axis_title = "")
           artifacts <- binary_shap_add_artifact(artifacts, aq_create_binary_shap_plot_artifact(paste0("local_explanations_row_", row_id, "_plot"), paste("Local Binary SHAP Contributions: Row", row_id), "Local Explanations", "bar", "local_explanations", plot_result$object, c(artifact_metadata("local_explanations", "Local Explanations", 25L), list(row_id = row_id))))
         } else {
           warnings <- regression_shap_warn(warnings, plot_result$warning)
@@ -1078,7 +1078,7 @@ generate_binary_classification_shap_analysis_artifacts <- function(
         data.table::setorderv(interaction_plot_data, "score", order = 1L, na.last = TRUE)
         ranking_plot <- aq_safe_create_shap_plot("bar", aq_create_shap_bar_plot(interaction_plot_data, "pair_label", "score", title = "Binary Candidate SHAP Interaction Diagnostic Score", auto_plots_theme = auto_plots_theme, plot_width = plot_width, plot_height = plot_height))
         if (!is.null(ranking_plot$object)) {
-          ranking_plot$object <- aq_style_shap_plot(ranking_plot$object, horizontal = TRUE)
+          ranking_plot$object <- aq_style_shap_plot(ranking_plot$object, horizontal = TRUE, x_axis_title = "")
           artifacts <- binary_shap_add_artifact(artifacts, aq_create_binary_shap_plot_artifact("candidate_interaction_ranking_plot", "Binary Candidate Interaction Ranking Plot", "Interaction Importance", "bar", "interaction_diagnostics", ranking_plot$object, interaction_meta))
         } else {
           warnings <- regression_shap_warn(warnings, ranking_plot$warning)

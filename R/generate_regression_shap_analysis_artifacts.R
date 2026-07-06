@@ -969,7 +969,8 @@ aq_shap_plot_args <- function(
   auto_plots_theme = NULL,
   plot_width = NULL,
   plot_height = NULL,
-  pre_agg = NULL
+  pre_agg = NULL,
+  tooltip_show = NULL
 ) {
   args <- list(dt = dt, XVar = XVar)
   if (!is.null(YVar)) args$YVar <- YVar
@@ -980,7 +981,28 @@ aq_shap_plot_args <- function(
   if (!is.null(plot_width)) args$Width <- plot_width
   if (!is.null(plot_height)) args$Height <- plot_height
   if (!is.null(pre_agg)) args$PreAgg <- pre_agg
+  if (!is.null(tooltip_show)) args$tooltip.show <- tooltip_show
   args
+}
+
+aq_shap_unique_axis_levels <- function(dt, axis_col) {
+  if (is.null(dt) || !data.table::is.data.table(dt) || is.null(axis_col) || !axis_col %in% names(dt)) {
+    return(0L)
+  }
+
+  as.integer(data.table::uniqueN(dt[[axis_col]], na.rm = TRUE))
+}
+
+aq_shap_dense_axis_tooltip <- function(
+  dt,
+  XVar,
+  YVar = NULL,
+  max_x_levels = 20L,
+  max_y_levels = 14L
+) {
+  n_x <- aq_shap_unique_axis_levels(dt, XVar)
+  n_y <- aq_shap_unique_axis_levels(dt, YVar)
+  if (n_x > max_x_levels || n_y > max_y_levels) FALSE else NULL
 }
 
 aq_create_shap_bar_plot <- function(dt, XVar, YVar, GroupVar = NULL, title = NULL, auto_plots_theme = NULL, plot_width = NULL, plot_height = NULL) {
@@ -988,7 +1010,7 @@ aq_create_shap_bar_plot <- function(dt, XVar, YVar, GroupVar = NULL, title = NUL
 }
 
 aq_create_shap_box_plot <- function(dt, XVar, YVar, GroupVar = NULL, title = NULL, auto_plots_theme = NULL, plot_width = NULL, plot_height = NULL) {
-  aq_call_autoplot("Box", aq_shap_plot_args(dt, XVar, YVar, GroupVar = GroupVar, title = title, auto_plots_theme = auto_plots_theme, plot_width = plot_width, plot_height = plot_height))
+  aq_call_autoplot("Box", aq_shap_plot_args(dt, XVar, YVar, GroupVar = GroupVar, title = title, auto_plots_theme = auto_plots_theme, plot_width = plot_width, plot_height = plot_height, tooltip_show = FALSE))
 }
 
 aq_create_shap_scatter_plot <- function(dt, XVar, YVar, GroupVar = NULL, title = NULL, auto_plots_theme = NULL, plot_width = NULL, plot_height = NULL) {
@@ -1000,7 +1022,7 @@ aq_create_shap_line_plot <- function(dt, XVar, YVar, GroupVar = NULL, title = NU
 }
 
 aq_create_shap_heatmap_plot <- function(dt, XVar, YVar, ZVar, title = NULL, auto_plots_theme = NULL, plot_width = NULL, plot_height = NULL) {
-  aq_call_autoplot("HeatMap", aq_shap_plot_args(dt, XVar, YVar, ZVar = ZVar, title = title, auto_plots_theme = auto_plots_theme, plot_width = plot_width, plot_height = plot_height, pre_agg = TRUE))
+  aq_call_autoplot("HeatMap", aq_shap_plot_args(dt, XVar, YVar, ZVar = ZVar, title = title, auto_plots_theme = auto_plots_theme, plot_width = plot_width, plot_height = plot_height, pre_agg = TRUE, tooltip_show = aq_shap_dense_axis_tooltip(dt, XVar, YVar)))
 }
 
 aq_safe_create_shap_plot <- function(plot_type, create_expr) {
@@ -1029,38 +1051,27 @@ aq_style_shap_plot <- function(
   rotate = 45L,
   x_label_width = 120L,
   y_label_width = 180L,
-  axis_font_size = 11L
+  axis_font_size = 11L,
+  x_axis_title = NULL,
+  y_axis_title = NULL
 ) {
   if (is.null(plot) || !requireNamespace("echarts4r", quietly = TRUE)) {
     return(plot)
   }
 
   out <- plot
-  x_axis_label <- list(
-    rotate = if (isTRUE(rotate_x)) rotate else 0L,
-    interval = 0L,
-    hideOverlap = TRUE,
-    overflow = "truncate",
-    width = x_label_width,
-    margin = 12L,
-    fontSize = axis_font_size
-  )
-  y_axis_label <- list(
-    interval = 0L,
-    hideOverlap = TRUE,
-    overflow = "truncate",
-    width = y_label_width,
-    margin = 12L,
-    fontSize = axis_font_size
-  )
-  out <- tryCatch(
-    echarts4r::e_x_axis(out, axisLabel = x_axis_label),
-    error = function(e) out
-  )
-  out <- tryCatch(
-    echarts4r::e_y_axis(out, axisLabel = y_axis_label),
-    error = function(e) out
-  )
+  if (!is.null(x_axis_title)) {
+    out <- tryCatch(
+      echarts4r::e_x_axis(out, name = x_axis_title),
+      error = function(e) out
+    )
+  }
+  if (!is.null(y_axis_title)) {
+    out <- tryCatch(
+      echarts4r::e_y_axis(out, name = y_axis_title),
+      error = function(e) out
+    )
+  }
   if (isTRUE(horizontal)) {
     out <- tryCatch(
       echarts4r::e_flip_coords(out),
@@ -1596,7 +1607,7 @@ generate_regression_shap_analysis_artifacts <- function(
       )
     )
     if (!is.null(global_plot$object)) {
-      global_plot$object <- aq_style_shap_plot(global_plot$object, horizontal = TRUE)
+      global_plot$object <- aq_style_shap_plot(global_plot$object, horizontal = TRUE, x_axis_title = "")
       artifacts <- regression_shap_add_artifact(artifacts, aq_create_regression_shap_plot_artifact("global_importance_plot", "Global SHAP Importance Plot", "Global Importance", "bar", "global_importance", global_plot$object, artifact_metadata("global_importance", "Global Importance", 6L)))
     } else {
       warnings <- regression_shap_warn(warnings, global_plot$warning)
@@ -1618,7 +1629,7 @@ generate_regression_shap_analysis_artifacts <- function(
         )
       )
       if (!is.null(distribution_plot$object)) {
-        distribution_plot$object <- aq_style_shap_plot(distribution_plot$object, horizontal = TRUE)
+        distribution_plot$object <- aq_style_shap_plot(distribution_plot$object, horizontal = TRUE, x_axis_title = "")
         artifacts <- regression_shap_add_artifact(artifacts, aq_create_regression_shap_plot_artifact("shap_distribution_plot", "SHAP Distribution Plot", "Global Importance", "box", "shap_distribution", distribution_plot$object, artifact_metadata("shap_distribution", "Global Importance", 7L)))
       } else {
         warnings <- regression_shap_warn(warnings, distribution_plot$warning)
@@ -1643,7 +1654,7 @@ generate_regression_shap_analysis_artifacts <- function(
         )
       )
       if (!is.null(categorical_bar_plot$object)) {
-        categorical_bar_plot$object <- aq_style_shap_plot(categorical_bar_plot$object, horizontal = TRUE)
+        categorical_bar_plot$object <- aq_style_shap_plot(categorical_bar_plot$object, horizontal = TRUE, x_axis_title = "")
         artifacts <- regression_shap_add_artifact(artifacts, aq_create_regression_shap_plot_artifact(
           "categorical_level_importance_plot",
           "Categorical / Binned Numeric Level SHAP Importance Plot",
@@ -1679,7 +1690,7 @@ generate_regression_shap_analysis_artifacts <- function(
           )
         )
         if (!is.null(categorical_box_plot$object)) {
-          categorical_box_plot$object <- aq_style_shap_plot(categorical_box_plot$object, horizontal = TRUE)
+          categorical_box_plot$object <- aq_style_shap_plot(categorical_box_plot$object, horizontal = TRUE, x_axis_title = "")
           artifacts <- regression_shap_add_artifact(artifacts, aq_create_regression_shap_plot_artifact(
             "categorical_level_distribution_plot",
             "Categorical / Binned Numeric Level SHAP Distribution Plot",
@@ -1737,7 +1748,7 @@ generate_regression_shap_analysis_artifacts <- function(
         }
       )
       if (!is.null(plot_result$object)) {
-        plot_result$object <- aq_style_shap_plot(plot_result$object, horizontal = !source_is_numeric, rotate_x = source_is_numeric)
+        plot_result$object <- aq_style_shap_plot(plot_result$object, horizontal = !source_is_numeric, rotate_x = source_is_numeric, x_axis_title = feature_name)
         artifacts <- regression_shap_add_artifact(artifacts, aq_create_regression_shap_plot_artifact(
           paste0("single_feature_effect_", regression_shap_slug(feature_name), "_plot"),
           paste("SHAP Effect:", feature_name),
@@ -1804,7 +1815,7 @@ generate_regression_shap_analysis_artifacts <- function(
           }
         )
         if (!is.null(plot_result$object)) {
-          plot_result$object <- aq_style_shap_plot(plot_result$object, horizontal = !source_is_numeric)
+          plot_result$object <- aq_style_shap_plot(plot_result$object, horizontal = !source_is_numeric, x_axis_title = feature_name)
           artifacts <- regression_shap_add_artifact(artifacts, aq_create_regression_shap_plot_artifact(
             paste0("shap_dependence_", regression_shap_slug(feature_name), "_plot"),
             paste("SHAP Dependence:", feature_name),
@@ -1846,7 +1857,7 @@ generate_regression_shap_analysis_artifacts <- function(
           )
         )
         if (!is.null(heatmap_result$object)) {
-          heatmap_result$object <- aq_style_shap_plot(heatmap_result$object, rotate_x = TRUE)
+          heatmap_result$object <- aq_style_shap_plot(heatmap_result$object, rotate_x = TRUE, x_axis_title = byvar, y_axis_title = "")
           artifacts <- regression_shap_add_artifact(artifacts, aq_create_regression_shap_plot_artifact(
             paste0("segment_effects_", regression_shap_slug(byvar), "_heatmap"),
             paste("Segment Mean SHAP Heatmap:", byvar),
@@ -1892,7 +1903,7 @@ generate_regression_shap_analysis_artifacts <- function(
         )
       )
       if (!is.null(line_result$object)) {
-        line_result$object <- aq_style_shap_plot(line_result$object, rotate_x = TRUE)
+        line_result$object <- aq_style_shap_plot(line_result$object, rotate_x = TRUE, x_axis_title = DateVar)
         artifacts <- regression_shap_add_artifact(artifacts, aq_create_regression_shap_plot_artifact("time_effects_line_plot", "Time SHAP Effects Plot", "Time Effects", "line", "time_effects", line_result$object, artifact_metadata("time_effects", "Time Effects", 15L)))
       } else {
         warnings <- regression_shap_warn(warnings, line_result$warning)
@@ -1916,7 +1927,7 @@ generate_regression_shap_analysis_artifacts <- function(
         }
       )
       if (!is.null(heatmap_result$object)) {
-        heatmap_result$object <- aq_style_shap_plot(heatmap_result$object, rotate_x = TRUE)
+        heatmap_result$object <- aq_style_shap_plot(heatmap_result$object, rotate_x = TRUE, x_axis_title = DateVar, y_axis_title = "")
         artifacts <- regression_shap_add_artifact(artifacts, aq_create_regression_shap_plot_artifact("time_effects_heatmap", "Time SHAP Effects Heatmap", "Time Effects", "heatmap", "time_effects", heatmap_result$object, c(artifact_metadata("time_effects", "Time Effects", 16L), list(n_y_levels = time_n_y_levels, plot_height = time_plot_height))))
       } else {
         warnings <- regression_shap_warn(warnings, heatmap_result$warning)
@@ -1956,7 +1967,7 @@ generate_regression_shap_analysis_artifacts <- function(
           )
         )
         if (!is.null(plot_result$object)) {
-          plot_result$object <- aq_style_shap_plot(plot_result$object, horizontal = TRUE)
+          plot_result$object <- aq_style_shap_plot(plot_result$object, horizontal = TRUE, x_axis_title = "")
           artifacts <- regression_shap_add_artifact(artifacts, aq_create_regression_shap_plot_artifact(
             paste0("local_explanations_row_", row_id, "_plot"),
             paste("Local SHAP Contributions: Row", row_id),
@@ -2066,7 +2077,7 @@ generate_regression_shap_analysis_artifacts <- function(
           )
         )
         if (!is.null(ranking_plot$object)) {
-          ranking_plot$object <- aq_style_shap_plot(ranking_plot$object, horizontal = TRUE)
+          ranking_plot$object <- aq_style_shap_plot(ranking_plot$object, horizontal = TRUE, x_axis_title = "")
           artifacts <- regression_shap_add_artifact(artifacts, aq_create_regression_shap_plot_artifact(
             "candidate_interaction_ranking_plot",
             "Candidate Interaction Ranking Plot",
@@ -2502,11 +2513,22 @@ qa_regression_shap_formatting_ordering <- function() {
     shap_value = c(0.2, -0.1, 0.4)
   )
   ordered_plot_data <- aq_apply_plot_category_order(ordered_plot_data, "feature")
+  crowded_heatmap_data <- data.table::data.table(
+    x = paste0("x", seq_len(21L)),
+    y = "y",
+    z = seq_len(21L)
+  )
+  simple_heatmap_data <- data.table::data.table(
+    x = c("a", "b"),
+    y = c("c", "d"),
+    z = c(1, 2)
+  )
 
   numeric_level_order <- levels(numeric_bins)
   numeric_level_order <- numeric_level_order[numeric_level_order != "missing"]
   interaction_level_order <- levels(interaction_levels$levels)
   interaction_level_order <- interaction_level_order[interaction_level_order != "missing"]
+  style_source <- paste(deparse(aq_style_shap_plot), collapse = "\n")
 
   data.table::data.table(
     check = c(
@@ -2515,7 +2537,11 @@ qa_regression_shap_formatting_ordering <- function() {
       "interaction_bins_ordered_factor",
       "table_rounding_applied",
       "skipped_integer_count_preserved",
-      "plot_category_order_preserved"
+      "plot_category_order_preserved",
+      "autoplots_axis_label_theme_preserved",
+      "box_tooltips_disabled",
+      "heatmap_tooltips_disabled_when_crowded",
+      "heatmap_tooltips_default_when_simple"
     ),
     status = c(
       if (is.ordered(numeric_bins) && identical(numeric_level_order, c("1", "2", "5", "10"))) "success" else "error",
@@ -2523,7 +2549,11 @@ qa_regression_shap_formatting_ordering <- function() {
       if (is.ordered(interaction_levels$levels) && identical(interaction_level_order, c("1", "5", "50", "100"))) "success" else "error",
       if (rounded$small[[1L]] == signif(0.123456789, 4L) && rounded$regular[[1L]] == round(12.3456789, 2L)) "success" else "error",
       if (identical(rounded$n, c(1L, 2L))) "success" else "error",
-      if (is.ordered(ordered_plot_data$feature) && identical(levels(ordered_plot_data$feature), c("b", "a", "c"))) "success" else "error"
+      if (is.ordered(ordered_plot_data$feature) && identical(levels(ordered_plot_data$feature), c("b", "a", "c"))) "success" else "error",
+      if (!grepl("axisLabel", style_source, fixed = TRUE)) "success" else "error",
+      if (identical(aq_shap_plot_args(simple_heatmap_data, "x", "z", tooltip_show = FALSE)$tooltip.show, FALSE)) "success" else "error",
+      if (identical(aq_shap_dense_axis_tooltip(crowded_heatmap_data, "x", "y"), FALSE)) "success" else "error",
+      if (is.null(aq_shap_dense_axis_tooltip(simple_heatmap_data, "x", "y"))) "success" else "error"
     ),
     message = c(
       "Low-cardinality numeric values are stored as ordered factor levels in numeric order.",
@@ -2531,7 +2561,11 @@ qa_regression_shap_formatting_ordering <- function() {
       "Interaction surface numeric levels are stored as ordered factors.",
       "Smart rounding limits display precision for numeric table values.",
       "Skipped count columns are preserved.",
-      "Plot category columns preserve the sorted row order through factor levels."
+      "Plot category columns preserve the sorted row order through factor levels.",
+      "SHAP report styling does not override AutoPlots axis label theme settings.",
+      "Box plot helpers pass tooltip.show = FALSE into AutoPlots.",
+      "Heatmap helpers disable tooltips when axis labels are crowded.",
+      "Heatmap helpers preserve default tooltips for simple axes."
     )
   )
 }
@@ -2656,7 +2690,7 @@ qa_regression_shap_analysis_report <- function() {
       if (grepl("prettydoc::html_pretty", template, fixed = TRUE)) "success" else "error",
       if (all(vapply(c("mi-hero", "mi-panel", "table-wrap"), function(x) grepl(x, template, fixed = TRUE), logical(1L)))) "success" else "error",
       if (grepl("e_flip_coords", generator_source, fixed = TRUE)) "success" else "error",
-      if (grepl("e_x_axis", generator_source, fixed = TRUE) && grepl("axisLabel", generator_source, fixed = TRUE) && grepl("rotate", generator_source, fixed = TRUE)) "success" else "error",
+      if (!grepl("axisLabel", paste(deparse(aq_style_shap_plot), collapse = "\n"), fixed = TRUE)) "success" else "error",
       if (file.exists(reuse_path) && file.info(reuse_path)$size > 0L) "success" else "error",
       "success",
       "success",
@@ -2685,7 +2719,7 @@ qa_regression_shap_analysis_report <- function() {
       "Template uses prettydoc html_pretty.",
       "Template includes AutoQuant mi-* CSS markers.",
       "Generator uses existing horizontal e_flip_coords convention.",
-      "Generator uses existing e_x_axis axisLabel rotation convention.",
+      "SHAP plot styling leaves AutoPlots axis label theming intact.",
       reuse_path,
       "Fixture rendered without a model object.",
       "Fixture rendered without a prediction function.",
