@@ -59,7 +59,7 @@ compute SHAP values, call `predict()`, require a model object, or use a SHAP
 backend package.
 }
 \seealso{
-Other Reports:
+Other Reports: 
 \code{\link{BinaryClassificationModelInsightsReport}()},
 \code{\link{EDAReport}()},
 \code{\link{ModelInsightsReport}()},
