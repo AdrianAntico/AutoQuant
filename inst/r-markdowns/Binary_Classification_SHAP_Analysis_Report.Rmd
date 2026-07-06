@@ -133,7 +133,6 @@ mi_flatten_plots <- function(x) {
 mi_grid <- function(x, titles = NULL, subtitles = NULL, cols = 2L, empty = "No plots available.") {
   p <- mi_flatten_plots(x)
   if (!length(p)) return(mi_empty(empty))
-  if (length(p) == 1L && is.null(titles) && is.null(subtitles)) return(p[[1L]])
   AutoPlots::display_plots_grid(
     plots = p,
     cols = cols,

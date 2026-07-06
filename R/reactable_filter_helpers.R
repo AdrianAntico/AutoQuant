@@ -27,19 +27,24 @@ aq_reactable_is_text_like <- function(x) {
   is.character(x) || is.factor(x) || is.logical(x)
 }
 
-aq_reactable_text_filter_columns <- function(data, columns = NULL) {
+aq_reactable_numeric_digits <- function(digits = 4L) {
+  digits <- suppressWarnings(as.integer(digits[1L]))
+  if (is.na(digits) || digits < 0L) {
+    digits <- 4L
+  }
+  digits
+}
+
+aq_reactable_text_filter_columns <- function(data, columns = NULL, numeric_digits = 4L) {
   if (!requireNamespace("reactable", quietly = TRUE)) {
     return(columns)
   }
 
   filter_method <- aq_reactable_exclusion_filter()
-  if (is.null(filter_method)) {
-    return(columns)
-  }
-
   if (is.null(columns)) {
     columns <- list()
   }
+  numeric_digits <- aq_reactable_numeric_digits(numeric_digits)
 
   text_cols <- names(data)[vapply(data, aq_reactable_is_text_like, logical(1L))]
   for (column in text_cols) {
@@ -48,8 +53,22 @@ aq_reactable_text_filter_columns <- function(data, columns = NULL) {
       column_def <- reactable::colDef()
     }
 
-    if (is.null(column_def$filterMethod) && !identical(column_def$filterable, FALSE)) {
+    if (!is.null(filter_method) && is.null(column_def$filterMethod) && !identical(column_def$filterable, FALSE)) {
       column_def$filterMethod <- filter_method
+    }
+
+    columns[[column]] <- column_def
+  }
+
+  numeric_cols <- names(data)[vapply(data, is.numeric, logical(1L))]
+  for (column in numeric_cols) {
+    column_def <- columns[[column]]
+    if (is.null(column_def)) {
+      column_def <- reactable::colDef()
+    }
+
+    if (is.null(column_def$format) && is.null(column_def$cell)) {
+      column_def$format <- reactable::colFormat(digits = numeric_digits)
     }
 
     columns[[column]] <- column_def
@@ -83,7 +102,7 @@ qa_reactable_exclusion_filter_helpers <- function() {
       "text_column_filter",
       "factor_column_filter",
       "logical_column_filter",
-      "numeric_column_unmodified",
+      "numeric_column_formatted",
       "date_column_unmodified"
     ),
     status = c(
@@ -94,7 +113,7 @@ qa_reactable_exclusion_filter_helpers <- function() {
       if (has_filter("metric")) "success" else "error",
       if (has_filter("category")) "success" else "error",
       if (has_filter("active")) "success" else "error",
-      if (!has_filter("value")) "success" else "error",
+      if (!is.null(columns[["value"]]) && !is.null(columns[["value"]]$format)) "success" else "error",
       if (!has_filter("date")) "success" else "error"
     ),
     message = c(
@@ -105,7 +124,7 @@ qa_reactable_exclusion_filter_helpers <- function() {
       "Character columns receive the exclusion filter.",
       "Factor columns receive the exclusion filter.",
       "Logical columns receive the exclusion filter.",
-      "Numeric columns are left to reactable defaults.",
+      "Numeric columns receive consistent display formatting.",
       "Date columns are left to reactable defaults."
     )
   )

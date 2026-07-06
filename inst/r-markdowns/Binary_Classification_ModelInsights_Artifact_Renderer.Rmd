@@ -16,7 +16,7 @@ params:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, fig.align = "center")
 
-required_pkgs <- c("data.table", "htmltools", "reactable")
+required_pkgs <- c("data.table", "htmltools", "reactable", "AutoPlots")
 missing_pkgs <- required_pkgs[!vapply(required_pkgs, requireNamespace, logical(1L), quietly = TRUE)]
 if (length(missing_pkgs)) stop(paste("Missing packages:", paste(missing_pkgs, collapse = ", ")), call. = FALSE)
 
@@ -58,7 +58,7 @@ bc_table <- function(data, defaultPageSize = 10L, empty = "No rows available.") 
 }
 
 bc_renderable <- function(x) inherits(x, "htmlwidget") || inherits(x, "recordedplot") || is.function(x)
-bc_plot <- function(x, empty = "No plot available.") if (is.null(x)) bc_empty(empty) else x
+bc_plot <- function(x, empty = "No plot available.") if (is.null(x)) bc_empty(empty) else AutoPlots::display_plots_grid(list(x), cols = 1L)
 bc_card <- function(title, value, subtitle = NULL, type = "neutral") {
   htmltools::div(
     class = paste("bc-card", paste0("bc-card-", type)),

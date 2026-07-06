@@ -18,7 +18,7 @@ params:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, fig.align = "center")
 
-required_pkgs <- c("data.table", "htmltools", "reactable", "echarts4r")
+required_pkgs <- c("data.table", "htmltools", "reactable", "echarts4r", "AutoPlots")
 missing_pkgs <- required_pkgs[!vapply(required_pkgs, requireNamespace, logical(1L), quietly = TRUE)]
 if (length(missing_pkgs)) stop(paste("Missing packages:", paste(missing_pkgs, collapse = ", ")), call. = FALSE)
 
@@ -98,7 +98,7 @@ mi_table <- function(data, defaultPageSize = 10L, empty = "No rows available.") 
   )
 }
 
-mi_renderable <- function(x) inherits(x, "htmlwidget") || inherits(x, "ggplot") || inherits(x, "recordedplot") || is.function(x)
+mi_renderable <- function(x) inherits(x, "htmlwidget") || inherits(x, "recordedplot") || is.function(x)
 mi_flatten_plots <- function(x) {
   if (is.null(x)) return(list())
   if (mi_renderable(x)) return(list(x))
@@ -108,11 +108,9 @@ mi_flatten_plots <- function(x) {
 mi_grid <- function(x, cols = 2L, empty = "No plots available.") {
   p <- mi_flatten_plots(x)
   if (!length(p)) return(mi_empty(empty))
-  if (length(p) == 1L) return(p[[1L]])
-  if (requireNamespace("AutoPlots", quietly = TRUE) && "display_plots_grid" %in% getNamespaceExports("AutoPlots")) return(AutoPlots::display_plots_grid(p, cols = cols))
-  echarts4r::e_arrange(p, cols = cols)
+  AutoPlots::display_plots_grid(p, cols = cols)
 }
-mi_plot <- function(x, empty = "No plot available.") if (is.null(x)) mi_empty(empty) else x
+mi_plot <- function(x, empty = "No plot available.") if (is.null(x)) mi_empty(empty) else AutoPlots::display_plots_grid(list(x), cols = 1L)
 mi_card <- function(title, value, subtitle = NULL, type = "neutral") htmltools::div(class = "mi-card", htmltools::div(class = "mi-card-title", title), htmltools::div(class = paste("mi-card-value", paste0("mi-card-value-", type)), value), if (!is.null(subtitle)) htmltools::div(class = "mi-card-subtitle", subtitle))
 mi_note <- function(...) htmltools::div(class = "mi-note", ...)
 mi_panel <- function(title, ...) htmltools::div(class = "mi-panel", htmltools::div(class = "mi-panel-title", title), ...)

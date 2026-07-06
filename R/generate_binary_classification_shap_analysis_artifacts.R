@@ -691,12 +691,13 @@ generate_binary_classification_shap_analysis_artifacts <- function(
   artifacts <- binary_shap_add_artifact(artifacts, binary_shap_artifact("shap_column_map", "Binary SHAP Column Map", "table", "Appendix", object = column_map, metadata = artifact_metadata("column_map", "Appendix", 3L)))
   artifacts <- binary_shap_add_artifact(artifacts, binary_shap_artifact("global_importance_table", "Binary Global SHAP Importance", "table", "Global Importance", object = aq_smart_round_dt(global_importance, skip_cols = c("rank", "n")), metadata = artifact_metadata("global_importance", "Global Importance", 4L)))
   if (nrow(categorical_level_importance)) {
-    artifacts <- binary_shap_add_artifact(artifacts, binary_shap_artifact("categorical_level_importance_table", "Categorical / Binned Numeric Level SHAP Importance", "table", "Global Importance", object = categorical_level_importance, metadata = artifact_metadata("categorical_level_importance", "Global Importance", 5L)))
+    artifacts <- binary_shap_add_artifact(artifacts, binary_shap_artifact("categorical_level_importance_table", "Categorical / Binned Numeric Level SHAP Importance", "table", "Global Importance", object = aq_smart_round_dt(categorical_level_importance, skip_cols = c("rank", "n")), metadata = artifact_metadata("categorical_level_importance", "Global Importance", 5L)))
   }
 
   if (isTRUE(include_plots)) {
     global_plot_data <- data.table::copy(global_importance[rank <= plot_top_n])
     data.table::setorderv(global_plot_data, "mean_abs_shap", order = 1L, na.last = TRUE)
+    global_plot_data <- aq_apply_plot_category_order(global_plot_data, "feature")
     global_plot_data <- aq_smart_round_dt(global_plot_data, skip_cols = c("rank", "n"))
     global_plot <- aq_safe_create_shap_plot(
       "bar",
@@ -743,6 +744,7 @@ generate_binary_classification_shap_analysis_artifacts <- function(
     if (nrow(categorical_level_importance)) {
       categorical_plot_data <- data.table::copy(categorical_level_importance[rank <= plot_top_n])
       data.table::setorderv(categorical_plot_data, "mean_abs_shap", order = 1L, na.last = TRUE)
+      categorical_plot_data <- aq_apply_plot_category_order(categorical_plot_data, "feature_level")
       categorical_plot_data <- aq_smart_round_dt(categorical_plot_data, skip_cols = c("rank", "n"))
       categorical_bar_plot <- aq_safe_create_shap_plot(
         "bar",
@@ -799,9 +801,12 @@ generate_binary_classification_shap_analysis_artifacts <- function(
       effect_plot_data <- data.table::copy(effects[feature == feature_name])
       source_is_numeric <- feature_name %in% names(data) && (is.numeric(data[[feature_name]]) || is.integer(data[[feature_name]]))
       if (source_is_numeric) {
-        data.table::setorderv(effect_plot_data, "feature_value_or_bin", order = 1L, na.last = TRUE)
+        sort_col <- if ("bin_order" %in% names(effect_plot_data)) "bin_order" else "feature_value_or_bin"
+        data.table::setorderv(effect_plot_data, sort_col, order = 1L, na.last = TRUE)
+        effect_plot_data <- aq_apply_plot_category_order(effect_plot_data, "feature_value_or_bin")
       } else {
         data.table::setorderv(effect_plot_data, "mean_shap", order = 1L, na.last = TRUE)
+        effect_plot_data <- aq_apply_plot_category_order(effect_plot_data, "feature_value_or_bin")
       }
       effect_plot_data <- aq_smart_round_dt(effect_plot_data, skip_cols = "n")
       plot_result <- aq_safe_create_shap_plot(
@@ -1000,6 +1005,7 @@ generate_binary_classification_shap_analysis_artifacts <- function(
         local_plot_data[, abs_shap_for_plot_order := abs(shap_value)]
         data.table::setorderv(local_plot_data, "abs_shap_for_plot_order", order = 1L, na.last = TRUE)
         local_plot_data[, abs_shap_for_plot_order := NULL]
+        local_plot_data <- aq_apply_plot_category_order(local_plot_data, "feature")
         local_plot_data <- aq_smart_round_dt(local_plot_data, skip_cols = c("row_id", "contribution_rank"))
         plot_result <- aq_safe_create_shap_plot("bar", aq_create_shap_bar_plot(local_plot_data, "feature", "shap_value", title = paste("Local Binary SHAP Contributions: Row", row_id), auto_plots_theme = auto_plots_theme, plot_width = plot_width, plot_height = plot_height))
         if (!is.null(plot_result$object)) {
@@ -1088,8 +1094,9 @@ generate_binary_classification_shap_analysis_artifacts <- function(
           interaction_axis <- surface_plot_data$interaction_feature[[1L]]
           heatmap_axis <- "mean_shap"
           if (identical(shap_axis, interaction_axis)) interaction_axis <- paste0(interaction_axis, "_interaction")
-          surface_plot_data[, (shap_axis) := shap_feature_actual_value_bin]
-          surface_plot_data[, (interaction_axis) := interaction_feature_actual_value_bin]
+          data.table::setorderv(surface_plot_data, c("shap_feature_level_order", "interaction_feature_level_order"), order = c(1L, 1L), na.last = TRUE)
+          surface_plot_data[, (shap_axis) := factor(as.character(shap_feature_actual_value_bin), levels = unique(as.character(shap_feature_actual_value_bin)), ordered = TRUE)]
+          surface_plot_data[, (interaction_axis) := factor(as.character(interaction_feature_actual_value_bin), levels = unique(as.character(interaction_feature_actual_value_bin)), ordered = TRUE)]
           surface_plot_data[, (heatmap_axis) := heatmap_value]
           surface_title <- paste("Binary Mean SHAP Surface:", surface_plot_data$shap_feature[[1L]], "by", surface_plot_data$interaction_feature[[1L]])
           surface_n_y_levels <- data.table::uniqueN(surface_plot_data[[interaction_axis]], na.rm = TRUE)

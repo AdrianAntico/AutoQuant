@@ -77,9 +77,13 @@ regression_shap_warn <- function(warnings, message) {
   unique(c(warnings, message))
 }
 
-aq_smart_round_vector <- function(x) {
+aq_smart_round_vector <- function(x, digits = 4L) {
   if (!is.numeric(x)) {
     return(x)
+  }
+  digits <- suppressWarnings(as.integer(digits[1L]))
+  if (is.na(digits) || digits < 0L) {
+    digits <- 4L
   }
   finite <- x[is.finite(x)]
   if (!length(finite)) {
@@ -91,19 +95,19 @@ aq_smart_round_vector <- function(x) {
 
   max_abs <- max(abs(finite), na.rm = TRUE)
   if (max_abs >= 1000) {
-    return(round(x, 1L))
+    return(round(x, max(1L, digits - 3L)))
   }
   if (max_abs >= 100) {
-    return(round(x, 2L))
+    return(round(x, max(2L, digits - 2L)))
   }
   if (max_abs >= 1) {
-    return(round(x, 4L))
+    return(round(x, digits))
   }
 
-  signif(x, 4L)
+  signif(x, digits)
 }
 
-aq_smart_round_dt <- function(dt, skip_cols = character()) {
+aq_smart_round_dt <- function(dt, skip_cols = character(), digits = 4L) {
   if (is.null(dt) || !data.table::is.data.table(dt) || !nrow(dt)) {
     return(dt)
   }
@@ -111,7 +115,7 @@ aq_smart_round_dt <- function(dt, skip_cols = character()) {
   numeric_cols <- names(out)[vapply(out, is.numeric, logical(1L))]
   numeric_cols <- setdiff(numeric_cols, skip_cols)
   for (col in numeric_cols) {
-    data.table::set(out, j = col, value = aq_smart_round_vector(out[[col]]))
+    data.table::set(out, j = col, value = aq_smart_round_vector(out[[col]], digits = digits))
   }
   out[]
 }
@@ -263,17 +267,22 @@ aq_summarize_shap_categorical_level_importance <- function(
     shap_col <- valid$shap_col[[i]]
     source_values <- data[[feature_name]]
     level <- aq_feature_bins(source_values, max_levels = max_levels)
+    level_order <- if (is.factor(level)) match(as.character(level), levels(level)) else match(as.character(level), unique(as.character(level)))
+    level <- as.character(level)
     level[is.na(level)] <- "missing"
+    level_order[is.na(level_order)] <- max(level_order, na.rm = TRUE) + 1L
     value_type <- if (is.numeric(source_values) || is.integer(source_values)) "numeric_bin" else "categorical_level"
 
     temp <- data.table::data.table(
       feature = feature_name,
       value_type = value_type,
       level = level,
+      bin_order = level_order,
       shap_value = data[[shap_col]]
     )
     temp[, .(
       value_type = value_type[[1L]],
+      bin_order = min(bin_order, na.rm = TRUE),
       mean_abs_shap = mean(abs(shap_value), na.rm = TRUE),
       mean_shap = mean(shap_value, na.rm = TRUE),
       median_shap = stats::median(shap_value, na.rm = TRUE),
@@ -317,7 +326,7 @@ aq_regression_shap_categorical_level_values <- function(
     feature_name <- top_levels$feature[[i]]
     level_name <- top_levels$level[[i]]
     shap_col <- column_map[feature == feature_name, shap_col][[1L]]
-    values <- aq_feature_bins(data[[feature_name]], max_levels = max(length(unique(categorical_level_importance[feature == feature_name, level])), 2L))[row_index]
+    values <- as.character(aq_feature_bins(data[[feature_name]], max_levels = max(length(unique(categorical_level_importance[feature == feature_name, level])), 2L))[row_index])
     values[is.na(values)] <- "missing"
     values[!values %in% categorical_level_importance[feature == feature_name, level]] <- "other"
     keep <- values == level_name
@@ -340,13 +349,22 @@ aq_feature_bins <- function(x, max_levels = 20L) {
     non_missing <- x[!is.na(x)]
     unique_count <- length(unique(non_missing))
     if (unique_count <= max_levels) {
-      return(as.character(x))
+      levels <- as.character(sort(unique(non_missing), na.last = TRUE))
+      values <- as.character(x)
+      values[is.na(values)] <- "missing"
+      return(factor(values, levels = unique(c(levels, "missing")), ordered = TRUE))
     }
     probs <- unique(stats::quantile(non_missing, probs = seq(0, 1, length.out = 11L), na.rm = TRUE, type = 8))
     if (length(probs) < 2L) {
-      return(as.character(x))
+      levels <- as.character(sort(unique(non_missing), na.last = TRUE))
+      values <- as.character(x)
+      values[is.na(values)] <- "missing"
+      return(factor(values, levels = unique(c(levels, "missing")), ordered = TRUE))
     }
-    return(as.character(cut(x, breaks = probs, include.lowest = TRUE, dig.lab = 6L)))
+    cut_values <- cut(x, breaks = probs, include.lowest = TRUE, dig.lab = 6L)
+    values <- as.character(cut_values)
+    values[is.na(values)] <- "missing"
+    return(factor(values, levels = unique(c(levels(cut_values), "missing")), ordered = TRUE))
   }
 
   values <- as.character(x)
@@ -354,7 +372,7 @@ aq_feature_bins <- function(x, max_levels = 20L) {
   keep <- names(tab)[seq_len(min(length(tab), max_levels))]
   values[is.na(values)] <- "missing"
   values[!values %in% keep & values != "missing"] <- "other"
-  values
+  factor(values, levels = unique(c(keep, "other", "missing")), ordered = TRUE)
 }
 
 aq_summarize_shap_single_feature_effects <- function(
@@ -374,9 +392,15 @@ aq_summarize_shap_single_feature_effects <- function(
 
     temp <- data.table::data.table(
       feature = feature_name,
-      feature_value_or_bin = aq_feature_bins(data[[feature_name]], max_levels = max_levels),
+      feature_value_or_bin = as.character(aq_feature_bins(data[[feature_name]], max_levels = max_levels)),
+      bin_order = {
+        bins <- aq_feature_bins(data[[feature_name]], max_levels = max_levels)
+        if (is.factor(bins)) match(as.character(bins), levels(bins)) else match(as.character(bins), unique(as.character(bins)))
+      },
       shap_value = data[[map_row$shap_col[[1L]]]]
     )
+    temp[is.na(feature_value_or_bin), feature_value_or_bin := "missing"]
+    temp[is.na(bin_order), bin_order := max(bin_order, na.rm = TRUE) + 1L]
     value_type_label <- if (is.numeric(data[[feature_name]]) || is.integer(data[[feature_name]])) "numeric_bin" else "categorical_level"
     temp[, value_type := value_type_label]
     if (!is.null(prediction_col) && prediction_col %in% names(data) && is.numeric(data[[prediction_col]])) {
@@ -388,6 +412,7 @@ aq_summarize_shap_single_feature_effects <- function(
 
     temp[, .(
       value_type = value_type[[1L]],
+      bin_order = min(bin_order, na.rm = TRUE),
       mean_shap = mean(shap_value, na.rm = TRUE),
       median_shap = stats::median(shap_value, na.rm = TRUE),
       mean_abs_shap = mean(abs(shap_value), na.rm = TRUE),
@@ -530,17 +555,20 @@ aq_create_interaction_levels <- function(
     if (unique_count <= numeric_bins) {
       levels <- as.character(x)
       levels[is.na(levels)] <- "missing"
-      return(list(levels = levels, warnings = warnings, value_type = "numeric_level"))
+      level_order <- as.character(sort(unique(non_missing), na.last = TRUE))
+      return(list(levels = factor(levels, levels = unique(c(level_order, "missing")), ordered = TRUE), warnings = warnings, value_type = "numeric_level"))
     }
     probs <- unique(stats::quantile(non_missing, probs = seq(0, 1, length.out = numeric_bins + 1L), na.rm = TRUE, type = 8))
     if (length(probs) < 2L) {
       levels <- as.character(x)
       levels[is.na(levels)] <- "missing"
-      return(list(levels = levels, warnings = warnings, value_type = "numeric_level"))
+      level_order <- as.character(sort(unique(non_missing), na.last = TRUE))
+      return(list(levels = factor(levels, levels = unique(c(level_order, "missing")), ordered = TRUE), warnings = warnings, value_type = "numeric_level"))
     }
-    levels <- as.character(cut(x, breaks = probs, include.lowest = TRUE, dig.lab = 5L))
+    cut_values <- cut(x, breaks = probs, include.lowest = TRUE, dig.lab = 5L)
+    levels <- as.character(cut_values)
     levels[is.na(levels)] <- "missing"
-    return(list(levels = levels, warnings = warnings, value_type = "numeric_bin"))
+    return(list(levels = factor(levels, levels = unique(c(base::levels(cut_values), "missing")), ordered = TRUE), warnings = warnings, value_type = "numeric_bin"))
   }
 
   levels <- as.character(x)
@@ -561,7 +589,8 @@ aq_create_interaction_levels <- function(
     levels[levels %in% rare] <- "other"
   }
 
-  list(levels = levels, warnings = warnings, value_type = "categorical_level")
+  level_order <- unique(c(names(tab), "other", "missing"))
+  list(levels = factor(levels, levels = level_order, ordered = TRUE), warnings = warnings, value_type = "categorical_level")
 }
 
 aq_interaction_weighted_mean <- function(x, w) {
@@ -739,17 +768,23 @@ aq_summarize_shap_interactions <- function(
     }
     display_b <- if (!is.null(date_period_col) && identical(interaction_feature, date_period_col)) {
       paste0(DateVar, "_", date_aggregation)
-    } else {
-      interaction_feature
-    }
+      } else {
+        interaction_feature
+      }
+    shap_feature_level_values <- a_levels$levels
+    shap_feature_level_order <- if (is.factor(shap_feature_level_values)) match(as.character(shap_feature_level_values), levels(shap_feature_level_values)) else match(as.character(shap_feature_level_values), unique(as.character(shap_feature_level_values)))
+    interaction_feature_level_values <- b_levels$levels
+    interaction_feature_level_order <- if (is.factor(interaction_feature_level_values)) match(as.character(interaction_feature_level_values), levels(interaction_feature_level_values)) else match(as.character(interaction_feature_level_values), unique(as.character(interaction_feature_level_values)))
     temp <- data.table::data.table(
       shap_feature = shap_feature,
       shap_col = shap_col,
       interaction_feature = display_b,
       interaction_feature_raw = interaction_feature,
       interaction_feature_role = role,
-      shap_feature_level = a_levels$levels,
-      interaction_feature_level = b_levels$levels,
+      shap_feature_level = as.character(shap_feature_level_values),
+      shap_feature_level_order = shap_feature_level_order,
+      interaction_feature_level = as.character(interaction_feature_level_values),
+      interaction_feature_level_order = interaction_feature_level_order,
       shap_value = work[[shap_col]]
     )
     temp[, combined_shap_value := shap_value]
@@ -779,7 +814,7 @@ aq_summarize_shap_interactions <- function(
       pct_negative = mean(shap_value < 0, na.rm = TRUE),
       mean_prediction = if ("prediction" %in% names(.SD)) mean(prediction, na.rm = TRUE) else NA_real_,
       mean_target = if ("target" %in% names(.SD)) mean(target, na.rm = TRUE) else NA_real_
-    ), by = .(shap_feature, shap_col, interaction_feature, interaction_feature_raw, interaction_feature_role, shap_feature_level, interaction_feature_level)]
+    ), by = .(shap_feature, shap_col, interaction_feature, interaction_feature_raw, interaction_feature_role, shap_feature_level, shap_feature_level_order, interaction_feature_level, interaction_feature_level_order)]
     a_marginal <- temp[, .(
       shap_feature_level_mean_shap = mean(shap_value, na.rm = TRUE),
       shap_feature_level_mean_abs_shap = mean(abs(shap_value), na.rm = TRUE)
@@ -987,18 +1022,45 @@ aq_safe_create_shap_plot <- function(plot_type, create_expr) {
   )
 }
 
-aq_style_shap_plot <- function(plot, horizontal = FALSE, rotate_x = FALSE, rotate = 45L) {
+aq_style_shap_plot <- function(
+  plot,
+  horizontal = FALSE,
+  rotate_x = FALSE,
+  rotate = 45L,
+  x_label_width = 120L,
+  y_label_width = 180L,
+  axis_font_size = 11L
+) {
   if (is.null(plot) || !requireNamespace("echarts4r", quietly = TRUE)) {
     return(plot)
   }
 
   out <- plot
-  if (isTRUE(rotate_x)) {
-    out <- tryCatch(
-      echarts4r::e_x_axis(out, axisLabel = list(rotate = rotate)),
-      error = function(e) out
-    )
-  }
+  x_axis_label <- list(
+    rotate = if (isTRUE(rotate_x)) rotate else 0L,
+    interval = 0L,
+    hideOverlap = TRUE,
+    overflow = "truncate",
+    width = x_label_width,
+    margin = 12L,
+    fontSize = axis_font_size
+  )
+  y_axis_label <- list(
+    interval = 0L,
+    hideOverlap = TRUE,
+    overflow = "truncate",
+    width = y_label_width,
+    margin = 12L,
+    fontSize = axis_font_size
+  )
+  out <- tryCatch(
+    echarts4r::e_x_axis(out, axisLabel = x_axis_label),
+    error = function(e) out
+  )
+  out <- tryCatch(
+    echarts4r::e_y_axis(out, axisLabel = y_axis_label),
+    error = function(e) out
+  )
   if (isTRUE(horizontal)) {
     out <- tryCatch(
       echarts4r::e_flip_coords(out),
@@ -1024,6 +1086,16 @@ aq_order_for_flipped_box <- function(dt, category_col, value_col) {
   ), by = category_col]
   data.table::setorderv(order_dt, c("box_center", "box_mean"), order = c(1L, 1L), na.last = TRUE)
   out[, (category_col) := factor(get(category_col), levels = order_dt[[category_col]])]
+  out[]
+}
+
+aq_apply_plot_category_order <- function(dt, category_col) {
+  if (is.null(dt) || !data.table::is.data.table(dt) || !nrow(dt) || !category_col %in% names(dt)) {
+    return(dt)
+  }
+  out <- data.table::copy(dt)
+  ordered_levels <- unique(as.character(out[[category_col]]))
+  out[, (category_col) := factor(as.character(get(category_col)), levels = ordered_levels, ordered = TRUE)]
   out[]
 }
 
@@ -1502,13 +1574,14 @@ generate_regression_shap_analysis_artifacts <- function(
       "Categorical / Binned Numeric Level SHAP Importance",
       "table",
       "Global Importance",
-      object = categorical_level_importance,
+      object = aq_smart_round_dt(categorical_level_importance, skip_cols = c("rank", "n")),
       metadata = artifact_metadata("categorical_level_importance", "Global Importance", 5L)
     ))
   }
   if (isTRUE(include_plots)) {
     global_plot_data <- data.table::copy(global_importance[rank <= plot_top_n])
     data.table::setorderv(global_plot_data, "mean_abs_shap", order = 1L, na.last = TRUE)
+    global_plot_data <- aq_apply_plot_category_order(global_plot_data, "feature")
     global_plot_data <- aq_smart_round_dt(global_plot_data, skip_cols = c("rank", "n"))
     global_plot <- aq_safe_create_shap_plot(
       "bar",
@@ -1555,6 +1628,7 @@ generate_regression_shap_analysis_artifacts <- function(
     if (nrow(categorical_level_importance)) {
       categorical_plot_data <- data.table::copy(categorical_level_importance[rank <= plot_top_n])
       data.table::setorderv(categorical_plot_data, "mean_abs_shap", order = 1L, na.last = TRUE)
+      categorical_plot_data <- aq_apply_plot_category_order(categorical_plot_data, "feature_level")
       categorical_plot_data <- aq_smart_round_dt(categorical_plot_data, skip_cols = c("rank", "n"))
       categorical_bar_plot <- aq_safe_create_shap_plot(
         "bar",
@@ -1630,9 +1704,12 @@ generate_regression_shap_analysis_artifacts <- function(
       effect_plot_data <- data.table::copy(effects[feature == feature_name])
       source_is_numeric <- feature_name %in% names(data) && (is.numeric(data[[feature_name]]) || is.integer(data[[feature_name]]))
       if (source_is_numeric) {
-        data.table::setorderv(effect_plot_data, "feature_value_or_bin", order = 1L, na.last = TRUE)
+        sort_col <- if ("bin_order" %in% names(effect_plot_data)) "bin_order" else "feature_value_or_bin"
+        data.table::setorderv(effect_plot_data, sort_col, order = 1L, na.last = TRUE)
+        effect_plot_data <- aq_apply_plot_category_order(effect_plot_data, "feature_value_or_bin")
       } else {
         data.table::setorderv(effect_plot_data, "mean_shap", order = 1L, na.last = TRUE)
+        effect_plot_data <- aq_apply_plot_category_order(effect_plot_data, "feature_value_or_bin")
       }
       effect_plot_data <- aq_smart_round_dt(effect_plot_data, skip_cols = "n")
       plot_result <- aq_safe_create_shap_plot(
@@ -1864,6 +1941,7 @@ generate_regression_shap_analysis_artifacts <- function(
         local_plot_data[, abs_shap_for_plot_order := abs(shap_value)]
         data.table::setorderv(local_plot_data, "abs_shap_for_plot_order", order = 1L, na.last = TRUE)
         local_plot_data[, abs_shap_for_plot_order := NULL]
+        local_plot_data <- aq_apply_plot_category_order(local_plot_data, "feature")
         local_plot_data <- aq_smart_round_dt(local_plot_data, skip_cols = c("row_id", "contribution_rank"))
         plot_result <- aq_safe_create_shap_plot(
           "bar",
@@ -2020,8 +2098,9 @@ generate_regression_shap_analysis_artifacts <- function(
           if (identical(shap_axis, interaction_axis)) {
             interaction_axis <- paste0(interaction_axis, "_interaction")
           }
-          surface_plot_data[, (shap_axis) := shap_feature_actual_value_bin]
-          surface_plot_data[, (interaction_axis) := interaction_feature_actual_value_bin]
+          data.table::setorderv(surface_plot_data, c("shap_feature_level_order", "interaction_feature_level_order"), order = c(1L, 1L), na.last = TRUE)
+          surface_plot_data[, (shap_axis) := factor(as.character(shap_feature_actual_value_bin), levels = unique(as.character(shap_feature_actual_value_bin)), ordered = TRUE)]
+          surface_plot_data[, (interaction_axis) := factor(as.character(interaction_feature_actual_value_bin), levels = unique(as.character(interaction_feature_actual_value_bin)), ordered = TRUE)]
           surface_plot_data[, (heatmap_axis) := heatmap_value]
           surface_title <- paste("Mean SHAP Surface:", surface_plot_data$shap_feature[[1L]], "by", surface_plot_data$interaction_feature[[1L]])
           surface_n_y_levels <- data.table::uniqueN(surface_plot_data[[interaction_axis]], na.rm = TRUE)
@@ -2405,6 +2484,54 @@ qa_regression_shap_dependence_interaction_display <- function() {
       "Nonsensical SHAP Dependence Interaction artifacts are suppressed.",
       "Two-way surface heatmaps are sectioned under Interaction Importance only.",
       "SHAP heatmap artifacts include n_y_levels and matching dynamic plot_height metadata."
+    )
+  )
+}
+
+qa_regression_shap_formatting_ordering <- function() {
+  numeric_bins <- aq_feature_bins(c(10, 1, 5, NA, 2), max_levels = 10L)
+  cut_bins <- aq_feature_bins(seq_len(100), max_levels = 3L)
+  interaction_levels <- aq_create_interaction_levels(c(100, 1, 50, NA, 5), "Spend", numeric_bins = 10L)
+  rounded <- aq_smart_round_dt(data.table::data.table(
+    small = c(0.123456789, -0.000987654),
+    regular = c(12.3456789, 987.654321),
+    n = c(1L, 2L)
+  ), skip_cols = "n")
+  ordered_plot_data <- data.table::data.table(
+    feature = c("b", "a", "c"),
+    shap_value = c(0.2, -0.1, 0.4)
+  )
+  ordered_plot_data <- aq_apply_plot_category_order(ordered_plot_data, "feature")
+
+  numeric_level_order <- levels(numeric_bins)
+  numeric_level_order <- numeric_level_order[numeric_level_order != "missing"]
+  interaction_level_order <- levels(interaction_levels$levels)
+  interaction_level_order <- interaction_level_order[interaction_level_order != "missing"]
+
+  data.table::data.table(
+    check = c(
+      "numeric_bins_ordered_factor",
+      "cut_bins_ordered_factor",
+      "interaction_bins_ordered_factor",
+      "table_rounding_applied",
+      "skipped_integer_count_preserved",
+      "plot_category_order_preserved"
+    ),
+    status = c(
+      if (is.ordered(numeric_bins) && identical(numeric_level_order, c("1", "2", "5", "10"))) "success" else "error",
+      if (is.ordered(cut_bins) && length(levels(cut_bins)) > 1L && startsWith(levels(cut_bins)[[1L]], "[")) "success" else "error",
+      if (is.ordered(interaction_levels$levels) && identical(interaction_level_order, c("1", "5", "50", "100"))) "success" else "error",
+      if (rounded$small[[1L]] == signif(0.123456789, 4L) && rounded$regular[[1L]] == round(12.3456789, 2L)) "success" else "error",
+      if (identical(rounded$n, c(1L, 2L))) "success" else "error",
+      if (is.ordered(ordered_plot_data$feature) && identical(levels(ordered_plot_data$feature), c("b", "a", "c"))) "success" else "error"
+    ),
+    message = c(
+      "Low-cardinality numeric values are stored as ordered factor levels in numeric order.",
+      "Quantile-cut numeric bins are stored as ordered factor levels in cut order.",
+      "Interaction surface numeric levels are stored as ordered factors.",
+      "Smart rounding limits display precision for numeric table values.",
+      "Skipped count columns are preserved.",
+      "Plot category columns preserve the sorted row order through factor levels."
     )
   )
 }

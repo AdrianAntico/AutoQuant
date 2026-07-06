@@ -545,6 +545,10 @@ RegressionModelInsightsReport <- function(
     stop("Package 'echarts4r' is required.", call. = FALSE)
   }
 
+  if (!requireNamespace("AutoPlots", quietly = TRUE)) {
+    stop("Package 'AutoPlots' is required.", call. = FALSE)
+  }
+
   OutputPath <- normalizePath(OutputPath, winslash = "/", mustWork = FALSE)
   dir.create(OutputPath, recursive = TRUE, showWarnings = FALSE)
 
@@ -714,7 +718,7 @@ BinaryClassificationModelInsightsReport <- function(
   if (!is.list(artifacts) || is.null(artifacts$artifacts) || is.null(artifacts$metadata)) {
     stop("`artifacts` must be an object returned by generate_binary_classification_model_insights_artifacts().", call. = FALSE)
   }
-  for (pkg in c("rmarkdown", "data.table", "htmltools", "reactable")) {
+  for (pkg in c("rmarkdown", "data.table", "htmltools", "reactable", "AutoPlots")) {
     if (!requireNamespace(pkg, quietly = TRUE)) {
       stop(paste0("Package '", pkg, "' is required."), call. = FALSE)
     }
