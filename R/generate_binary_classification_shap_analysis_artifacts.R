@@ -1045,6 +1045,7 @@ generate_binary_classification_shap_analysis_artifacts <- function(
       "These diagnostics use precomputed ordinary Shap_ columns and existing source feature columns.",
       "Numeric variables are binned and categorical/date variables use bounded levels.",
       "Two-way surfaces place the SHAP-attributed feature's actual value/bin on one axis and the interaction lens feature's actual value/bin on the other axis.",
+      "Pairwise diagnostics are canonical unordered pairs; A x B and B x A are treated as the same analytical object unless a future diagnostic explicitly marks itself directional.",
       "Heatmap values are signed mean SHAP for the attributed feature across those actual value/bin combinations.",
       "Scores are candidate interaction diagnostics based on binned level-combination heterogeneity, not exact SHAP interaction values.",
       "Exact pairwise SHAP interaction values require upstream interaction-specific output.",
@@ -1059,6 +1060,7 @@ generate_binary_classification_shap_analysis_artifacts <- function(
       min_interaction_cell_n = min_interaction_cell_n,
       interaction_stat = interaction_stat,
       score_stat = interaction_score_stat,
+      directional = FALSE,
       target_col = target_col,
       prediction_col = prediction_col,
       positive_class = positive_class,
@@ -1090,6 +1092,9 @@ generate_binary_classification_shap_analysis_artifacts <- function(
         for (current_pair_label in top_pairs) {
           surface_plot_data <- data.table::copy(interactions$surfaces[pair_label == current_pair_label & sparse_cell == FALSE])
           if (!nrow(surface_plot_data)) next
+          surface_pair_key <- surface_plot_data$interaction_pair_key[[1L]]
+          surface_feature_x <- surface_plot_data$feature_x[[1L]]
+          surface_feature_y <- surface_plot_data$feature_y[[1L]]
           shap_axis <- surface_plot_data$shap_feature[[1L]]
           interaction_axis <- surface_plot_data$interaction_feature[[1L]]
           heatmap_axis <- "mean_shap"
@@ -1104,7 +1109,19 @@ generate_binary_classification_shap_analysis_artifacts <- function(
           heatmap_result <- aq_safe_create_shap_plot("heatmap", aq_create_shap_heatmap_plot(surface_plot_data, shap_axis, interaction_axis, heatmap_axis, title = surface_title, auto_plots_theme = auto_plots_theme, plot_width = plot_width, plot_height = surface_plot_height))
           if (!is.null(heatmap_result$object)) {
             heatmap_result$object <- aq_style_shap_plot(heatmap_result$object, rotate_x = TRUE)
-            artifacts <- binary_shap_add_artifact(artifacts, aq_create_binary_shap_plot_artifact(paste0("two_way_shap_surface_", regression_shap_slug(current_pair_label), "_heatmap"), surface_title, "Interaction Importance", "heatmap", "interaction_diagnostics", heatmap_result$object, c(interaction_meta, list(pair_label = current_pair_label, x_axis = shap_axis, y_axis = interaction_axis, heatmap_value = "mean_shap", heatmap_value_description = surface_plot_data$heatmap_value_description[[1L]], n_y_levels = surface_n_y_levels, plot_height = surface_plot_height))))
+            artifacts <- binary_shap_add_artifact(artifacts, aq_create_binary_shap_plot_artifact(paste0("two_way_shap_surface_", regression_shap_slug(current_pair_label), "_heatmap"), surface_title, "Interaction Importance", "heatmap", "interaction_diagnostics", heatmap_result$object, c(interaction_meta, list(
+              pair_label = current_pair_label,
+              feature_x = surface_feature_x,
+              feature_y = surface_feature_y,
+              interaction_pair_key = surface_pair_key,
+              directional = FALSE,
+              x_axis = shap_axis,
+              y_axis = interaction_axis,
+              heatmap_value = "mean_shap",
+              heatmap_value_description = surface_plot_data$heatmap_value_description[[1L]],
+              n_y_levels = surface_n_y_levels,
+              plot_height = surface_plot_height
+            ))))
           } else {
             warnings <- regression_shap_warn(warnings, heatmap_result$warning)
           }

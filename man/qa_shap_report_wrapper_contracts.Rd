@@ -14,4 +14,10 @@ Validates that the SHAP report wrappers use the generator-first contract:
 report functions accept concise rendering arguments, analytical arguments pass
 through `...`, and supplied artifact results are reused without recomputing.
 }
+\seealso{
+Other QA:
+\code{\link{qa_pairwise_report_artifact_uniqueness}()},
+\code{\link{qa_shap_interaction_pair_deduplication}()},
+\code{\link{qa_unordered_pair_key_helpers}()}
+}
 \concept{QA}

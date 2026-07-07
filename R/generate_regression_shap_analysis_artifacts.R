@@ -628,17 +628,32 @@ aq_interaction_top_cell_label <- function(a, b, value) {
 
 aq_normalize_interaction_pairs <- function(interaction_pairs) {
   if (is.null(interaction_pairs) || !length(interaction_pairs)) {
-    return(data.table::data.table(shap_feature = character(), interaction_feature = character()))
+    return(data.table::data.table(
+      shap_feature = character(),
+      interaction_feature = character(),
+      interaction_pair_key = character(),
+      directional = logical()
+    ))
   }
   if (data.table::is.data.table(interaction_pairs) && all(c("shap_feature", "interaction_feature") %in% names(interaction_pairs))) {
-    return(data.table::copy(interaction_pairs[, .(shap_feature, interaction_feature)]))
+    out <- data.table::copy(interaction_pairs[, .(shap_feature, interaction_feature)])
+    out <- aq_dedupe_unordered_pairs(out, "shap_feature", "interaction_feature", pair_col = "interaction_pair_key")
+    out[, directional := FALSE]
+    return(out[])
   }
   rows <- lapply(interaction_pairs, function(pair) {
     pair <- as.character(pair)
     if (length(pair) < 2L) return(NULL)
     data.table::data.table(shap_feature = pair[[1L]], interaction_feature = pair[[2L]])
   })
-  data.table::rbindlist(rows, use.names = TRUE, fill = TRUE)
+  out <- data.table::rbindlist(rows, use.names = TRUE, fill = TRUE)
+  if (!nrow(out)) {
+    out[, `:=`(interaction_pair_key = character(), directional = logical())]
+    return(out[])
+  }
+  out <- aq_dedupe_unordered_pairs(out, "shap_feature", "interaction_feature", pair_col = "interaction_pair_key")
+  out[, directional := FALSE]
+  out[]
 }
 
 aq_candidate_interaction_pairs <- function(
@@ -661,7 +676,9 @@ aq_candidate_interaction_pairs <- function(
     requested <- requested[shap_feature %in% valid_shap_features]
     requested <- requested[interaction_feature %in% c(names(data), date_period_col)]
     requested <- requested[shap_feature != interaction_feature]
-    return(unique(head(requested, max_interaction_pairs)))
+    requested <- aq_dedupe_unordered_pairs(requested, "shap_feature", "interaction_feature", pair_col = "interaction_pair_key")
+    requested[, directional := FALSE]
+    return(head(requested, max_interaction_pairs))
   }
 
   shap_features <- intersect(global_importance$feature, valid_shap_features)
@@ -684,7 +701,9 @@ aq_candidate_interaction_pairs <- function(
     if (!length(b)) return(NULL)
     data.table::data.table(shap_feature = a, interaction_feature = b)
   }), use.names = TRUE, fill = TRUE)
-  unique(head(out, max_interaction_pairs))
+  out <- aq_dedupe_unordered_pairs(out, "shap_feature", "interaction_feature", pair_col = "interaction_pair_key")
+  out[, directional := FALSE]
+  head(out, max_interaction_pairs)
 }
 
 aq_summarize_shap_interactions <- function(
@@ -736,6 +755,8 @@ aq_summarize_shap_interactions <- function(
   surface_rows <- lapply(seq_len(nrow(pairs)), function(i) {
     shap_feature <- pairs$shap_feature[[i]]
     interaction_feature <- pairs$interaction_feature[[i]]
+    interaction_pair_key <- pairs$interaction_pair_key[[i]]
+    directional <- isTRUE(pairs$directional[[i]])
     shap_col <- column_map[feature == shap_feature & included == TRUE, shap_col][[1L]]
     reverse_shap_col <- column_map[feature == interaction_feature & included == TRUE, shap_col]
     reverse_shap_col <- if (length(reverse_shap_col)) reverse_shap_col[[1L]] else NA_character_
@@ -780,6 +801,10 @@ aq_summarize_shap_interactions <- function(
       shap_col = shap_col,
       interaction_feature = display_b,
       interaction_feature_raw = interaction_feature,
+      feature_x = strsplit(interaction_pair_key, " x ", fixed = TRUE)[[1L]][[1L]],
+      feature_y = strsplit(interaction_pair_key, " x ", fixed = TRUE)[[1L]][[2L]],
+      interaction_pair_key = interaction_pair_key,
+      directional = directional,
       interaction_feature_role = role,
       shap_feature_level = as.character(shap_feature_level_values),
       shap_feature_level_order = shap_feature_level_order,
@@ -814,7 +839,7 @@ aq_summarize_shap_interactions <- function(
       pct_negative = mean(shap_value < 0, na.rm = TRUE),
       mean_prediction = if ("prediction" %in% names(.SD)) mean(prediction, na.rm = TRUE) else NA_real_,
       mean_target = if ("target" %in% names(.SD)) mean(target, na.rm = TRUE) else NA_real_
-    ), by = .(shap_feature, shap_col, interaction_feature, interaction_feature_raw, interaction_feature_role, shap_feature_level, shap_feature_level_order, interaction_feature_level, interaction_feature_level_order)]
+    ), by = .(shap_feature, shap_col, interaction_feature, interaction_feature_raw, feature_x, feature_y, interaction_pair_key, directional, interaction_feature_role, shap_feature_level, shap_feature_level_order, interaction_feature_level, interaction_feature_level_order)]
     a_marginal <- temp[, .(
       shap_feature_level_mean_shap = mean(shap_value, na.rm = TRUE),
       shap_feature_level_mean_abs_shap = mean(abs(shap_value), na.rm = TRUE)
@@ -852,7 +877,7 @@ aq_summarize_shap_interactions <- function(
     return(list(scores = data.table::data.table(), surfaces = data.table::data.table(), warnings = warnings))
   }
 
-  surfaces[, pair_label := paste(shap_feature, interaction_feature, sep = " x ")]
+  surfaces[, pair_label := interaction_pair_key]
   score_col <- if (identical(interaction_stat, "mean_shap")) "delta_vs_shap_feature_level" else "mean_abs_delta"
   surfaces[, mean_abs_delta := abs(mean_abs_shap - shap_feature_level_mean_abs_shap)]
   scores <- surfaces[sparse_cell == FALSE, .(
@@ -867,7 +892,7 @@ aq_summarize_shap_interactions <- function(
     weighted_sd_cell_mean = aq_interaction_weighted_sd(mean_shap, n),
     top_cell_label = aq_interaction_top_cell_label(shap_feature_level, interaction_feature_level, mean_abs_shap),
     top_cell_mean_abs_shap = aq_interaction_safe_max(mean_abs_shap)
-  ), by = .(shap_feature, interaction_feature, shap_col, pair_label)]
+  ), by = .(shap_feature, interaction_feature, shap_col, feature_x, feature_y, interaction_pair_key, directional, pair_label)]
   if (!nrow(scores)) {
     scores <- surfaces[, .(
       score = aq_interaction_weighted_mean(abs(delta_vs_shap_feature_level), n),
@@ -881,8 +906,16 @@ aq_summarize_shap_interactions <- function(
       weighted_sd_cell_mean = aq_interaction_weighted_sd(mean_shap, n),
       top_cell_label = aq_interaction_top_cell_label(shap_feature_level, interaction_feature_level, mean_abs_shap),
       top_cell_mean_abs_shap = aq_interaction_safe_max(mean_abs_shap)
-    ), by = .(shap_feature, interaction_feature, shap_col, pair_label)]
+    ), by = .(shap_feature, interaction_feature, shap_col, feature_x, feature_y, interaction_pair_key, directional, pair_label)]
   }
+  scores <- aq_dedupe_unordered_pairs(
+    scores,
+    "shap_feature",
+    "interaction_feature",
+    extra_key_cols = c("score_stat"),
+    pair_col = "interaction_pair_key"
+  )
+  scores[, directional := FALSE]
   reverse <- scores[, .(shap_feature = interaction_feature, interaction_feature = shap_feature, reverse_score = score)]
   scores <- merge(scores, reverse, by = c("shap_feature", "interaction_feature"), all.x = TRUE, sort = FALSE)
   scores[, `:=`(
@@ -891,6 +924,14 @@ aq_summarize_shap_interactions <- function(
   )]
   data.table::setorderv(scores, "score", order = -1L, na.last = TRUE)
   scores[, rank := seq_len(.N)]
+  surfaces <- aq_dedupe_unordered_pairs(
+    surfaces,
+    "shap_feature",
+    "interaction_feature",
+    extra_key_cols = c("shap_feature_level", "interaction_feature_level"),
+    pair_col = "interaction_pair_key"
+  )
+  surfaces[, directional := FALSE]
   data.table::setorderv(surfaces, c("pair_label", "level_combo_rank"))
 
   list(
@@ -2015,6 +2056,7 @@ generate_regression_shap_analysis_artifacts <- function(
       "These diagnostics use precomputed ordinary Shap_ columns and existing source feature columns.",
       "Numeric variables are binned and categorical/date variables use bounded levels.",
       "Two-way surfaces place the SHAP-attributed feature's actual value/bin on one axis and the interaction lens feature's actual value/bin on the other axis.",
+      "Pairwise diagnostics are canonical unordered pairs; A x B and B x A are treated as the same analytical object unless a future diagnostic explicitly marks itself directional.",
       "Heatmap values are signed mean SHAP for the attributed feature across those actual value/bin combinations.",
       "Scores are candidate interaction diagnostics based on binned level-combination heterogeneity, not exact SHAP interaction values.",
       "Exact pairwise SHAP interaction values require upstream interaction-specific output.",
@@ -2029,6 +2071,7 @@ generate_regression_shap_analysis_artifacts <- function(
       min_interaction_cell_n = min_interaction_cell_n,
       interaction_stat = interaction_stat,
       score_stat = interaction_score_stat,
+      directional = FALSE,
       target_col = target_col,
       prediction_col = prediction_col,
       DateVar = DateVar,
@@ -2107,6 +2150,9 @@ generate_regression_shap_analysis_artifacts <- function(
         for (current_pair_label in top_pairs) {
           surface_plot_data <- data.table::copy(interactions$surfaces[pair_label == current_pair_label & sparse_cell == FALSE])
           if (!nrow(surface_plot_data)) next
+          surface_pair_key <- surface_plot_data$interaction_pair_key[[1L]]
+          surface_feature_x <- surface_plot_data$feature_x[[1L]]
+          surface_feature_y <- surface_plot_data$feature_y[[1L]]
           shap_axis <- surface_plot_data$shap_feature[[1L]]
           interaction_axis <- surface_plot_data$interaction_feature[[1L]]
           heatmap_axis <- "mean_shap"
@@ -2142,7 +2188,19 @@ generate_regression_shap_analysis_artifacts <- function(
               "heatmap",
               "interaction_diagnostics",
               heatmap_result$object,
-              c(interaction_meta, list(pair_label = current_pair_label, x_axis = shap_axis, y_axis = interaction_axis, heatmap_value = "mean_shap", heatmap_value_description = surface_plot_data$heatmap_value_description[[1L]], n_y_levels = surface_n_y_levels, plot_height = surface_plot_height))
+              c(interaction_meta, list(
+                pair_label = current_pair_label,
+                feature_x = surface_feature_x,
+                feature_y = surface_feature_y,
+                interaction_pair_key = surface_pair_key,
+                directional = FALSE,
+                x_axis = shap_axis,
+                y_axis = interaction_axis,
+                heatmap_value = "mean_shap",
+                heatmap_value_description = surface_plot_data$heatmap_value_description[[1L]],
+                n_y_levels = surface_n_y_levels,
+                plot_height = surface_plot_height
+              ))
             ))
           } else {
             warnings <- regression_shap_warn(warnings, heatmap_result$warning)
