@@ -2,62 +2,53 @@
 % Please edit documentation in R/ModelInsights.R
 \name{EDAReport}
 \alias{EDAReport}
-\title{Exploratory Data Analysis Report}
+\title{Render Exploratory Data Analysis Report}
 \usage{
 EDAReport(
-  artifacts,
-  OutputPath = NULL,
-  DataName = NULL,
+  artifact_result = NULL,
+  data = NULL,
+  OutputPath = getwd(),
+  OutputFile = NULL,
+  Title = NULL,
+  Subtitle = NULL,
   Theme = "dark",
-  OutputFile = NULL
+  Open = FALSE,
+  Quiet = TRUE,
+  ...
 )
 }
 \arguments{
-\item{artifacts}{Output object returned by `generate_eda_artifacts()`.}
+\item{artifact_result}{Optional result returned by `generate_eda_artifacts()`.}
 
-\item{OutputPath}{Directory where the rendered HTML report should be saved.
-If `NULL`, the current working directory is used.}
+\item{data}{Optional source data used only when `artifact_result` is NULL.}
 
-\item{DataName}{Optional report/data name. If `NULL`, attempts to use
-`artifacts$metadata$DataName`, then falls back to `"EDA Data"`.}
+\item{OutputPath}{Directory where the rendered report should be written.}
 
-\item{Theme}{Character value passed through to the RMarkdown report.}
+\item{OutputFile}{Optional output HTML filename.}
 
-\item{OutputFile}{Optional full output file path. If `NULL`, a file name is
-generated as `"EDAReport-{DataName}.html"` inside `OutputPath`.}
+\item{Title}{Optional report/data title. Used as `DataName` for the template
+and default filename.}
+
+\item{Subtitle}{Optional report subtitle. Reserved for report templates that
+support it.}
+
+\item{Theme}{Report theme.}
+
+\item{Open}{If TRUE, open the rendered report.}
+
+\item{Quiet}{Passed to `rmarkdown::render()`.}
+
+\item{...}{Analytical arguments passed to `generate_eda_artifacts()` when
+`artifact_result` is NULL, plus optional render controls `SelfContained`,
+`RmdFile`, `Package`, `TemplatePath`, `Clean`, and `Envir`.}
 }
 \value{
-Invisibly returns the rendered HTML file path.
+Invisibly returns the rendered report path.
 }
 \description{
-Renders an HTML exploratory data analysis report from a pre-generated EDA
-artifact object created by `generate_eda_artifacts()`.
-}
-\details{
-This function does not compute EDA artifacts. It only renders the report from
-artifacts that were already generated. This separates artifact generation from
-report rendering, allowing the same artifact object to be reused for
-RMarkdown, Shiny, PNG export, HTML export, or LLM/API workflows.
-
-Typical usage:
-
-\preformatted{
-artifacts <- generate_eda_artifacts(
-  data = dt,
-  DataName = "EDA Data",
-  UnivariateVars = UnivariateVars,
-  CorrVars = CorrVars,
-  TrendVars = TrendVars,
-  TrendDateVar = "event_date",
-  TrendGroupVar = "channel",
-  Theme = "dark"
-)
-
-EDAReport(
-  artifacts = artifacts,
-  OutputPath = "reports"
-)
-}
+Renders an HTML EDA report from a pre-generated artifact result. If
+`artifact_result` is not supplied, this function calls
+`generate_eda_artifacts(data = data, ...)` as a convenience wrapper.
 }
 \seealso{
 Other Reports: 
@@ -74,8 +65,5 @@ Other Reports:
 \code{\link{qa_generate_catboost_builder_artifacts}()},
 \code{\link{qa_generate_catboost_builder_artifacts_binary}()},
 \code{\link{qa_generate_catboost_builder_artifacts_regression}()}
-}
-\author{
-Adrian Antico
 }
 \concept{Reports}

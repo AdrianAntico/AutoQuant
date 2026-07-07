@@ -2,60 +2,57 @@
 % Please edit documentation in R/ModelInsights.R
 \name{TargetAnalysisReport}
 \alias{TargetAnalysisReport}
-\title{Target Analysis Report}
+\title{Render Model Readiness / Target Analysis Report}
 \usage{
 TargetAnalysisReport(
-  artifacts,
-  OutputPath = NULL,
-  DataName = NULL,
+  artifact_result = NULL,
+  data = NULL,
+  OutputPath = getwd(),
+  OutputFile = NULL,
+  Title = NULL,
+  Subtitle = NULL,
   Theme = "dark",
-  OutputFile = NULL
+  Open = FALSE,
+  Quiet = TRUE,
+  ...
 )
 }
 \arguments{
-\item{artifacts}{Output object returned by `generate_model_assessment_artifacts()`.}
+\item{artifact_result}{Optional result returned by
+`generate_model_assessment_artifacts()`.}
 
-\item{OutputPath}{Directory where the rendered HTML report should be saved.
-If `NULL`, the current working directory is used.}
+\item{data}{Optional source data used only when `artifact_result` is NULL.}
 
-\item{DataName}{Optional report/data name. If `NULL`, attempts to use
-`artifacts$metadata$DataName`, then falls back to `"Modeling Data"`.}
+\item{OutputPath}{Directory where the rendered report should be written.}
 
-\item{Theme}{Character value passed through to the RMarkdown report.}
+\item{OutputFile}{Optional output HTML filename.}
 
-\item{OutputFile}{Optional full output file path. If `NULL`, a file name is
-generated as `"TargetAnalysis-{DataName}.html"` inside `OutputPath`.}
+\item{Title}{Optional report/data title. Used as `DataName` for the template
+and default filename.}
+
+\item{Subtitle}{Optional report subtitle. Reserved for report templates that
+support it.}
+
+\item{Theme}{Report theme.}
+
+\item{Open}{If TRUE, open the rendered report.}
+
+\item{Quiet}{Passed to `rmarkdown::render()`.}
+
+\item{...}{Analytical arguments passed to
+`generate_model_assessment_artifacts()` when `artifact_result` is NULL,
+plus optional render controls `SelfContained`, `RmdFile`, `Package`,
+`TemplatePath`, `Clean`, and `Envir`.}
 }
 \value{
-Invisibly returns the rendered HTML file path.
+Invisibly returns the rendered report path.
 }
 \description{
-Renders an HTML target analysis / model readiness report from a pre-generated
-artifact object created by `generate_model_assessment_artifacts()`.
-}
-\details{
-This function does not compute target analysis artifacts. It only renders the
-report from artifacts that were already generated. This separates evidence
-generation from report rendering, allowing the same artifact object to be
-reused for RMarkdown, Shiny, static exports, or LLM/API workflows.
-
-Typical usage:
-
-\preformatted{
-artifacts <- generate_model_assessment_artifacts(
-  data = dt,
-  DataName = "Modeling Data",
-  TargetVar = "conversions",
-  TrendDateVar = "event_date",
-  TrendGroupVar = c("channel", "market"),
-  Theme = "dark"
-)
-
-TargetAnalysisReport(
-  artifacts = artifacts,
-  OutputPath = "reports"
-)
-}
+Renders the target analysis / model readiness report from pre-generated
+artifacts. If `artifact_result` is not supplied, this function calls
+`generate_model_assessment_artifacts(data = data, ...)` as a convenience
+wrapper. The report name is retained for transition; the product terminology
+should move toward Model Readiness for pre-model diagnostics.
 }
 \seealso{
 Other Reports: 
@@ -72,8 +69,5 @@ Other Reports:
 \code{\link{qa_generate_catboost_builder_artifacts}()},
 \code{\link{qa_generate_catboost_builder_artifacts_binary}()},
 \code{\link{qa_generate_catboost_builder_artifacts_regression}()}
-}
-\author{
-Adrian Antico
 }
 \concept{Reports}

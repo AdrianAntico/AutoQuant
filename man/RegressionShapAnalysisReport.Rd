@@ -5,8 +5,8 @@
 \title{Render Regression SHAP Analysis Report}
 \usage{
 RegressionShapAnalysisReport(
-  data = NULL,
   artifact_result = NULL,
+  data = NULL,
   OutputPath = getwd(),
   OutputFile = NULL,
   Title = "Regression SHAP Analysis Report",
@@ -18,11 +18,11 @@ RegressionShapAnalysisReport(
 )
 }
 \arguments{
-\item{data}{Optional data.table containing precomputed `Shap_` columns. Used
-only when `artifact_result` is NULL.}
-
 \item{artifact_result}{Optional precomputed result returned by
 `generate_regression_shap_analysis_artifacts()`.}
+
+\item{data}{Optional data.table containing precomputed `Shap_` columns. Used
+only when `artifact_result` is NULL.}
 
 \item{OutputPath}{Directory where the rendered report should be written.}
 

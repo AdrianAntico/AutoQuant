@@ -5,8 +5,8 @@
 \title{Render Binary Classification SHAP Analysis Report}
 \usage{
 BinaryClassificationShapAnalysisReport(
-  data = NULL,
   artifact_result = NULL,
+  data = NULL,
   OutputPath = getwd(),
   OutputFile = NULL,
   Title = "Binary Classification SHAP Analysis Report",
@@ -18,11 +18,11 @@ BinaryClassificationShapAnalysisReport(
 )
 }
 \arguments{
-\item{data}{Optional data.table containing precomputed `Shap_` columns. Used
-only when `artifact_result` is NULL.}
-
 \item{artifact_result}{Optional precomputed result returned by
 `generate_binary_classification_shap_analysis_artifacts()`.}
+
+\item{data}{Optional data.table containing precomputed `Shap_` columns. Used
+only when `artifact_result` is NULL.}
 
 \item{OutputPath}{Directory where the rendered report should be written.}
 

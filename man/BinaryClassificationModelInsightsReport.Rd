@@ -5,89 +5,54 @@
 \title{Render Binary Classification Model Insights Report}
 \usage{
 BinaryClassificationModelInsightsReport(
-  artifacts = NULL,
+  artifact_result = NULL,
   data = NULL,
-  target_col = NULL,
-  prediction_col = NULL,
-  predicted_class_col = NULL,
-  positive_class = NULL,
-  feature_cols = NULL,
-  model_name = NULL,
-  data_name = NULL,
-  DateVar = NULL,
-  date_aggregation = "month",
-  ByVars = character(),
-  threshold = 0.5,
-  optimize_metric = "Utility",
   OutputPath = getwd(),
-  OutputFile = "Binary_Classification_ModelInsights_Report.html",
-  RmdFile = "Binary_Classification_ModelInsights_Artifact_Renderer.Rmd",
-  Package = "AutoQuant",
-  TemplatePath = NULL,
-  Quiet = FALSE,
-  Clean = TRUE,
-  Envir = NULL,
-  SelfContained = TRUE,
+  OutputFile = NULL,
+  Title = NULL,
+  Subtitle = NULL,
+  Theme = "dark",
+  Open = FALSE,
+  Quiet = TRUE,
   ...
 )
 }
 \arguments{
-\item{artifacts}{Artifact object returned by
-`generate_binary_classification_model_insights_artifacts()`. If NULL,
-scored `data` and target/prediction columns are passed to the generator.}
-
-\item{data}{Optional scored/model-output data used when `artifacts` is NULL.}
-
-\item{target_col, prediction_col, predicted_class_col}{Column names passed to
+\item{artifact_result}{Optional result returned by
 `generate_binary_classification_model_insights_artifacts()`.}
 
-\item{positive_class}{Positive target class.}
+\item{data}{Optional scored/model-output data used only when
+`artifact_result` is NULL.}
 
-\item{feature_cols}{Optional feature columns used for feature diagnostics.}
+\item{OutputPath}{Directory where the rendered report should be written.}
 
-\item{model_name, data_name}{Optional labels stored in report metadata.}
+\item{OutputFile}{Optional output HTML filename.}
 
-\item{DateVar}{Optional date column used for time diagnostics.}
+\item{Title}{Optional report title. Reserved for templates that support it.}
 
-\item{date_aggregation}{Time aggregation for `DateVar`.}
+\item{Subtitle}{Optional report subtitle. Reserved for templates that support
+it.}
 
-\item{ByVars}{Optional segment columns used for segment diagnostics.}
+\item{Theme}{Report theme.}
 
-\item{threshold}{Default operating threshold.}
-
-\item{optimize_metric}{Threshold optimization metric.}
-
-\item{OutputPath}{Directory where the rendered HTML report should be written.}
-
-\item{OutputFile}{Output HTML filename.}
-
-\item{RmdFile}{RMarkdown filename located in `inst/r-markdowns`.}
-
-\item{Package}{Package name used to locate installed RMarkdown files.}
-
-\item{TemplatePath}{Optional explicit path to the RMarkdown file. If supplied,
-this takes precedence over the package/system.file lookup.}
+\item{Open}{If TRUE, open the rendered report.}
 
 \item{Quiet}{Passed to `rmarkdown::render()`.}
 
-\item{Clean}{Passed to `rmarkdown::render()`.}
-
-\item{Envir}{Optional render environment. If NULL, a clean child environment
-of `.GlobalEnv` is created.}
-
-\item{SelfContained}{Passed to `rmarkdown::render()` through output_options.}
-
-\item{...}{Additional arguments passed to
+\item{...}{Analytical arguments passed to
 `generate_binary_classification_model_insights_artifacts()` when
-`artifacts` is NULL.}
+`artifact_result` is NULL, plus optional render controls `SelfContained`,
+`RmdFile`, `Package`, `TemplatePath`, `Clean`, and `Envir`.}
 }
 \value{
 Invisibly returns the rendered report path.
 }
 \description{
-Takes a precomputed binary classification model-insights artifact object, or
-generates one from scored data, and renders the artifact-based standalone
-HTML report.
+Renders binary classification model-insights artifacts. If `artifact_result`
+is not supplied, this function calls
+`generate_binary_classification_model_insights_artifacts(data = data, ...)`
+as a convenience wrapper. Analytical arguments belong to the generator and
+pass through `...`.
 }
 \seealso{
 Other Reports: 

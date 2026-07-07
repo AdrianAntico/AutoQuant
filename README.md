@@ -723,6 +723,91 @@ builder$value$scored_data
 builder$value$downstream_handoff
 ```
 
+### Modern Report API Contract
+
+Modern AutoQuant reports are artifact renderers. Artifact generators own analytical parameters; report functions own rendering parameters.
+
+Preferred generator-first workflow:
+
+```r
+reg_artifacts <- AutoQuant::generate_regression_shap_analysis_artifacts(
+  data = scored_data,
+  target_col = "Target",
+  prediction_col = "Predict",
+  DateVar = "Date",
+  ByVars = "Segment"
+)
+
+AutoQuant::RegressionShapAnalysisReport(
+  artifact_result = reg_artifacts,
+  OutputPath = "reports",
+  OutputFile = "regression_shap.html"
+)
+```
+
+Convenience wrapper workflow:
+
+```r
+AutoQuant::RegressionShapAnalysisReport(
+  data = scored_data,
+  OutputPath = "reports",
+  OutputFile = "regression_shap.html",
+  target_col = "Target",
+  prediction_col = "Predict",
+  DateVar = "Date",
+  ByVars = "Segment"
+)
+```
+
+The same pattern applies to `EDAReport()`, `TargetAnalysisReport()`, `RegressionModelInsightsReport()`, `BinaryClassificationModelInsightsReport()`, `RegressionShapAnalysisReport()`, and `BinaryClassificationShapAnalysisReport()`. `ModelInsightsReport()` is legacy compatibility only.
+
+See `docs/report_api_contract.md`.
+
+### Typed Artifact Schema Framework
+
+Future AutoQuant generators should return reusable typed artifacts that can power reports, dashboards, Shiny apps, APIs, and LLM agents without recomputing analytical work.
+
+The first typed artifact layer supports:
+
+- `table`
+- `plot`
+- `diagnostic`
+- `finding`
+- `warning`
+- `metadata`
+- `computation_graph`
+- `display_plan`
+- `quality_gate`
+
+Small example:
+
+```r
+importance <- data.table::data.table(
+  feature = c("Spend", "Clicks"),
+  mean_abs_contribution = c(0.42, 0.18)
+)
+
+table_artifact <- AutoQuant::new_table_artifact(
+  id = "tbl_global_importance",
+  title = "Global Importance",
+  data = importance,
+  source_generator = "example_generator"
+)
+
+finding_artifact <- AutoQuant::new_finding_artifact(
+  id = "finding_top_driver",
+  title = "Top Driver",
+  claim = "Spend is the strongest driver in this example result.",
+  evidence_ids = "tbl_global_importance",
+  confidence = 0.8,
+  source_generator = "example_generator"
+)
+
+AutoQuant::validate_artifact_collection(list(table_artifact, finding_artifact))
+```
+
+See `docs/contracts/artifact_schema_contract.md` and `inst/examples/artifact_schema_example.R`.
+
 ### Regression
 
 <details><summary>click to expand</summary>

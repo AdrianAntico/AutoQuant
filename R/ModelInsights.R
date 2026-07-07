@@ -159,320 +159,346 @@ ModelInsightsReport <- function(TrainDataInclude = FALSE,
   rm(list = c(setdiff(GlobalVarsNew, c(GlobalVars, KeepOutput))))
 }
 
-#' @title Exploratory Data Analysis Report
-#'
-#' @description
-#' Renders an HTML exploratory data analysis report from a pre-generated EDA
-#' artifact object created by `generate_eda_artifacts()`.
-#'
-#' @author Adrian Antico
-#' @family Reports
-#'
-#' @param artifacts Output object returned by `generate_eda_artifacts()`.
-#' @param OutputPath Directory where the rendered HTML report should be saved.
-#'   If `NULL`, the current working directory is used.
-#' @param DataName Optional report/data name. If `NULL`, attempts to use
-#'   `artifacts$metadata$DataName`, then falls back to `"EDA Data"`.
-#' @param Theme Character value passed through to the RMarkdown report.
-#' @param OutputFile Optional full output file path. If `NULL`, a file name is
-#'   generated as `"EDAReport-{DataName}.html"` inside `OutputPath`.
-#'
-#' @return Invisibly returns the rendered HTML file path.
-#'
-#' @details
-#' This function does not compute EDA artifacts. It only renders the report from
-#' artifacts that were already generated. This separates artifact generation from
-#' report rendering, allowing the same artifact object to be reused for
-#' RMarkdown, Shiny, PNG export, HTML export, or LLM/API workflows.
-#'
-#' Typical usage:
-#'
-#' \preformatted{
-#' artifacts <- generate_eda_artifacts(
-#'   data = dt,
-#'   DataName = "EDA Data",
-#'   UnivariateVars = UnivariateVars,
-#'   CorrVars = CorrVars,
-#'   TrendVars = TrendVars,
-#'   TrendDateVar = "event_date",
-#'   TrendGroupVar = "channel",
-#'   Theme = "dark"
-#' )
-#'
-#' EDAReport(
-#'   artifacts = artifacts,
-#'   OutputPath = "reports"
-#' )
-#' }
-#'
-#' @export
-EDAReport <- function(
-    artifacts,
-    OutputPath = NULL,
-    DataName = NULL,
-    Theme = "dark",
-    OutputFile = NULL
-) {
-
-  if (missing(artifacts) || is.null(artifacts)) {
-    stop(
-      "`artifacts` must be supplied. Use `generate_eda_artifacts()` first.",
-      call. = FALSE
-    )
-  }
-
-  appDir <- system.file("r-markdowns", package = "AutoQuant")
-
-  if (!nzchar(appDir)) {
-    stop(
-      "Could not find the AutoQuant RMarkdown directory: inst/r-markdowns.",
-      call. = FALSE
-    )
-  }
-
-  rmd_file <- file.path(appDir, "EDA_Report.Rmd")
-
-  if (!file.exists(rmd_file)) {
-    stop(
-      "Could not find the EDA report RMarkdown file: ",
-      rmd_file,
-      call. = FALSE
-    )
-  }
-
-  if (is.null(OutputPath)) {
-    OutputPath <- getwd()
-  }
-
-  OutputPath <- normalizePath(
-    OutputPath,
-    winslash = "/",
-    mustWork = FALSE
-  )
-
-  if (!dir.exists(OutputPath)) {
-    dir.create(OutputPath, recursive = TRUE, showWarnings = FALSE)
-  }
-
-  if (is.null(DataName)) {
-    DataName <- tryCatch(
-      artifacts$metadata$DataName,
-      error = function(e) NULL
-    )
-  }
-
-  if (
-    is.null(DataName) ||
-    length(DataName) == 0L ||
-    is.na(DataName[1L]) ||
-    !nzchar(as.character(DataName[1L]))
-  ) {
-    DataName <- "EDA Data"
-  }
-
-  DataName <- as.character(DataName[1L])
-
-  safe_data_name <- gsub("[^A-Za-z0-9_-]+", "_", DataName)
-  safe_data_name <- gsub("_+", "_", safe_data_name)
-  safe_data_name <- gsub("^_|_$", "", safe_data_name)
-
-  if (!nzchar(safe_data_name)) {
-    safe_data_name <- "EDA_Data"
-  }
-
-  if (is.null(OutputFile)) {
-
-    OutputFile <- file.path(
-      OutputPath,
-      paste0("EDAReport-", safe_data_name, ".html")
-    )
-
-  } else {
-
-    OutputFile <- path.expand(OutputFile)
-
-    output_file_dir <- dirname(OutputFile)
-
-    if (!dir.exists(output_file_dir)) {
-      dir.create(output_file_dir, recursive = TRUE, showWarnings = FALSE)
-    }
-
-    OutputFile <- normalizePath(
-      OutputFile,
-      winslash = "/",
-      mustWork = FALSE
-    )
-  }
-
-  rmarkdown::render(
-    input = rmd_file,
-    output_file = OutputFile,
-    params = list(
-      artifacts = artifacts,
-      DataName = DataName,
-      Theme = Theme
-    ),
-    envir = new.env(parent = globalenv())
-  )
-
-  invisible(OutputFile)
+aq_report_default <- function(value, default) {
+  if (is.null(value)) default else value
 }
 
-#' @title Target Analysis Report
+aq_report_pop_arg <- function(args, names, default = NULL) {
+  for (nm in names) {
+    if (nm %in% names(args)) {
+      return(args[[nm]])
+    }
+  }
+  default
+}
+
+aq_report_drop_args <- function(args, names) {
+  args[setdiff(names(args), names)]
+}
+
+aq_report_render_options <- function(
+  dots,
+  OutputPath,
+  OutputFile,
+  Title,
+  Subtitle,
+  Theme,
+  Open,
+  Quiet,
+  default_output_file,
+  default_rmd_file,
+  default_self_contained = TRUE
+) {
+  render_names <- c(
+    "OutputPath", "output_path", "output_dir",
+    "OutputFile", "output_file",
+    "Title", "title",
+    "Subtitle", "subtitle",
+    "Theme", "theme",
+    "Open", "open",
+    "Quiet", "quiet",
+    "SelfContained", "self_contained",
+    "RmdFile", "Package", "TemplatePath", "Clean", "Envir"
+  )
+
+  output_path <- aq_report_pop_arg(dots, c("OutputPath", "output_path", "output_dir"), OutputPath)
+  output_file <- aq_report_pop_arg(dots, c("OutputFile", "output_file"), OutputFile)
+  title <- aq_report_pop_arg(dots, c("Title", "title"), Title)
+  subtitle <- aq_report_pop_arg(dots, c("Subtitle", "subtitle"), Subtitle)
+  theme <- aq_report_pop_arg(dots, c("Theme", "theme"), Theme)
+  open <- aq_report_pop_arg(dots, c("Open", "open"), Open)
+  quiet <- aq_report_pop_arg(dots, c("Quiet", "quiet"), Quiet)
+  self_contained <- aq_report_pop_arg(dots, c("SelfContained", "self_contained"), default_self_contained)
+  rmd_file <- aq_report_pop_arg(dots, "RmdFile", default_rmd_file)
+  package <- aq_report_pop_arg(dots, "Package", "AutoQuant")
+  template_path <- aq_report_pop_arg(dots, "TemplatePath", NULL)
+  clean <- aq_report_pop_arg(dots, "Clean", TRUE)
+  envir <- aq_report_pop_arg(dots, "Envir", NULL)
+  generator_args <- aq_report_drop_args(dots, render_names)
+
+  if (is.null(output_file) || !nzchar(output_file)) {
+    output_file <- default_output_file
+  }
+  if (!grepl("\\.html?$", output_file, ignore.case = TRUE)) {
+    output_file <- paste0(output_file, ".html")
+  }
+  if (!("Theme" %in% names(generator_args))) {
+    generator_args$Theme <- theme
+  }
+
+  list(
+    OutputPath = aq_report_default(output_path, getwd()),
+    OutputFile = output_file,
+    Title = title,
+    Subtitle = subtitle,
+    Theme = theme,
+    Open = open,
+    Quiet = quiet,
+    SelfContained = self_contained,
+    RmdFile = rmd_file,
+    Package = package,
+    TemplatePath = template_path,
+    Clean = clean,
+    Envir = envir,
+    generator_args = generator_args
+  )
+}
+
+aq_report_template_path <- function(RmdFile, Package = "AutoQuant", TemplatePath = NULL) {
+  if (!is.null(TemplatePath) && nzchar(TemplatePath)) {
+    template_path <- normalizePath(TemplatePath, winslash = "/", mustWork = FALSE)
+  } else {
+    template_path <- system.file("r-markdowns", RmdFile, package = Package)
+    if (!nzchar(template_path) || !file.exists(template_path)) {
+      template_path <- normalizePath(file.path(getwd(), "inst", "r-markdowns", RmdFile), winslash = "/", mustWork = FALSE)
+    }
+    if (!file.exists(template_path)) {
+      template_path <- normalizePath(file.path(getwd(), RmdFile), winslash = "/", mustWork = FALSE)
+    }
+  }
+
+  if (!file.exists(template_path)) {
+    stop(
+      paste0(
+        "RMarkdown template not found. Expected one of:\n",
+        "1. ", file.path("inst", "r-markdowns", RmdFile), "\n",
+        "2. system.file('r-markdowns', '", RmdFile, "', package = '", Package, "')\n",
+        "3. Explicit `TemplatePath`."
+      ),
+      call. = FALSE
+    )
+  }
+
+  template_path
+}
+
+aq_report_safe_name <- function(value, default) {
+  value <- aq_report_default(value, default)
+  value <- as.character(value[1L])
+  if (is.na(value) || !nzchar(value)) {
+    value <- default
+  }
+  safe <- gsub("[^A-Za-z0-9_-]+", "_", value)
+  safe <- gsub("_+", "_", safe)
+  safe <- gsub("^_|_$", "", safe)
+  if (!nzchar(safe)) default else safe
+}
+
+aq_report_validate_artifact_result <- function(artifact_result, generator_name) {
+  has_artifact_payload <- is.list(artifact_result) && (
+    !is.null(artifact_result$artifacts) ||
+      !is.null(artifact_result$tables) ||
+      !is.null(artifact_result$plots) ||
+      inherits(artifact_result, "autoquant_report_artifacts")
+  )
+  if (!has_artifact_payload) {
+    stop(
+      paste0("`artifact_result` must be the structured output from ", generator_name, "()."),
+      call. = FALSE
+    )
+  }
+  invisible(TRUE)
+}
+
+aq_report_render <- function(
+  artifact_result,
+  opts,
+  template_params = list(),
+  env_names = character()
+) {
+  if (!requireNamespace("rmarkdown", quietly = TRUE)) {
+    stop("Package 'rmarkdown' is required to render AutoQuant reports.", call. = FALSE)
+  }
+
+  output_dir <- normalizePath(opts$OutputPath, winslash = "/", mustWork = FALSE)
+  dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
+  template_path <- aq_report_template_path(opts$RmdFile, opts$Package, opts$TemplatePath)
+
+  Envir <- opts$Envir
+  if (is.null(Envir)) {
+    Envir <- new.env(parent = .GlobalEnv)
+  }
+
+  assign("artifact_result", artifact_result, envir = Envir)
+  assign("artifacts", artifact_result, envir = Envir)
+  for (nm in env_names) {
+    assign(nm, artifact_result, envir = Envir)
+  }
+
+  rendered_file <- rmarkdown::render(
+    input = template_path,
+    output_file = opts$OutputFile,
+    output_dir = output_dir,
+    params = template_params,
+    envir = Envir,
+    quiet = opts$Quiet,
+    clean = opts$Clean,
+    output_options = list(self_contained = isTRUE(opts$SelfContained))
+  )
+
+  rendered_file <- normalizePath(rendered_file, winslash = "/", mustWork = FALSE)
+  attr(rendered_file, "artifact_result") <- artifact_result
+  if (isTRUE(opts$Open)) {
+    utils::browseURL(rendered_file)
+  }
+
+  invisible(rendered_file)
+}
+
+#' Render Exploratory Data Analysis Report
 #'
-#' @description
-#' Renders an HTML target analysis / model readiness report from a pre-generated
-#' artifact object created by `generate_model_assessment_artifacts()`.
+#' Renders an HTML EDA report from a pre-generated artifact result. If
+#' `artifact_result` is not supplied, this function calls
+#' `generate_eda_artifacts(data = data, ...)` as a convenience wrapper.
 #'
-#' @author Adrian Antico
+#' @param artifact_result Optional result returned by `generate_eda_artifacts()`.
+#' @param data Optional source data used only when `artifact_result` is NULL.
+#' @param OutputPath Directory where the rendered report should be written.
+#' @param OutputFile Optional output HTML filename.
+#' @param Title Optional report/data title. Used as `DataName` for the template
+#'   and default filename.
+#' @param Subtitle Optional report subtitle. Reserved for report templates that
+#'   support it.
+#' @param Theme Report theme.
+#' @param Open If TRUE, open the rendered report.
+#' @param Quiet Passed to `rmarkdown::render()`.
+#' @param ... Analytical arguments passed to `generate_eda_artifacts()` when
+#'   `artifact_result` is NULL, plus optional render controls `SelfContained`,
+#'   `RmdFile`, `Package`, `TemplatePath`, `Clean`, and `Envir`.
+#'
+#' @return Invisibly returns the rendered report path.
+#'
 #' @family Reports
+#' @export
+EDAReport <- function(
+  artifact_result = NULL,
+  data = NULL,
+  OutputPath = getwd(),
+  OutputFile = NULL,
+  Title = NULL,
+  Subtitle = NULL,
+  Theme = "dark",
+  Open = FALSE,
+  Quiet = TRUE,
+  ...
+) {
+  opts <- aq_report_render_options(
+    dots = list(...),
+    OutputPath = OutputPath,
+    OutputFile = OutputFile,
+    Title = Title,
+    Subtitle = Subtitle,
+    Theme = Theme,
+    Open = Open,
+    Quiet = Quiet,
+    default_output_file = "EDAReport.html",
+    default_rmd_file = "EDA_Report.Rmd"
+  )
+
+  if (is.null(artifact_result)) {
+    if (is.null(data)) {
+      stop("`data` must be supplied when `artifact_result` is NULL.", call. = FALSE)
+    }
+    artifact_result <- do.call(generate_eda_artifacts, c(list(data = data), opts$generator_args))
+  }
+  aq_report_validate_artifact_result(artifact_result, "generate_eda_artifacts")
+
+  data_name <- aq_report_default(opts$Title, tryCatch(artifact_result$metadata$DataName, error = function(e) NULL))
+  data_name <- aq_report_default(data_name, "EDA Data")
+  if (identical(opts$OutputFile, "EDAReport.html")) {
+    opts$OutputFile <- paste0("EDAReport-", aq_report_safe_name(data_name, "EDA_Data"), ".html")
+  }
+
+  aq_report_render(
+    artifact_result = artifact_result,
+    opts = opts,
+    template_params = list(
+      artifacts = artifact_result,
+      DataName = as.character(data_name[1L]),
+      Theme = opts$Theme
+    ),
+    env_names = "EDAArtifacts"
+  )
+}
+
+#' Render Model Readiness / Target Analysis Report
 #'
-#' @param artifacts Output object returned by `generate_model_assessment_artifacts()`.
-#' @param OutputPath Directory where the rendered HTML report should be saved.
-#'   If `NULL`, the current working directory is used.
-#' @param DataName Optional report/data name. If `NULL`, attempts to use
-#'   `artifacts$metadata$DataName`, then falls back to `"Modeling Data"`.
-#' @param Theme Character value passed through to the RMarkdown report.
-#' @param OutputFile Optional full output file path. If `NULL`, a file name is
-#'   generated as `"TargetAnalysis-{DataName}.html"` inside `OutputPath`.
+#' Renders the target analysis / model readiness report from pre-generated
+#' artifacts. If `artifact_result` is not supplied, this function calls
+#' `generate_model_assessment_artifacts(data = data, ...)` as a convenience
+#' wrapper. The report name is retained for transition; the product terminology
+#' should move toward Model Readiness for pre-model diagnostics.
 #'
-#' @return Invisibly returns the rendered HTML file path.
+#' @param artifact_result Optional result returned by
+#'   `generate_model_assessment_artifacts()`.
+#' @param data Optional source data used only when `artifact_result` is NULL.
+#' @param OutputPath Directory where the rendered report should be written.
+#' @param OutputFile Optional output HTML filename.
+#' @param Title Optional report/data title. Used as `DataName` for the template
+#'   and default filename.
+#' @param Subtitle Optional report subtitle. Reserved for report templates that
+#'   support it.
+#' @param Theme Report theme.
+#' @param Open If TRUE, open the rendered report.
+#' @param Quiet Passed to `rmarkdown::render()`.
+#' @param ... Analytical arguments passed to
+#'   `generate_model_assessment_artifacts()` when `artifact_result` is NULL,
+#'   plus optional render controls `SelfContained`, `RmdFile`, `Package`,
+#'   `TemplatePath`, `Clean`, and `Envir`.
 #'
-#' @details
-#' This function does not compute target analysis artifacts. It only renders the
-#' report from artifacts that were already generated. This separates evidence
-#' generation from report rendering, allowing the same artifact object to be
-#' reused for RMarkdown, Shiny, static exports, or LLM/API workflows.
+#' @return Invisibly returns the rendered report path.
 #'
-#' Typical usage:
-#'
-#' \preformatted{
-#' artifacts <- generate_model_assessment_artifacts(
-#'   data = dt,
-#'   DataName = "Modeling Data",
-#'   TargetVar = "conversions",
-#'   TrendDateVar = "event_date",
-#'   TrendGroupVar = c("channel", "market"),
-#'   Theme = "dark"
-#' )
-#'
-#' TargetAnalysisReport(
-#'   artifacts = artifacts,
-#'   OutputPath = "reports"
-#' )
-#' }
-#'
+#' @family Reports
 #' @export
 TargetAnalysisReport <- function(
-    artifacts,
-    OutputPath = NULL,
-    DataName = NULL,
-    Theme = "dark",
-    OutputFile = NULL
+  artifact_result = NULL,
+  data = NULL,
+  OutputPath = getwd(),
+  OutputFile = NULL,
+  Title = NULL,
+  Subtitle = NULL,
+  Theme = "dark",
+  Open = FALSE,
+  Quiet = TRUE,
+  ...
 ) {
-
-  if (missing(artifacts) || is.null(artifacts)) {
-    stop(
-      "`artifacts` must be supplied. Use `generate_model_assessment_artifacts()` first.",
-      call. = FALSE
-    )
-  }
-
-  appDir <- system.file("r-markdowns", package = "AutoQuant")
-
-  if (!nzchar(appDir)) {
-    stop(
-      "Could not find the AutoQuant RMarkdown directory: inst/r-markdowns.",
-      call. = FALSE
-    )
-  }
-
-  rmd_file <- file.path(appDir, "Target_Analysis_Report.Rmd")
-
-  if (!file.exists(rmd_file)) {
-    stop(
-      "Could not find the Target Analysis report RMarkdown file: ",
-      rmd_file,
-      call. = FALSE
-    )
-  }
-
-  if (is.null(OutputPath)) {
-    OutputPath <- getwd()
-  }
-
-  OutputPath <- normalizePath(
-    OutputPath,
-    winslash = "/",
-    mustWork = FALSE
+  opts <- aq_report_render_options(
+    dots = list(...),
+    OutputPath = OutputPath,
+    OutputFile = OutputFile,
+    Title = Title,
+    Subtitle = Subtitle,
+    Theme = Theme,
+    Open = Open,
+    Quiet = Quiet,
+    default_output_file = "TargetAnalysis.html",
+    default_rmd_file = "Target_Analysis_Report.Rmd"
   )
 
-  if (!dir.exists(OutputPath)) {
-    dir.create(OutputPath, recursive = TRUE, showWarnings = FALSE)
-  }
-
-  if (is.null(DataName)) {
-    DataName <- tryCatch(
-      artifacts$metadata$DataName,
-      error = function(e) NULL
-    )
-  }
-
-  if (
-    is.null(DataName) ||
-    length(DataName) == 0L ||
-    is.na(DataName[1L]) ||
-    !nzchar(as.character(DataName[1L]))
-  ) {
-    DataName <- "Modeling Data"
-  }
-
-  DataName <- as.character(DataName[1L])
-
-  safe_data_name <- gsub("[^A-Za-z0-9_-]+", "_", DataName)
-  safe_data_name <- gsub("_+", "_", safe_data_name)
-  safe_data_name <- gsub("^_|_$", "", safe_data_name)
-
-  if (!nzchar(safe_data_name)) {
-    safe_data_name <- "Modeling_Data"
-  }
-
-  if (is.null(OutputFile)) {
-
-    OutputFile <- file.path(
-      OutputPath,
-      paste0("TargetAnalysis-", safe_data_name, ".html")
-    )
-
-  } else {
-
-    OutputFile <- path.expand(OutputFile)
-
-    output_file_dir <- dirname(OutputFile)
-
-    if (!dir.exists(output_file_dir)) {
-      dir.create(output_file_dir, recursive = TRUE, showWarnings = FALSE)
+  if (is.null(artifact_result)) {
+    if (is.null(data)) {
+      stop("`data` must be supplied when `artifact_result` is NULL.", call. = FALSE)
     }
+    artifact_result <- do.call(generate_model_assessment_artifacts, c(list(data = data), opts$generator_args))
+  }
+  aq_report_validate_artifact_result(artifact_result, "generate_model_assessment_artifacts")
 
-    OutputFile <- normalizePath(
-      OutputFile,
-      winslash = "/",
-      mustWork = FALSE
-    )
+  data_name <- aq_report_default(opts$Title, tryCatch(artifact_result$metadata$DataName, error = function(e) NULL))
+  data_name <- aq_report_default(data_name, "Modeling Data")
+  if (identical(opts$OutputFile, "TargetAnalysis.html")) {
+    opts$OutputFile <- paste0("TargetAnalysis-", aq_report_safe_name(data_name, "Modeling_Data"), ".html")
   }
 
-  rmarkdown::render(
-    input = rmd_file,
-    output_file = OutputFile,
-    params = list(
-      artifacts = artifacts,
-      DataName = DataName,
-      Theme = Theme
+  aq_report_render(
+    artifact_result = artifact_result,
+    opts = opts,
+    template_params = list(
+      artifacts = artifact_result,
+      DataName = as.character(data_name[1L]),
+      Theme = opts$Theme
     ),
-    envir = new.env(parent = globalenv())
+    env_names = "TargetAnalysisArtifacts"
   )
-
-  invisible(OutputFile)
 }
 
 # ============================================================
@@ -487,139 +513,78 @@ TargetAnalysisReport <- function(
 
 #' Render Regression Model Insights Report
 #'
-#' Takes a precomputed regression model-insights artifact object and renders
-#' the artifact-based RMarkdown report.
+#' Renders regression model-insights artifacts. If `artifact_result` is not
+#' supplied, this function calls
+#' `generate_regression_model_insights_artifacts()` as a convenience wrapper.
+#' Analytical arguments belong to the generator and pass through `...`.
 #'
-#' @param artifacts Artifact object returned by
+#' @param artifact_result Optional result returned by
 #'   `generate_regression_model_insights_artifacts()`.
-#' @param OutputPath Directory where the rendered HTML report should be written.
-#' @param OutputFile Output HTML filename.
-#' @param RmdFile RMarkdown filename located in `inst/r-markdowns`.
-#' @param Package Package name used to locate installed RMarkdown files.
-#' @param TemplatePath Optional explicit path to the RMarkdown file. If supplied,
-#'   this takes precedence over the package/system.file lookup.
+#' @param data Optional scored/test data used only when `artifact_result` is
+#'   NULL. It is passed to the generator as `TestData` unless `TestData` is
+#'   explicitly supplied through `...`.
+#' @param OutputPath Directory where the rendered report should be written.
+#' @param OutputFile Optional output HTML filename.
+#' @param Title Optional report title. Reserved for templates that support it.
+#' @param Subtitle Optional report subtitle. Reserved for templates that support
+#'   it.
+#' @param Theme Report theme.
+#' @param Open If TRUE, open the rendered report.
 #' @param Quiet Passed to `rmarkdown::render()`.
-#' @param Clean Passed to `rmarkdown::render()`.
-#' @param Envir Optional render environment. If NULL, a clean child environment
-#'   of `.GlobalEnv` is created.
-#' @param SelfContained Passed to `rmarkdown::render()` through output_options.
+#' @param ... Analytical arguments passed to
+#'   `generate_regression_model_insights_artifacts()` when `artifact_result` is
+#'   NULL, plus optional render controls `SelfContained`, `RmdFile`, `Package`,
+#'   `TemplatePath`, `Clean`, and `Envir`.
 #'
 #' @return Invisibly returns the rendered report path.
 #'
 #' @family Reports
 #' @export
 RegressionModelInsightsReport <- function(
-    artifacts,
-    OutputPath = getwd(),
-    OutputFile = "Regression_ModelInsights_Report.html",
-    RmdFile = "Regression_ModelInsights_Artifact_Renderer.Rmd",
-    Package = "AutoQuant",
-    TemplatePath = NULL,
-    Quiet = FALSE,
-    Clean = TRUE,
-    Envir = NULL,
-    SelfContained = TRUE
+  artifact_result = NULL,
+  data = NULL,
+  OutputPath = getwd(),
+  OutputFile = NULL,
+  Title = NULL,
+  Subtitle = NULL,
+  Theme = "dark",
+  Open = FALSE,
+  Quiet = TRUE,
+  ...
 ) {
-
-  if (missing(artifacts) || is.null(artifacts)) {
-    stop("`artifacts` must be supplied.", call. = FALSE)
-  }
-
-  if (!requireNamespace("rmarkdown", quietly = TRUE)) {
-    stop("Package 'rmarkdown' is required.", call. = FALSE)
-  }
-
-  if (!requireNamespace("data.table", quietly = TRUE)) {
-    stop("Package 'data.table' is required.", call. = FALSE)
-  }
-
-  if (!requireNamespace("htmltools", quietly = TRUE)) {
-    stop("Package 'htmltools' is required.", call. = FALSE)
-  }
-
-  if (!requireNamespace("reactable", quietly = TRUE)) {
-    stop("Package 'reactable' is required.", call. = FALSE)
-  }
-
-  if (!requireNamespace("echarts4r", quietly = TRUE)) {
-    stop("Package 'echarts4r' is required.", call. = FALSE)
-  }
-
-  if (!requireNamespace("AutoPlots", quietly = TRUE)) {
-    stop("Package 'AutoPlots' is required.", call. = FALSE)
-  }
-
-  OutputPath <- normalizePath(OutputPath, winslash = "/", mustWork = FALSE)
-  dir.create(OutputPath, recursive = TRUE, showWarnings = FALSE)
-
-  if (!is.null(TemplatePath) && nzchar(TemplatePath)) {
-
-    TemplatePath <- normalizePath(TemplatePath, winslash = "/", mustWork = FALSE)
-
-  } else {
-
-    TemplatePath <- system.file(
-      "r-markdowns",
-      RmdFile,
-      package = Package
-    )
-
-    # Development fallback before package installation.
-    if (!nzchar(TemplatePath) || !file.exists(TemplatePath)) {
-      TemplatePath <- file.path(
-        getwd(),
-        "inst",
-        "r-markdowns",
-        RmdFile
-      )
-      TemplatePath <- normalizePath(TemplatePath, winslash = "/", mustWork = FALSE)
-    }
-
-    # Working-directory fallback for ad hoc testing.
-    if (!file.exists(TemplatePath)) {
-      TemplatePath <- file.path(getwd(), RmdFile)
-      TemplatePath <- normalizePath(TemplatePath, winslash = "/", mustWork = FALSE)
-    }
-  }
-
-  if (!file.exists(TemplatePath)) {
-    stop(
-      paste0(
-        "RMarkdown template not found. Expected one of:\n",
-        "1. ", file.path("inst", "r-markdowns", RmdFile), "\n",
-        "2. system.file('r-markdowns', '", RmdFile, "', package = '", Package, "')\n",
-        "3. Explicit `TemplatePath`."
-      ),
-      call. = FALSE
-    )
-  }
-
-  if (is.null(Envir)) {
-    Envir <- new.env(parent = .GlobalEnv)
-  }
-
-  # Expose both names because the Rmd supports either lookup pattern.
-  assign("artifacts", artifacts, envir = Envir)
-  assign("ModelInsightsArtifacts", artifacts, envir = Envir)
-
-  RenderedFile <- rmarkdown::render(
-    input = TemplatePath,
-    output_file = OutputFile,
-    output_dir = OutputPath,
-    params = list(
-      artifacts = artifacts
-    ),
-    envir = Envir,
-    quiet = Quiet,
-    clean = Clean,
-    output_options = list(
-      self_contained = isTRUE(SelfContained)
-    )
+  opts <- aq_report_render_options(
+    dots = list(...),
+    OutputPath = OutputPath,
+    OutputFile = OutputFile,
+    Title = Title,
+    Subtitle = Subtitle,
+    Theme = Theme,
+    Open = Open,
+    Quiet = Quiet,
+    default_output_file = "Regression_ModelInsights_Report.html",
+    default_rmd_file = "Regression_ModelInsights_Artifact_Renderer.Rmd"
   )
 
-  RenderedFile <- normalizePath(RenderedFile, winslash = "/", mustWork = FALSE)
+  if (is.null(artifact_result)) {
+    if (is.null(data) && is.null(opts$generator_args$TestData) && is.null(opts$generator_args$ModelObject)) {
+      stop("Supply `artifact_result`, or supply `data`/`TestData` plus generator arguments.", call. = FALSE)
+    }
+    if (!is.null(data) && is.null(opts$generator_args$TestData)) {
+      opts$generator_args$TestData <- data
+    }
+    artifact_result <- do.call(generate_regression_model_insights_artifacts, opts$generator_args)
+  }
+  aq_report_validate_artifact_result(artifact_result, "generate_regression_model_insights_artifacts")
 
-  invisible(RenderedFile)
+  aq_report_render(
+    artifact_result = artifact_result,
+    opts = opts,
+    template_params = list(
+      artifacts = artifact_result,
+      Theme = opts$Theme
+    ),
+    env_names = "ModelInsightsArtifacts"
+  )
 }
 
 # ============================================================
@@ -631,146 +596,75 @@ RegressionModelInsightsReport <- function(
 
 #' Render Binary Classification Model Insights Report
 #'
-#' Takes a precomputed binary classification model-insights artifact object, or
-#' generates one from scored data, and renders the artifact-based standalone
-#' HTML report.
+#' Renders binary classification model-insights artifacts. If `artifact_result`
+#' is not supplied, this function calls
+#' `generate_binary_classification_model_insights_artifacts(data = data, ...)`
+#' as a convenience wrapper. Analytical arguments belong to the generator and
+#' pass through `...`.
 #'
-#' @param artifacts Artifact object returned by
-#'   `generate_binary_classification_model_insights_artifacts()`. If NULL,
-#'   scored `data` and target/prediction columns are passed to the generator.
-#' @param data Optional scored/model-output data used when `artifacts` is NULL.
-#' @param target_col,prediction_col,predicted_class_col Column names passed to
+#' @param artifact_result Optional result returned by
 #'   `generate_binary_classification_model_insights_artifacts()`.
-#' @param positive_class Positive target class.
-#' @param feature_cols Optional feature columns used for feature diagnostics.
-#' @param model_name,data_name Optional labels stored in report metadata.
-#' @param DateVar Optional date column used for time diagnostics.
-#' @param date_aggregation Time aggregation for `DateVar`.
-#' @param ByVars Optional segment columns used for segment diagnostics.
-#' @param threshold Default operating threshold.
-#' @param optimize_metric Threshold optimization metric.
-#' @param OutputPath Directory where the rendered HTML report should be written.
-#' @param OutputFile Output HTML filename.
-#' @param RmdFile RMarkdown filename located in `inst/r-markdowns`.
-#' @param Package Package name used to locate installed RMarkdown files.
-#' @param TemplatePath Optional explicit path to the RMarkdown file. If supplied,
-#'   this takes precedence over the package/system.file lookup.
+#' @param data Optional scored/model-output data used only when
+#'   `artifact_result` is NULL.
+#' @param OutputPath Directory where the rendered report should be written.
+#' @param OutputFile Optional output HTML filename.
+#' @param Title Optional report title. Reserved for templates that support it.
+#' @param Subtitle Optional report subtitle. Reserved for templates that support
+#'   it.
+#' @param Theme Report theme.
+#' @param Open If TRUE, open the rendered report.
 #' @param Quiet Passed to `rmarkdown::render()`.
-#' @param Clean Passed to `rmarkdown::render()`.
-#' @param Envir Optional render environment. If NULL, a clean child environment
-#'   of `.GlobalEnv` is created.
-#' @param SelfContained Passed to `rmarkdown::render()` through output_options.
-#' @param ... Additional arguments passed to
+#' @param ... Analytical arguments passed to
 #'   `generate_binary_classification_model_insights_artifacts()` when
-#'   `artifacts` is NULL.
+#'   `artifact_result` is NULL, plus optional render controls `SelfContained`,
+#'   `RmdFile`, `Package`, `TemplatePath`, `Clean`, and `Envir`.
 #'
 #' @return Invisibly returns the rendered report path.
 #'
 #' @family Reports
 #' @export
 BinaryClassificationModelInsightsReport <- function(
-  artifacts = NULL,
+  artifact_result = NULL,
   data = NULL,
-  target_col = NULL,
-  prediction_col = NULL,
-  predicted_class_col = NULL,
-  positive_class = NULL,
-  feature_cols = NULL,
-  model_name = NULL,
-  data_name = NULL,
-  DateVar = NULL,
-  date_aggregation = "month",
-  ByVars = character(),
-  threshold = 0.5,
-  optimize_metric = "Utility",
   OutputPath = getwd(),
-  OutputFile = "Binary_Classification_ModelInsights_Report.html",
-  RmdFile = "Binary_Classification_ModelInsights_Artifact_Renderer.Rmd",
-  Package = "AutoQuant",
-  TemplatePath = NULL,
-  Quiet = FALSE,
-  Clean = TRUE,
-  Envir = NULL,
-  SelfContained = TRUE,
+  OutputFile = NULL,
+  Title = NULL,
+  Subtitle = NULL,
+  Theme = "dark",
+  Open = FALSE,
+  Quiet = TRUE,
   ...
 ) {
-  if (is.null(artifacts)) {
-    if (is.null(data)) {
-      stop("Supply `artifacts`, or supply scored `data` plus target/prediction columns.", call. = FALSE)
-    }
-    artifacts <- generate_binary_classification_model_insights_artifacts(
-      data = data,
-      target_col = target_col,
-      prediction_col = prediction_col,
-      predicted_class_col = predicted_class_col,
-      positive_class = positive_class,
-      feature_cols = feature_cols,
-      model_name = model_name,
-      data_name = data_name,
-      DateVar = DateVar,
-      date_aggregation = date_aggregation,
-      ByVars = ByVars,
-      Threshold = threshold,
-      OptimizeMetric = optimize_metric,
-      ...
-    )
-  }
-  if (!is.list(artifacts) || is.null(artifacts$artifacts) || is.null(artifacts$metadata)) {
-    stop("`artifacts` must be an object returned by generate_binary_classification_model_insights_artifacts().", call. = FALSE)
-  }
-  for (pkg in c("rmarkdown", "data.table", "htmltools", "reactable", "AutoPlots")) {
-    if (!requireNamespace(pkg, quietly = TRUE)) {
-      stop(paste0("Package '", pkg, "' is required."), call. = FALSE)
-    }
-  }
-
-  OutputPath <- normalizePath(OutputPath, winslash = "/", mustWork = FALSE)
-  dir.create(OutputPath, recursive = TRUE, showWarnings = FALSE)
-
-  if (!is.null(TemplatePath) && nzchar(TemplatePath)) {
-    TemplatePath <- normalizePath(TemplatePath, winslash = "/", mustWork = FALSE)
-  } else {
-    TemplatePath <- system.file("r-markdowns", RmdFile, package = Package)
-    if (!nzchar(TemplatePath) || !file.exists(TemplatePath)) {
-      TemplatePath <- normalizePath(file.path(getwd(), "inst", "r-markdowns", RmdFile), winslash = "/", mustWork = FALSE)
-    }
-    if (!file.exists(TemplatePath)) {
-      TemplatePath <- normalizePath(file.path(getwd(), RmdFile), winslash = "/", mustWork = FALSE)
-    }
-  }
-
-  if (!file.exists(TemplatePath)) {
-    stop(
-      paste0(
-        "RMarkdown template not found. Expected one of:\n",
-        "1. ", file.path("inst", "r-markdowns", RmdFile), "\n",
-        "2. system.file('r-markdowns', '", RmdFile, "', package = '", Package, "')\n",
-        "3. Explicit `TemplatePath`."
-      ),
-      call. = FALSE
-    )
-  }
-
-  if (is.null(Envir)) {
-    Envir <- new.env(parent = .GlobalEnv)
-  }
-
-  assign("artifacts", artifacts, envir = Envir)
-  assign("BinaryClassificationModelInsightsArtifacts", artifacts, envir = Envir)
-
-  RenderedFile <- rmarkdown::render(
-    input = TemplatePath,
-    output_file = OutputFile,
-    output_dir = OutputPath,
-    params = list(artifacts = artifacts),
-    envir = Envir,
-    quiet = Quiet,
-    clean = Clean,
-    output_options = list(self_contained = isTRUE(SelfContained))
+  opts <- aq_report_render_options(
+    dots = list(...),
+    OutputPath = OutputPath,
+    OutputFile = OutputFile,
+    Title = Title,
+    Subtitle = Subtitle,
+    Theme = Theme,
+    Open = Open,
+    Quiet = Quiet,
+    default_output_file = "Binary_Classification_ModelInsights_Report.html",
+    default_rmd_file = "Binary_Classification_ModelInsights_Artifact_Renderer.Rmd"
   )
 
-  RenderedFile <- normalizePath(RenderedFile, winslash = "/", mustWork = FALSE)
-  invisible(RenderedFile)
+  if (is.null(artifact_result)) {
+    if (is.null(data)) {
+      stop("`data` must be supplied when `artifact_result` is NULL.", call. = FALSE)
+    }
+    artifact_result <- do.call(
+      generate_binary_classification_model_insights_artifacts,
+      c(list(data = data), opts$generator_args)
+    )
+  }
+  aq_report_validate_artifact_result(artifact_result, "generate_binary_classification_model_insights_artifacts")
+
+  aq_report_render(
+    artifact_result = artifact_result,
+    opts = opts,
+    template_params = list(artifacts = artifact_result),
+    env_names = "BinaryClassificationModelInsightsArtifacts"
+  )
 }
 
 # ============================================================
@@ -967,8 +861,8 @@ aq_validate_shap_report_artifact_result <- function(artifact_result, generator_n
 #' @family Reports
 #' @export
 RegressionShapAnalysisReport <- function(
-  data = NULL,
   artifact_result = NULL,
+  data = NULL,
   OutputPath = getwd(),
   OutputFile = NULL,
   Title = "Regression SHAP Analysis Report",
@@ -1107,8 +1001,8 @@ RegressionShapAnalysisReport <- function(
 #' @family Reports
 #' @export
 BinaryClassificationShapAnalysisReport <- function(
-  data = NULL,
   artifact_result = NULL,
+  data = NULL,
   OutputPath = getwd(),
   OutputFile = NULL,
   Title = "Binary Classification SHAP Analysis Report",
@@ -1303,7 +1197,7 @@ qa_shap_report_wrapper_contracts <- function() {
 
   reg_formals <- names(formals(RegressionShapAnalysisReport))
   bin_formals <- names(formals(BinaryClassificationShapAnalysisReport))
-  expected_formals <- c("data", "artifact_result", "OutputPath", "OutputFile", "Title", "Subtitle", "Theme", "Open", "Quiet", "...")
+  expected_formals <- c("artifact_result", "data", "OutputPath", "OutputFile", "Title", "Subtitle", "Theme", "Open", "Quiet", "...")
   legacy_opts <- aq_shap_report_options(
     dots = list(output_dir = tempdir(), output_file = "legacy", title = "Legacy", quiet = FALSE, target_col = "Target"),
     OutputPath = getwd(),
@@ -1367,4 +1261,194 @@ qa_shap_report_wrapper_contracts <- function() {
   )
 
   checks
+}
+
+#' QA Modern Report API Contracts
+#'
+#' Validates the generator-first/report-renderer contract for modern AutoQuant
+#' report wrappers. Generators own analytical parameters; report functions own
+#' rendering parameters and accept analytical arguments only through `...`.
+#'
+#' @return A data.table of QA checks.
+#'
+#' @family QA
+#' @export
+qa_report_api_contracts <- function() {
+  if (!requireNamespace("data.table", quietly = TRUE)) {
+    stop("Package 'data.table' is required for qa_report_api_contracts().", call. = FALSE)
+  }
+
+  expected_formals <- c("artifact_result", "data", "OutputPath", "OutputFile", "Title", "Subtitle", "Theme", "Open", "Quiet", "...")
+  report_functions <- list(
+    EDAReport = EDAReport,
+    TargetAnalysisReport = TargetAnalysisReport,
+    RegressionModelInsightsReport = RegressionModelInsightsReport,
+    BinaryClassificationModelInsightsReport = BinaryClassificationModelInsightsReport,
+    RegressionShapAnalysisReport = RegressionShapAnalysisReport,
+    BinaryClassificationShapAnalysisReport = BinaryClassificationShapAnalysisReport
+  )
+  signature_checks <- data.table::rbindlist(lapply(names(report_functions), function(fn_name) {
+    current <- names(formals(report_functions[[fn_name]]))
+    data.table::data.table(
+      check = paste0(fn_name, "_signature"),
+      status = if (identical(current, expected_formals)) "success" else "error",
+      message = paste(current, collapse = ", ")
+    )
+  }))
+
+  set.seed(101)
+  n <- 80L
+  dt <- data.table::data.table(
+    Target = stats::rnorm(n),
+    Predict = stats::rnorm(n),
+    TargetBinary = sample(c("Yes", "No"), n, TRUE),
+    PredictedClass = sample(c("Yes", "No"), n, TRUE),
+    Prob = stats::runif(n),
+    Date = as.Date("2024-01-01") + sample(0:90, n, TRUE),
+    Segment = sample(c("A", "B"), n, TRUE),
+    FeatureA = stats::runif(n),
+    FeatureB = stats::rnorm(n)
+  )
+  dt[, Shap_FeatureA := 0.15 * FeatureA + stats::rnorm(.N, 0, 0.01)]
+  dt[, Shap_FeatureB := 0.05 * FeatureB + stats::rnorm(.N, 0, 0.01)]
+
+  eda_artifacts <- generate_eda_artifacts(
+    data = dt,
+    DataName = "Report API QA",
+    UnivariateVars = c("FeatureA", "FeatureB", "Segment"),
+    CorrVars = c("FeatureA", "FeatureB", "Predict"),
+    TrendVars = NULL,
+    Theme = "dark"
+  )
+  target_artifacts <- generate_model_assessment_artifacts(
+    data = dt,
+    DataName = "Report API QA",
+    TargetVar = "TargetBinary",
+    TrendDateVar = NULL,
+    TrendGroupVar = NULL,
+    Theme = "dark",
+    RunGAMDiagnostics = FALSE
+  )
+  reg_mi_artifacts <- generate_regression_model_insights_artifacts(
+    TestData = dt,
+    TargetColumnName = "Target",
+    PredictionColumnName = "Predict",
+    FeatureColumnNames = c("FeatureA", "FeatureB", "Segment"),
+    GenerateCalibrationPDP = FALSE,
+    GenerateUpliftPDP = FALSE,
+    GenerateStratifiedEffects = FALSE,
+    DetectSimpsonsParadox = FALSE,
+    Theme = "dark"
+  )
+  bin_mi_artifacts <- generate_binary_classification_model_insights_artifacts(
+    data = dt,
+    target_col = "TargetBinary",
+    prediction_col = "Prob",
+    predicted_class_col = "PredictedClass",
+    positive_class = "Yes",
+    feature_cols = c("FeatureA", "FeatureB", "Segment"),
+    Theme = "dark"
+  )
+  reg_shap_artifacts <- generate_regression_shap_analysis_artifacts(
+    data = dt,
+    target_col = "Target",
+    prediction_col = "Predict",
+    selected_features = c("FeatureA", "FeatureB"),
+    top_n = 2L,
+    include_plots = FALSE
+  )
+  bin_shap_artifacts <- generate_binary_classification_shap_analysis_artifacts(
+    data = dt,
+    target_col = "TargetBinary",
+    prediction_col = "Prob",
+    predicted_class_col = "PredictedClass",
+    positive_class = "Yes",
+    prediction_scale = "probability",
+    selected_features = c("FeatureA", "FeatureB"),
+    top_n = 2L,
+    include_plots = FALSE
+  )
+
+  opts <- aq_report_render_options(
+    dots = list(output_file = "legacy", title = "Legacy", target_col = "Target"),
+    OutputPath = getwd(),
+    OutputFile = NULL,
+    Title = "Default",
+    Subtitle = NULL,
+    Theme = "dark",
+    Open = FALSE,
+    Quiet = TRUE,
+    default_output_file = "default.html",
+    default_rmd_file = "EDA_Report.Rmd"
+  )
+  template_files <- c(
+    aq_report_template_path("EDA_Report.Rmd", "AutoQuant", NULL),
+    aq_report_template_path("Target_Analysis_Report.Rmd", "AutoQuant", NULL),
+    aq_report_template_path("Regression_ModelInsights_Artifact_Renderer.Rmd", "AutoQuant", NULL),
+    aq_report_template_path("Binary_Classification_ModelInsights_Artifact_Renderer.Rmd", "AutoQuant", NULL),
+    aq_report_template_path("Regression_SHAP_Analysis_Report.Rmd", "AutoQuant", NULL),
+    aq_report_template_path("Binary_Classification_SHAP_Analysis_Report.Rmd", "AutoQuant", NULL)
+  )
+
+  render_available <- requireNamespace("rmarkdown", quietly = TRUE) &&
+    requireNamespace("prettydoc", quietly = TRUE) &&
+    rmarkdown::pandoc_available()
+  render_status <- "success"
+  render_message <- "Pandoc/prettydoc unavailable; validated wrapper signatures, generators, and templates only."
+  if (render_available) {
+    render_dir <- file.path(tempdir(), paste0("autoquant_report_api_qa_", as.integer(Sys.time())))
+    dir.create(render_dir, recursive = TRUE, showWarnings = FALSE)
+    render_attempt <- tryCatch({
+      EDAReport(
+        artifact_result = eda_artifacts,
+        OutputPath = render_dir,
+        OutputFile = "eda_report_api_qa.html",
+        Quiet = TRUE,
+        SelfContained = FALSE
+      )
+    }, error = function(e) e)
+    render_status <- if (inherits(render_attempt, "error")) "error" else "success"
+    render_message <- if (inherits(render_attempt, "error")) conditionMessage(render_attempt) else as.character(render_attempt)
+  }
+
+  contract_checks <- data.table::data.table(
+    check = c(
+      "eda_generator_output",
+      "target_generator_output",
+      "regression_model_insights_generator_output",
+      "binary_model_insights_generator_output",
+      "regression_shap_generator_output",
+      "binary_shap_generator_output",
+      "render_aliases_removed_from_generator_args",
+      "analytical_args_pass_through",
+      "templates_found",
+      "artifact_result_render_path"
+    ),
+    status = c(
+      if (!is.null(eda_artifacts$tables) || !is.null(eda_artifacts$plots)) "success" else "error",
+      if (!is.null(target_artifacts$tables) || !is.null(target_artifacts$plots)) "success" else "error",
+      if (!is.null(reg_mi_artifacts$tables) || !is.null(reg_mi_artifacts$plots)) "success" else "error",
+      if (!is.null(bin_mi_artifacts$artifacts)) "success" else "error",
+      if (!is.null(reg_shap_artifacts$artifacts)) "success" else "error",
+      if (!is.null(bin_shap_artifacts$artifacts)) "success" else "error",
+      if (!any(c("output_file", "title") %in% names(opts$generator_args))) "success" else "error",
+      if (identical(opts$generator_args$target_col, "Target")) "success" else "error",
+      if (all(file.exists(template_files))) "success" else "error",
+      render_status
+    ),
+    message = c(
+      paste0("EDA tables: ", length(eda_artifacts$tables), "; plots: ", length(eda_artifacts$plots)),
+      paste0("Target/readiness tables: ", length(target_artifacts$tables), "; plots: ", length(target_artifacts$plots)),
+      paste0("Regression MI tables: ", length(reg_mi_artifacts$tables)),
+      paste0("Binary MI artifacts: ", length(bin_mi_artifacts$artifacts)),
+      paste0("Regression SHAP artifacts: ", length(reg_shap_artifacts$artifacts)),
+      paste0("Binary SHAP artifacts: ", length(bin_shap_artifacts$artifacts)),
+      "Render aliases are consumed by report options.",
+      "Generator arguments remain in `...`.",
+      paste(template_files, collapse = " | "),
+      render_message
+    )
+  )
+
+  data.table::rbindlist(list(signature_checks, contract_checks), use.names = TRUE, fill = TRUE)
 }

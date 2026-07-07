@@ -15,7 +15,9 @@ unordered pair keys and do not emit mirrored duplicate artifacts.
 }
 \seealso{
 Other QA: 
+\code{\link{qa_artifact_schema_framework}()},
 \code{\link{qa_pairwise_report_artifact_uniqueness}()},
+\code{\link{qa_report_api_contracts}()},
 \code{\link{qa_shap_report_wrapper_contracts}()},
 \code{\link{qa_unordered_pair_key_helpers}()}
 }

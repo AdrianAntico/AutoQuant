@@ -5,48 +5,54 @@
 \title{Render Regression Model Insights Report}
 \usage{
 RegressionModelInsightsReport(
-  artifacts,
+  artifact_result = NULL,
+  data = NULL,
   OutputPath = getwd(),
-  OutputFile = "Regression_ModelInsights_Report.html",
-  RmdFile = "Regression_ModelInsights_Artifact_Renderer.Rmd",
-  Package = "AutoQuant",
-  TemplatePath = NULL,
-  Quiet = FALSE,
-  Clean = TRUE,
-  Envir = NULL,
-  SelfContained = TRUE
+  OutputFile = NULL,
+  Title = NULL,
+  Subtitle = NULL,
+  Theme = "dark",
+  Open = FALSE,
+  Quiet = TRUE,
+  ...
 )
 }
 \arguments{
-\item{artifacts}{Artifact object returned by
+\item{artifact_result}{Optional result returned by
 `generate_regression_model_insights_artifacts()`.}
 
-\item{OutputPath}{Directory where the rendered HTML report should be written.}
+\item{data}{Optional scored/test data used only when `artifact_result` is
+NULL. It is passed to the generator as `TestData` unless `TestData` is
+explicitly supplied through `...`.}
 
-\item{OutputFile}{Output HTML filename.}
+\item{OutputPath}{Directory where the rendered report should be written.}
 
-\item{RmdFile}{RMarkdown filename located in `inst/r-markdowns`.}
+\item{OutputFile}{Optional output HTML filename.}
 
-\item{Package}{Package name used to locate installed RMarkdown files.}
+\item{Title}{Optional report title. Reserved for templates that support it.}
 
-\item{TemplatePath}{Optional explicit path to the RMarkdown file. If supplied,
-this takes precedence over the package/system.file lookup.}
+\item{Subtitle}{Optional report subtitle. Reserved for templates that support
+it.}
+
+\item{Theme}{Report theme.}
+
+\item{Open}{If TRUE, open the rendered report.}
 
 \item{Quiet}{Passed to `rmarkdown::render()`.}
 
-\item{Clean}{Passed to `rmarkdown::render()`.}
-
-\item{Envir}{Optional render environment. If NULL, a clean child environment
-of `.GlobalEnv` is created.}
-
-\item{SelfContained}{Passed to `rmarkdown::render()` through output_options.}
+\item{...}{Analytical arguments passed to
+`generate_regression_model_insights_artifacts()` when `artifact_result` is
+NULL, plus optional render controls `SelfContained`, `RmdFile`, `Package`,
+`TemplatePath`, `Clean`, and `Envir`.}
 }
 \value{
 Invisibly returns the rendered report path.
 }
 \description{
-Takes a precomputed regression model-insights artifact object and renders
-the artifact-based RMarkdown report.
+Renders regression model-insights artifacts. If `artifact_result` is not
+supplied, this function calls
+`generate_regression_model_insights_artifacts()` as a convenience wrapper.
+Analytical arguments belong to the generator and pass through `...`.
 }
 \seealso{
 Other Reports: 
