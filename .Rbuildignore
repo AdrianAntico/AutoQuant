@@ -2,6 +2,7 @@
 ^renv\.lock$
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^\.git$
 ^_pkgdown\.yml$
 ^docs$
 ^pkgdown$

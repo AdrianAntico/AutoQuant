@@ -15,6 +15,7 @@ binary_shap_sections <- function() {
     "Interaction Importance",
     "Single Feature Effects",
     "SHAP Dependence",
+    "Marginal Value / Effect Curves",
     "Segment Effects",
     "Time Effects",
     "Local Explanations",
@@ -311,6 +312,13 @@ aq_create_binary_shap_plot_artifact <- function(
 #' @param max_segment_levels Maximum segment levels to keep per ByVar.
 #' @param max_byvars Maximum ByVars to use.
 #' @param include_dependence Include dependence artifacts.
+#' @param include_effect_curves Include optional AutoNLS marginal value/effect curve artifacts.
+#' @param effect_curve_backend Effect-curve backend. Use `"none"` for the default no-dependency behavior or `"autonls"` to call AutoNLS when installed.
+#' @param effect_curve_models AutoNLS model set or model vector. `"stable"` uses stable AutoNLS models.
+#' @param effect_curve_sample_size Maximum rows sampled per numeric SHAP dependence fit.
+#' @param effect_curve_max_features Maximum top numeric features eligible for AutoNLS effect curves.
+#' @param effect_curve_validation_fraction AutoNLS validation holdout fraction.
+#' @param effect_curve_theme Optional theme passed through to AutoNLS.
 #' @param include_segments Include segment effect artifacts.
 #' @param include_time Include time effect artifacts.
 #' @param include_local Include local explanation artifacts.
@@ -368,6 +376,13 @@ generate_binary_classification_shap_analysis_artifacts <- function(
   max_segment_levels = 20L,
   max_byvars = 3L,
   include_dependence = TRUE,
+  include_effect_curves = TRUE,
+  effect_curve_backend = c("none", "autonls"),
+  effect_curve_models = "stable",
+  effect_curve_sample_size = 50000L,
+  effect_curve_max_features = 20L,
+  effect_curve_validation_fraction = 0.20,
+  effect_curve_theme = auto_plots_theme,
   include_segments = TRUE,
   include_time = TRUE,
   include_local = FALSE,
@@ -398,6 +413,7 @@ generate_binary_classification_shap_analysis_artifacts <- function(
   warnings <- character()
   generated_at <- Sys.time()
   extra_args <- list(...)
+  autonls_runner <- extra_args$autonls_runner
   if (length(intersect(names(extra_args), c("model", "predict_function", "prediction_function", "background_n", "sample_n", "nsim", "shap_backend")))) {
     warnings <- regression_shap_warn(
       warnings,
@@ -435,7 +451,9 @@ generate_binary_classification_shap_analysis_artifacts <- function(
     date_aggregation <- "month"
   }
 
-  for (limit in c("top_n", "max_dependence_rows", "max_segment_levels", "max_byvars", "max_interaction_pairs", "max_interaction_surface_plots", "numeric_interaction_bins", "max_interaction_levels", "min_interaction_cell_n", "max_feature_effect_plots", "max_dependence_plots", "max_segment_plots", "max_time_plots", "max_local_plots")) {
+  effect_curve_backend <- match.arg(as.character(effect_curve_backend)[1L], c("none", "autonls"))
+
+  for (limit in c("top_n", "max_dependence_rows", "max_segment_levels", "max_byvars", "max_interaction_pairs", "max_interaction_surface_plots", "numeric_interaction_bins", "max_interaction_levels", "min_interaction_cell_n", "max_feature_effect_plots", "max_dependence_plots", "max_segment_plots", "max_time_plots", "max_local_plots", "effect_curve_sample_size", "effect_curve_max_features")) {
     checked <- regression_shap_positive_int(
       get(limit),
       default = switch(
@@ -453,7 +471,9 @@ generate_binary_classification_shap_analysis_artifacts <- function(
         max_dependence_plots = 5L,
         max_segment_plots = 5L,
         max_time_plots = 5L,
-        max_local_plots = 5L
+        max_local_plots = 5L,
+        effect_curve_sample_size = 50000L,
+        effect_curve_max_features = 20L
       ),
       name = limit,
       warnings = warnings
@@ -461,6 +481,12 @@ generate_binary_classification_shap_analysis_artifacts <- function(
     assign(limit, checked$value)
     warnings <- checked$warnings
   }
+  effect_curve_validation_fraction <- suppressWarnings(as.numeric(effect_curve_validation_fraction[1L]))
+  if (is.na(effect_curve_validation_fraction)) {
+    warnings <- regression_shap_warn(warnings, "effect_curve_validation_fraction must be numeric; using 0.20.")
+    effect_curve_validation_fraction <- 0.20
+  }
+  effect_curve_validation_fraction <- max(0, min(0.5, effect_curve_validation_fraction))
   if (is.null(plot_top_n)) {
     plot_top_n <- top_n
   } else {
@@ -603,6 +629,12 @@ generate_binary_classification_shap_analysis_artifacts <- function(
     selected_features = selected_features,
     top_n = top_n,
     max_dependence_rows = max_dependence_rows,
+    include_effect_curves = include_effect_curves,
+    effect_curve_backend = effect_curve_backend,
+    effect_curve_models = effect_curve_models,
+    effect_curve_sample_size = effect_curve_sample_size,
+    effect_curve_max_features = effect_curve_max_features,
+    effect_curve_validation_fraction = effect_curve_validation_fraction,
     max_segment_levels = max_segment_levels,
     max_interaction_pairs = max_interaction_pairs,
     max_interaction_surface_plots = max_interaction_surface_plots,
@@ -641,7 +673,10 @@ generate_binary_classification_shap_analysis_artifacts <- function(
       "target_col", "prediction_col", "predicted_class_col",
       "positive_class", "prediction_scale", "threshold",
       "DateVar", "date_aggregation", "ByVars", "id_cols",
-      "selected_features", "top_n", "warnings_count"
+      "selected_features", "top_n",
+      "include_effect_curves", "effect_curve_backend", "effect_curve_models",
+      "effect_curve_sample_size", "effect_curve_max_features", "effect_curve_validation_fraction",
+      "warnings_count"
     ),
     value = c(
       nrow(data), ncol(data), nrow(column_map),
@@ -659,6 +694,12 @@ generate_binary_classification_shap_analysis_artifacts <- function(
       paste(id_cols, collapse = ", "),
       paste(selected_features, collapse = ", "),
       top_n,
+      include_effect_curves,
+      effect_curve_backend,
+      paste(effect_curve_models, collapse = ", "),
+      effect_curve_sample_size,
+      effect_curve_max_features,
+      effect_curve_validation_fraction,
       length(warnings)
     )
   )
@@ -856,6 +897,85 @@ generate_binary_classification_shap_analysis_artifacts <- function(
         if (!is.null(plot_result$object)) {
           plot_result$object <- aq_style_shap_plot(plot_result$object, horizontal = !source_is_numeric, x_axis_title = feature_name)
           artifacts <- binary_shap_add_artifact(artifacts, aq_create_binary_shap_plot_artifact(paste0("shap_dependence_", regression_shap_slug(feature_name), "_plot"), paste("Binary SHAP Dependence:", feature_name), "SHAP Dependence", if (source_is_numeric) "scatter" else "box", "shap_dependence", plot_result$object, c(artifact_metadata("shap_dependence", "SHAP Dependence", 13L), list(feature = feature_name, x_axis_source_column = feature_name, x_axis = "feature_value", group_var = NULL, ByVars_context_available = ByVars))))
+        } else {
+          warnings <- regression_shap_warn(warnings, plot_result$warning)
+        }
+      }
+    }
+  }
+
+  effect_curves <- aq_generate_shap_effect_curve_artifacts(
+    data = data,
+    column_map = column_map,
+    global_importance = global_importance,
+    selected_features = selected_features,
+    include_effect_curves = include_effect_curves,
+    effect_curve_backend = effect_curve_backend,
+    effect_curve_models = effect_curve_models,
+    effect_curve_sample_size = effect_curve_sample_size,
+    effect_curve_max_features = effect_curve_max_features,
+    effect_curve_validation_fraction = effect_curve_validation_fraction,
+    effect_curve_theme = effect_curve_theme,
+    autonls_runner = autonls_runner
+  )
+  warnings <- unique(c(warnings, effect_curves$warnings))
+  if (nrow(effect_curves$values) || nrow(effect_curves$diagnostics) || nrow(effect_curves$summary)) {
+    effect_meta <- c(artifact_metadata("shap_effect_curves", "Marginal Value / Effect Curves", 14L), list(
+      backend = "AutoNLS",
+      optional_dependency = TRUE,
+      predictions_original_scale = if (nrow(effect_curves$summary)) all(effect_curves$summary$predictions_original_scale == TRUE, na.rm = TRUE) else TRUE
+    ))
+    artifacts <- binary_shap_add_artifact(artifacts, binary_shap_artifact(
+      "shap_effect_curve_values",
+      "Binary SHAP AutoNLS Effect Curve Values",
+      "table",
+      "Marginal Value / Effect Curves",
+      object = aq_smart_round_dt(effect_curves$values),
+      metadata = effect_meta
+    ))
+    artifacts <- binary_shap_add_artifact(artifacts, binary_shap_artifact(
+      "shap_effect_curve_diagnostics",
+      "Binary SHAP AutoNLS Effect Curve Diagnostics",
+      "table",
+      "Marginal Value / Effect Curves",
+      object = aq_smart_round_dt(effect_curves$diagnostics),
+      metadata = effect_meta
+    ))
+    artifacts <- binary_shap_add_artifact(artifacts, binary_shap_artifact(
+      "shap_effect_curve_summary",
+      "Binary SHAP AutoNLS Effect Curve Summary",
+      "table",
+      "Marginal Value / Effect Curves",
+      object = aq_smart_round_dt(effect_curves$summary),
+      metadata = effect_meta
+    ))
+    if (isTRUE(include_plots) && nrow(effect_curves$values)) {
+      effect_plot_features <- head(unique(effect_curves$values$feature), max_dependence_plots)
+      for (feature_name in effect_plot_features) {
+        curve_plot_data <- effect_curves$values[feature == feature_name]
+        plot_result <- aq_safe_create_shap_plot(
+          "line",
+          aq_create_shap_line_plot(
+            dt = curve_plot_data,
+            XVar = "feature_value",
+            YVar = "shap_curve_value",
+            title = paste("AutoNLS Binary SHAP Effect Curve:", feature_name),
+            auto_plots_theme = effect_curve_theme,
+            plot_width = plot_width,
+            plot_height = plot_height
+          )
+        )
+        if (!is.null(plot_result$object)) {
+          plot_result$object <- aq_style_shap_plot(plot_result$object, x_axis_title = feature_name, y_axis_title = "SHAP effect")
+          artifacts <- binary_shap_add_artifact(artifacts, aq_create_binary_shap_plot_artifact(
+            paste0("shap_effect_curve_", regression_shap_slug(feature_name), "_plot"),
+            paste("AutoNLS Binary SHAP Effect Curve:", feature_name),
+            "Marginal Value / Effect Curves",
+            "line",
+            "shap_effect_curves",
+            plot_result$object,
+            c(effect_meta, list(feature = feature_name, interval_columns = all(c("lower", "upper") %in% names(curve_plot_data))))
+          ))
         } else {
           warnings <- regression_shap_warn(warnings, plot_result$warning)
         }
@@ -1070,6 +1190,14 @@ generate_binary_classification_shap_analysis_artifacts <- function(
       ByVars = ByVars
     ))
     artifacts <- binary_shap_add_artifact(artifacts, binary_shap_artifact("interaction_methodology", "Binary SHAP Interaction Diagnostics Methodology", "text", "Interaction Importance", content = interaction_text, metadata = interaction_meta))
+    artifacts <- binary_shap_add_artifact(artifacts, binary_shap_artifact(
+      "interaction_diagnostics",
+      "Binary SHAP Interaction Diagnostics",
+      "table",
+      "Interaction Importance",
+      object = interactions$diagnostics,
+      metadata = interaction_meta
+    ))
     if (nrow(interactions$scores)) {
       artifacts <- binary_shap_add_artifact(artifacts, binary_shap_artifact("candidate_interaction_ranking_table", "Binary Candidate Interaction Ranking", "table", "Interaction Importance", object = interactions$scores, metadata = interaction_meta))
       if (nrow(interactions$surfaces)) {
@@ -1128,8 +1256,33 @@ generate_binary_classification_shap_analysis_artifacts <- function(
         }
       }
     } else {
-      warnings <- regression_shap_warn(warnings, "Interaction diagnostics skipped because no valid candidate pairs were available.")
+      skip_reason <- if (nrow(interactions$diagnostics)) interactions$diagnostics$reason[[1L]] else "Interaction diagnostics skipped because no valid candidate pairs were available."
+      warnings <- regression_shap_warn(warnings, skip_reason)
     }
+  } else {
+    interaction_meta <- c(artifact_metadata("interaction_diagnostics", "Interaction Importance", 26L), list(
+      interaction_type = "binned_level_combination",
+      shap_source = "precomputed_columns",
+      exact_shap_interaction_values = FALSE,
+      interaction_requested = FALSE,
+      directional = FALSE
+    ))
+    artifacts <- binary_shap_add_artifact(artifacts, binary_shap_artifact(
+      "interaction_diagnostics",
+      "Binary SHAP Interaction Diagnostics",
+      "table",
+      "Interaction Importance",
+      object = aq_shap_interaction_diagnostic(
+        status = "skipped",
+        reason_code = "interaction_not_requested",
+        reason = "Interaction diagnostics were skipped because interaction analysis was not requested.",
+        severity = "info",
+        required_columns = c("shap_feature", "interaction_feature"),
+        available_columns = names(data),
+        recommendation = "Run SHAP without interactions."
+      ),
+      metadata = interaction_meta
+    ))
   }
 
   types <- vapply(artifacts, function(x) regression_shap_null_coalesce(regression_shap_null_coalesce(x$type, x$artifact_type), ""), character(1L))
@@ -1139,7 +1292,8 @@ generate_binary_classification_shap_analysis_artifacts <- function(
     table_count = sum(types == "table"),
     text_count = sum(types == "text"),
     warnings_count = length(warnings),
-    interaction_diagnostics_available = "candidate_interaction_ranking_table" %in% names(artifacts),
+    interaction_diagnostics_available = "interaction_diagnostics" %in% names(artifacts),
+    interaction_ranking_available = "candidate_interaction_ranking_table" %in% names(artifacts),
     interaction_pair_count = if ("candidate_interaction_ranking_table" %in% names(artifacts)) nrow(artifacts$candidate_interaction_ranking_table$object) else 0L,
     interaction_surface_count = if ("two_way_shap_surface_table" %in% names(artifacts)) length(unique(artifacts$two_way_shap_surface_table$object$pair_label)) else 0L,
     interaction_method = "binned_level_combination_shap_diagnostic",

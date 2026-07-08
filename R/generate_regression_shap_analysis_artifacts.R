@@ -25,6 +25,7 @@ regression_shap_sections <- function() {
     "Interaction Importance",
     "Single Feature Effects",
     "SHAP Dependence",
+    "Marginal Value / Effect Curves",
     "Segment Effects",
     "Time Effects",
     "Local Explanations",
@@ -626,17 +627,263 @@ aq_interaction_top_cell_label <- function(a, b, value) {
   paste(a[keep][[idx]], b[keep][[idx]], sep = " x ")
 }
 
+aq_empty_interaction_pairs <- function() {
+  data.table::data.table(
+    shap_feature = character(),
+    interaction_feature = character(),
+    interaction_pair_key = character(),
+    directional = logical()
+  )
+}
+
+#' QA SHAP Interaction Guards
+#'
+#' Verifies that optional SHAP interaction diagnostics are skipped with
+#' structured diagnostics instead of failing otherwise valid SHAP runs.
+#'
+#' @return A data.table of QA checks.
+#'
+#' @family QA
+#' @export
+qa_shap_interaction_guards <- function() {
+  set.seed(123)
+  n <- 80L
+  x1 <- seq_len(n)
+  x2 <- rep(seq_len(10L), length.out = n)
+  y <- 3 + 0.2 * x1 + 0.1 * x2
+  reg_data <- data.table::data.table(
+    y = y,
+    Predict = y + stats::rnorm(n, 0, 0.01),
+    Spend = x1,
+    Price = x2,
+    Shap_Spend = 0.2 * x1 + stats::rnorm(n, 0, 0.01),
+    Shap_Price = 0.1 * x2 + stats::rnorm(n, 0, 0.01)
+  )
+  bin_data <- data.table::copy(reg_data)
+  bin_data[, `:=`(
+    Target = ifelse(y > stats::median(y), "Yes", "No"),
+    Predict = as.numeric(stats::plogis(scale(y)[, 1L]))
+  )]
+
+  fake_autonls_runner <- function(data, feature_col, shap_col, models = "stable", validation_fraction = 0.2) {
+    grid <- seq(min(data[[feature_col]], na.rm = TRUE), max(data[[feature_col]], na.rm = TRUE), length.out = 5L)
+    list(
+      values = data.table::data.table(
+        feature = feature_col,
+        model = "fake",
+        feature_value = grid,
+        shap_curve_value = stats::approx(data[[feature_col]], data[[shap_col]], xout = grid, ties = mean)$y,
+        lower = NA_real_,
+        upper = NA_real_,
+        predictions_original_scale = TRUE
+      ),
+      diagnostics = data.table::data.table(
+        feature = feature_col,
+        status = "success",
+        reason = "",
+        backend = "autonls"
+      ),
+      summary = data.table::data.table(
+        feature = feature_col,
+        selected_model = "fake",
+        predictions_original_scale = TRUE
+      ),
+      warnings = character()
+    )
+  }
+
+  diag_reason <- function(result) {
+    result$artifacts$interaction_diagnostics$object$reason_code[[1L]]
+  }
+  has_artifact <- function(result, artifact_name) {
+    artifact_name %in% names(result$artifacts)
+  }
+  guarded <- function(expr) {
+    tryCatch(force(expr), error = function(e) e)
+  }
+
+  missing_a <- guarded(generate_regression_shap_analysis_artifacts(
+    reg_data,
+    target_col = "y",
+    prediction_col = "Predict",
+    interaction_pairs = data.table::data.table(feature_b = "Price"),
+    include_interactions = TRUE,
+    include_plots = FALSE
+  ))
+  missing_b <- guarded(generate_regression_shap_analysis_artifacts(
+    reg_data,
+    target_col = "y",
+    prediction_col = "Predict",
+    interaction_pairs = data.table::data.table(feature_a = "Spend"),
+    include_interactions = TRUE,
+    include_plots = FALSE
+  ))
+  missing_both <- guarded(generate_regression_shap_analysis_artifacts(
+    reg_data,
+    target_col = "y",
+    prediction_col = "Predict",
+    interaction_pairs = data.table::data.table(pair = "Spend x Price"),
+    include_interactions = TRUE,
+    include_plots = FALSE
+  ))
+  insufficient_rows <- guarded(generate_regression_shap_analysis_artifacts(
+    reg_data[1],
+    target_col = "y",
+    prediction_col = "Predict",
+    include_interactions = TRUE,
+    min_interaction_cell_n = 5L,
+    include_plots = FALSE
+  ))
+  insufficient_unique <- guarded(generate_regression_shap_analysis_artifacts(
+    data.table::copy(reg_data)[, Price := 1],
+    target_col = "y",
+    prediction_col = "Predict",
+    interaction_pairs = list(c("Spend", "Price")),
+    include_interactions = TRUE,
+    include_plots = FALSE
+  ))
+  interaction_disabled <- guarded(generate_regression_shap_analysis_artifacts(
+    reg_data,
+    target_col = "y",
+    prediction_col = "Predict",
+    include_interactions = FALSE,
+    include_plots = FALSE
+  ))
+  effect_curves_none <- guarded(generate_regression_shap_analysis_artifacts(
+    reg_data,
+    target_col = "y",
+    prediction_col = "Predict",
+    include_interactions = FALSE,
+    include_effect_curves = TRUE,
+    effect_curve_backend = "none",
+    include_plots = FALSE
+  ))
+  effect_curves_autonls <- guarded(generate_regression_shap_analysis_artifacts(
+    reg_data,
+    target_col = "y",
+    prediction_col = "Predict",
+    include_interactions = FALSE,
+    include_effect_curves = TRUE,
+    effect_curve_backend = "autonls",
+    effect_curve_models = "stable",
+    effect_curve_max_features = 1L,
+    effect_curve_sample_size = 40L,
+    autonls_runner = fake_autonls_runner,
+    include_plots = FALSE
+  ))
+  binary_result <- guarded(generate_binary_classification_shap_analysis_artifacts(
+    bin_data,
+    target_col = "Target",
+    prediction_col = "Predict",
+    positive_class = "Yes",
+    include_interactions = TRUE,
+    interaction_pairs = data.table::data.table(pair = "Spend x Price"),
+    include_plots = FALSE
+  ))
+
+  data.table::data.table(
+    check = c(
+      "missing_feature_a_col",
+      "missing_feature_b_col",
+      "missing_both_pair_columns",
+      "insufficient_rows",
+      "insufficient_unique_values",
+      "interaction_disabled",
+      "effect_curves_only_backend_none",
+      "effect_curves_only_autonls_backend",
+      "binary_shap_guard"
+    ),
+    status = c(
+      if (!inherits(missing_a, "error") && identical(diag_reason(missing_a), "missing_columns")) "success" else "error",
+      if (!inherits(missing_b, "error") && identical(diag_reason(missing_b), "missing_columns")) "success" else "error",
+      if (!inherits(missing_both, "error") && identical(diag_reason(missing_both), "missing_columns")) "success" else "error",
+      if (!inherits(insufficient_rows, "error") && identical(diag_reason(insufficient_rows), "insufficient_rows")) "success" else "error",
+      if (!inherits(insufficient_unique, "error") && identical(diag_reason(insufficient_unique), "insufficient_unique_values")) "success" else "error",
+      if (!inherits(interaction_disabled, "error") && identical(diag_reason(interaction_disabled), "interaction_not_requested")) "success" else "error",
+      if (!inherits(effect_curves_none, "error") && !has_artifact(effect_curves_none, "candidate_interaction_ranking_table")) "success" else "error",
+      if (!inherits(effect_curves_autonls, "error") && has_artifact(effect_curves_autonls, "shap_effect_curve_diagnostics") && !has_artifact(effect_curves_autonls, "candidate_interaction_ranking_table")) "success" else "error",
+      if (!inherits(binary_result, "error") && has_artifact(binary_result, "interaction_diagnostics")) "success" else "error"
+    ),
+    message = c(
+      "Missing feature_a/shap_feature pair column returns diagnostics.",
+      "Missing feature_b/interaction_feature pair column returns diagnostics.",
+      "Missing pair columns return diagnostics.",
+      "Too few rows return diagnostics.",
+      "Too few unique feature values return diagnostics.",
+      "Disabled interactions return diagnostics and do not fail.",
+      "Effect-curves-only run with backend none does not attempt interactions.",
+      "Effect-curves-only run with AutoNLS backend does not attempt interactions.",
+      "Binary SHAP interaction run returns diagnostics and does not fail."
+    )
+  )
+}
+
+aq_shap_interaction_diagnostic <- function(
+  status,
+  reason_code,
+  reason,
+  severity = "warning",
+  feature_a = NA_character_,
+  feature_b = NA_character_,
+  required_columns = character(),
+  available_columns = character(),
+  recommendation = "Run SHAP without interactions."
+) {
+  data.table::data.table(
+    status = status,
+    reason_code = reason_code,
+    reason = reason,
+    severity = severity,
+    feature_a = regression_shap_null_coalesce(feature_a, NA_character_),
+    feature_b = regression_shap_null_coalesce(feature_b, NA_character_),
+    required_columns = paste(required_columns, collapse = ", "),
+    available_columns = paste(available_columns, collapse = ", "),
+    recommendation = recommendation
+  )
+}
+
+aq_shap_interaction_result <- function(
+  status,
+  reason_code,
+  reason,
+  severity = "warning",
+  feature_a = NA_character_,
+  feature_b = NA_character_,
+  required_columns = character(),
+  available_columns = character(),
+  recommendation = "Run SHAP without interactions.",
+  warnings = character()
+) {
+  list(
+    scores = data.table::data.table(),
+    surfaces = data.table::data.table(),
+    diagnostics = aq_shap_interaction_diagnostic(
+      status = status,
+      reason_code = reason_code,
+      reason = reason,
+      severity = severity,
+      feature_a = feature_a,
+      feature_b = feature_b,
+      required_columns = required_columns,
+      available_columns = available_columns,
+      recommendation = recommendation
+    ),
+    warnings = warnings
+  )
+}
+
 aq_normalize_interaction_pairs <- function(interaction_pairs) {
   if (is.null(interaction_pairs) || !length(interaction_pairs)) {
-    return(data.table::data.table(
-      shap_feature = character(),
-      interaction_feature = character(),
-      interaction_pair_key = character(),
-      directional = logical()
-    ))
+    return(aq_empty_interaction_pairs())
   }
-  if (data.table::is.data.table(interaction_pairs) && all(c("shap_feature", "interaction_feature") %in% names(interaction_pairs))) {
+  if (data.table::is.data.table(interaction_pairs) || is.data.frame(interaction_pairs)) {
+    if (!all(c("shap_feature", "interaction_feature") %in% names(interaction_pairs))) {
+      return(aq_empty_interaction_pairs())
+    }
     out <- data.table::copy(interaction_pairs[, .(shap_feature, interaction_feature)])
+    if (!nrow(out)) {
+      return(aq_empty_interaction_pairs())
+    }
     out <- aq_dedupe_unordered_pairs(out, "shap_feature", "interaction_feature", pair_col = "interaction_pair_key")
     out[, directional := FALSE]
     return(out[])
@@ -648,8 +895,7 @@ aq_normalize_interaction_pairs <- function(interaction_pairs) {
   })
   out <- data.table::rbindlist(rows, use.names = TRUE, fill = TRUE)
   if (!nrow(out)) {
-    out[, `:=`(interaction_pair_key = character(), directional = logical())]
-    return(out[])
+    return(aq_empty_interaction_pairs())
   }
   out <- aq_dedupe_unordered_pairs(out, "shap_feature", "interaction_feature", pair_col = "interaction_pair_key")
   out[, directional := FALSE]
@@ -670,6 +916,11 @@ aq_candidate_interaction_pairs <- function(
   target_col = NULL,
   prediction_col = NULL
 ) {
+  if (data.table::is.data.table(interaction_pairs) || is.data.frame(interaction_pairs)) {
+    if (length(interaction_pairs) && !all(c("shap_feature", "interaction_feature") %in% names(interaction_pairs))) {
+      return(aq_empty_interaction_pairs())
+    }
+  }
   requested <- aq_normalize_interaction_pairs(interaction_pairs)
   valid_shap_features <- column_map[included == TRUE & source_col_exists == TRUE, feature]
   if (nrow(requested)) {
@@ -701,6 +952,9 @@ aq_candidate_interaction_pairs <- function(
     if (!length(b)) return(NULL)
     data.table::data.table(shap_feature = a, interaction_feature = b)
   }), use.names = TRUE, fill = TRUE)
+  if (!nrow(out) || !all(c("shap_feature", "interaction_feature") %in% names(out))) {
+    return(aq_empty_interaction_pairs())
+  }
   out <- aq_dedupe_unordered_pairs(out, "shap_feature", "interaction_feature", pair_col = "interaction_pair_key")
   out[, directional := FALSE]
   head(out, max_interaction_pairs)
@@ -728,6 +982,42 @@ aq_summarize_shap_interactions <- function(
 ) {
   warnings <- character()
   work <- data.table::copy(data)
+  available_columns <- names(work)
+  if (nrow(work) < max(2L, min_interaction_cell_n)) {
+    return(aq_shap_interaction_result(
+      status = "skipped",
+      reason_code = "insufficient_rows",
+      reason = "Interaction diagnostics were skipped because the data does not contain enough rows.",
+      severity = "warning",
+      required_columns = c("shap_feature", "interaction_feature"),
+      available_columns = available_columns,
+      recommendation = "Run SHAP without interactions or provide more rows."
+    ))
+  }
+  if (!nrow(column_map[included == TRUE])) {
+    return(aq_shap_interaction_result(
+      status = "skipped",
+      reason_code = "missing_columns",
+      reason = "Interaction diagnostics were skipped because no usable SHAP contribution columns were available.",
+      severity = "warning",
+      required_columns = "Shap_*",
+      available_columns = available_columns,
+      recommendation = "Generate interaction SHAP values."
+    ))
+  }
+  if (data.table::is.data.table(interaction_pairs) || is.data.frame(interaction_pairs)) {
+    if (length(interaction_pairs) && !all(c("shap_feature", "interaction_feature") %in% names(interaction_pairs))) {
+      return(aq_shap_interaction_result(
+        status = "skipped",
+        reason_code = "missing_columns",
+        reason = "Interaction diagnostics were skipped because requested interaction pairs did not include shap_feature and interaction_feature columns.",
+        severity = "warning",
+        required_columns = c("shap_feature", "interaction_feature"),
+        available_columns = names(interaction_pairs),
+        recommendation = "Specify interaction pairs."
+      ))
+    }
+  }
   date_period_col <- NULL
   if (!is.null(DateVar) && DateVar %in% names(work)) {
     date_period_col <- "__aq_date_period__"
@@ -749,7 +1039,15 @@ aq_summarize_shap_interactions <- function(
     prediction_col = prediction_col
   )
   if (!nrow(pairs)) {
-    return(list(scores = data.table::data.table(), surfaces = data.table::data.table(), warnings = warnings))
+    return(aq_shap_interaction_result(
+      status = "skipped",
+      reason_code = "no_candidate_pairs",
+      reason = "Interaction diagnostics were skipped because no valid candidate feature pairs were available.",
+      severity = "info",
+      required_columns = c("shap_feature", "interaction_feature"),
+      available_columns = available_columns,
+      recommendation = "Specify interaction pairs."
+    ))
   }
 
   surface_rows <- lapply(seq_len(nrow(pairs)), function(i) {
@@ -757,7 +1055,22 @@ aq_summarize_shap_interactions <- function(
     interaction_feature <- pairs$interaction_feature[[i]]
     interaction_pair_key <- pairs$interaction_pair_key[[i]]
     directional <- isTRUE(pairs$directional[[i]])
+    pair_required_columns <- c(shap_feature, interaction_feature)
+    missing_pair_columns <- setdiff(pair_required_columns, names(work))
+    if (length(missing_pair_columns)) {
+      warnings <<- regression_shap_warn(warnings, paste("Interaction pair skipped because required feature columns are missing:", paste(missing_pair_columns, collapse = ", ")))
+      return(NULL)
+    }
     shap_col <- column_map[feature == shap_feature & included == TRUE, shap_col][[1L]]
+    if (is.null(shap_col) || !length(shap_col) || is.na(shap_col) || !shap_col %in% names(work)) {
+      warnings <<- regression_shap_warn(warnings, paste("Interaction pair skipped because the required SHAP column is missing for", shap_feature))
+      return(NULL)
+    }
+    if (data.table::uniqueN(work[[shap_feature]], na.rm = TRUE) < 2L ||
+        data.table::uniqueN(work[[interaction_feature]], na.rm = TRUE) < 2L) {
+      warnings <<- regression_shap_warn(warnings, paste("Interaction pair skipped because feature values do not have enough unique levels:", shap_feature, "x", interaction_feature))
+      return(NULL)
+    }
     reverse_shap_col <- column_map[feature == interaction_feature & included == TRUE, shap_col]
     reverse_shap_col <- if (length(reverse_shap_col)) reverse_shap_col[[1L]] else NA_character_
     has_reverse_shap <- !is.na(reverse_shap_col) && reverse_shap_col %in% names(work)
@@ -874,13 +1187,27 @@ aq_summarize_shap_interactions <- function(
 
   surfaces <- data.table::rbindlist(surface_rows, use.names = TRUE, fill = TRUE)
   if (!nrow(surfaces)) {
-    return(list(scores = data.table::data.table(), surfaces = data.table::data.table(), warnings = warnings))
+    return(list(
+      scores = data.table::data.table(),
+      surfaces = data.table::data.table(),
+      diagnostics = aq_shap_interaction_diagnostic(
+        status = "skipped",
+        reason_code = "insufficient_unique_values",
+        reason = "Interaction diagnostics were skipped because candidate pairs did not have enough non-sparse value combinations.",
+        severity = "warning",
+        required_columns = c("shap_feature", "interaction_feature", "Shap_*"),
+        available_columns = available_columns,
+        recommendation = "Required feature columns are missing."
+      ),
+      warnings = warnings
+    ))
   }
 
   surfaces[, pair_label := interaction_pair_key]
   score_col <- if (identical(interaction_stat, "mean_shap")) "delta_vs_shap_feature_level" else "mean_abs_delta"
   surfaces[, mean_abs_delta := abs(mean_abs_shap - shap_feature_level_mean_abs_shap)]
-  scores <- surfaces[sparse_cell == FALSE, .(
+  non_sparse_surfaces <- surfaces[sparse_cell == FALSE]
+  scores <- if (nrow(non_sparse_surfaces)) non_sparse_surfaces[, .(
     score = if (identical(score_col, "delta_vs_shap_feature_level")) aq_interaction_weighted_mean(abs(delta_vs_shap_feature_level), n) else aq_interaction_weighted_mean(mean_abs_delta, n),
     score_stat = interaction_score_stat,
     interaction_feature_role = interaction_feature_role[[1L]],
@@ -892,7 +1219,7 @@ aq_summarize_shap_interactions <- function(
     weighted_sd_cell_mean = aq_interaction_weighted_sd(mean_shap, n),
     top_cell_label = aq_interaction_top_cell_label(shap_feature_level, interaction_feature_level, mean_abs_shap),
     top_cell_mean_abs_shap = aq_interaction_safe_max(mean_abs_shap)
-  ), by = .(shap_feature, interaction_feature, shap_col, feature_x, feature_y, interaction_pair_key, directional, pair_label)]
+  ), by = .(shap_feature, interaction_feature, shap_col, feature_x, feature_y, interaction_pair_key, directional, pair_label)] else data.table::data.table()
   if (!nrow(scores)) {
     scores <- surfaces[, .(
       score = aq_interaction_weighted_mean(abs(delta_vs_shap_feature_level), n),
@@ -937,6 +1264,15 @@ aq_summarize_shap_interactions <- function(
   list(
     scores = aq_smart_round_dt(scores, skip_cols = c("rank", "n_cells", "n_non_sparse_cells", "n_rows")),
     surfaces = aq_smart_round_dt(surfaces, skip_cols = c("n", "level_combo_rank")),
+    diagnostics = aq_shap_interaction_diagnostic(
+      status = "generated",
+      reason_code = "ok",
+      reason = "Interaction diagnostics were generated.",
+      severity = "info",
+      required_columns = c("shap_feature", "interaction_feature", "Shap_*"),
+      available_columns = available_columns,
+      recommendation = ""
+    ),
     warnings = warnings
   )
 }
@@ -1282,6 +1618,13 @@ aq_regression_shap_empty_result <- function(message, warnings = character(), dia
 #' @param max_segment_levels Maximum segment levels to keep per ByVar.
 #' @param max_byvars Maximum ByVars to use.
 #' @param include_dependence Include dependence table artifacts.
+#' @param include_effect_curves Include optional AutoNLS marginal value/effect curve artifacts.
+#' @param effect_curve_backend Effect-curve backend. Use `"none"` for the default no-dependency behavior or `"autonls"` to call AutoNLS when installed.
+#' @param effect_curve_models AutoNLS model set or model vector. `"stable"` uses stable AutoNLS models.
+#' @param effect_curve_sample_size Maximum rows sampled per numeric SHAP dependence fit.
+#' @param effect_curve_max_features Maximum top numeric features eligible for AutoNLS effect curves.
+#' @param effect_curve_validation_fraction AutoNLS validation holdout fraction.
+#' @param effect_curve_theme Optional theme passed through to AutoNLS.
 #' @param include_segments Include segment effect table artifacts.
 #' @param include_time Include time effect table artifacts.
 #' @param include_local Include local explanation table artifacts.
@@ -1345,6 +1688,13 @@ generate_regression_shap_analysis_artifacts <- function(
   max_segment_levels = 20L,
   max_byvars = 3L,
   include_dependence = TRUE,
+  include_effect_curves = TRUE,
+  effect_curve_backend = c("none", "autonls"),
+  effect_curve_models = "stable",
+  effect_curve_sample_size = 50000L,
+  effect_curve_max_features = 20L,
+  effect_curve_validation_fraction = 0.20,
+  effect_curve_theme = auto_plots_theme,
   include_segments = TRUE,
   include_time = TRUE,
   include_local = FALSE,
@@ -1374,6 +1724,7 @@ generate_regression_shap_analysis_artifacts <- function(
   warnings <- character()
   generated_at <- Sys.time()
   extra_args <- list(...)
+  autonls_runner <- extra_args$autonls_runner
   if (length(intersect(names(extra_args), c("model", "predict_function", "background_n", "sample_n", "nsim", "shap_backend")))) {
     warnings <- regression_shap_warn(
       warnings,
@@ -1404,7 +1755,9 @@ generate_regression_shap_analysis_artifacts <- function(
     date_aggregation <- "month"
   }
 
-  for (limit in c("top_n", "max_dependence_rows", "max_segment_levels", "max_byvars", "max_interaction_pairs", "max_interaction_surface_plots", "numeric_interaction_bins", "max_interaction_levels", "min_interaction_cell_n", "max_feature_effect_plots", "max_dependence_plots", "max_segment_plots", "max_time_plots", "max_local_plots")) {
+  effect_curve_backend <- match.arg(as.character(effect_curve_backend)[1L], c("none", "autonls"))
+
+  for (limit in c("top_n", "max_dependence_rows", "max_segment_levels", "max_byvars", "max_interaction_pairs", "max_interaction_surface_plots", "numeric_interaction_bins", "max_interaction_levels", "min_interaction_cell_n", "max_feature_effect_plots", "max_dependence_plots", "max_segment_plots", "max_time_plots", "max_local_plots", "effect_curve_sample_size", "effect_curve_max_features")) {
     checked <- regression_shap_positive_int(
       get(limit),
       default = switch(
@@ -1422,7 +1775,9 @@ generate_regression_shap_analysis_artifacts <- function(
         max_dependence_plots = 5L,
         max_segment_plots = 5L,
         max_time_plots = 5L,
-        max_local_plots = 5L
+        max_local_plots = 5L,
+        effect_curve_sample_size = 50000L,
+        effect_curve_max_features = 20L
       ),
       name = limit,
       warnings = warnings
@@ -1430,6 +1785,12 @@ generate_regression_shap_analysis_artifacts <- function(
     assign(limit, checked$value)
     warnings <- checked$warnings
   }
+  effect_curve_validation_fraction <- suppressWarnings(as.numeric(effect_curve_validation_fraction[1L]))
+  if (is.na(effect_curve_validation_fraction)) {
+    warnings <- regression_shap_warn(warnings, "effect_curve_validation_fraction must be numeric; using 0.20.")
+    effect_curve_validation_fraction <- 0.20
+  }
+  effect_curve_validation_fraction <- max(0, min(0.5, effect_curve_validation_fraction))
   if (is.null(plot_top_n)) {
     plot_top_n <- top_n
   } else {
@@ -1544,6 +1905,12 @@ generate_regression_shap_analysis_artifacts <- function(
     selected_features = selected_features,
     top_n = top_n,
     max_dependence_rows = max_dependence_rows,
+    include_effect_curves = include_effect_curves,
+    effect_curve_backend = effect_curve_backend,
+    effect_curve_models = effect_curve_models,
+    effect_curve_sample_size = effect_curve_sample_size,
+    effect_curve_max_features = effect_curve_max_features,
+    effect_curve_validation_fraction = effect_curve_validation_fraction,
     max_segment_levels = max_segment_levels,
     max_interaction_pairs = max_interaction_pairs,
     max_interaction_surface_plots = max_interaction_surface_plots,
@@ -1582,6 +1949,8 @@ generate_regression_shap_analysis_artifacts <- function(
       "n_valid_numeric_shap_columns", "n_features_with_source_columns",
       "target_col", "prediction_col", "DateVar", "date_aggregation",
       "ByVars", "id_cols", "selected_features", "top_n",
+      "include_effect_curves", "effect_curve_backend", "effect_curve_models",
+      "effect_curve_sample_size", "effect_curve_max_features", "effect_curve_validation_fraction",
       "include_interactions", "interaction_stat", "interaction_score_stat",
       "warnings_count"
     ),
@@ -1595,6 +1964,8 @@ generate_regression_shap_analysis_artifacts <- function(
       date_aggregation,
       paste(ByVars, collapse = ", "), paste(id_cols, collapse = ", "),
       paste(selected_features, collapse = ", "), top_n,
+      include_effect_curves, effect_curve_backend, paste(effect_curve_models, collapse = ", "),
+      effect_curve_sample_size, effect_curve_max_features, effect_curve_validation_fraction,
       include_interactions, interaction_stat, interaction_score_stat,
       length(warnings)
     )
@@ -1876,6 +2247,85 @@ generate_regression_shap_analysis_artifacts <- function(
     }
   }
 
+  effect_curves <- aq_generate_shap_effect_curve_artifacts(
+    data = data,
+    column_map = column_map,
+    global_importance = global_importance,
+    selected_features = selected_features,
+    include_effect_curves = include_effect_curves,
+    effect_curve_backend = effect_curve_backend,
+    effect_curve_models = effect_curve_models,
+    effect_curve_sample_size = effect_curve_sample_size,
+    effect_curve_max_features = effect_curve_max_features,
+    effect_curve_validation_fraction = effect_curve_validation_fraction,
+    effect_curve_theme = effect_curve_theme,
+    autonls_runner = autonls_runner
+  )
+  warnings <- unique(c(warnings, effect_curves$warnings))
+  if (nrow(effect_curves$values) || nrow(effect_curves$diagnostics) || nrow(effect_curves$summary)) {
+    effect_meta <- c(artifact_metadata("shap_effect_curves", "Marginal Value / Effect Curves", 11L), list(
+      backend = "AutoNLS",
+      optional_dependency = TRUE,
+      predictions_original_scale = if (nrow(effect_curves$summary)) all(effect_curves$summary$predictions_original_scale == TRUE, na.rm = TRUE) else TRUE
+    ))
+    artifacts <- regression_shap_add_artifact(artifacts, regression_shap_artifact(
+      "shap_effect_curve_values",
+      "SHAP AutoNLS Effect Curve Values",
+      "table",
+      "Marginal Value / Effect Curves",
+      object = aq_smart_round_dt(effect_curves$values),
+      metadata = effect_meta
+    ))
+    artifacts <- regression_shap_add_artifact(artifacts, regression_shap_artifact(
+      "shap_effect_curve_diagnostics",
+      "SHAP AutoNLS Effect Curve Diagnostics",
+      "table",
+      "Marginal Value / Effect Curves",
+      object = aq_smart_round_dt(effect_curves$diagnostics),
+      metadata = effect_meta
+    ))
+    artifacts <- regression_shap_add_artifact(artifacts, regression_shap_artifact(
+      "shap_effect_curve_summary",
+      "SHAP AutoNLS Effect Curve Summary",
+      "table",
+      "Marginal Value / Effect Curves",
+      object = aq_smart_round_dt(effect_curves$summary),
+      metadata = effect_meta
+    ))
+    if (isTRUE(include_plots) && nrow(effect_curves$values)) {
+      effect_plot_features <- head(unique(effect_curves$values$feature), max_dependence_plots)
+      for (feature_name in effect_plot_features) {
+        curve_plot_data <- effect_curves$values[feature == feature_name]
+        plot_result <- aq_safe_create_shap_plot(
+          "line",
+          aq_create_shap_line_plot(
+            dt = curve_plot_data,
+            XVar = "feature_value",
+            YVar = "shap_curve_value",
+            title = paste("AutoNLS SHAP Effect Curve:", feature_name),
+            auto_plots_theme = effect_curve_theme,
+            plot_width = plot_width,
+            plot_height = plot_height
+          )
+        )
+        if (!is.null(plot_result$object)) {
+          plot_result$object <- aq_style_shap_plot(plot_result$object, x_axis_title = feature_name, y_axis_title = "SHAP effect")
+          artifacts <- regression_shap_add_artifact(artifacts, aq_create_regression_shap_plot_artifact(
+            paste0("shap_effect_curve_", regression_shap_slug(feature_name), "_plot"),
+            paste("AutoNLS SHAP Effect Curve:", feature_name),
+            "Marginal Value / Effect Curves",
+            "line",
+            "shap_effect_curves",
+            plot_result$object,
+            c(effect_meta, list(feature = feature_name, interval_columns = all(c("lower", "upper") %in% names(curve_plot_data))))
+          ))
+        } else {
+          warnings <- regression_shap_warn(warnings, plot_result$warning)
+        }
+      }
+    }
+  }
+
   if (isTRUE(include_segments) && length(ByVars)) {
     segments <- aq_summarize_shap_segments(data, column_map, ByVars, max_byvars, max_segment_levels)
     artifacts <- regression_shap_add_artifact(artifacts, regression_shap_artifact("segment_effects_table", "Segment SHAP Effects", "table", "Segment Effects", object = aq_smart_round_dt(segments, skip_cols = c("rank_within_segment", "n")), metadata = artifact_metadata("segment_effects", "Segment Effects", 11L)))
@@ -2086,6 +2536,14 @@ generate_regression_shap_analysis_artifacts <- function(
       content = interaction_text,
       metadata = interaction_meta
     ))
+    artifacts <- regression_shap_add_artifact(artifacts, regression_shap_artifact(
+      "interaction_diagnostics",
+      "SHAP Interaction Diagnostics",
+      "table",
+      "Interaction Importance",
+      object = interactions$diagnostics,
+      metadata = interaction_meta
+    ))
 
     if (nrow(interactions$scores)) {
       artifacts <- regression_shap_add_artifact(artifacts, regression_shap_artifact(
@@ -2208,8 +2666,33 @@ generate_regression_shap_analysis_artifacts <- function(
         }
       }
     } else {
-      warnings <- regression_shap_warn(warnings, "Interaction diagnostics skipped because no valid candidate pairs were available.")
+      skip_reason <- if (nrow(interactions$diagnostics)) interactions$diagnostics$reason[[1L]] else "Interaction diagnostics skipped because no valid candidate pairs were available."
+      warnings <- regression_shap_warn(warnings, skip_reason)
     }
+  } else {
+    interaction_meta <- c(artifact_metadata("interaction_diagnostics", "Interaction Importance", 19L), list(
+      interaction_type = "binned_level_combination",
+      shap_source = "precomputed_columns",
+      exact_shap_interaction_values = FALSE,
+      interaction_requested = FALSE,
+      directional = FALSE
+    ))
+    artifacts <- regression_shap_add_artifact(artifacts, regression_shap_artifact(
+      "interaction_diagnostics",
+      "SHAP Interaction Diagnostics",
+      "table",
+      "Interaction Importance",
+      object = aq_shap_interaction_diagnostic(
+        status = "skipped",
+        reason_code = "interaction_not_requested",
+        reason = "Interaction diagnostics were skipped because interaction analysis was not requested.",
+        severity = "info",
+        required_columns = c("shap_feature", "interaction_feature"),
+        available_columns = names(data),
+        recommendation = "Run SHAP without interactions."
+      ),
+      metadata = interaction_meta
+    ))
   }
 
   types <- vapply(artifacts, function(x) {
@@ -2221,7 +2704,8 @@ generate_regression_shap_analysis_artifacts <- function(
     table_count = sum(types == "table"),
     text_count = sum(types == "text"),
     warnings_count = length(warnings),
-    interaction_diagnostics_available = "candidate_interaction_ranking_table" %in% names(artifacts),
+    interaction_diagnostics_available = "interaction_diagnostics" %in% names(artifacts),
+    interaction_ranking_available = "candidate_interaction_ranking_table" %in% names(artifacts),
     interaction_pair_count = if ("candidate_interaction_ranking_table" %in% names(artifacts)) nrow(artifacts$candidate_interaction_ranking_table$object) else 0L,
     interaction_surface_count = if ("two_way_shap_surface_table" %in% names(artifacts)) length(unique(artifacts$two_way_shap_surface_table$object$pair_label)) else 0L,
     interaction_method = "binned_level_combination_shap_diagnostic",

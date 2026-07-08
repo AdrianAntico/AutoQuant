@@ -288,6 +288,23 @@ htmltools::tagList(
 )
 ```
 
+# Marginal Value / Effect Curves
+
+```{r shap_effect_curves, results='asis'}
+effect_curve_items <- section_artifacts("Marginal Value / Effect Curves")
+if (length(effect_curve_items)) {
+  htmltools::tagList(
+    mi_note("AutoNLS effect-curve artifacts are optional. Inputs stay on the original feature/SHAP scale; any optimizer scaling or transformations are internal to AutoNLS."),
+    mi_panel("AutoNLS effect curve visualizations", shap_plot_grid("Marginal Value / Effect Curves", cols = 2L)),
+    mi_details("Effect curve summary", shap_table("shap_effect_curve_summary", defaultPageSize = 25L)),
+    mi_details("Fit diagnostics", shap_table("shap_effect_curve_diagnostics", defaultPageSize = 25L)),
+    mi_details("Curve values, derivatives, and elasticities", shap_table("shap_effect_curve_values", defaultPageSize = 25L))
+  )
+} else {
+  mi_empty("No AutoNLS effect curves were requested or available.")
+}
+```
+
 # Segment Effects
 
 ```{r segment_effects, results='asis'}
@@ -338,11 +355,14 @@ if (length(local_items)) {
 ```{r interaction_importance, results='asis'}
 interaction_items <- section_artifacts("Interaction Importance")
 if (length(interaction_items)) {
+  ranking_artifact <- artifact_by_name("candidate_interaction_ranking_table")
+  surface_artifact <- artifact_by_name("two_way_shap_surface_table")
   htmltools::tagList(
     mi_panel("Methodology", shap_text(artifact_by_name("interaction_methodology"))),
-    mi_panel("Interaction visualizations", shap_plot_grid("Interaction Importance", cols = 2L)),
-    mi_details("Candidate interaction ranking", shap_table("candidate_interaction_ranking_table", defaultPageSize = 25L), open = TRUE),
-    mi_details("Two-way SHAP surface table", shap_table("two_way_shap_surface_table", defaultPageSize = 25L), open = FALSE),
+    mi_details("Diagnostics / Caveats", shap_table("interaction_diagnostics", defaultPageSize = 25L), open = TRUE),
+    if (!is.null(ranking_artifact)) mi_panel("Interaction visualizations", shap_plot_grid("Interaction Importance", cols = 2L)),
+    if (!is.null(ranking_artifact)) mi_details("Candidate interaction ranking", shap_table("candidate_interaction_ranking_table", defaultPageSize = 25L), open = TRUE),
+    if (!is.null(surface_artifact)) mi_details("Two-way SHAP surface table", shap_table("two_way_shap_surface_table", defaultPageSize = 25L), open = FALSE),
     mi_note("These are binned/leveled candidate interaction diagnostics from ordinary Shap_ columns. Surface axes are actual source feature value bins/levels, labeled with the pair variables. Heatmap values are signed mean SHAP for the attributed feature. They are not exact SHAP interaction value decompositions.")
   )
 } else {

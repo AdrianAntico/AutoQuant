@@ -763,6 +763,27 @@ The same pattern applies to `EDAReport()`, `TargetAnalysisReport()`, `Regression
 
 See `docs/report_api_contract.md`.
 
+### Optional AutoNLS SHAP effect curves
+
+SHAP generators can optionally use AutoNLS vNext as an internal curve-fitting backend for numeric dependence data:
+
+```r
+reg_artifacts <- AutoQuant::generate_regression_shap_analysis_artifacts(
+  data = scored_data,
+  target_col = "Target",
+  prediction_col = "Predict",
+  effect_curve_backend = "autonls",
+  effect_curve_models = "stable",
+  effect_curve_sample_size = 50000,
+  effect_curve_max_features = 20,
+  effect_curve_validation_fraction = 0.20
+)
+```
+
+AutoNLS is optional. The default `effect_curve_backend = "none"` keeps existing SHAP workflows unchanged and does not require AutoNLS to be installed.
+
+AutoQuant accepts original-scale feature and SHAP contribution columns. AutoNLS may use internal scaling, log/log1p starts, or family-specific transformed initialization for optimizer stability, but returned curve values, predictions, derivatives, and elasticities remain on the original scale. If fitting is unavailable or unsuitable, AutoQuant returns effect-curve diagnostics and continues generating SHAP artifacts.
+
 ### Typed Artifact Schema Framework
 
 Future AutoQuant generators should return reusable typed artifacts that can power reports, dashboards, Shiny apps, APIs, and LLM agents without recomputing analytical work.
@@ -4761,7 +4782,9 @@ ConvenienceReportPath <- AutoQuant::RegressionShapAnalysisReport(
 
 The generator-first workflow is preferred: use `generate_regression_shap_analysis_artifacts()` for analytical options, then pass the result to `RegressionShapAnalysisReport(artifact_result = reg_artifacts, ...)`. The report function is a renderer. It can still call the generator as a convenience wrapper by passing `data` plus analytical arguments through `...`, but `artifact_result` mode avoids recomputing artifacts.
 
-The `Shap_` prefix maps each contribution column to the source model variable by stripping the prefix, such as `Shap_Impressions` -> `Impressions`. ID, segment, date, target, and prediction columns may be present, but they are not treated as SHAP features unless they have matching `Shap_` columns. When `include_plots = TRUE`, plot artifacts are created with AutoPlots high-level functions. Segment heatmaps use signed mean SHAP. Interaction diagnostics are binned/leveled candidate interaction surfaces from ordinary `Shap_` columns; axes are actual source feature value bins/levels and heatmap values are signed mean SHAP for the attributed feature. Pairwise interaction diagnostics are canonical unordered pairs, so A x B and B x A are treated as the same non-directional analytical object. They are not exact SHAP interaction value decompositions.
+The `Shap_` prefix maps each contribution column to the source model variable by stripping the prefix, such as `Shap_Impressions` -> `Impressions`. ID, segment, date, target, and prediction columns may be present, but they are not treated as SHAP features unless they have matching `Shap_` columns. When `include_plots = TRUE`, plot artifacts are created with AutoPlots high-level functions. Segment heatmaps use signed mean SHAP. Interaction diagnostics are optional binned/leveled candidate interaction surfaces from ordinary `Shap_` columns; axes are actual source feature value bins/levels and heatmap values are signed mean SHAP for the attributed feature. Pairwise interaction diagnostics are canonical unordered pairs, so A x B and B x A are treated as the same non-directional analytical object. They are not exact SHAP interaction value decompositions.
+
+Missing or insufficient interaction inputs do not fail SHAP generation. When interaction analysis is requested but candidate pair columns, source feature columns, usable SHAP columns, rows, or unique value combinations are unavailable, AutoQuant emits an `interaction_diagnostics` table with `status`, `reason_code`, `reason`, `severity`, required/available columns, and a recommendation, then skips ranking, surface, and heatmap artifacts. Effect-curve generation is independent of interaction analysis; effect-curves-only runs do not attempt interaction generation.
 
 </p>
 </details>

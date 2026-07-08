@@ -202,6 +202,39 @@ RegressionShapAnalysisReport(
 - SHAP-specific wrappers must call the general contribution framework where possible.
 - New contribution backends must fit `PredictionSurfaceAnalysis()` without API sprawl.
 
+### Optional AutoNLS Effect Curves
+
+SHAP artifact generators may optionally fit AutoNLS vNext curves over numeric SHAP dependence data:
+
+```r
+reg_result <- generate_regression_shap_analysis_artifacts(
+  data = scored_data,
+  effect_curve_backend = "autonls",
+  effect_curve_models = "stable",
+  effect_curve_sample_size = 50000,
+  effect_curve_max_features = 20,
+  effect_curve_validation_fraction = 0.20
+)
+```
+
+The default backend is `"none"`, so AutoNLS is not required for existing AutoQuant SHAP workflows.
+
+Contract rules:
+
+- AutoQuant accepts original-scale feature values and original SHAP contribution values.
+- AutoNLS scaling, log/log1p starts, or family-specific transformed initialization are internal optimizer details.
+- Curve predictions, derivatives, and elasticities returned to AutoQuant must be on the original feature/SHAP scale.
+- If AutoNLS is unavailable, a fit fails, a feature is unsuitable, there are too few rows, or confidence is low, SHAP generation returns diagnostics and continues.
+- Users should only manually transform data when diagnostics show persistent domain, convergence, or stability failures that cannot be handled internally.
+
+Optional artifacts:
+
+- `shap_effect_curve_values`
+- `shap_effect_curve_diagnostics`
+- `shap_effect_curve_summary`
+
+Each effect-curve artifact records feature, selected model, curve family, confidence, derivative/elasticity availability, warning count, backend, and whether predictions are original-scale.
+
 ## 3. Artifact Schema
 
 ### Top-Level Result
@@ -931,6 +964,7 @@ Rules:
 
 Artifacts:
 
+- interaction diagnostics table
 - interaction ranking table
 - interaction surface table
 - sparse-cell diagnostic table
@@ -943,6 +977,8 @@ Rules:
 - Heatmap axes must be source feature values/bins/levels.
 - Heatmap cell values must state the statistic, such as signed mean contribution.
 - Candidate interactions from ordinary contribution columns must not be labeled as exact SHAP interaction values.
+- Interaction analysis is optional. Missing pair columns, source feature columns, SHAP columns, rows, or unique value combinations must produce structured `interaction_diagnostics` with `status`, `reason_code`, `reason`, `severity`, `feature_a`, `feature_b`, `required_columns`, `available_columns`, and `recommendation`; they must not fail the broader SHAP artifact run.
+- Effect curves are independent of interaction analysis. If effect curves are requested without usable interaction inputs, interaction generation must be skipped while effect-curve artifacts continue normally.
 
 ### Grouped Effects
 
@@ -1248,6 +1284,8 @@ Must verify:
 - group/time/reference lenses do not contaminate feature-dependence axes.
 - unordered interaction pairs are deduplicated.
 - interaction heatmap values use the documented statistic.
+- missing or insufficient interaction inputs produce diagnostics instead of failing SHAP generation.
+- effect-curves-only runs do not attempt interaction generation.
 - binary thresholds and predicted classes are consistent or warned.
 - probability/logit/margin scale is explicit.
 - high-cardinality and sparse-lens outputs warn correctly.

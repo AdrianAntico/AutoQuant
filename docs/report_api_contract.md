@@ -79,6 +79,7 @@ If `artifact_result` is supplied:
 - do not call the artifact generator
 - ignore analytical arguments in `...`
 - avoid recomputation
+- render optional SHAP AutoNLS effect-curve artifacts when they are present
 
 If `artifact_result` is `NULL`:
 
@@ -86,6 +87,8 @@ If `artifact_result` is `NULL`:
 - call the matching `generate_*_artifacts()` function
 - pass analytical arguments through `...`
 - render the generated artifacts
+
+Optional SHAP effect-curve controls such as `effect_curve_backend = "autonls"` belong to the SHAP artifact generators. Reports consume `shap_effect_curve_values`, `shap_effect_curve_diagnostics`, and `shap_effect_curve_summary`; they must not refit AutoNLS curves while rendering an existing `artifact_result`.
 
 ## Modern Report Wrappers
 
