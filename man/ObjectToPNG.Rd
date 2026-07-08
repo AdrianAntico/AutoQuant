@@ -15,6 +15,8 @@ ObjectToPNG(
   selector = NULL,
   delay = 0.2,
   zoom = 1,
+  selfcontained = FALSE,
+  libdir = NULL,
   use_ragg = TRUE,
   ...
 )
@@ -41,6 +43,13 @@ ObjectToPNG(
 widgets that need a moment to render.}
 
 \item{zoom}{Numeric. Zoom factor passed to [webshot2::webshot()].}
+
+\item{selfcontained}{Logical. Passed to [htmlwidgets::saveWidget()] for
+HTML widgets. Defaults to `FALSE` so widget screenshot staging does not
+require pandoc.}
+
+\item{libdir}{Character scalar or `NULL`. Dependency directory passed to
+[htmlwidgets::saveWidget()] when `selfcontained = FALSE`.}
 
 \item{use_ragg}{Logical. If `TRUE` and \pkg{ragg} is installed, uses
 [ragg::agg_png()] for base graphics and recorded plots.}

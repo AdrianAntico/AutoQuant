@@ -262,6 +262,11 @@ ObjectToHTML <- function(
 #' @param delay Numeric. Delay in seconds before taking a webshot. Useful for
 #'   widgets that need a moment to render.
 #' @param zoom Numeric. Zoom factor passed to [webshot2::webshot()].
+#' @param selfcontained Logical. Passed to [htmlwidgets::saveWidget()] for
+#'   HTML widgets. Defaults to `FALSE` so widget screenshot staging does not
+#'   require pandoc.
+#' @param libdir Character scalar or `NULL`. Dependency directory passed to
+#'   [htmlwidgets::saveWidget()] when `selfcontained = FALSE`.
 #' @param use_ragg Logical. If `TRUE` and \pkg{ragg} is installed, uses
 #'   [ragg::agg_png()] for base graphics and recorded plots.
 #' @param ... Additional arguments passed to lower-level methods.
@@ -293,6 +298,8 @@ ObjectToPNG <- function(
     selector = NULL,
     delay = 0.2,
     zoom = 1,
+    selfcontained = FALSE,
+    libdir = NULL,
     use_ragg = TRUE,
     ...
 ) {
@@ -319,17 +326,24 @@ ObjectToPNG <- function(
   if (is_htmlwidget_object(object)) {
 
     html_file <- temp_html_file()
+    if (is.null(libdir) || !nzchar(libdir)) {
+      libdir <- paste0(tools::file_path_sans_ext(html_file), "_files")
+    }
 
     on.exit({
       if (file.exists(html_file)) {
         unlink(html_file, force = TRUE)
+      }
+      if (isFALSE(selfcontained) && dir.exists(libdir)) {
+        unlink(libdir, recursive = TRUE, force = TRUE)
       }
     }, add = TRUE)
 
     htmlwidgets::saveWidget(
       widget = object,
       file = html_file,
-      selfcontained = TRUE
+      selfcontained = selfcontained,
+      libdir = libdir
     )
 
     webshot2::webshot(
@@ -343,7 +357,11 @@ ObjectToPNG <- function(
       ...
     )
 
-    return(invisible(file))
+    result <- file
+    attr(result, "html_path") <- normalizePath(html_file, winslash = "/", mustWork = FALSE)
+    attr(result, "libdir") <- normalizePath(libdir, winslash = "/", mustWork = FALSE)
+    attr(result, "selfcontained") <- isTRUE(selfcontained)
+    return(invisible(result))
   }
 
   if (is_recordedplot_object(object)) {

@@ -8,6 +8,22 @@ Report functions own rendering parameters.
 
 This keeps AutoQuant workflows copy/paste friendly and prevents report wrappers from becoming duplicated analytical APIs.
 
+## Render Targets
+
+Artifact generators and report renderers serve separate render targets.
+
+Human report targets, including R Markdown and HTML reports, must continue to render interactive widgets and existing layouts. LLM collector targets may add PNG sidecars, metadata, captions, and compact context, but must not replace the human-facing widget object.
+
+`ExportPNG = TRUE` means an additional LLM/static representation is requested. It must not change the human report artifact. The expected lifecycle is:
+
+```text
+production visualization object
+  -> human report: existing interactive widget
+  -> LLM collector/sidecar: production screenshot plus metadata
+```
+
+Both renderings originate from the same production AutoPlots object.
+
 ## Preferred Workflow
 
 Generate artifacts first:

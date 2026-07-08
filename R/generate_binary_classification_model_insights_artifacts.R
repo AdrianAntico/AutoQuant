@@ -700,25 +700,29 @@ binary_model_insights_build_feature_plots <- function(scored, feature_summary, t
         observed_rate = mean(actual_binary, na.rm = TRUE),
         mean_prediction = mean(prediction, na.rm = TRUE)
       ), by = feature_bin][order(feature_bin)]
-      plots[[paste0(feature, "_line")]] <- AutoPlots::PartialDependence.Line(
-        dt = scored,
-        XVar = feature,
-        YVar = "actual_binary",
-        ZVar = "prediction",
-        Theme = "dark",
-        title.text = paste("Partial Dependence Line:", feature),
-        xAxis.title = feature,
-        yAxis.title = "Actual / Predicted"
+      pdp_long <- data.table::melt(
+        pdp,
+        id.vars = "feature_value",
+        measure.vars = c("observed_rate", "mean_prediction"),
+        variable.name = "metric",
+        value.name = "value"
+      )
+      plots[[paste0(feature, "_line")]] <- AutoPlots::Line(
+        dt = pdp_long,
+        PreAgg = TRUE,
+        XVar = "feature_value",
+        YVar = "value",
+        GroupVar = "metric",
+        Smooth = FALSE,
+        ShowSymbol = TRUE,
+        Theme = "dark"
       )
       plots[[paste0(feature, "_box")]] <- AutoPlots::PartialDependence.Box(
         dt = scored,
         XVar = feature,
         YVar = "actual_binary",
         ZVar = "prediction",
-        Theme = "dark",
-        title.text = paste("Partial Dependence Box:", feature),
-        xAxis.title = feature,
-        yAxis.title = "Target - Predicted"
+        Theme = "dark"
       )
     } else {
       pdp <- feature_dt[, .(

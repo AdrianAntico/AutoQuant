@@ -33,10 +33,24 @@ eda_slug <- function(x) {
 eda_object_export_helpers_available <- function() {
   all(vapply(
     c("ObjectToPNG", "ObjectToHTML", "ObjectFileToDataURL", "ObjectFileToMarkdown"),
-    exists,
-    logical(1L),
-    mode = "function"
+    function(name) exists(name, mode = "function") ||
+      exists(name, envir = parent.env(environment()), inherits = TRUE, mode = "function") ||
+      exists(name, envir = asNamespace("AutoQuant"), inherits = FALSE, mode = "function"),
+    logical(1L)
   ))
+}
+
+eda_object_export_helper <- function(name) {
+  if (exists(name, mode = "function")) {
+    return(get(name, mode = "function"))
+  }
+  if (exists(name, envir = parent.env(environment()), inherits = TRUE, mode = "function")) {
+    return(get(name, envir = parent.env(environment()), inherits = TRUE, mode = "function"))
+  }
+  if (exists(name, envir = asNamespace("AutoQuant"), inherits = FALSE, mode = "function")) {
+    return(get(name, envir = asNamespace("AutoQuant"), inherits = FALSE))
+  }
+  stop(paste("Object export helper is not available:", name), call. = FALSE)
 }
 
 eda_require_object_export_helpers <- function() {
@@ -142,6 +156,10 @@ eda_export_artifact_tree <- function(
   if (isTRUE(export_png) || isTRUE(export_html) || isTRUE(include_data_url)) {
     eda_require_object_export_helpers()
   }
+  object_to_png <- eda_object_export_helper("ObjectToPNG")
+  object_to_html <- eda_object_export_helper("ObjectToHTML")
+  object_file_to_data_url <- eda_object_export_helper("ObjectFileToDataURL")
+  object_file_to_markdown <- eda_object_export_helper("ObjectFileToMarkdown")
 
   is_artifact_node <- is.list(tree) &&
     all(c("object", "png", "html", "section", "artifact_type", "name") %in% names(tree))
@@ -156,7 +174,7 @@ eda_export_artifact_tree <- function(
         png_file <- file.path(output_path, "images", paste0(stem, ".png"))
 
         tree$png <- tryCatch(
-          ObjectToPNG(
+          object_to_png(
             object = obj,
             file = png_file,
             width = width,
@@ -173,14 +191,14 @@ eda_export_artifact_tree <- function(
         )
 
         if (!is.null(tree$png)) {
-          tree$markdown <- ObjectFileToMarkdown(
+          tree$markdown <- object_file_to_markdown(
             file = tree$png,
             alt = ifelse(is.null(tree$title), tree$name, tree$title)
           )
 
           if (isTRUE(include_data_url)) {
             tree$data_url <- tryCatch(
-              ObjectFileToDataURL(tree$png, mime_type = "image/png"),
+              object_file_to_data_url(tree$png, mime_type = "image/png"),
               error = function(e) {
                 tree$data_url_error <<- conditionMessage(e)
                 NULL
@@ -194,7 +212,7 @@ eda_export_artifact_tree <- function(
         html_file <- file.path(output_path, "html", paste0(stem, ".html"))
 
         tree$html <- tryCatch(
-          ObjectToHTML(
+          object_to_html(
             object = obj,
             file = html_file,
             width = width,
