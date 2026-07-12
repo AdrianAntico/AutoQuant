@@ -18,6 +18,7 @@ rendering parameters and accept analytical arguments only through `...`.
 Other QA: 
 \code{\link{qa_artifact_schema_framework}()},
 \code{\link{qa_pairwise_report_artifact_uniqueness}()},
+\code{\link{qa_shap_interaction_guards}()},
 \code{\link{qa_shap_interaction_pair_deduplication}()},
 \code{\link{qa_shap_report_wrapper_contracts}()},
 \code{\link{qa_unordered_pair_key_helpers}()}
