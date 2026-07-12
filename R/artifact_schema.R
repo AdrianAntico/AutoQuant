@@ -98,6 +98,251 @@ aq_artifact_finish <- function(x, type) {
   x
 }
 
+aq_artifact_first_non_null <- function(...) {
+  values <- list(...)
+  for (value in values) {
+    if (!is.null(value) && length(value) > 0L) {
+      return(value)
+    }
+  }
+  NULL
+}
+
+aq_artifact_scalar_default <- function(value, default = NA_character_) {
+  if (is.null(value) || !length(value)) {
+    return(default)
+  }
+  value <- as.character(value)[1L]
+  if (is.na(value) || !nzchar(trimws(value))) default else value
+}
+
+aq_artifact_actions <- function(value) {
+  if (is.null(value)) {
+    return(character())
+  }
+  unique(as.character(value[!is.na(value) & nzchar(trimws(as.character(value)))]))
+}
+
+aq_new_artifact_envelope <- function(
+  artifact_id,
+  artifact_type,
+  artifact_version = "aq_artifact_envelope_v1",
+  parent_artifact_ids = character(),
+  lineage = list(),
+  task = NA_character_,
+  operator = NA_character_,
+  engine = NA_character_,
+  specification_id = NA_character_,
+  dataset_id = NA_character_,
+  prepared_dataset_id = NA_character_,
+  transformation_id = NA_character_,
+  model_id = NA_character_,
+  campaign_references = list(),
+  warnings = character(),
+  supported_actions = character(),
+  producer = NA_character_,
+  consumer_expectations = list(),
+  created_at = aq_artifact_now()
+) {
+  x <- list(
+    artifact_id = aq_artifact_scalar_default(artifact_id),
+    artifact_type = aq_artifact_scalar_default(artifact_type),
+    artifact_version = aq_artifact_scalar_default(artifact_version),
+    envelope_version = "aq_artifact_envelope_v1",
+    parent_artifact_ids = aq_artifact_actions(parent_artifact_ids),
+    lineage = aq_artifact_null_default(lineage, list()),
+    task = aq_artifact_scalar_default(task),
+    operator = aq_artifact_scalar_default(operator),
+    engine = aq_artifact_scalar_default(engine),
+    specification_id = aq_artifact_scalar_default(specification_id),
+    dataset_id = aq_artifact_scalar_default(dataset_id),
+    prepared_dataset_id = aq_artifact_scalar_default(prepared_dataset_id),
+    transformation_id = aq_artifact_scalar_default(transformation_id),
+    model_id = aq_artifact_scalar_default(model_id),
+    campaign_references = aq_artifact_null_default(campaign_references, list()),
+    warnings = aq_artifact_actions(warnings),
+    supported_actions = aq_artifact_actions(supported_actions),
+    producer = aq_artifact_scalar_default(producer),
+    consumer_expectations = aq_artifact_null_default(consumer_expectations, list()),
+    created_at = created_at
+  )
+  class(x) <- c("aq_artifact_envelope", "list")
+  x
+}
+
+aq_artifact_infer_type <- function(x) {
+  aq_artifact_scalar_default(aq_artifact_first_non_null(
+    x$artifact_type,
+    x$metadata$artifact_type,
+    x$type,
+    class(x)[1L]
+  ))
+}
+
+aq_artifact_infer_id <- function(x) {
+  aq_artifact_scalar_default(aq_artifact_first_non_null(
+    x$artifact_id,
+    x$id,
+    x$spec_id,
+    x$fit_id,
+    x$prediction_id,
+    x$scoring_id,
+    x$assessment_id,
+    x$monitoring_id,
+    x$bundle_id
+  ))
+}
+
+#' Return the Canonical AutoQuant Artifact Envelope
+#'
+#' @description
+#' Returns the canonical analytical artifact envelope for an AutoQuant object.
+#' Existing vNext artifacts carry an explicit envelope. Older table/plot/report
+#' artifacts are normalized into the same shape from their common metadata.
+#'
+#' @param artifact An AutoQuant artifact or vNext result object.
+#'
+#' @return An `aq_artifact_envelope` list.
+#' @export
+aq_artifact_envelope <- function(artifact) {
+  if (!is.null(artifact$artifact_envelope) && inherits(artifact$artifact_envelope, "aq_artifact_envelope")) {
+    return(artifact$artifact_envelope)
+  }
+  metadata <- aq_artifact_null_default(artifact$metadata, list())
+  aq_new_artifact_envelope(
+    artifact_id = aq_artifact_infer_id(artifact),
+    artifact_type = aq_artifact_infer_type(artifact),
+    artifact_version = aq_artifact_scalar_default(aq_artifact_first_non_null(
+      artifact$schema_version,
+      artifact$version,
+      metadata$schema_version
+    )),
+    parent_artifact_ids = aq_artifact_first_non_null(
+      artifact$parent_artifact_ids,
+      artifact$dependencies,
+      metadata$parent_artifact_ids,
+      metadata$dependencies
+    ),
+    lineage = aq_artifact_first_non_null(artifact$lineage, metadata$lineage, list()),
+    task = aq_artifact_first_non_null(artifact$task, metadata$task),
+    operator = aq_artifact_first_non_null(artifact$operator, metadata$operator, artifact$source_generator),
+    engine = aq_artifact_first_non_null(artifact$engine, metadata$engine),
+    specification_id = aq_artifact_first_non_null(artifact$spec_id, artifact$model_spec_id, metadata$model_spec_id),
+    dataset_id = aq_artifact_first_non_null(artifact$dataset_id, metadata$dataset_id),
+    prepared_dataset_id = aq_artifact_first_non_null(artifact$prepared_dataset_id, metadata$prepared_dataset_id),
+    transformation_id = aq_artifact_first_non_null(
+      artifact$fitted_transformation_id,
+      metadata$fitted_transformation_id,
+      metadata$transformation_spec_id
+    ),
+    model_id = aq_artifact_first_non_null(artifact$model_id, metadata$model_id),
+    campaign_references = aq_artifact_first_non_null(artifact$campaign_references, metadata$campaign_references, list()),
+    warnings = aq_artifact_first_non_null(artifact$warnings, metadata$warnings, character()),
+    supported_actions = aq_artifact_first_non_null(
+      artifact$supported_downstream_actions,
+      artifact$supported_actions,
+      metadata$supported_downstream_actions,
+      metadata$supported_actions
+    ),
+    producer = aq_artifact_first_non_null(artifact$producer, metadata$producer, artifact$source_generator),
+    consumer_expectations = aq_artifact_first_non_null(artifact$consumer_expectations, metadata$consumer_expectations, list()),
+    created_at = aq_artifact_first_non_null(artifact$created_at, artifact$creation_time, metadata$created_at, aq_artifact_now())
+  )
+}
+
+#' Return Supported Downstream Actions for an AutoQuant Artifact
+#'
+#' @param artifact An AutoQuant artifact or vNext result object.
+#'
+#' @return Character vector of supported actions.
+#' @export
+aq_supported_actions <- function(artifact) {
+  aq_artifact_envelope(artifact)$supported_actions
+}
+
+#' Return Deterministic Artifact Relationships
+#'
+#' @param artifact An AutoQuant artifact or vNext result object.
+#'
+#' @return A `data.table` with parent artifact relationships.
+#' @export
+aq_artifact_relationships <- function(artifact) {
+  envelope <- aq_artifact_envelope(artifact)
+  parents <- aq_artifact_actions(envelope$parent_artifact_ids)
+  if (!length(parents)) {
+    return(data.table::data.table(
+      artifact_id = character(),
+      parent_artifact_id = character(),
+      relationship = character(),
+      artifact_type = character()
+    ))
+  }
+  data.table::data.table(
+    artifact_id = envelope$artifact_id,
+    parent_artifact_id = parents,
+    relationship = "derived_from",
+    artifact_type = envelope$artifact_type
+  )
+}
+
+#' Validate the Canonical AutoQuant Artifact Contract
+#'
+#' @param artifact An AutoQuant artifact or vNext result object.
+#'
+#' @return A `data.table` of deterministic validation diagnostics.
+#' @export
+aq_validate_artifact <- function(artifact) {
+  envelope <- tryCatch(aq_artifact_envelope(artifact), error = identity)
+  if (inherits(envelope, "error")) {
+    return(data.table::data.table(
+      check = "artifact_envelope",
+      status = "fail",
+      severity = "fail",
+      message = conditionMessage(envelope)
+    ))
+  }
+  rows <- list()
+  add <- function(check, status, message, severity = status) {
+    rows[[length(rows) + 1L]] <<- data.table::data.table(
+      check = check,
+      status = status,
+      severity = severity,
+      message = message
+    )
+  }
+  required <- c("artifact_id", "artifact_type", "artifact_version", "envelope_version", "producer")
+  missing <- required[!vapply(required, function(field) {
+    value <- envelope[[field]]
+    !is.null(value) && length(value) > 0L && !is.na(as.character(value)[1L]) && nzchar(trimws(as.character(value)[1L]))
+  }, logical(1L))]
+  if (length(missing)) {
+    add("required_metadata", "fail", paste("Missing required envelope field(s):", paste(missing, collapse = ", ")))
+  } else {
+    add("required_metadata", "pass", "required envelope metadata is present.", "info")
+  }
+  if (!identical(envelope$envelope_version, "aq_artifact_envelope_v1")) {
+    add("envelope_version", "fail", paste("Unsupported envelope version:", envelope$envelope_version))
+  } else {
+    add("envelope_version", "pass", "canonical envelope version is supported.", "info")
+  }
+  if (!is.list(envelope$lineage)) {
+    add("lineage", "fail", "lineage must be a list.")
+  } else {
+    add("lineage", "pass", "lineage is list-based.", "info")
+  }
+  if (!is.character(envelope$supported_actions)) {
+    add("supported_actions", "fail", "supported actions must be character.")
+  } else {
+    add("supported_actions", "pass", "supported actions are normalized.", "info")
+  }
+  if (!is.list(envelope$consumer_expectations)) {
+    add("consumer_expectations", "fail", "consumer expectations must be a list.")
+  } else {
+    add("consumer_expectations", "pass", "consumer expectations are available.", "info")
+  }
+  data.table::rbindlist(rows, use.names = TRUE, fill = TRUE)
+}
+
 #' Create a Table Artifact
 #'
 #' @param id Artifact identifier.

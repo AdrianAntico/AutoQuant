@@ -17,6 +17,7 @@ aq_model_spec(
   seed = 20260712L,
   model_id = NULL,
   dataset_id = NULL,
+  transformation_spec = NULL,
   supported_downstream_actions = c("predict", "assess", "compare")
 )
 }
@@ -44,6 +45,10 @@ aq_model_spec(
 \item{model_id}{Optional model identifier.}
 
 \item{dataset_id}{Optional source dataset identifier.}
+
+\item{transformation_spec}{Optional Rodeo transformation specification. When
+supplied, the transformation is fitted during model training and replayed
+during scoring.}
 
 \item{supported_downstream_actions}{Supported next actions.}
 }

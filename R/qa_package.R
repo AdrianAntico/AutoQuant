@@ -30,6 +30,9 @@ qa_autoquant_package <- function() {
     catboost_builder_artifacts = qa_generate_catboost_builder_artifacts(),
     vnext_catboost_regression = qa_vnext_catboost_regression(),
     vnext_catboost_binary = qa_vnext_catboost_binary(),
+    vnext_rodeo_transformation_replay = qa_vnext_rodeo_transformation_replay(),
+    vnext_model_bundle = qa_vnext_model_bundle(),
+    vnext_artifact_framework = qa_vnext_artifact_framework(),
     vnext_scoring_lifecycle = qa_vnext_scoring_lifecycle()
   )
 

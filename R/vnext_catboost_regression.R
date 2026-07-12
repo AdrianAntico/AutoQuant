@@ -17,13 +17,14 @@ aq_vnext_slug <- function(x, default = "autoquant") {
 }
 
 aq_vnext_id <- function(prefix, seed = NULL) {
+  seed_int <- suppressWarnings(as.integer(seed)[1L])
   paste0(
     aq_vnext_slug(prefix, "aq"),
     "_",
     format(Sys.time(), "%Y%m%d%H%M%S"),
     "_",
     sprintf("%06d", sample.int(999999L, 1L)),
-    if (!is.null(seed)) paste0("_s", as.integer(seed)[1L]) else ""
+    if (!is.null(seed) && !is.na(seed_int)) paste0("_s", seed_int) else ""
   )
 }
 
@@ -154,6 +155,9 @@ aq_validate_threshold_policy <- function(policy) {
 #' @param seed Reproducibility seed.
 #' @param model_id Optional model identifier.
 #' @param dataset_id Optional source dataset identifier.
+#' @param transformation_spec Optional Rodeo transformation specification. When
+#'   supplied, the transformation is fitted during model training and replayed
+#'   during scoring.
 #' @param supported_downstream_actions Supported next actions.
 #'
 #' @return An `aq_model_spec` object.
@@ -171,6 +175,7 @@ aq_model_spec <- function(
   seed = 20260712L,
   model_id = NULL,
   dataset_id = NULL,
+  transformation_spec = NULL,
   supported_downstream_actions = c("predict", "assess", "compare")
 ) {
   task <- match.arg(tolower(task), c("regression", "binary"))
@@ -209,6 +214,8 @@ aq_model_spec <- function(
     seed = seed,
     model_id = as.character(model_id)[1L],
     dataset_id = aq_vnext_default(dataset_id, NA_character_),
+    transformation_spec = transformation_spec,
+    transformation_required = !is.null(transformation_spec),
     supported_downstream_actions = aq_vnext_unique_chr(supported_downstream_actions),
     created_at = aq_vnext_now()
   )
@@ -337,16 +344,33 @@ aq_validate_model_spec <- function(spec, data = NULL) {
   } else {
     add("engine_task_type", "pass", "CPU task_type is supported.", "info")
   }
+  has_transformation <- !is.null(spec$transformation_spec)
+  if (has_transformation) {
+    if (!requireNamespace("Rodeo", quietly = TRUE)) {
+      add("transformation_dependency", "fail", "Rodeo is required when transformation_spec is supplied.")
+    } else if (!inherits(spec$transformation_spec, "rodeo_transformation_spec")) {
+      add("transformation_spec_class", "fail", "transformation_spec must be created by Rodeo::rodeo_transformation_spec().")
+    } else {
+      add("transformation_spec_class", "pass", paste("Rodeo transformation spec:", spec$transformation_spec$id), "info")
+    }
+  } else {
+    add("transformation_spec_class", "pass", "no Rodeo transformation spec supplied.", "info")
+  }
   if (!is.null(data)) {
     if (!is.data.frame(data) && !data.table::is.data.table(data)) {
       add("data_frame_like", "fail", "data must be data.frame/data.table-like.")
     } else {
       add("data_frame_like", "pass", "data is data.frame/data.table-like.", "info")
-      missing_cols <- setdiff(c(spec$target, spec$features), names(data))
+      raw_required_cols <- if (has_transformation && inherits(spec$transformation_spec, "rodeo_transformation_spec")) {
+        c(spec$target, spec$transformation_spec$input_columns)
+      } else {
+        c(spec$target, spec$features)
+      }
+      missing_cols <- setdiff(raw_required_cols, names(data))
       if (length(missing_cols)) {
         add("columns_exist", "fail", paste("Missing columns:", paste(missing_cols, collapse = ", ")))
       } else {
-        add("columns_exist", "pass", "target and features exist in data.", "info")
+        add("columns_exist", "pass", if (has_transformation) "target and Rodeo transformation input columns exist in data." else "target and features exist in data.", "info")
         if (identical(spec$task, "regression") && !is.numeric(data[[spec$target]])) {
           add("target_type", "fail", "regression target must be numeric.")
         } else if (identical(spec$task, "regression")) {
@@ -375,14 +399,19 @@ aq_validate_model_spec <- function(spec, data = NULL) {
           threshold_checks <- aq_validate_threshold_policy(spec$threshold_policy)
           rows <- c(rows, list(threshold_checks))
         }
-        feature_data <- as.data.frame(data)[, spec$features, drop = FALSE]
-        unsupported <- spec$features[vapply(feature_data, function(x) {
-          is.list(x) || is.matrix(x) || inherits(x, "POSIXlt")
-        }, logical(1L))]
-        if (length(unsupported)) {
-          add("feature_types", "fail", paste("Unsupported feature column types:", paste(unsupported, collapse = ", ")))
+        missing_features <- setdiff(spec$features, names(data))
+        if (length(missing_features) && has_transformation) {
+          add("feature_validation_deferred", "pass", paste("Feature validation deferred until Rodeo replay creates prepared feature(s):", paste(missing_features, collapse = ", ")), "info")
         } else {
-          add("feature_types", "pass", "feature column types are supported.", "info")
+          feature_data <- as.data.frame(data)[, spec$features, drop = FALSE]
+          unsupported <- spec$features[vapply(feature_data, function(x) {
+            is.list(x) || is.matrix(x) || inherits(x, "POSIXlt")
+          }, logical(1L))]
+          if (length(unsupported)) {
+            add("feature_types", "fail", paste("Unsupported feature column types:", paste(unsupported, collapse = ", ")))
+          } else {
+            add("feature_types", "pass", "feature column types are supported.", "info")
+          }
         }
       }
     }
@@ -462,6 +491,25 @@ aq_vnext_feature_schema <- function(data, features) {
   )
 }
 
+aq_vnext_feature_levels <- function(data, features) {
+  dt <- data.table::as.data.table(data)
+  out <- lapply(intersect(features, names(dt)), function(feature) {
+    x <- dt[[feature]]
+    if (!is.character(x) && !is.factor(x)) {
+      return(NULL)
+    }
+    data.table::data.table(
+      feature = feature,
+      level = sort(unique(as.character(x[!is.na(x)])))
+    )
+  })
+  out <- Filter(Negate(is.null), out)
+  if (!length(out)) {
+    return(data.table::data.table(feature = character(), level = character()))
+  }
+  data.table::rbindlist(out, use.names = TRUE, fill = TRUE)
+}
+
 aq_vnext_schema_fingerprint <- function(data, columns = names(data)) {
   dt <- data.table::as.data.table(data)
   columns <- intersect(as.character(columns), names(dt))
@@ -471,6 +519,142 @@ aq_vnext_schema_fingerprint <- function(data, columns = names(data)) {
     sep = ":"
   )
   paste0("rows=", nrow(dt), "|cols=", paste(parts, collapse = ","))
+}
+
+aq_vnext_null_default <- function(x, y) {
+  if (is.null(x)) y else x
+}
+
+aq_vnext_drop_transformation <- function(spec) {
+  prepared_spec <- spec
+  prepared_spec$transformation_spec <- NULL
+  prepared_spec$transformation_required <- FALSE
+  prepared_spec
+}
+
+aq_vnext_transformation_summary <- function(fitted, prepared_data = NULL) {
+  if (is.null(fitted)) {
+    return(list(
+      replay_required = FALSE,
+      replay_supported = FALSE,
+      transformation_spec_id = NA_character_,
+      fitted_transformation_id = NA_character_,
+      transformation_type = NA_character_,
+      transformation_version = NA_character_,
+      metadata = list()
+    ))
+  }
+  metadata <- Rodeo::rodeo_transformation_metadata(fitted, data = prepared_data)
+  list(
+    replay_required = TRUE,
+    replay_supported = TRUE,
+    transformation_spec_id = fitted$id,
+    fitted_transformation_id = fitted$id,
+    transformation_type = fitted$type,
+    transformation_version = fitted$version,
+    input_columns = fitted$input_columns,
+    output_columns = aq_vnext_null_default(fitted$output_columns, character()),
+    columns_added = aq_vnext_null_default(fitted$metadata$columns_added, character()),
+    columns_removed = aq_vnext_null_default(fitted$metadata$columns_removed, character()),
+    schema_fingerprint = aq_vnext_schema_fingerprint(prepared_data),
+    metadata = metadata,
+    warnings = aq_vnext_null_default(fitted$warnings, character()),
+    diagnostics = aq_vnext_null_default(fitted$diagnostics, data.table::data.table())
+  )
+}
+
+aq_vnext_prepare_dataset_id <- function(dataset_id, transformation_id, role) {
+  aq_vnext_id(
+    paste0("prepared_", role),
+    paste(aq_vnext_default(dataset_id, "dataset"), aq_vnext_default(transformation_id, "no_transform"), role, sep = "|")
+  )
+}
+
+aq_vnext_fit_rodeo_transformation <- function(train_raw, validation_raw, spec) {
+  if (is.null(spec$transformation_spec)) {
+    return(list(
+      train_data = train_raw,
+      validation_data = validation_raw,
+      fitted_transformation = NULL,
+      serialized_fitted_transformation = NULL,
+      transformation_lineage = aq_vnext_transformation_summary(NULL),
+      validation = data.table::data.table(),
+      warnings = character()
+    ))
+  }
+  if (!requireNamespace("Rodeo", quietly = TRUE)) {
+    stop("Rodeo is required to fit transformation_spec.", call. = FALSE)
+  }
+  fitted <- Rodeo::rodeo_fit_transformation(train_raw, spec$transformation_spec)
+  train_prepared <- data.table::as.data.table(Rodeo::rodeo_apply_transformation(train_raw, fitted, copy_data = TRUE))
+  validation_prepared <- data.table::as.data.table(Rodeo::rodeo_apply_transformation(validation_raw, fitted, copy_data = TRUE))
+  transformation_validation <- Rodeo::rodeo_validate_transformation_schema(validation_raw, fitted)
+  lineage <- aq_vnext_transformation_summary(fitted, train_prepared)
+  lineage$training_raw_schema_fingerprint <- aq_vnext_schema_fingerprint(train_raw)
+  lineage$validation_raw_schema_fingerprint <- aq_vnext_schema_fingerprint(validation_raw)
+  lineage$prepared_training_schema_fingerprint <- aq_vnext_schema_fingerprint(train_prepared)
+  lineage$prepared_validation_schema_fingerprint <- aq_vnext_schema_fingerprint(validation_prepared)
+  lineage$prepared_training_dataset_id <- aq_vnext_prepare_dataset_id(spec$dataset_id, fitted$id, "training")
+  lineage$prepared_validation_dataset_id <- aq_vnext_prepare_dataset_id(spec$dataset_id, fitted$id, "validation")
+  list(
+    train_data = train_prepared,
+    validation_data = validation_prepared,
+    fitted_transformation = fitted,
+    serialized_fitted_transformation = serialize(fitted, NULL),
+    transformation_lineage = lineage,
+    validation = transformation_validation$diagnostics,
+    warnings = unique(c(fitted$warnings, transformation_validation$warnings))
+  )
+}
+
+aq_vnext_replay_rodeo_transformation <- function(raw_data, fit, dataset_id = NULL) {
+  if (!isTRUE(fit$transformation_required)) {
+    return(list(
+      status = "not_required",
+      data = raw_data,
+      diagnostics = data.table::data.table(),
+      warnings = character(),
+      lineage = aq_vnext_transformation_summary(NULL)
+    ))
+  }
+  if (!requireNamespace("Rodeo", quietly = TRUE)) {
+    stop("Rodeo is required to replay the fitted transformation.", call. = FALSE)
+  }
+  fitted <- fit$fitted_transformation
+  if (!inherits(fitted, "rodeo_fitted_transformation")) {
+    stop("fit does not contain a fitted Rodeo transformation for replay.", call. = FALSE)
+  }
+  validation <- Rodeo::rodeo_validate_transformation_schema(raw_data, fitted)
+  if (!isTRUE(validation$valid)) {
+    stop(paste("Rodeo transformation replay failed:", paste(validation$errors, collapse = " | ")), call. = FALSE)
+  }
+  prepared <- data.table::as.data.table(Rodeo::rodeo_apply_transformation(raw_data, fitted, copy_data = TRUE))
+  lineage <- aq_vnext_transformation_summary(fitted, prepared)
+  lineage$raw_scoring_schema_fingerprint <- aq_vnext_schema_fingerprint(raw_data)
+  lineage$prepared_scoring_schema_fingerprint <- aq_vnext_schema_fingerprint(prepared)
+  lineage$prepared_scoring_dataset_id <- aq_vnext_prepare_dataset_id(
+    aq_vnext_default(dataset_id, fit$spec$dataset_id),
+    fitted$id,
+    "scoring"
+  )
+  list(
+    status = "success",
+    data = prepared,
+    diagnostics = validation$diagnostics,
+    warnings = unique(c(fitted$warnings, validation$warnings)),
+    lineage = lineage
+  )
+}
+
+aq_vnext_preserve_identity_columns <- function(prepared_data, raw_data, columns) {
+  dt <- data.table::as.data.table(prepared_data)
+  raw <- data.table::as.data.table(raw_data)
+  for (col in aq_vnext_unique_chr(columns)) {
+    if (!col %in% names(dt) && col %in% names(raw) && nrow(dt) == nrow(raw)) {
+      dt[, (col) := raw[[col]]]
+    }
+  }
+  dt
 }
 
 aq_vnext_numeric_summary <- function(x, name) {
@@ -500,6 +684,61 @@ aq_vnext_pool <- function(data, spec, label = NULL) {
   catboost::catboost.load_pool(data = x, label = label)
 }
 
+aq_vnext_consumer_expectations <- function(render_targets = c("analytics_shinyapp", "campaigns", "future_operators")) {
+  list(
+    envelope_contract = "aq_artifact_envelope_v1",
+    render_targets = aq_vnext_unique_chr(render_targets),
+    stable_identity_required = TRUE,
+    lineage_required = TRUE,
+    missing_optional_payload_policy = "diagnostic_not_failure"
+  )
+}
+
+aq_vnext_attach_envelope <- function(
+  artifact,
+  artifact_id = NULL,
+  artifact_type = NULL,
+  artifact_version = NULL,
+  parent_artifact_ids = character(),
+  lineage = list(),
+  task = NA_character_,
+  operator = NA_character_,
+  engine = NA_character_,
+  specification_id = NA_character_,
+  dataset_id = NA_character_,
+  prepared_dataset_id = NA_character_,
+  transformation_id = NA_character_,
+  model_id = NA_character_,
+  campaign_references = list(),
+  warnings = character(),
+  supported_actions = character(),
+  producer = NA_character_,
+  consumer_expectations = aq_vnext_consumer_expectations()
+) {
+  artifact$artifact_envelope <- aq_new_artifact_envelope(
+    artifact_id = aq_vnext_default(artifact_id, aq_vnext_default(artifact$artifact_id, artifact$id)),
+    artifact_type = aq_vnext_default(artifact_type, aq_vnext_default(artifact$artifact_type, artifact$metadata$artifact_type)),
+    artifact_version = aq_vnext_default(artifact_version, aq_vnext_default(artifact$schema_version, artifact$version)),
+    parent_artifact_ids = parent_artifact_ids,
+    lineage = lineage,
+    task = task,
+    operator = operator,
+    engine = engine,
+    specification_id = specification_id,
+    dataset_id = dataset_id,
+    prepared_dataset_id = prepared_dataset_id,
+    transformation_id = transformation_id,
+    model_id = model_id,
+    campaign_references = campaign_references,
+    warnings = warnings,
+    supported_actions = supported_actions,
+    producer = producer,
+    consumer_expectations = consumer_expectations,
+    created_at = aq_vnext_default(artifact$created_at, aq_vnext_now())
+  )
+  artifact
+}
+
 aq_vnext_fit_artifact <- function(fit) {
   artifact <- list(
     artifact_id = fit$fit_id,
@@ -517,14 +756,312 @@ aq_vnext_fit_artifact <- function(fit) {
     negative_class = aq_vnext_default(fit$negative_class, NA_character_),
     threshold_policy = fit$threshold_policy,
     feature_schema = fit$feature_schema,
+    transformation_required = isTRUE(fit$transformation_required),
+    transformation_spec_id = fit$transformation_lineage$transformation_spec_id,
+    fitted_transformation_id = fit$transformation_lineage$fitted_transformation_id,
+    transformation_metadata = fit$transformation_lineage,
+    prepared_feature_manifest = fit$feature_schema,
+    prepared_training_dataset_id = fit$transformation_lineage$prepared_training_dataset_id,
+    prepared_validation_dataset_id = fit$transformation_lineage$prepared_validation_dataset_id,
+    replay_behavior = list(
+      required = isTRUE(fit$transformation_required),
+      supported = isTRUE(fit$transformation_lineage$replay_supported),
+      scoring_policy = if (isTRUE(fit$transformation_required)) "raw_scoring_data_must_replay_fitted_rodeo_transformation" else "scoring_data_must_match_feature_manifest"
+    ),
     training_metadata = fit$training_metadata,
     engine_params = fit$engine_params,
     warnings = fit$warnings,
     supported_downstream_actions = fit$spec$supported_downstream_actions,
     created_at = fit$created_at
   )
+  artifact <- aq_vnext_attach_envelope(
+    artifact,
+    parent_artifact_ids = fit$spec$spec_id,
+    lineage = list(
+      specification_id = fit$spec$spec_id,
+      dataset_id = fit$spec$dataset_id,
+      partition_id = fit$partition$partition_id,
+      raw_training_schema_fingerprint = fit$raw_training_schema_fingerprint,
+      prepared_training_schema_fingerprint = fit$prepared_training_schema_fingerprint,
+      transformation = fit$transformation_lineage
+    ),
+    task = fit$spec$task,
+    operator = "supervised_fit",
+    engine = fit$spec$engine,
+    specification_id = fit$spec$spec_id,
+    dataset_id = fit$spec$dataset_id,
+    prepared_dataset_id = fit$transformation_lineage$prepared_training_dataset_id,
+    transformation_id = fit$transformation_lineage$fitted_transformation_id,
+    model_id = fit$model_id,
+    warnings = fit$warnings,
+    supported_actions = fit$spec$supported_downstream_actions,
+    producer = "aq_fit_model"
+  )
   class(artifact) <- c("aq_supervised_fit_artifact", "aq_result_artifact", "list")
   artifact
+}
+
+aq_vnext_bundle_id <- function(fit) {
+  aq_vnext_slug(paste("bundle", fit$model_id, fit$fit_id, fit$transformation_lineage$fitted_transformation_id, sep = "_"), "aq_bundle")
+}
+
+aq_vnext_bundle_paths <- function(path) {
+  path <- normalizePath(path, winslash = "/", mustWork = FALSE)
+  ext <- tolower(tools::file_ext(path))
+  if (identical(ext, "rds")) {
+    dir <- dirname(path)
+    base <- tools::file_path_sans_ext(basename(path))
+    list(
+      bundle_path = path,
+      metadata_path = file.path(dir, paste0(base, "_metadata.rds")),
+      directory = dir
+    )
+  } else {
+    list(
+      bundle_path = file.path(path, "model_bundle.rds"),
+      metadata_path = file.path(path, "metadata.rds"),
+      directory = path
+    )
+  }
+}
+
+aq_vnext_model_bundle_metadata <- function(bundle, bundle_path = NA_character_) {
+  list(
+    bundle_id = bundle$bundle_id,
+    bundle_version = bundle$bundle_version,
+    schema_version = bundle$schema_version,
+    created_at = bundle$bundle_created_at,
+    model_id = bundle$model_id,
+    fit_id = bundle$fit_id,
+    spec_id = bundle$spec$spec_id,
+    task = bundle$task,
+    engine = bundle$engine,
+    target = bundle$spec$target,
+    features = bundle$spec$features,
+    partition_id = bundle$partition$partition_id,
+    transformation_required = isTRUE(bundle$transformation_required),
+    transformation_spec_id = bundle$transformation_lineage$transformation_spec_id,
+    fitted_transformation_id = bundle$transformation_lineage$fitted_transformation_id,
+    raw_training_schema_fingerprint = bundle$raw_training_schema_fingerprint,
+    prepared_training_schema_fingerprint = bundle$prepared_training_schema_fingerprint,
+    feature_schema = bundle$feature_schema,
+    feature_levels = bundle$feature_levels,
+    training_metadata = bundle$training_metadata,
+    supported_actions = bundle$supported_downstream_actions,
+    bundle_path = bundle_path
+  )
+}
+
+aq_vnext_create_model_bundle <- function(fit) {
+  if (!inherits(fit, "aq_fit_result")) {
+    stop("fit must be an aq_fit_result.", call. = FALSE)
+  }
+  bundle <- fit
+  bundle$bundle_id <- aq_vnext_bundle_id(fit)
+  bundle$bundle_version <- "aq_model_bundle_v1"
+  bundle$schema_version <- "aq_model_bundle_v1"
+  bundle$bundle_created_at <- aq_vnext_now()
+  bundle$training_data <- NULL
+  bundle$validation_data <- NULL
+  bundle$raw_training_data <- NULL
+  bundle$raw_validation_data <- NULL
+  bundle$supported_downstream_actions <- unique(c(
+    fit$spec$supported_downstream_actions,
+    "score",
+    "attach_outcomes",
+    "assess_realized",
+    "monitor",
+    "validate_bundle"
+  ))
+  bundle$bundle_metadata <- aq_vnext_model_bundle_metadata(bundle)
+  bundle <- aq_vnext_attach_envelope(
+    bundle,
+    artifact_id = bundle$bundle_id,
+    artifact_type = "model_bundle",
+    artifact_version = bundle$bundle_version,
+    parent_artifact_ids = fit$fit_id,
+    lineage = list(
+      fit_id = fit$fit_id,
+      model_id = fit$model_id,
+      specification_id = fit$spec$spec_id,
+      transformation = fit$transformation_lineage,
+      raw_training_schema_fingerprint = fit$raw_training_schema_fingerprint,
+      prepared_training_schema_fingerprint = fit$prepared_training_schema_fingerprint
+    ),
+    task = fit$task,
+    operator = "model_bundle",
+    engine = fit$engine,
+    specification_id = fit$spec$spec_id,
+    dataset_id = fit$spec$dataset_id,
+    prepared_dataset_id = fit$transformation_lineage$prepared_training_dataset_id,
+    transformation_id = fit$transformation_lineage$fitted_transformation_id,
+    model_id = fit$model_id,
+    warnings = fit$warnings,
+    supported_actions = bundle$supported_downstream_actions,
+    producer = "aq_save_model_bundle"
+  )
+  class(bundle) <- c("aq_model_bundle", "aq_fit_result", "list")
+  bundle
+}
+
+#' Save a vNext Model Bundle
+#'
+#' @param fit An `aq_fit_result` or `aq_model_bundle`.
+#' @param path Directory path or `.rds` bundle file path.
+#' @param overwrite Whether to overwrite an existing bundle file.
+#'
+#' @return An `aq_model_bundle_manifest`.
+#' @export
+aq_save_model_bundle <- function(fit, path, overwrite = FALSE) {
+  bundle <- if (inherits(fit, "aq_model_bundle")) fit else aq_vnext_create_model_bundle(fit)
+  paths <- aq_vnext_bundle_paths(path)
+  if (!dir.exists(paths$directory)) {
+    dir.create(paths$directory, recursive = TRUE, showWarnings = FALSE)
+  }
+  if (file.exists(paths$bundle_path) && !isTRUE(overwrite)) {
+    stop("model bundle already exists. Use overwrite = TRUE to replace it.", call. = FALSE)
+  }
+  bundle$bundle_path <- paths$bundle_path
+  bundle$bundle_metadata <- aq_vnext_model_bundle_metadata(bundle, bundle_path = paths$bundle_path)
+  saveRDS(bundle, paths$bundle_path, version = 3)
+  saveRDS(bundle$bundle_metadata, paths$metadata_path, version = 3)
+  manifest <- list(
+    bundle_id = bundle$bundle_id,
+    bundle_version = bundle$bundle_version,
+    status = "success",
+    bundle_path = normalizePath(paths$bundle_path, winslash = "/", mustWork = FALSE),
+    metadata_path = normalizePath(paths$metadata_path, winslash = "/", mustWork = FALSE),
+    model_id = bundle$model_id,
+    fit_id = bundle$fit_id,
+    task = bundle$task,
+    engine = bundle$engine,
+    transformation_required = isTRUE(bundle$transformation_required),
+    supported_actions = bundle$supported_downstream_actions,
+    saved_at = aq_vnext_now()
+  )
+  class(manifest) <- c("aq_model_bundle_manifest", "list")
+  manifest
+}
+
+#' Load a vNext Model Bundle
+#'
+#' @param path Directory path, `.rds` bundle path, or metadata path.
+#' @param metadata_only Return only bundle metadata without loading the model.
+#' @param validate Validate the loaded bundle.
+#'
+#' @return An `aq_model_bundle` or `aq_model_bundle_metadata`.
+#' @export
+aq_load_model_bundle <- function(path, metadata_only = FALSE, validate = TRUE) {
+  paths <- aq_vnext_bundle_paths(path)
+  if (grepl("_metadata\\.rds$", path, ignore.case = TRUE) || identical(tolower(basename(path)), "metadata.rds")) {
+    paths$metadata_path <- normalizePath(path, winslash = "/", mustWork = FALSE)
+    if (identical(tolower(basename(path)), "metadata.rds")) {
+      paths$bundle_path <- file.path(dirname(path), "model_bundle.rds")
+    }
+  }
+  if (isTRUE(metadata_only)) {
+    if (!file.exists(paths$metadata_path)) {
+      stop("bundle metadata file does not exist: ", paths$metadata_path, call. = FALSE)
+    }
+    metadata <- readRDS(paths$metadata_path)
+    class(metadata) <- c("aq_model_bundle_metadata", "list")
+    return(metadata)
+  }
+  if (!file.exists(paths$bundle_path)) {
+    stop("model bundle file does not exist: ", paths$bundle_path, call. = FALSE)
+  }
+  bundle <- readRDS(paths$bundle_path)
+  if (!inherits(bundle, "aq_model_bundle")) {
+    stop("Serialized object is not an aq_model_bundle.", call. = FALSE)
+  }
+  if (isTRUE(validate)) {
+    diagnostics <- aq_validate_model_bundle(bundle)
+    if (aq_vnext_has_validation_error(diagnostics)) {
+      stop("model bundle validation failed: ", paste(diagnostics[status %in% c("fail", "error"), message], collapse = " "), call. = FALSE)
+    }
+  }
+  bundle
+}
+
+#' Validate a vNext Model Bundle
+#'
+#' @param bundle An `aq_model_bundle`, `aq_fit_result`, or saved bundle path.
+#'
+#' @return A `data.table` of deterministic diagnostics.
+#' @export
+aq_validate_model_bundle <- function(bundle) {
+  rows <- list()
+  add <- function(check, status, message, severity = status) {
+    rows[[length(rows) + 1L]] <<- aq_vnext_validation_table(check, status, message, severity)
+  }
+  if (is.character(bundle) && length(bundle) == 1L) {
+    loaded <- tryCatch(aq_load_model_bundle(bundle, metadata_only = FALSE, validate = FALSE), error = identity)
+    if (inherits(loaded, "error")) {
+      add("bundle_readable", "fail", conditionMessage(loaded))
+      return(data.table::rbindlist(rows, use.names = TRUE, fill = TRUE))
+    }
+    bundle <- loaded
+  }
+  if (!inherits(bundle, "aq_model_bundle")) {
+    add("bundle_class", "fail", "bundle must be loaded by aq_load_model_bundle() or created from aq_save_model_bundle().")
+    return(data.table::rbindlist(rows, use.names = TRUE, fill = TRUE))
+  }
+  add("bundle_class", "pass", "bundle inherits from aq_model_bundle.", "info")
+  required <- c("bundle_id", "bundle_version", "spec", "model", "model_id", "fit_id", "feature_schema", "training_metadata", "fit_artifact")
+  missing <- required[!vapply(required, function(field) !is.null(bundle[[field]]), logical(1L))]
+  if (length(missing)) {
+    add("required_fields", "fail", paste("Missing required bundle field(s):", paste(missing, collapse = ", ")))
+  } else {
+    add("required_fields", "pass", "required bundle fields are present.", "info")
+  }
+  if (!identical(bundle$bundle_version, "aq_model_bundle_v1")) {
+    add("bundle_version", "fail", paste("Unsupported bundle version:", bundle$bundle_version))
+  } else {
+    add("bundle_version", "pass", "bundle version is supported.", "info")
+  }
+  if (!inherits(bundle$spec, "aq_model_spec")) {
+    add("model_spec", "fail", "bundle spec is not an aq_model_spec.")
+  } else {
+    add("model_spec", "pass", "model specification is present.", "info")
+  }
+  if (!bundle$task %in% c("regression", "binary")) {
+    add("task_supported", "fail", "bundle task is not supported.")
+  } else {
+    add("task_supported", "pass", paste("task:", bundle$task), "info")
+  }
+  if (!identical(bundle$engine, "catboost")) {
+    add("engine_supported", "fail", "bundle engine is not supported.")
+  } else {
+    add("engine_supported", "pass", "CatBoost engine is supported.", "info")
+  }
+  if (is.null(bundle$model)) {
+    add("model_available", "fail", "bundle model object is missing.")
+  } else {
+    add("model_available", "pass", "model object is present.", "info")
+  }
+  if (isTRUE(bundle$transformation_required)) {
+    if (is.null(bundle$serialized_fitted_transformation) && is.null(bundle$fitted_transformation)) {
+      add("transformation_available", "fail", "bundle requires transformation replay but no fitted transformation is present.")
+    } else if (!is.null(bundle$fitted_transformation) && !inherits(bundle$fitted_transformation, "rodeo_fitted_transformation")) {
+      add("transformation_available", "fail", "fitted transformation does not inherit from rodeo_fitted_transformation.")
+    } else {
+      add("transformation_available", "pass", "fitted Rodeo transformation is available.", "info")
+    }
+  } else {
+    add("transformation_available", "pass", "no transformation replay required.", "info")
+  }
+  if (!all(bundle$spec$features %in% bundle$feature_schema$feature)) {
+    add("feature_manifest", "fail", "feature schema does not cover all model features.")
+  } else {
+    add("feature_manifest", "pass", "feature manifest covers model features.", "info")
+  }
+  actions <- c("score", "attach_outcomes", "assess_realized", "monitor")
+  if (!all(actions %in% bundle$supported_downstream_actions)) {
+    add("supported_actions", "warning", "bundle does not advertise all standard downstream actions.", "warning")
+  } else {
+    add("supported_actions", "pass", "standard downstream actions are advertised.", "info")
+  }
+  data.table::rbindlist(rows, use.names = TRUE, fill = TRUE)
 }
 
 #' Fit a vNext CatBoost Model
@@ -556,26 +1093,38 @@ aq_fit_model <- function(spec, data, validation_data = NULL) {
   set.seed(spec$seed)
   if (is.null(validation_data)) {
     partition <- aq_vnext_make_partition(dt, spec$partition)
-    train_dt <- data.table::copy(dt[partition$train_index])
-    validation_dt <- data.table::copy(dt[partition$validation_index])
+    train_raw_dt <- data.table::copy(dt[partition$train_index])
+    validation_raw_dt <- data.table::copy(dt[partition$validation_index])
   } else {
-    validation_dt <- data.table::as.data.table(data.table::copy(validation_data))
-    validation_checks <- aq_validate_model_spec(spec, data = validation_dt)
+    validation_raw_dt <- data.table::as.data.table(data.table::copy(validation_data))
+    validation_checks <- aq_validate_model_spec(spec, data = validation_raw_dt)
     if (aq_vnext_has_validation_error(validation_checks)) {
       stop("validation_data does not satisfy model spec: ", paste(validation_checks[status %in% c("fail", "error"), message], collapse = " "), call. = FALSE)
     }
-    train_dt <- dt
+    train_raw_dt <- dt
     partition <- list(
       partition_id = spec$partition$partition_id,
       method = "explicit_validation_data",
-      train_index = seq_len(nrow(train_dt)),
-      validation_index = seq_len(nrow(validation_dt)),
+      train_index = seq_len(nrow(train_raw_dt)),
+      validation_index = seq_len(nrow(validation_raw_dt)),
       summary = data.table::data.table(
         split = c("train", "validation"),
-        rows = c(nrow(train_dt), nrow(validation_dt)),
+        rows = c(nrow(train_raw_dt), nrow(validation_raw_dt)),
         row_share = c(NA_real_, NA_real_)
       )
     )
+  }
+  transformation <- aq_vnext_fit_rodeo_transformation(train_raw_dt, validation_raw_dt, spec)
+  train_dt <- transformation$train_data
+  validation_dt <- transformation$validation_data
+  prepared_spec <- aq_vnext_drop_transformation(spec)
+  prepared_train_validation <- aq_validate_model_spec(prepared_spec, data = train_dt)
+  prepared_validation_checks <- aq_validate_model_spec(prepared_spec, data = validation_dt)
+  if (aq_vnext_has_validation_error(prepared_train_validation)) {
+    stop("prepared training data does not satisfy model spec after Rodeo replay: ", paste(prepared_train_validation[status %in% c("fail", "error"), message], collapse = " "), call. = FALSE)
+  }
+  if (aq_vnext_has_validation_error(prepared_validation_checks)) {
+    stop("prepared validation data does not satisfy model spec after Rodeo replay: ", paste(prepared_validation_checks[status %in% c("fail", "error"), message], collapse = " "), call. = FALSE)
   }
   train_pool <- aq_vnext_pool(train_dt, spec, label = aq_vnext_target_label(train_dt, spec))
   validation_pool <- aq_vnext_pool(validation_dt, spec, label = aq_vnext_target_label(validation_dt, spec))
@@ -600,11 +1149,28 @@ aq_fit_model <- function(spec, data, validation_data = NULL) {
     threshold_policy = spec$threshold_policy,
     positive_class = aq_vnext_default(spec$positive_class, NA_character_),
     negative_class = if (!is.null(binary_classes)) binary_classes$negative_class else NA_character_,
-    feature_schema = aq_vnext_feature_schema(dt, spec$features),
+    feature_schema = aq_vnext_feature_schema(train_dt, spec$features),
+    feature_levels = aq_vnext_feature_levels(train_dt, spec$features),
+    raw_feature_schema = aq_vnext_feature_schema(dt, intersect(names(dt), names(data.table::as.data.table(dt)))),
+    transformation_required = !is.null(spec$transformation_spec),
+    transformation_spec = spec$transformation_spec,
+    fitted_transformation = transformation$fitted_transformation,
+    serialized_fitted_transformation = transformation$serialized_fitted_transformation,
+    transformation_lineage = transformation$transformation_lineage,
+    transformation_diagnostics = transformation$validation,
+    raw_training_schema_fingerprint = aq_vnext_schema_fingerprint(train_raw_dt),
+    raw_validation_schema_fingerprint = aq_vnext_schema_fingerprint(validation_raw_dt),
+    prepared_training_schema_fingerprint = aq_vnext_schema_fingerprint(train_dt),
+    prepared_validation_schema_fingerprint = aq_vnext_schema_fingerprint(validation_dt),
     training_metadata = list(
       train_rows = nrow(train_dt),
       validation_rows = nrow(validation_dt),
+      raw_train_rows = nrow(train_raw_dt),
+      raw_validation_rows = nrow(validation_raw_dt),
       feature_count = length(spec$features),
+      transformation_required = !is.null(spec$transformation_spec),
+      prepared_training_dataset_id = transformation$transformation_lineage$prepared_training_dataset_id,
+      prepared_validation_dataset_id = transformation$transformation_lineage$prepared_validation_dataset_id,
       target_summary_train = if (identical(spec$task, "binary")) {
         mean(aq_vnext_target_label(train_dt, spec), na.rm = TRUE)
       } else {
@@ -621,8 +1187,11 @@ aq_fit_model <- function(spec, data, validation_data = NULL) {
     ),
     training_data = train_dt,
     validation_data = validation_dt,
+    raw_training_data = train_raw_dt,
+    raw_validation_data = validation_raw_dt,
     validation = validation,
-    warnings = character(),
+    prepared_validation = data.table::rbindlist(list(prepared_train_validation, prepared_validation_checks), use.names = TRUE, fill = TRUE),
+    warnings = transformation$warnings,
     created_at = end_time
   )
   fit$fit_artifact <- aq_vnext_fit_artifact(fit)
@@ -647,6 +1216,9 @@ aq_predict_model <- function(fit, new_data = NULL, dataset = c("validation", "tr
   dataset <- match.arg(dataset)
   if (!is.null(new_data)) {
     score_dt <- data.table::as.data.table(data.table::copy(new_data))
+    if (isTRUE(fit$transformation_required)) {
+      score_dt <- aq_vnext_replay_rodeo_transformation(score_dt, fit, dataset_id = dataset_id)$data
+    }
     split <- "new"
   } else if (identical(dataset, "training")) {
     score_dt <- data.table::copy(fit$training_data)
@@ -713,6 +1285,29 @@ aq_predict_model <- function(fit, new_data = NULL, dataset = c("validation", "tr
       row_count = nrow(out),
       supported_downstream_actions = c("assess", "compare")
     )
+  )
+  artifact <- aq_vnext_attach_envelope(
+    artifact,
+    artifact_id = prediction_id,
+    artifact_type = paste0("supervised_", fit$spec$task, "_prediction"),
+    artifact_version = "aq_prediction_artifact_v1",
+    parent_artifact_ids = fit$fit_id,
+    lineage = list(
+      fit_id = fit$fit_id,
+      model_id = fit$model_id,
+      specification_id = fit$spec$spec_id,
+      dataset_id = aq_vnext_default(dataset_id, fit$spec$dataset_id),
+      prediction_col = "Predict",
+      probability_col = if (identical(fit$spec$task, "binary")) "PositiveProbability" else NA_character_
+    ),
+    task = fit$spec$task,
+    operator = "prediction",
+    engine = fit$spec$engine,
+    specification_id = fit$spec$spec_id,
+    dataset_id = aq_vnext_default(dataset_id, fit$spec$dataset_id),
+    model_id = fit$model_id,
+    supported_actions = c("assess", "compare"),
+    producer = "aq_predict_model"
   )
   result <- list(
     prediction_id = prediction_id,
@@ -893,10 +1488,16 @@ aq_validate_scoring_data <- function(fit, data, scoring_spec) {
         add("feature_missingness", "warning", paste("Feature", feature, "contains", sum(is.na(dt[[feature]])), "missing value(s)."), "warning")
       }
       if (feature %in% fit$feature_schema$feature && old_base %in% c("character", "factor")) {
-        train_values <- unique(as.character(fit$training_data[[feature]]))
+        train_values <- if (!is.null(fit$feature_levels) && nrow(fit$feature_levels)) {
+          fit$feature_levels$level[fit$feature_levels$feature == feature]
+        } else if (!is.null(fit$training_data) && feature %in% names(fit$training_data)) {
+          unique(as.character(fit$training_data[[feature]]))
+        } else {
+          character()
+        }
         new_values <- unique(as.character(dt[[feature]]))
         unseen <- setdiff(new_values[!is.na(new_values)], train_values[!is.na(train_values)])
-        if (length(unseen)) {
+        if (length(train_values) && length(unseen)) {
           add("unseen_categorical_levels", "warning", paste("Feature", feature, "contains unseen level(s):", paste(utils::head(unseen, 5L), collapse = ", ")), "warning")
         }
       }
@@ -963,7 +1564,14 @@ aq_score_model <- function(
     if (!is.null(outcome_col)) scoring_spec$outcome_col <- as.character(outcome_col)[1L]
     if (!is.null(threshold_policy)) scoring_spec$threshold_policy <- threshold_policy
   }
-  score_dt <- data.table::as.data.table(data.table::copy(new_data))
+  raw_score_dt <- data.table::as.data.table(data.table::copy(new_data))
+  replay <- aq_vnext_replay_rodeo_transformation(raw_score_dt, fit, dataset_id = dataset_id)
+  score_dt <- replay$data
+  score_dt <- aq_vnext_preserve_identity_columns(
+    score_dt,
+    raw_score_dt,
+    c(scoring_spec$row_id_cols, scoring_spec$outcome_col)
+  )
   validation <- aq_validate_scoring_data(fit, score_dt, scoring_spec)
   if (aq_vnext_has_validation_error(validation)) {
     stop(paste(validation[status %in% c("fail", "error"), message], collapse = " "), call. = FALSE)
@@ -1023,12 +1631,46 @@ aq_score_model <- function(
       task = fit$task,
       engine = fit$engine,
       dataset_id = aq_vnext_default(dataset_id, fit$spec$dataset_id),
+      raw_dataset_id = aq_vnext_default(dataset_id, fit$spec$dataset_id),
+      prepared_dataset_id = replay$lineage$prepared_scoring_dataset_id,
+      transformation_replay_status = replay$status,
+      transformation_required = isTRUE(fit$transformation_required),
+      transformation_spec_id = replay$lineage$transformation_spec_id,
+      fitted_transformation_id = replay$lineage$fitted_transformation_id,
+      transformation_metadata = replay$lineage,
       prediction_cols = prediction_cols,
       row_id_cols = row_id_cols,
       outcome_status = outcome_status,
       threshold_policy = threshold_policy,
       supported_downstream_actions = scoring_spec$supported_next_actions
     )
+  )
+  artifact <- aq_vnext_attach_envelope(
+    artifact,
+    artifact_id = scoring_id,
+    artifact_type = paste0("supervised_", fit$task, "_scoring"),
+    artifact_version = "aq_scoring_artifact_v1",
+    parent_artifact_ids = fit$fit_id,
+    lineage = list(
+      fit_id = fit$fit_id,
+      model_id = fit$model_id,
+      specification_id = fit$spec$spec_id,
+      scoring_spec_id = scoring_spec$scoring_spec_id,
+      raw_scoring_dataset_fingerprint = aq_vnext_schema_fingerprint(raw_score_dt),
+      prepared_scoring_dataset_fingerprint = aq_vnext_schema_fingerprint(score_dt),
+      transformation_replay = replay$lineage
+    ),
+    task = fit$task,
+    operator = "scoring",
+    engine = fit$engine,
+    specification_id = fit$spec$spec_id,
+    dataset_id = aq_vnext_default(dataset_id, fit$spec$dataset_id),
+    prepared_dataset_id = replay$lineage$prepared_scoring_dataset_id,
+    transformation_id = replay$lineage$fitted_transformation_id,
+    model_id = fit$model_id,
+    warnings = unique(c(validation[status == "warning", message], replay$warnings)),
+    supported_actions = scoring_spec$supported_next_actions,
+    producer = "aq_score_model"
   )
   result <- list(
     scoring_id = scoring_id,
@@ -1043,10 +1685,20 @@ aq_score_model <- function(
     model_id = fit$model_id,
     model_spec_id = fit$spec$spec_id,
     dataset_id = aq_vnext_default(dataset_id, fit$spec$dataset_id),
+    raw_scoring_dataset_fingerprint = aq_vnext_schema_fingerprint(raw_score_dt),
+    prepared_scoring_dataset_fingerprint = aq_vnext_schema_fingerprint(score_dt),
     scoring_dataset_fingerprint = aq_vnext_schema_fingerprint(score_dt),
+    prepared_dataset_id = replay$lineage$prepared_scoring_dataset_id,
     row_id_cols = row_id_cols,
     generated_row_id = scoring_spec$generated_row_id,
     feature_manifest = fit$feature_schema,
+    transformation_required = isTRUE(fit$transformation_required),
+    transformation_replay = list(
+      status = replay$status,
+      warnings = replay$warnings,
+      diagnostics = replay$diagnostics,
+      lineage = replay$lineage
+    ),
     prediction_col = "Predict",
     prediction_cols = prediction_cols,
     probability_col = if (identical(fit$task, "binary")) "PositiveProbability" else NA_character_,
@@ -1056,8 +1708,8 @@ aq_score_model <- function(
     threshold_decision_history = decision_history,
     positive_class = aq_vnext_default(fit$positive_class, NA_character_),
     negative_class = aq_vnext_default(fit$negative_class, NA_character_),
-    schema_diagnostics = validation,
-    warnings = validation[status == "warning", message],
+    schema_diagnostics = data.table::rbindlist(list(validation, replay$diagnostics), use.names = TRUE, fill = TRUE),
+    warnings = unique(c(validation[status == "warning", message], replay$warnings)),
     runtime_metadata = list(scored_rows = nrow(output), scored_at = aq_vnext_now()),
     outcome_status = outcome_status,
     outcome_attachment = NULL,
@@ -1191,6 +1843,27 @@ aq_attach_outcomes <- function(
     outcome_timestamp = aq_vnext_default(outcome_timestamp, aq_vnext_now()),
     created_at = aq_vnext_now()
   )
+  attachment <- aq_vnext_attach_envelope(
+    attachment,
+    parent_artifact_ids = scoring$scoring_id,
+    lineage = list(
+      scoring_id = scoring$scoring_id,
+      model_id = scoring$model_id,
+      fit_id = scoring$fit_id,
+      outcome_dataset_id = aq_vnext_default(dataset_id, NA_character_),
+      row_id_cols = row_id_cols,
+      missing_outcome_rows = missing_outcomes
+    ),
+    task = scoring$task,
+    operator = "outcome_attachment",
+    engine = scoring$engine,
+    specification_id = scoring$model_spec_id,
+    dataset_id = aq_vnext_default(dataset_id, scoring$dataset_id),
+    model_id = scoring$model_id,
+    warnings = if (missing_outcomes) paste("Missing outcomes for", missing_outcomes, "scored row(s).") else character(),
+    supported_actions = c("assess_realized", "monitor", "compare"),
+    producer = "aq_attach_outcomes"
+  )
   class(attachment) <- c("aq_outcome_attachment_artifact", "aq_result_artifact", "list")
   out <- scoring
   out$data <- merged
@@ -1284,6 +1957,22 @@ aq_monitor_scoring <- function(scoring, baseline = NULL) {
   }
   evidence <- list(
     schema_diagnostics = scoring$schema_diagnostics,
+    transformation_replay = scoring$transformation_replay,
+    transformation_compatibility = data.table::data.table(
+      check = "transformation_replay",
+      status = aq_vnext_default(scoring$transformation_replay$status, "not_required"),
+      detail = if (isTRUE(scoring$transformation_required)) {
+        paste(
+          "fitted_transformation_id=",
+          aq_vnext_default(scoring$transformation_replay$lineage$fitted_transformation_id, NA_character_),
+          "; prepared_dataset_id=",
+          aq_vnext_default(scoring$prepared_dataset_id, NA_character_),
+          sep = ""
+        )
+      } else {
+        "no transformation replay required"
+      }
+    ),
     prediction_distribution = prediction_distribution,
     probability_distribution = probability_distribution,
     predicted_class_distribution = class_distribution,
@@ -1305,6 +1994,29 @@ aq_monitor_scoring <- function(scoring, baseline = NULL) {
     evidence = evidence,
     supported_downstream_actions = c("compare", "campaign_review"),
     created_at = aq_vnext_now()
+  )
+  artifact <- aq_vnext_attach_envelope(
+    artifact,
+    parent_artifact_ids = aq_vnext_unique_chr(c(scoring$scoring_id, baseline_id)),
+    lineage = list(
+      scoring_id = scoring$scoring_id,
+      baseline_id = baseline_id,
+      model_id = scoring$model_id,
+      fit_id = scoring$fit_id,
+      outcome_status = scoring$outcome_status,
+      evidence_names = names(evidence)
+    ),
+    task = scoring$task,
+    operator = "monitoring",
+    engine = scoring$engine,
+    specification_id = scoring$model_spec_id,
+    dataset_id = scoring$dataset_id,
+    prepared_dataset_id = scoring$prepared_dataset_id,
+    transformation_id = scoring$transformation_replay$lineage$fitted_transformation_id,
+    model_id = scoring$model_id,
+    warnings = scoring$warnings,
+    supported_actions = c("compare", "campaign_review"),
+    producer = "aq_monitor_scoring"
   )
   class(artifact) <- c("aq_scoring_monitoring_artifact", "aq_result_artifact", "list")
   result <- list(
@@ -1524,6 +2236,26 @@ aq_assess_model <- function(fit = NULL, predictions, by = NULL) {
     supported_downstream_actions = c("compare"),
     created_at = aq_vnext_now()
   )
+  assessment_artifact <- aq_vnext_attach_envelope(
+    assessment_artifact,
+    parent_artifact_ids = predictions$prediction_id,
+    lineage = list(
+      prediction_id = predictions$prediction_id,
+      fit_id = predictions$fit_id,
+      model_id = predictions$model_id,
+      dataset_id = predictions$dataset_id,
+      metric_count = nrow(overall),
+      subgroup_available = nrow(subgroup) > 0L
+    ),
+    task = "regression",
+    operator = "assessment",
+    engine = if (!is.null(fit)) fit$engine else NA_character_,
+    specification_id = if (!is.null(fit)) fit$spec$spec_id else NA_character_,
+    dataset_id = predictions$dataset_id,
+    model_id = predictions$model_id,
+    supported_actions = c("compare", "report", "campaign_review", "knowledge_promotion"),
+    producer = "aq_assess_model"
+  )
   class(assessment_artifact) <- c("aq_regression_assessment_artifact", "aq_result_artifact", "list")
   result <- list(
     assessment_id = assessment_id,
@@ -1681,6 +2413,28 @@ aq_assess_binary_model <- function(fit = NULL, predictions, by = NULL) {
     subgroup_metrics = subgroup,
     supported_downstream_actions = c("compare"),
     created_at = aq_vnext_now()
+  )
+  assessment_artifact <- aq_vnext_attach_envelope(
+    assessment_artifact,
+    parent_artifact_ids = predictions$prediction_id,
+    lineage = list(
+      prediction_id = predictions$prediction_id,
+      fit_id = predictions$fit_id,
+      model_id = predictions$model_id,
+      dataset_id = predictions$dataset_id,
+      metric_count = nrow(overall),
+      confusion_matrix_available = nrow(confusion) > 0L,
+      calibration_available = nrow(calibration) > 0L,
+      subgroup_available = nrow(subgroup) > 0L
+    ),
+    task = "binary",
+    operator = "assessment",
+    engine = if (!is.null(fit)) fit$engine else NA_character_,
+    specification_id = if (!is.null(fit)) fit$spec$spec_id else NA_character_,
+    dataset_id = predictions$dataset_id,
+    model_id = predictions$model_id,
+    supported_actions = c("compare", "report", "campaign_review", "knowledge_promotion"),
+    producer = "aq_assess_model"
   )
   class(assessment_artifact) <- c("aq_binary_assessment_artifact", "aq_result_artifact", "list")
   result <- list(
@@ -1935,6 +2689,294 @@ qa_vnext_catboost_binary <- function() {
   add("binary_capability_metadata_registered", "catboost_binary_vnext" %in% capabilities$operator_id)
   app_like_artifacts <- c(list(fit$fit_artifact), list(pred_validation$artifact), assessment$artifacts, list(assessment$assessment_artifact))
   add("binary_analytics_shinyapp_consumable_artifacts", all(vapply(app_like_artifacts, is.list, logical(1L))))
+  data.table::rbindlist(rows, use.names = TRUE, fill = TRUE)
+}
+
+#' QA for vNext Rodeo Transformation Replay
+#'
+#' @return A `data.table` of deterministic QA checks.
+#' @export
+qa_vnext_rodeo_transformation_replay <- function() {
+  rows <- list()
+  add <- function(check, passed, message = "") {
+    rows[[length(rows) + 1L]] <<- data.table::data.table(
+      suite = "vnext_rodeo_transformation_replay",
+      check = check,
+      status = if (isTRUE(passed)) "pass" else "fail",
+      message = message
+    )
+  }
+  if (!requireNamespace("Rodeo", quietly = TRUE)) {
+    add("rodeo_available", FALSE, "Rodeo is required for transformation replay QA.")
+    return(data.table::rbindlist(rows, use.names = TRUE, fill = TRUE))
+  }
+
+  regression_dt <- aq_vnext_catboost_fixture()
+  date_spec <- Rodeo::rodeo_transformation_spec(
+    "date_features",
+    input_columns = "event_date",
+    parameters = list(features = c("year", "month"))
+  )
+  model_spec <- aq_model_spec(
+    task = "regression",
+    engine = "catboost",
+    target = "revenue",
+    features = c("channel", "region", "spend", "clicks", "discount", "event_date_year", "event_date_month"),
+    partition = aq_partition_spec(method = "time", split_col = "event_date", train_fraction = 0.8, seed = 20260716),
+    engine_params = list(iterations = 18L, depth = 4L, learning_rate = 0.08, verbose = FALSE),
+    seed = 20260716,
+    dataset_id = "qa_vnext_rodeo_raw_training",
+    transformation_spec = date_spec
+  )
+  raw_validation <- aq_validate_model_spec(model_spec, regression_dt)
+  add("raw_spec_validation_defers_generated_features", !aq_vnext_has_validation_error(raw_validation) &&
+    any(raw_validation$check == "feature_validation_deferred"))
+  fit <- aq_fit_model(model_spec, regression_dt)
+  add("fit_contains_fitted_rodeo_transformation", inherits(fit$fitted_transformation, "rodeo_fitted_transformation"))
+  add("fit_serializes_fitted_transformation", inherits(unserialize(fit$serialized_fitted_transformation), "rodeo_fitted_transformation"))
+  add("prepared_features_created", all(c("event_date_year", "event_date_month") %in% names(fit$training_data)))
+  add("fit_artifact_records_replay_requirement", isTRUE(fit$fit_artifact$transformation_required) &&
+    isTRUE(fit$fit_artifact$replay_behavior$required))
+  add("prepared_lineage_present", !is.null(fit$transformation_lineage$prepared_training_dataset_id) &&
+    !is.null(fit$transformation_lineage$prepared_validation_dataset_id))
+
+  raw_score <- regression_dt[1:25, .(id, event_date, channel, region, spend, clicks, discount)]
+  raw_score_copy <- data.table::copy(raw_score)
+  score <- aq_score_model(fit, raw_score, row_id_cols = "id", dataset_id = "qa_vnext_rodeo_raw_scoring")
+  add("scoring_replays_transformation", identical(score$transformation_replay$status, "success"))
+  add("scoring_uses_prepared_dataset_identity", !is.null(score$prepared_dataset_id) && nzchar(score$prepared_dataset_id))
+  add("scoring_preserves_row_identity", identical(score$row_id_cols, "id") && identical(sort(score$data$id), sort(raw_score$id)))
+  add("raw_scoring_data_not_mutated", identical(raw_score, raw_score_copy))
+  add("score_artifact_records_transformation", isTRUE(score$artifact$metadata$transformation_required) &&
+    identical(score$artifact$metadata$transformation_replay_status, "success"))
+  missing_input_rejected <- tryCatch({
+    aq_score_model(fit, raw_score[, .SD, .SDcols = setdiff(names(raw_score), "event_date")], row_id_cols = "id")
+    FALSE
+  }, error = function(e) grepl("Rodeo transformation replay failed", conditionMessage(e), fixed = TRUE))
+  add("missing_transformation_input_rejected", missing_input_rejected)
+  attached <- aq_attach_outcomes(score, regression_dt[1:25, .(id, realized = revenue)], outcome_col = "realized")
+  assessment <- aq_assess_scoring(attached)
+  monitor <- aq_monitor_scoring(attached)
+  add("assessment_after_replay_scoring", inherits(assessment, "aq_assessment_result") && nrow(assessment$metrics) > 0L)
+  add("monitoring_reports_transformation_compatibility", inherits(monitor, "aq_scoring_monitoring_result") &&
+    "transformation_compatibility" %in% names(monitor$evidence))
+
+  binary_dt <- aq_vnext_catboost_binary_fixture()
+  factor_spec <- Rodeo::rodeo_transformation_spec(
+    "factor_levels",
+    input_columns = "channel",
+    parameters = list(unseen_level = "__UNSEEN__", include_missing_level = TRUE)
+  )
+  binary_spec <- aq_model_spec(
+    task = "binary",
+    engine = "catboost",
+    target = "converted",
+    features = c("channel", "region", "spend", "clicks", "discount"),
+    partition = aq_partition_spec(method = "time", split_col = "event_date", train_fraction = 0.8, seed = 20260717),
+    threshold_policy = aq_threshold_policy(threshold = 0.45, positive_class = "yes"),
+    engine_params = list(iterations = 18L, depth = 4L, learning_rate = 0.08, verbose = FALSE),
+    seed = 20260717,
+    dataset_id = "qa_vnext_rodeo_binary_raw_training",
+    transformation_spec = factor_spec
+  )
+  binary_fit <- aq_fit_model(binary_spec, binary_dt)
+  binary_score_data <- binary_dt[1:30, .(id, channel, region, spend, clicks, discount)]
+  binary_score_data[1L, channel := "Affiliate"]
+  binary_score <- aq_score_model(binary_fit, binary_score_data, row_id_cols = "id")
+  add("binary_replay_handles_unseen_category", inherits(binary_score, "aq_scoring_result") &&
+    any(grepl("__UNSEEN__", binary_score$warnings, fixed = TRUE)))
+  add("analytics_shinyapp_consumable_replay_artifacts", all(vapply(list(fit$fit_artifact, score$artifact, monitor$monitoring_artifact, binary_score$artifact), is.list, logical(1L))))
+
+  data.table::rbindlist(rows, use.names = TRUE, fill = TRUE)
+}
+
+#' QA for vNext Portable Model Bundles
+#'
+#' @return A `data.table` of deterministic QA checks.
+#' @export
+qa_vnext_model_bundle <- function() {
+  rows <- list()
+  add <- function(check, passed, message = "") {
+    rows[[length(rows) + 1L]] <<- data.table::data.table(
+      suite = "vnext_model_bundle",
+      check = check,
+      status = if (isTRUE(passed)) "pass" else "fail",
+      message = message
+    )
+  }
+  if (!requireNamespace("Rodeo", quietly = TRUE)) {
+    add("rodeo_available", FALSE, "Rodeo is required for model bundle QA.")
+    return(data.table::rbindlist(rows, use.names = TRUE, fill = TRUE))
+  }
+
+  dt <- aq_vnext_catboost_fixture()
+  date_spec <- Rodeo::rodeo_transformation_spec(
+    "date_features",
+    input_columns = "event_date",
+    parameters = list(features = c("year", "month"))
+  )
+  spec <- aq_model_spec(
+    task = "regression",
+    engine = "catboost",
+    target = "revenue",
+    features = c("channel", "region", "spend", "clicks", "discount", "event_date_year", "event_date_month"),
+    partition = aq_partition_spec(method = "time", split_col = "event_date", train_fraction = 0.8, seed = 20260718),
+    engine_params = list(iterations = 18L, depth = 4L, learning_rate = 0.08, verbose = FALSE),
+    seed = 20260718,
+    dataset_id = "qa_vnext_bundle_raw_training",
+    transformation_spec = date_spec
+  )
+  fit <- aq_fit_model(spec, dt)
+  raw_score <- dt[1:25, .(id, event_date, channel, region, spend, clicks, discount)]
+  original_score <- aq_score_model(fit, raw_score, row_id_cols = "id", dataset_id = "qa_vnext_bundle_scoring")
+
+  bundle_dir <- file.path(tempdir(), paste0("aq_bundle_", Sys.getpid(), "_", sample.int(999999L, 1L)))
+  manifest <- aq_save_model_bundle(fit, bundle_dir)
+  add("bundle_save_manifest", inherits(manifest, "aq_model_bundle_manifest") &&
+    file.exists(manifest$bundle_path) && file.exists(manifest$metadata_path))
+  metadata <- aq_load_model_bundle(bundle_dir, metadata_only = TRUE)
+  add("metadata_only_load", inherits(metadata, "aq_model_bundle_metadata") &&
+    identical(metadata$model_id, fit$model_id) && isTRUE(metadata$transformation_required))
+  bundle <- aq_load_model_bundle(bundle_dir)
+  add("bundle_load_class", inherits(bundle, "aq_model_bundle") && inherits(bundle, "aq_fit_result"))
+  validation <- aq_validate_model_bundle(bundle)
+  add("bundle_validation_passes", !aq_vnext_has_validation_error(validation), paste(validation$message, collapse = " | "))
+  add("bundle_drops_training_rows", is.null(bundle$training_data) && is.null(bundle$validation_data) &&
+    is.null(bundle$raw_training_data) && is.null(bundle$raw_validation_data))
+  add("bundle_preserves_identity", identical(bundle$bundle_id, metadata$bundle_id) &&
+    identical(bundle$model_id, fit$model_id) && identical(bundle$fit_id, fit$fit_id))
+  add("bundle_preserves_lineage", identical(bundle$transformation_lineage$fitted_transformation_id, fit$transformation_lineage$fitted_transformation_id) &&
+    identical(bundle$prepared_training_schema_fingerprint, fit$prepared_training_schema_fingerprint))
+  reloaded_score <- aq_score_model(bundle, raw_score, row_id_cols = "id", dataset_id = "qa_vnext_bundle_scoring")
+  add("reloaded_scoring_identical", isTRUE(all.equal(original_score$data$Predict, reloaded_score$data$Predict, tolerance = 1e-12)) &&
+    identical(reloaded_score$transformation_replay$status, "success"))
+  attached <- aq_attach_outcomes(reloaded_score, dt[1:25, .(id, realized = revenue)], outcome_col = "realized")
+  assessment <- aq_assess_scoring(attached)
+  add("reloaded_assessment_compatible", inherits(assessment, "aq_assessment_result") && nrow(assessment$metrics) > 0L)
+
+  corrupt_path <- file.path(tempdir(), paste0("corrupt_bundle_", Sys.getpid(), ".rds"))
+  saveRDS(list(not = "a bundle"), corrupt_path, version = 3)
+  corrupt_detected <- tryCatch({
+    aq_load_model_bundle(corrupt_path)
+    FALSE
+  }, error = function(e) grepl("not an aq_model_bundle", conditionMessage(e), fixed = TRUE))
+  add("corrupt_bundle_rejected", corrupt_detected)
+
+  missing_field_bundle <- bundle
+  missing_field_bundle$model <- NULL
+  missing_validation <- aq_validate_model_bundle(missing_field_bundle)
+  add("missing_model_detected", any(missing_validation$check == "required_fields" & missing_validation$status == "fail") ||
+    any(missing_validation$check == "model_available" & missing_validation$status == "fail"))
+
+  version_bundle <- bundle
+  version_bundle$bundle_version <- "aq_model_bundle_future"
+  version_validation <- aq_validate_model_bundle(version_bundle)
+  add("version_mismatch_detected", any(version_validation$check == "bundle_version" & version_validation$status == "fail"))
+  add("analytics_shinyapp_consumable_bundle_metadata", is.list(metadata) &&
+    all(c("bundle_id", "model_id", "task", "engine", "features", "supported_actions") %in% names(metadata)))
+
+  data.table::rbindlist(rows, use.names = TRUE, fill = TRUE)
+}
+
+#' QA for vNext Canonical Analytical Artifact Framework
+#'
+#' @return A `data.table` of deterministic QA checks.
+#' @export
+qa_vnext_artifact_framework <- function() {
+  rows <- list()
+  add <- function(check, passed, message = "") {
+    rows[[length(rows) + 1L]] <<- data.table::data.table(
+      suite = "vnext_artifact_framework",
+      check = check,
+      status = if (isTRUE(passed)) "pass" else "fail",
+      message = message
+    )
+  }
+
+  has_validation_error <- function(x) any(x$status %in% c("fail", "error"))
+
+  regression_dt <- aq_vnext_catboost_fixture()
+  regression_spec <- aq_model_spec(
+    task = "regression",
+    engine = "catboost",
+    target = "revenue",
+    features = c("channel", "region", "spend", "clicks", "discount"),
+    partition = aq_partition_spec(method = "time", split_col = "event_date", train_fraction = 0.8, seed = 20260712),
+    engine_params = list(iterations = 20L, depth = 4L, learning_rate = 0.08, verbose = FALSE),
+    metrics = c("rmse", "mae", "r2"),
+    seed = 20260712,
+    dataset_id = "qa_vnext_artifact_regression"
+  )
+  regression_fit <- aq_fit_model(regression_spec, regression_dt)
+  regression_prediction <- aq_predict_model(regression_fit, dataset = "validation")
+  regression_assessment <- aq_assess_model(regression_fit, regression_prediction, by = "channel")
+  regression_score <- aq_score_model(regression_fit, regression_dt[1:30], row_id_cols = "id", outcome_col = "revenue", dataset_id = "qa_vnext_artifact_score")
+  regression_monitor <- aq_monitor_scoring(regression_score)
+  bundle <- aq_vnext_create_model_bundle(regression_fit)
+
+  binary_dt <- aq_vnext_catboost_binary_fixture()
+  binary_spec <- aq_model_spec(
+    task = "binary",
+    engine = "catboost",
+    target = "converted",
+    features = c("channel", "region", "spend", "clicks", "discount"),
+    partition = aq_partition_spec(method = "time", split_col = "event_date", train_fraction = 0.8, seed = 20260713),
+    engine_params = list(iterations = 20L, depth = 4L, learning_rate = 0.08, verbose = FALSE),
+    threshold_policy = aq_threshold_policy(threshold = 0.45, positive_class = "yes"),
+    seed = 20260713,
+    dataset_id = "qa_vnext_artifact_binary"
+  )
+  binary_fit <- aq_fit_model(binary_spec, binary_dt)
+  binary_prediction <- aq_predict_model(binary_fit, dataset = "validation")
+  binary_assessment <- aq_assess_model(binary_fit, binary_prediction, by = "channel")
+
+  artifacts <- list(
+    regression_fit = regression_fit$fit_artifact,
+    regression_prediction = regression_prediction$artifact,
+    regression_assessment = regression_assessment$assessment_artifact,
+    regression_scoring = regression_score$artifact,
+    regression_monitoring = regression_monitor$monitoring_artifact,
+    bundle = bundle,
+    binary_fit = binary_fit$fit_artifact,
+    binary_prediction = binary_prediction$artifact,
+    binary_assessment = binary_assessment$assessment_artifact
+  )
+
+  validations <- lapply(artifacts, aq_validate_artifact)
+  add("all_artifacts_validate", all(!vapply(validations, has_validation_error, logical(1L))),
+    paste(names(artifacts)[vapply(validations, has_validation_error, logical(1L))], collapse = ", "))
+
+  envelopes <- lapply(artifacts, aq_artifact_envelope)
+  add("canonical_envelope_class", all(vapply(envelopes, inherits, logical(1L), what = "aq_artifact_envelope")))
+  add("canonical_identity_present", all(vapply(envelopes, function(x) nzchar(x$artifact_id) && nzchar(x$artifact_type), logical(1L))))
+  add("task_and_engine_normalized", identical(envelopes$regression_fit$task, "regression") &&
+    identical(envelopes$binary_fit$task, "binary") &&
+    identical(envelopes$regression_fit$engine, "catboost"))
+  add("fit_to_prediction_relationship", regression_fit$fit_id %in% aq_artifact_relationships(regression_prediction$artifact)$parent_artifact_id)
+  add("prediction_to_assessment_relationship", regression_prediction$prediction_id %in% aq_artifact_relationships(regression_assessment$assessment_artifact)$parent_artifact_id)
+  add("scoring_to_monitoring_relationship", regression_score$scoring_id %in% aq_artifact_relationships(regression_monitor$monitoring_artifact)$parent_artifact_id)
+  add("bundle_relationship_to_fit", regression_fit$fit_id %in% aq_artifact_relationships(bundle)$parent_artifact_id)
+  add("supported_actions_exposed", all(c("score", "attach_outcomes", "assess_realized", "monitor") %in% aq_supported_actions(bundle)) &&
+    "compare" %in% aq_supported_actions(regression_assessment$assessment_artifact))
+  add("analytics_shinyapp_compatibility", all(vapply(envelopes, function(x) {
+    is.list(x) && all(c("artifact_id", "artifact_type", "supported_actions", "lineage", "consumer_expectations") %in% names(x))
+  }, logical(1L))))
+  add("campaign_compatibility", all(vapply(envelopes, function(x) {
+    is.list(x$campaign_references) && is.list(x$lineage) &&
+      (x$operator %in% c("supervised_fit", "prediction", "scoring", "model_bundle") ||
+        "campaign_review" %in% x$supported_actions)
+  }, logical(1L))))
+  add("future_operator_compatibility", all(vapply(envelopes, function(x) {
+    identical(x$envelope_version, "aq_artifact_envelope_v1") && is.list(x$consumer_expectations)
+  }, logical(1L))))
+  serialized <- unserialize(serialize(artifacts, NULL))
+  add("artifact_serialization_round_trip", all(vapply(serialized, function(x) !has_validation_error(aq_validate_artifact(x)), logical(1L))))
+
+  broken <- regression_fit$fit_artifact
+  broken$artifact_envelope$artifact_id <- NA_character_
+  broken_validation <- aq_validate_artifact(broken)
+  add("missing_identity_detected", any(broken_validation$check == "required_metadata" & broken_validation$status == "fail"))
+
   data.table::rbindlist(rows, use.names = TRUE, fill = TRUE)
 }
 

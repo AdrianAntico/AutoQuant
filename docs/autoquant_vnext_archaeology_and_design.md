@@ -1,6 +1,6 @@
 # AutoQuant vNext Archaeology And Design
 
-Status: Phase 1 architecture/design complete. Phase 2 implemented the first narrow vertical slice: CatBoost regression model specs, deterministic fit, prediction artifacts, regression assessment artifacts, and installed-package QA. Phase 3 extends the same contract to CatBoost binary classification with threshold policy, probability prediction, confusion matrix, binary metrics, calibration summaries, and installed-package QA. Phase 4 implements the canonical scoring lifecycle with `aq_scoring_spec()`, `aq_score_model()`, `aq_apply_threshold_policy()`, `aq_attach_outcomes()`, `aq_assess_scoring()`, and `aq_monitor_scoring()` for regression and binary CatBoost fit artifacts. See `docs/vnext_catboost_regression.md` for the implemented API surface.
+Status: Phase 1 architecture/design complete. Phase 2 implemented the first narrow vertical slice: CatBoost regression model specs, deterministic fit, prediction artifacts, regression assessment artifacts, and installed-package QA. Phase 3 extends the same contract to CatBoost binary classification with threshold policy, probability prediction, confusion matrix, binary metrics, calibration summaries, and installed-package QA. Phase 4 implements the canonical scoring lifecycle with `aq_scoring_spec()`, `aq_score_model()`, `aq_apply_threshold_policy()`, `aq_attach_outcomes()`, `aq_assess_scoring()`, and `aq_monitor_scoring()` for regression and binary CatBoost fit artifacts. Phase 5 integrates Rodeo fitted transformation replay so raw training and scoring data can share the same deterministic prepared-feature contract. Phase 6 adds portable model bundles through `aq_save_model_bundle()`, `aq_load_model_bundle()`, and `aq_validate_model_bundle()`. Phase 7 adds the canonical analytical artifact envelope, relationship extraction, supported-action inspection, and deterministic artifact validation through `aq_artifact_envelope()`, `aq_artifact_relationships()`, `aq_supported_actions()`, and `aq_validate_artifact()`. See `docs/vnext_catboost_regression.md` for the implemented API surface.
 
 This document treats the restored supervised learning, scoring, panel forecasting, time-series forecasting, helper, report, and artifact code as historical evidence. It is not a specification for re-creating the old architecture.
 
@@ -12,7 +12,15 @@ The first implemented vNext operator paths are intentionally narrow:
 
 ```text
 aq_model_spec()
+-> optional Rodeo transformation spec
 -> aq_fit_model()
+-> fitted Rodeo transformation replay
+-> aq_save_model_bundle()
+-> aq_load_model_bundle()
+-> aq_artifact_envelope()
+-> aq_artifact_relationships()
+-> aq_supported_actions()
+-> aq_validate_artifact()
 -> aq_predict_model()
 -> aq_assess_model()
 -> aq_score_model()
@@ -31,8 +39,17 @@ Scope delivered:
 - typed fit, prediction, and assessment artifacts
 - comparison-ready regression and binary assessment outputs
 - binary probability outputs, predicted classes, confusion matrix, probability diagnostics, and calibration summaries
+- optional Rodeo transformation fit/replay lineage for training and scoring
+- portable model bundle save/load/validate for reproducible inference
+- canonical analytical artifact envelopes for vNext fit, prediction, scoring, outcome attachment, assessment, monitoring, and bundle artifacts
+- deterministic artifact relationships through parent artifact ids
+- normalized supported downstream actions for app, campaign, and future-operator consumers
 - AnalyticsShinyApp-consumable artifact payload shapes
 - `qa_vnext_catboost_regression()` and `qa_vnext_catboost_binary()` integrated into `qa_autoquant_package()`
+- `qa_vnext_scoring_lifecycle()` integrated into `qa_autoquant_package()`
+- `qa_vnext_rodeo_transformation_replay()` integrated into `qa_autoquant_package()`
+- `qa_vnext_model_bundle()` integrated into `qa_autoquant_package()`
+- `qa_vnext_artifact_framework()` integrated into `qa_autoquant_package()`
 
 Scope deliberately not delivered:
 
@@ -41,7 +58,7 @@ Scope deliberately not delivered:
 - SHAP/contribution generation
 - tuning/challenger search
 - report rendering
-- Rodeo feature engineering duplication
+- Rodeo transformation-engine duplication
 - replacement of `generate_catboost_builder_artifacts()`
 
 The existing CatBoost Builder remains the transitional AnalyticsShinyApp-facing contract. The vNext functions sit beside it until downstream consumers are ready to migrate.
