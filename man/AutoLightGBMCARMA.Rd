@@ -572,8 +572,12 @@ Results$ModelInformation$EvaluationMetricsByGroup[order(MAPE_Metric)]
 \seealso{
 Other Automated Panel Data Forecasting: 
 \code{\link{AutoCatBoostCARMA}()},
+\code{\link{AutoCatBoostHurdleCARMA}()},
+\code{\link{AutoCatBoostVectorCARMA}()},
 \code{\link{AutoH2OCARMA}()},
-\code{\link{AutoXGBoostCARMA}()}
+\code{\link{AutoLightGBMHurdleCARMA}()},
+\code{\link{AutoXGBoostCARMA}()},
+\code{\link{AutoXGBoostHurdleCARMA}()}
 }
 \author{
 Adrian Antico

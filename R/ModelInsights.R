@@ -1102,7 +1102,6 @@ BinaryClassificationShapAnalysisReport <- function(
 #'
 #' @return A data.table of QA checks.
 #'
-#' @family QA
 #' @export
 qa_shap_report_wrapper_contracts <- function() {
   if (!requireNamespace("data.table", quietly = TRUE)) {

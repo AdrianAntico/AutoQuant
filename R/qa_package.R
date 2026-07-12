@@ -27,7 +27,10 @@ qa_autoquant_package <- function() {
     shap_autonls_backend = qa_shap_autonls_backend(),
     regression_shap_analysis_artifacts = internal_regression_shap(),
     binary_model_insights_artifacts = qa_generate_binary_classification_model_insights_artifacts(),
-    catboost_builder_artifacts = qa_generate_catboost_builder_artifacts()
+    catboost_builder_artifacts = qa_generate_catboost_builder_artifacts(),
+    vnext_catboost_regression = qa_vnext_catboost_regression(),
+    vnext_catboost_binary = qa_vnext_catboost_binary(),
+    vnext_scoring_lifecycle = qa_vnext_scoring_lifecycle()
   )
 
   rows <- lapply(names(qa_results), function(name) {

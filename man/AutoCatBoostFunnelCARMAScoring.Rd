@@ -156,7 +156,11 @@ Test <- RemixAutoML::AutoCatBoostFunnelCARMAScoring(
 }
 \seealso{
 Other Automated Funnel Data Forecasting: 
-\code{\link{AutoCatBoostFunnelCARMA}()}
+\code{\link{AutoCatBoostFunnelCARMA}()},
+\code{\link{AutoLightGBMFunnelCARMA}()},
+\code{\link{AutoLightGBMFunnelCARMAScoring}()},
+\code{\link{AutoXGBoostFunnelCARMA}()},
+\code{\link{AutoXGBoostFunnelCARMAScoring}()}
 }
 \author{
 Adrian Antico

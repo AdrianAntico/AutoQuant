@@ -27,6 +27,10 @@ Documentation + Code Examples
 - [Panel Data Forecasting](#panel-data-forecasting-)
 - [Time Series Forecasting](#time-series-forecasting-)
 
+Architecture + Redesign Notes
+- [AutoQuant vNext Archaeology And Design](docs/autoquant_vnext_archaeology_and_design.md) describes proposed next-generation contracts for supervised learning, scoring, forecasting, panel forecasting, typed artifacts, Rodeo ownership boundaries, AnalyticsShinyApp integration, and H2O retirement strategy. This is design documentation, not an implemented API manual.
+- [AutoQuant vNext CatBoost Supervised Learning](docs/vnext_catboost_regression.md) documents the first implemented vNext vertical slices: CatBoost regression and binary classification specs, deterministic fit, prediction artifacts, canonical scoring artifacts, delayed outcome attachment, realized assessment, bounded monitoring evidence, threshold policy, and installed-package QA.
+
 <br>
 
 ## Background
