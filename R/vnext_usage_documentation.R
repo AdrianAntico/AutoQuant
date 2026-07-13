@@ -38,6 +38,9 @@ qa_vnext_usage_documentation <- function() {
     "Hierarchical Forecasting",
     "Panel Strategy Comparison",
     "Intermittent-Demand Forecasting",
+    "Funnel Forecasting",
+    "Multi-Target Forecasting",
+    "Cross-Target Feature Forecasting",
     "Package QA",
     "Legacy API Status",
     "Detailed Architecture Documents"
@@ -64,7 +67,16 @@ qa_vnext_usage_documentation <- function() {
     "aq_croston_forecast_spec",
     "aq_sba_forecast_spec",
     "aq_tsb_forecast_spec",
-    "aq_compare_intermittent_demand_methods"
+    "aq_compare_intermittent_demand_methods",
+    "aq_funnel_forecast_spec",
+    "aq_fit_funnel_forecast",
+    "aq_assess_funnel_forecast",
+    "aq_compare_funnel_strategies",
+    "aq_multitarget_forecast_spec",
+    "aq_fit_multitarget_forecast",
+    "aq_assess_multitarget_forecast",
+    "aq_compare_multitarget_strategies",
+    "qa_vnext_multitarget_supervised_forecasting"
   )
   for (fn in implemented_names) {
     add(paste0("readme_mentions_", fn), grepl(fn, readme, fixed = TRUE), paste("README mentions", fn))
@@ -73,6 +85,9 @@ qa_vnext_usage_documentation <- function() {
   docs_to_check <- c(
     file.path("docs", "vnext_forecasting_foundation.md"),
     file.path("docs", "vnext_intermittent_demand_forecasting.md"),
+    file.path("docs", "vnext_funnel_forecasting_foundation.md"),
+    file.path("docs", "vnext_multitarget_forecasting_foundation.md"),
+    file.path("docs", "vnext_cross_target_forecasting.md"),
     file.path("docs", "autoquant_vnext_archaeology_and_design.md")
   )
   docs_text <- paste(vapply(docs_to_check[file.exists(docs_to_check)], function(path) {
@@ -81,13 +96,19 @@ qa_vnext_usage_documentation <- function() {
   add("docs_mention_sba", grepl("SBA", docs_text, fixed = TRUE), "vNext docs mention SBA intermittent-demand support.")
   add("docs_mention_tsb", grepl("TSB", docs_text, fixed = TRUE), "vNext docs mention TSB intermittent-demand support.")
   add("docs_mention_method_comparison", grepl("aq_compare_intermittent_demand_methods", docs_text, fixed = TRUE), "vNext docs mention method comparison.")
+  add("docs_mention_funnel_forecasting", grepl("aq_funnel_forecast_spec", docs_text, fixed = TRUE), "vNext docs mention funnel forecasting.")
+  add("docs_mention_multitarget_forecasting", grepl("aq_multitarget_forecast_spec", docs_text, fixed = TRUE), "vNext docs mention multi-target forecasting.")
+  add("docs_mention_cross_target_forecasting", grepl("cross_target_features", docs_text, fixed = TRUE), "vNext docs mention cross-target feature forecasting.")
 
   example_names <- c(
     "artifact_schema_example.R",
     "vnext_supervised_learning.R",
     "vnext_forecasting.R",
     "vnext_intermittent_demand.R",
-    "vnext_panel_hierarchy_strategy.R"
+    "vnext_panel_hierarchy_strategy.R",
+    "vnext_funnel_forecasting.R",
+    "vnext_multitarget_forecasting.R",
+    "vnext_cross_target_forecasting.R"
   )
   source_dir <- file.path(root, "inst", "examples")
   package_dir <- system.file("examples", package = "AutoQuant")

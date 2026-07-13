@@ -4,6 +4,55 @@ Status: Phase 1 architecture/design complete. Phase 2 implemented the first narr
 
 This document treats the restored supervised learning, scoring, panel forecasting, time-series forecasting, helper, report, and artifact code as historical evidence. It is not a specification for re-creating the old architecture.
 
+## Phase 18 Funnel Forecasting Note
+
+Phase 18 establishes Funnel forecasting as a first-class vNext forecasting
+family. The restored historical Funnel implementations are treated as
+archaeological evidence: they show that funnels combine base volumes,
+conversion rates, cohort periods, calendar dates, cohort dates, maturity, and
+recursive downstream outcome forecasting. The modern implementation does not
+preserve the historical CARMA wrapper shape.
+
+Implemented:
+
+- `aq_funnel_forecast_spec()`
+- `aq_validate_funnel_forecast_spec()`
+- `aq_fit_funnel_forecast()`
+- `aq_assess_funnel_forecast()`
+- `aq_compare_funnel_strategies()`
+- `qa_vnext_funnel_forecasting_foundation()`
+- explicit ordered stages and adjacent transitions
+- deterministic stage forecasting
+- deterministic transition forecasting
+- maturity evidence
+- stage, transition, horizon, aggregate outcome, and conversion assessment
+- canonical funnel artifacts and strategy comparison artifacts
+
+Modern placement:
+
+```text
+Forecasting
+-> Funnel
+   -> stage volume evidence
+   -> transition conversion evidence
+   -> maturity evidence
+   -> assessment
+   -> strategy comparison
+```
+
+Retired assumptions:
+
+- giant engine-specific Funnel wrappers as the primary public API
+- mandatory grid tuning
+- direct file-writing side effects
+- hidden transition inference
+- automatic strategy selection
+- deployment or optimization concerns inside the forecasting foundation
+
+The important architectural outcome is that forecasting a process is now
+represented differently from forecasting a variable while still using the same
+canonical evidence philosophy.
+
 The purpose is to extract analytical capabilities, preserve hard-won modeling lessons, discard accidental implementation shape, and define the system AutoQuant should become.
 
 ## Phase 2 And Phase 3 Implementation Note
@@ -1651,3 +1700,65 @@ Yes. The design preserves the analytical lessons: scoring reproducibility, thres
 The restored code should now be understood as evidence, not as destiny.
 
 AutoQuant vNext should preserve the analytical intelligence of the historical implementation while moving toward deterministic operators, typed artifacts, explicit lineage, separated rendering, Rodeo-owned preparation, AnalyticsShinyApp-owned orchestration, and campaign-ready comparison.
+
+## Phase 19 Multi-Target Forecasting Note
+
+The restored `AutoCatBoostVectorCARMA()` implementation shows that AutoQuant
+historically aimed to forecast multiple related target columns under one shared
+temporal workflow. Useful intent recovered from the historical Vector code
+includes:
+
+- multiple numeric target columns
+- shared date and optional group structure
+- shared external regressors
+- target-aware temporal feature construction
+- target transformations
+- multi-output evaluation ideas
+- reportable forecast evidence
+
+The modern architectural placement is not the historical Vector wrapper. The
+successor is `aq_multitarget_forecast_spec()` plus deterministic independent and
+shared-workflow strategies, target artifacts, cross-target evidence, assessment,
+and strategy comparison.
+
+Retired assumptions include:
+
+- monolithic CatBoost Vector CARMA wrappers
+- CatBoost MultiRMSE as the only valid multi-target path
+- hidden temporal feature construction inside AutoQuant
+- grid tuning as part of the foundation contract
+- automatic target transformation search
+- direct report generation from the modeling function
+- implicit file writing and side effects
+
+Future specialization opportunities include supervised shared-feature
+multi-target forecasting, target relationship diagnostics, target grouping,
+VAR/state-space operators, and campaign investigations over target-specific
+failures. These should inherit the vNext artifact and evidence contracts rather
+than reviving the historical API.
+
+## Phase 20 Cross-Target Feature Forecasting Note
+
+Phase 20 implements the first supervised successor to the historical Vector
+intent without reviving the historical Vector API. The recovered idea is that
+related targets may contain useful prior information for one another. The modern
+implementation treats that as an empirical hypothesis.
+
+Implemented behavior:
+
+- `aq_multitarget_forecast_spec()` now accepts `strategy =
+  "cross_target_features"` with `engine = "catboost"`.
+- Rodeo owns deterministic cross-target lag, rolling, calendar, and
+  known-future feature preparation through
+  `Rodeo::rodeo_prepare_cross_target_features()`.
+- AutoQuant fits target-specific CatBoost direct horizon models and preserves
+  feature importance, preparation identity, leakage diagnostics, and target
+  relationship metadata inside canonical artifacts.
+- `aq_compare_multitarget_strategies()` compares `independent`,
+  `shared_workflow`, and `cross_target_features` and records negative-transfer
+  evidence.
+
+This phase intentionally does not implement VAR, VARMAX, multivariate
+state-space models, deep learning, target clustering, AutoML, deployment, or
+target causality. Cross-target learning remains another source of forecasting
+evidence, not a separate forecasting philosophy.

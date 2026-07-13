@@ -32,6 +32,9 @@ Architecture + Redesign Notes
 - [AutoQuant vNext CatBoost Supervised Learning](docs/vnext_catboost_regression.md) documents the first implemented vNext vertical slices: CatBoost regression and binary classification specs, deterministic fit, prediction artifacts, canonical scoring artifacts, delayed outcome attachment, realized assessment, bounded monitoring evidence, threshold policy, and installed-package QA.
 - [AutoQuant vNext Forecasting Foundation](docs/vnext_forecasting_foundation.md) documents naive, seasonal naive, ETS, ARIMA, CatBoost forecasting, panel forecasting, hierarchy reconciliation, panel strategy comparison, intermittent-demand forecasting, and rolling-origin evidence.
 - [AutoQuant vNext Intermittent Demand Forecasting](docs/vnext_intermittent_demand_forecasting.md) documents Croston, SBA, TSB, supervised Hurdle, diagnostics, method comparison, and advisory selection evidence.
+- [AutoQuant vNext Funnel Forecasting Foundation](docs/vnext_funnel_forecasting_foundation.md) documents funnel specification, explicit transitions, maturity evidence, stage forecasting, transition forecasting, assessment, and strategy comparison.
+- [AutoQuant vNext Multi-Target Forecasting Foundation](docs/vnext_multitarget_forecasting_foundation.md) documents multi-target specification, shared temporal preparation evidence, target-level forecasts, cross-target evidence, assessment, and strategy comparison.
+- [AutoQuant vNext Cross-Target Forecasting](docs/vnext_cross_target_forecasting.md) documents supervised CatBoost cross-target feature learning, Rodeo-owned leakage-safe feature preparation, negative-transfer evidence, and advisory strategy comparison.
 
 <br>
 
@@ -227,6 +230,110 @@ comparison <- aq_compare_intermittent_demand_methods(
 
 Validated script: `inst/examples/vnext_intermittent_demand.R`
 
+### Funnel Forecasting
+
+Funnel forecasting treats a process as ordered stages and explicit adjacent
+transitions. It is different from forecasting unrelated columns.
+
+```r
+funnel_spec <- aq_funnel_forecast_spec(
+  stages = c("prospects", "applications", "qualified", "enrollments"),
+  stage = "stage",
+  value = "volume",
+  date = "date",
+  cohort = "cohort",
+  stage_date = "stage_date",
+  maturity = "maturity",
+  frequency = "week",
+  horizon = 2,
+  forecast_origin = as.Date("2026-02-12"),
+  strategy = "stage"
+)
+
+validation <- aq_validate_funnel_forecast_spec(funnel_spec, funnel_data)
+stage_forecast <- aq_fit_funnel_forecast(funnel_spec, funnel_data)
+stage_assessment <- aq_assess_funnel_forecast(stage_forecast)
+
+transition_spec <- funnel_spec
+transition_spec$strategy <- "transition"
+transition_forecast <- aq_fit_funnel_forecast(transition_spec, funnel_data)
+
+comparison <- aq_compare_funnel_strategies(funnel_spec, funnel_data)
+```
+
+Validated script: `inst/examples/vnext_funnel_forecasting.R`
+
+### Multi-Target Forecasting
+
+Multi-target forecasting treats several related targets as a shared analytical
+problem while preserving target-level evidence. Phase 19 supports deterministic
+independent and shared-workflow strategies; it does not implement VAR, VARMAX,
+state-space multivariate models, deep learning, or target-causality modeling.
+
+```r
+multitarget_spec <- aq_multitarget_forecast_spec(
+  targets = c("leads", "applications", "enrollments"),
+  date = "date",
+  frequency = "week",
+  horizon = 3,
+  forecast_origin = max(multitarget_data$date) - 21,
+  known_future_variables = "promo",
+  shared_predictors = "spend",
+  target_specific_predictors = list(enrollments = "promo"),
+  strategy = "independent",
+  engine = "seasonal_naive",
+  season_length = 4
+)
+
+validation <- aq_validate_multitarget_forecast_spec(multitarget_spec, multitarget_data)
+forecast <- aq_fit_multitarget_forecast(multitarget_spec, multitarget_data)
+assessment <- aq_assess_multitarget_forecast(forecast)
+
+shared_spec <- multitarget_spec
+shared_spec$strategy <- "shared_workflow"
+shared_forecast <- aq_fit_multitarget_forecast(shared_spec, multitarget_data)
+
+comparison <- aq_compare_multitarget_strategies(multitarget_spec, multitarget_data)
+```
+
+Validated script: `inst/examples/vnext_multitarget_forecasting.R`
+
+### Cross-Target Feature Forecasting
+
+Cross-target feature forecasting asks whether prior information from one target
+helps forecast another target. AutoQuant treats this as an empirical
+hypothesis, not a default assumption. Rodeo owns deterministic cross-target
+lag, rolling, calendar, and known-future feature preparation. AutoQuant fits
+CatBoost direct horizon models and compares independent, shared-workflow, and
+cross-target strategies using realized forecast evidence.
+
+```r
+cross_target_spec <- aq_multitarget_forecast_spec(
+  targets = c("leads", "applications", "enrollments"),
+  date = "date",
+  frequency = "week",
+  horizon = 2,
+  forecast_origin = max(multitarget_data$date) - 14,
+  known_future_variables = "promo",
+  shared_predictors = "spend",
+  target_specific_predictors = list(enrollments = "promo"),
+  strategy = "cross_target_features",
+  engine = "catboost",
+  cross_target_feature_policy = "lags_rolls",
+  shared_target_lags = c(1, 2),
+  shared_rolling_windows = 3,
+  target_relationship_metadata = list(source = "analyst_hypothesis", causal_claim = FALSE),
+  engine_parameters = list(iterations = 5, depth = 2, learning_rate = 0.1)
+)
+
+validation <- aq_validate_multitarget_forecast_spec(cross_target_spec, multitarget_data)
+forecast <- aq_fit_multitarget_forecast(cross_target_spec, multitarget_data)
+assessment <- aq_assess_multitarget_forecast(forecast)
+comparison <- aq_compare_multitarget_strategies(cross_target_spec, multitarget_data)
+```
+
+Validated script: `inst/examples/vnext_cross_target_forecasting.R`
+
 ### Package QA
 
 Run the installed package QA entry point after installation or before integrating with AnalyticsShinyApp:
@@ -235,9 +342,11 @@ Run the installed package QA entry point after installation or before integratin
 qa <- AutoQuant::qa_autoquant_package()
 qa[, .N, by = status]
 qa[status != "pass"]
+
+cross_target_qa <- AutoQuant::qa_vnext_multitarget_supervised_forecasting()
 ```
 
-The vNext QA includes supervised learning, scoring, model bundles, artifact contracts, forecasting, panel forecasting, hierarchy reconciliation, panel strategy comparison, intermittent-demand operators, and README/example coverage.
+The vNext QA includes supervised learning, scoring, model bundles, artifact contracts, forecasting, panel forecasting, hierarchy reconciliation, panel strategy comparison, intermittent-demand operators, funnel forecasting, multi-target forecasting, cross-target feature forecasting, and README/example coverage.
 
 ### Legacy API Status
 
@@ -253,6 +362,9 @@ The legacy AutoQuant functions remain available for compatibility. vNext is the 
 - `docs/vnext_hierarchical_forecasting_foundation.md`
 - `docs/vnext_panel_strategy_selection.md`
 - `docs/vnext_intermittent_demand_forecasting.md`
+- `docs/vnext_funnel_forecasting_foundation.md`
+- `docs/vnext_multitarget_forecasting_foundation.md`
+- `docs/vnext_cross_target_forecasting.md`
 
 <br>
 

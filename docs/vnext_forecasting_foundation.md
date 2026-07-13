@@ -1,8 +1,8 @@
 # AutoQuant vNext Forecasting Foundation
 
-Status: Phase 17 implemented for deterministic forecasting foundations with single-series naive, seasonal naive, ETS, ARIMA, CatBoost supervised forecasting, Rodeo-owned temporal transformation replay, global CatBoost panel forecasting, deterministic hierarchical reconciliation, panel strategy selection, negative-transfer diagnostics, expanded intermittent-demand forecasting, prediction interval evidence, known-future-regressor validation, and challenger-baseline comparison.
+Status: Phase 20 implemented for deterministic forecasting foundations with single-series naive, seasonal naive, ETS, ARIMA, CatBoost supervised forecasting, Rodeo-owned temporal transformation replay, global CatBoost panel forecasting, deterministic hierarchical reconciliation, panel strategy selection, negative-transfer diagnostics, expanded intermittent-demand forecasting, funnel forecasting, multi-target forecasting, supervised cross-target feature forecasting, prediction interval evidence, known-future-regressor validation, and challenger-baseline comparison.
 
-This document establishes the shared forecasting language that future forecasting engines should inherit. ETS, ARIMA, CatBoost, global CatBoost panel forecasting, deterministic hierarchy reconciliation, panel strategy comparison, Croston/SBA/TSB intermittent-demand forecasting, supervised Hurdle intermittent-demand forecasting, and intermittent-demand method comparison are implemented as operators inside shared specification, partition, artifact, assessment, and rolling-origin contracts. Prediction intervals and known future regressors are first-class forecast evidence. This phase does not implement Prophet, GAM forecasting, vector forecasting, funnel forecasting, inventory optimization, optimization-based reconciliation, tuning, deployment, or AutoML.
+This document establishes the shared forecasting language that future forecasting engines should inherit. ETS, ARIMA, CatBoost, global CatBoost panel forecasting, deterministic hierarchy reconciliation, panel strategy comparison, Croston/SBA/TSB intermittent-demand forecasting, supervised Hurdle intermittent-demand forecasting, intermittent-demand method comparison, deterministic funnel forecasting, deterministic multi-target forecasting, and supervised cross-target feature forecasting are implemented as operators inside shared specification, partition, artifact, assessment, and comparison contracts. Prediction intervals and known future regressors are first-class forecast evidence. This phase does not implement Prophet, GAM forecasting, VAR, VARMAX, multivariate state-space models, inventory optimization, optimization-based reconciliation, tuning, deployment, or AutoML.
 
 ## Lifecycle
 
@@ -23,6 +23,8 @@ forecast specification
 -> hierarchical reconciliation where requested
 -> panel strategy comparison where requested
 -> intermittent-demand diagnostics where requested
+-> funnel maturity and transition evidence where requested
+-> multi-target cross-target evidence where requested
 ```
 
 Forecasting is treated as a first-class analytical operator rather than a specialized scoring wrapper. The core concepts are explicit:
@@ -51,6 +53,8 @@ Forecasting is treated as a first-class analytical operator rather than a specia
 - strategy recommendation
 - negative transfer diagnostics
 - intermittent-demand diagnostics
+- funnel transition diagnostics
+- cross-target evidence
 
 ## Public API
 
@@ -108,6 +112,22 @@ The current single-series engines are:
 
 No multi-output strategy is implemented. Direct CatBoost trains one point-forecast model per horizon. Recursive CatBoost trains a one-step model and rolls predictions forward deterministically.
 
+Multi-target forecasting uses additive public APIs:
+
+- `aq_multitarget_forecast_spec()`
+- `aq_validate_multitarget_forecast_spec()`
+- `aq_fit_multitarget_forecast()`
+- `aq_assess_multitarget_forecast()`
+- `aq_compare_multitarget_strategies()`
+
+Phase 19 multi-target forecasting supports deterministic `naive` and
+`seasonal_naive` engines. Phase 20 adds supervised `catboost` multi-target
+forecasting and `strategy = "cross_target_features"`. It compares independent,
+shared-workflow, and cross-target strategies while preserving target-level
+evidence, descriptive cross-target context, and negative-transfer diagnostics.
+It does not implement joint probabilistic multivariate forecasting or target
+causality.
+
 Panel forecasting uses additive public APIs:
 
 - `aq_panel_forecast_spec()`
@@ -146,6 +166,12 @@ Panel forecasting uses additive public APIs:
 - `aq_rolling_origin_hurdle_forecast()`
 - `aq_evaluate_hurdle_panel_strategies()`
 - `aq_compare_intermittent_demand_methods()`
+- `aq_funnel_forecast_spec()`
+- `aq_validate_funnel_forecast_spec()`
+- `aq_fit_funnel_forecast()`
+- `aq_assess_funnel_forecast()`
+- `aq_compare_funnel_strategies()`
+- `qa_vnext_funnel_forecasting_foundation()`
 - `qa_vnext_hurdle_forecasting_foundation()`
 
 Panel forecasting currently supports global CatBoost models only. See
@@ -175,6 +201,19 @@ features, then combines them into expected demand. These are intentionally
 different approaches to the same problem family. Neither is forced to imitate
 the other.
 See `docs/vnext_intermittent_demand_forecasting.md`.
+
+Funnel forecasting now treats ordered stage processes as a first-class
+forecasting family:
+
+- stage forecasting preserves each stage as its own volume evidence
+- transition forecasting estimates adjacent conversion evidence and propagates
+  stage volume downstream
+- maturity is represented explicitly when available and conservatively derived
+  when not supplied
+- `aq_compare_funnel_strategies()` compares stage and transition strategies
+  without automatically selecting a production path
+
+See `docs/vnext_funnel_forecasting_foundation.md`.
 
 ## Temporal Validation
 
