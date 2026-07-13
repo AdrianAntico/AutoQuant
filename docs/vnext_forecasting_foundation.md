@@ -1,8 +1,8 @@
 # AutoQuant vNext Forecasting Foundation
 
-Status: Phase 21 implemented for deterministic forecasting foundations with single-series naive, seasonal naive, ETS, ARIMA, CatBoost supervised forecasting, Rodeo-owned temporal transformation replay, global CatBoost panel forecasting, deterministic hierarchical reconciliation, panel strategy selection, negative-transfer diagnostics, expanded intermittent-demand forecasting, funnel forecasting, multi-target forecasting, supervised cross-target feature forecasting, prediction interval evidence, known-future-regressor validation, challenger-baseline comparison, and forecasting capability planning.
+Status: Phase 22 implemented for deterministic forecasting foundations with single-series naive, seasonal naive, ETS, ARIMA, CatBoost supervised forecasting, Rodeo-owned temporal transformation replay, global CatBoost panel forecasting, deterministic hierarchical reconciliation, panel strategy selection, negative-transfer diagnostics, expanded intermittent-demand forecasting, funnel forecasting, multi-target forecasting, supervised cross-target feature forecasting, prediction interval evidence, known-future-regressor validation, challenger-baseline comparison, forecasting capability planning, and governed forecasting experiment campaigns.
 
-This document establishes the shared forecasting language that future forecasting engines should inherit. ETS, ARIMA, CatBoost, global CatBoost panel forecasting, deterministic hierarchy reconciliation, panel strategy comparison, Croston/SBA/TSB intermittent-demand forecasting, supervised Hurdle intermittent-demand forecasting, intermittent-demand method comparison, deterministic funnel forecasting, deterministic multi-target forecasting, supervised cross-target feature forecasting, and deterministic forecasting strategy planning are implemented inside shared specification, artifact, assessment, comparison, or planning contracts. Prediction intervals and known future regressors are first-class forecast evidence. This phase does not implement Prophet, GAM forecasting, VAR, VARMAX, multivariate state-space models, inventory optimization, optimization-based reconciliation, feature tuning, model tuning, deployment, or AutoML.
+This document establishes the shared forecasting language that future forecasting engines should inherit. ETS, ARIMA, CatBoost, global CatBoost panel forecasting, deterministic hierarchy reconciliation, panel strategy comparison, Croston/SBA/TSB intermittent-demand forecasting, supervised Hurdle intermittent-demand forecasting, intermittent-demand method comparison, deterministic funnel forecasting, deterministic multi-target forecasting, supervised cross-target feature forecasting, deterministic forecasting strategy planning, and governed forecasting experiments are implemented inside shared specification, artifact, assessment, comparison, planning, or campaign contracts. Prediction intervals and known future regressors are first-class forecast evidence. This phase does not implement Prophet, GAM forecasting, VAR, VARMAX, multivariate state-space models, inventory optimization, optimization-based reconciliation, automatic feature tuning, automatic model tuning, deployment, or AutoML.
 
 ## Lifecycle
 
@@ -26,6 +26,8 @@ forecast specification
 -> funnel maturity and transition evidence where requested
 -> multi-target cross-target evidence where requested
 -> forecasting capability discovery and strategy planning where requested
+-> one bounded governed experiment where requested
+-> experiment learning artifact
 ```
 
 Forecasting is treated as a first-class analytical operator rather than a specialized scoring wrapper. The core concepts are explicit:
@@ -59,6 +61,8 @@ Forecasting is treated as a first-class analytical operator rather than a specia
 - forecasting capability discovery
 - forecasting strategy planning
 - feature-tuning mechanism inventory
+- frozen-baseline forecasting experiments
+- negative experiment evidence
 
 ## Public API
 
@@ -74,8 +78,12 @@ Implemented:
 - `aq_discover_forecasting_capabilities()`
 - `aq_plan_forecasting_strategy()`
 - `qa_vnext_forecasting_planning()`
+- `aq_forecast_experiment_spec()`
+- `aq_run_forecast_experiment()`
+- `aq_run_forecast_experiment_campaign()`
+- `qa_vnext_forecasting_experiment_campaigns()`
 
-The installed-package QA entry point `qa_autoquant_package()` includes `qa_vnext_forecasting_foundation()` and `qa_vnext_forecasting_planning()`.
+The installed-package QA entry point `qa_autoquant_package()` includes `qa_vnext_forecasting_foundation()`, `qa_vnext_forecasting_planning()`, and `qa_vnext_forecasting_experiment_campaigns()`.
 
 ## Forecast Specification
 

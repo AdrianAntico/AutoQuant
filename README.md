@@ -364,6 +364,38 @@ plan$artifact$metadata$carma_mechanism_inventory
 
 Validated script: `inst/examples/vnext_forecasting_planning.R`
 
+### Forecasting Experiment Campaigns
+
+Use `aq_forecast_experiment_spec()` after forecasting planning to run one
+bounded, evidence-guided experiment. The experiment preserves a frozen
+baseline, executes one deterministic challenger, assesses out-of-sample
+evidence, and returns a canonical `forecast_experiment_artifact`. Failed or
+unsuccessful challengers are preserved as negative evidence. No challenger is
+adopted automatically.
+
+```r
+experiment <- aq_forecast_experiment_spec(
+  planning_result = plan,
+  experiment_type = "model",
+  baseline = "naive",
+  challenger = "ets",
+  target = "demand",
+  date = "date",
+  horizon = 3,
+  hypothesis = "ETS may reduce forecast error relative to a frozen naive baseline."
+)
+
+result <- aq_run_forecast_experiment(experiment, history)
+
+result$learning
+result$artifact
+
+campaign <- aq_run_forecast_experiment_campaign(list(experiment), history)
+campaign$summary
+```
+
+Validated script: `inst/examples/vnext_forecasting_experiment_campaigns.R`
+
 ### Package QA
 
 Run the installed package QA entry point after installation or before integrating with AnalyticsShinyApp:
@@ -375,9 +407,10 @@ qa[status != "pass"]
 
 cross_target_qa <- AutoQuant::qa_vnext_multitarget_supervised_forecasting()
 planning_qa <- AutoQuant::qa_vnext_forecasting_planning()
+experiment_qa <- AutoQuant::qa_vnext_forecasting_experiment_campaigns()
 ```
 
-The vNext QA includes supervised learning, scoring, model bundles, artifact contracts, forecasting, panel forecasting, hierarchy reconciliation, panel strategy comparison, intermittent-demand operators, funnel forecasting, multi-target forecasting, cross-target feature forecasting, forecasting capability planning, and README/example coverage.
+The vNext QA includes supervised learning, scoring, model bundles, artifact contracts, forecasting, panel forecasting, hierarchy reconciliation, panel strategy comparison, intermittent-demand operators, funnel forecasting, multi-target forecasting, cross-target feature forecasting, forecasting capability planning, governed forecasting experiment campaigns, and README/example coverage.
 
 ### Legacy API Status
 
@@ -390,6 +423,7 @@ The legacy AutoQuant functions remain available for compatibility. vNext is the 
 - `docs/canonical_analytical_artifacts.md`
 - `docs/vnext_forecasting_foundation.md`
 - `docs/vnext_forecasting_planning.md`
+- `docs/vnext_forecasting_experiment_campaigns.md`
 - `docs/vnext_panel_forecasting_foundation.md`
 - `docs/vnext_hierarchical_forecasting_foundation.md`
 - `docs/vnext_panel_strategy_selection.md`

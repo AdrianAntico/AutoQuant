@@ -1,6 +1,9 @@
 # AutoQuant vNext Forecasting Capability Planning
 
-Status: Phase 21 implemented.
+Status: Phase 22 implemented. Phase 21 introduced deterministic capability
+planning. Phase 22 adds the governed experiment campaign handoff through
+`aq_forecast_experiment_spec()`, `aq_run_forecast_experiment()`, and
+`aq_run_forecast_experiment_campaign()`.
 
 Forecasting capability planning is a deterministic discovery and planning
 layer. It inspects the available data and returns a planning artifact that says
@@ -78,6 +81,11 @@ The planning artifact supports downstream actions:
 - compare
 - report
 - campaign_review
+
+Phase 22 consumes this planning artifact as evidence for one bounded
+experiment. The planner still does not execute models. The experiment campaign
+layer owns frozen-baseline challenger execution, learning assessment, negative
+evidence, and advisory recommendations.
 
 ## Strategy Tuning, Feature Tuning, and Model Tuning
 
@@ -181,7 +189,18 @@ Should become planner recommendations:
 - record missing feature-tuning evidence before claiming the landscape is
   complete
 
-Should become campaign experiments:
+Implemented campaign experiment handoff:
+
+- forecast planning artifact
+- one bounded hypothesis
+- frozen baseline
+- deterministic challenger
+- out-of-sample comparison
+- learning assessment
+- advisory recommendation
+- canonical `forecast_experiment_artifact`
+
+Should become future campaign experiments:
 
 - differencing versus level modeling
 - trend feature variants
@@ -227,6 +246,12 @@ Phase 21 QA is provided by:
 
 ```r
 qa_vnext_forecasting_planning()
+```
+
+Phase 22 experiment QA is provided by:
+
+```r
+qa_vnext_forecasting_experiment_campaigns()
 ```
 
 The installed package QA includes this suite through:
