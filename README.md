@@ -115,6 +115,51 @@ rescored <- aq_score_model(loaded, new_data, row_id_cols = "customer_id")
 
 vNext results carry canonical artifacts so downstream apps, reports, campaigns, and agents can consume evidence without reverse-engineering return objects. See `docs/canonical_analytical_artifacts.md` and `inst/examples/artifact_schema_example.R`.
 
+### Canonical Variable Semantics
+
+Use `aq_variable_semantics()` to describe what variables mean across business
+role, operational eligibility, analytical role, causal role, operational,
+temporal, forecasting, measurement, and decision dimensions. Variable semantics
+are shared analytical knowledge for future feature engineering, modeling,
+forecasting, reporting, campaign reasoning, optimization planning, risk review,
+and GenAI guidance. The semantic artifact records confidence, evidence source,
+business-context references for future objectives, strategies, tactics, levers,
+KPIs, risks, and decisions, validation diagnostics, and supported downstream
+actions.
+
+```r
+semantics <- aq_variable_semantics(
+  variables = c("revenue", "spend", "region", "promo", "inventory_cap"),
+  business_role = list(
+    revenue = "objective_metric",
+    spend = c("tactic_lever", "business_lever"),
+    inventory_cap = "risk_indicator"
+  ),
+  operational_eligibility = list(spend = c("controllable", "optimization_eligible")),
+  analytical_role = list(revenue = "target", promo = "known_future_regressor"),
+  causal_role = list(spend = "exposure", region = "confounder_candidate"),
+  operational = list(revenue = "outcome", spend = "driver", region = "control"),
+  temporal = list(revenue = "future_unknown", promo = "future_known"),
+  causal = list(spend = "exposure", region = "possible_confounder"),
+  forecasting = list(revenue = "target", promo = "known_future_regressor"),
+  decision = list(revenue = "primary_kpi", spend = "optimization_eligible"),
+  confidence = list(revenue = 0.95, spend = 0.8, region = 0.7, promo = 0.9),
+  business_context_refs = list(
+    mission_id = "mission_growth",
+    business_objective_id = "objective_revenue_growth",
+    strategy_id = "strategy_media_efficiency",
+    tactic_id = "tactic_budget_allocation",
+    lever_id = "lever_paid_media_spend",
+    risk_id = "risk_inventory_capacity"
+  )
+)
+
+validation <- aq_validate_variable_semantics(semantics)
+artifact <- aq_variable_semantics_artifact(semantics)
+```
+
+Validated script: `inst/examples/variable_semantics_framework.R`
+
 ### Time-Series Forecasting
 
 Use `aq_forecast_spec()` and `aq_fit_forecast()` for deterministic single-series forecasting. Current engines include `naive`, `seasonal_naive`, `ets`, `arima`, and `catboost`.
@@ -408,9 +453,10 @@ qa[status != "pass"]
 cross_target_qa <- AutoQuant::qa_vnext_multitarget_supervised_forecasting()
 planning_qa <- AutoQuant::qa_vnext_forecasting_planning()
 experiment_qa <- AutoQuant::qa_vnext_forecasting_experiment_campaigns()
+semantics_qa <- AutoQuant::qa_variable_semantics_framework()
 ```
 
-The vNext QA includes supervised learning, scoring, model bundles, artifact contracts, forecasting, panel forecasting, hierarchy reconciliation, panel strategy comparison, intermittent-demand operators, funnel forecasting, multi-target forecasting, cross-target feature forecasting, forecasting capability planning, governed forecasting experiment campaigns, and README/example coverage.
+The vNext QA includes supervised learning, scoring, model bundles, artifact contracts, canonical variable semantics, forecasting, panel forecasting, hierarchy reconciliation, panel strategy comparison, intermittent-demand operators, funnel forecasting, multi-target forecasting, cross-target feature forecasting, forecasting capability planning, governed forecasting experiment campaigns, and README/example coverage.
 
 ### Legacy API Status
 
@@ -421,6 +467,7 @@ The legacy AutoQuant functions remain available for compatibility. vNext is the 
 - `docs/autoquant_vnext_archaeology_and_design.md`
 - `docs/vnext_catboost_regression.md`
 - `docs/canonical_analytical_artifacts.md`
+- `docs/variable_semantics_framework.md`
 - `docs/vnext_forecasting_foundation.md`
 - `docs/vnext_forecasting_planning.md`
 - `docs/vnext_forecasting_experiment_campaigns.md`
