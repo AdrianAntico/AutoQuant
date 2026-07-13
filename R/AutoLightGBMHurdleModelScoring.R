@@ -161,7 +161,7 @@
 #'   ArgsList = NULL,
 #'   Threshold = NULL)
 #' }
-#' @export
+#' @keywords internal
 AutoLightGBMHurdleModelScoring <- function(TestData = NULL,
                                            Path = NULL,
                                            ModelID = NULL,

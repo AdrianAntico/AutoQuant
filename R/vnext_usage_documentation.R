@@ -1,0 +1,116 @@
+# AutoQuant vNext usage documentation QA.
+
+#' QA for vNext README Cookbook and Example Scripts
+#'
+#' Verifies that the vNext README cookbook, documentation links, and copy-paste
+#' examples remain aligned with the implemented public API.
+#'
+#' @return A data.table of QA checks.
+#' @export
+qa_vnext_usage_documentation <- function() {
+  rows <- list()
+  add <- function(check, ok, message) {
+    rows[[length(rows) + 1L]] <<- data.table::data.table(
+      check = check,
+      status = if (isTRUE(ok)) "pass" else "fail",
+      message = message
+    )
+  }
+
+  root <- getwd()
+  readme_path <- file.path(root, "README.md")
+  if (!file.exists(readme_path)) {
+    package_readme <- system.file("README.md", package = "AutoQuant")
+    if (nzchar(package_readme)) readme_path <- package_readme
+  }
+  readme <- if (file.exists(readme_path)) paste(readLines(readme_path, warn = FALSE), collapse = "\n") else ""
+
+  required_sections <- c(
+    "AutoQuant vNext Cookbook",
+    "vNext Quick Start",
+    "Supervised Learning",
+    "Scoring and Realized Outcomes",
+    "Model Bundles",
+    "Canonical Analytical Artifacts",
+    "Time-Series Forecasting",
+    "CatBoost Forecasting",
+    "Panel Forecasting",
+    "Hierarchical Forecasting",
+    "Panel Strategy Comparison",
+    "Intermittent-Demand Forecasting",
+    "Package QA",
+    "Legacy API Status",
+    "Detailed Architecture Documents"
+  )
+  for (section in required_sections) {
+    add(
+      paste0("readme_section_", gsub("[^a-z0-9]+", "_", tolower(section))),
+      grepl(section, readme, fixed = TRUE),
+      paste("README documents:", section)
+    )
+  }
+
+  implemented_names <- c(
+    "aq_model_spec",
+    "aq_fit_model",
+    "aq_score_model",
+    "aq_save_model_bundle",
+    "aq_load_model_bundle",
+    "aq_forecast_spec",
+    "aq_fit_forecast",
+    "aq_panel_forecast_spec",
+    "aq_hierarchy_spec",
+    "aq_panel_strategy_spec",
+    "aq_croston_forecast_spec",
+    "aq_sba_forecast_spec",
+    "aq_tsb_forecast_spec",
+    "aq_compare_intermittent_demand_methods"
+  )
+  for (fn in implemented_names) {
+    add(paste0("readme_mentions_", fn), grepl(fn, readme, fixed = TRUE), paste("README mentions", fn))
+  }
+
+  docs_to_check <- c(
+    file.path("docs", "vnext_forecasting_foundation.md"),
+    file.path("docs", "vnext_intermittent_demand_forecasting.md"),
+    file.path("docs", "autoquant_vnext_archaeology_and_design.md")
+  )
+  docs_text <- paste(vapply(docs_to_check[file.exists(docs_to_check)], function(path) {
+    paste(readLines(path, warn = FALSE), collapse = "\n")
+  }, character(1L)), collapse = "\n")
+  add("docs_mention_sba", grepl("SBA", docs_text, fixed = TRUE), "vNext docs mention SBA intermittent-demand support.")
+  add("docs_mention_tsb", grepl("TSB", docs_text, fixed = TRUE), "vNext docs mention TSB intermittent-demand support.")
+  add("docs_mention_method_comparison", grepl("aq_compare_intermittent_demand_methods", docs_text, fixed = TRUE), "vNext docs mention method comparison.")
+
+  example_names <- c(
+    "artifact_schema_example.R",
+    "vnext_supervised_learning.R",
+    "vnext_forecasting.R",
+    "vnext_intermittent_demand.R",
+    "vnext_panel_hierarchy_strategy.R"
+  )
+  source_dir <- file.path(root, "inst", "examples")
+  package_dir <- system.file("examples", package = "AutoQuant")
+  example_dir <- if (dir.exists(source_dir)) source_dir else package_dir
+
+  for (example in example_names) {
+    example_path <- file.path(example_dir, example)
+    add(paste0("example_exists_", tools::file_path_sans_ext(example)), file.exists(example_path), paste("example exists:", example))
+    if (file.exists(example_path)) {
+      ok <- TRUE
+      msg <- paste("example runs:", example)
+      tryCatch(
+        {
+          sys.source(example_path, envir = new.env(parent = .GlobalEnv))
+        },
+        error = function(e) {
+          ok <<- FALSE
+          msg <<- paste("example failed:", example, conditionMessage(e))
+        }
+      )
+      add(paste0("example_runs_", tools::file_path_sans_ext(example)), ok, msg)
+    }
+  }
+
+  data.table::rbindlist(rows, use.names = TRUE, fill = TRUE)
+}

@@ -30,6 +30,229 @@ Documentation + Code Examples
 Architecture + Redesign Notes
 - [AutoQuant vNext Archaeology And Design](docs/autoquant_vnext_archaeology_and_design.md) describes proposed next-generation contracts for supervised learning, scoring, forecasting, panel forecasting, typed artifacts, Rodeo ownership boundaries, AnalyticsShinyApp integration, and H2O retirement strategy. This is design documentation, not an implemented API manual.
 - [AutoQuant vNext CatBoost Supervised Learning](docs/vnext_catboost_regression.md) documents the first implemented vNext vertical slices: CatBoost regression and binary classification specs, deterministic fit, prediction artifacts, canonical scoring artifacts, delayed outcome attachment, realized assessment, bounded monitoring evidence, threshold policy, and installed-package QA.
+- [AutoQuant vNext Forecasting Foundation](docs/vnext_forecasting_foundation.md) documents naive, seasonal naive, ETS, ARIMA, CatBoost forecasting, panel forecasting, hierarchy reconciliation, panel strategy comparison, intermittent-demand forecasting, and rolling-origin evidence.
+- [AutoQuant vNext Intermittent Demand Forecasting](docs/vnext_intermittent_demand_forecasting.md) documents Croston, SBA, TSB, supervised Hurdle, diagnostics, method comparison, and advisory selection evidence.
+
+<br>
+
+## AutoQuant vNext Cookbook
+
+The vNext API is the artifact-first redesign path. It is additive and does not remove the legacy AutoQuant wrappers. The examples below are copy-paste oriented and correspond to validated scripts in `inst/examples/`.
+
+### vNext Quick Start
+
+```r
+library(data.table)
+library(AutoQuant)
+
+dt <- data.table(
+  id = 1:80,
+  spend = runif(80, 10, 100),
+  clicks = rpois(80, 40),
+  channel = sample(c("Search", "Social", "Email"), 80, TRUE)
+)
+dt[, revenue := 25 + 1.8 * spend + 0.7 * clicks + rnorm(.N, 0, 5)]
+
+spec <- aq_model_spec(
+  task = "regression",
+  target = "revenue",
+  features = c("spend", "clicks", "channel"),
+  engine_params = list(iterations = 10, depth = 2),
+  dataset_id = "example_training_data"
+)
+
+fit <- aq_fit_model(spec, dt)
+score <- aq_score_model(fit, dt[1:10], row_id_cols = "id", outcome_col = "revenue")
+```
+
+Validated script: `inst/examples/vnext_supervised_learning.R`
+
+### Supervised Learning
+
+Use `aq_model_spec()` to create an explicit supervised model contract, then `aq_fit_model()` to train. Current vNext supervised operators support CatBoost regression and binary classification. The returned fit includes the model, fit metrics, partition evidence, model metadata, and canonical artifacts.
+
+```r
+binary_spec <- aq_model_spec(
+  task = "binary",
+  target = "converted",
+  features = c("spend", "clicks", "channel"),
+  positive_class = "yes",
+  engine_params = list(iterations = 10, depth = 2)
+)
+
+binary_fit <- aq_fit_model(binary_spec, training_data)
+```
+
+### Scoring and Realized Outcomes
+
+Use `aq_score_model()` for canonical scoring artifacts. If outcomes are available at scoring time, pass `outcome_col`. Delayed outcomes can be attached later through the vNext scoring lifecycle helpers described in `docs/vnext_catboost_regression.md`.
+
+```r
+scored <- aq_score_model(
+  fit,
+  new_data,
+  row_id_cols = "customer_id",
+  outcome_col = "actual_outcome",
+  dataset_id = "campaign_scoring_population"
+)
+```
+
+### Model Bundles
+
+Use model bundles when the same fitted model must be reloaded for reproducible inference.
+
+```r
+bundle <- aq_save_model_bundle(fit, "exports/model_bundle", overwrite = TRUE)
+loaded <- aq_load_model_bundle("exports/model_bundle")
+rescored <- aq_score_model(loaded, new_data, row_id_cols = "customer_id")
+```
+
+### Canonical Analytical Artifacts
+
+vNext results carry canonical artifacts so downstream apps, reports, campaigns, and agents can consume evidence without reverse-engineering return objects. See `docs/canonical_analytical_artifacts.md` and `inst/examples/artifact_schema_example.R`.
+
+### Time-Series Forecasting
+
+Use `aq_forecast_spec()` and `aq_fit_forecast()` for deterministic single-series forecasting. Current engines include `naive`, `seasonal_naive`, `ets`, `arima`, and `catboost`.
+
+```r
+forecast_spec <- aq_forecast_spec(
+  target = "demand",
+  date = "ds",
+  frequency = "day",
+  horizon = 14,
+  engine = "seasonal_naive",
+  season_length = 7,
+  prediction_intervals = TRUE
+)
+
+forecast <- aq_fit_forecast(forecast_spec, demand_history)
+assessment <- aq_assess_forecast(forecast)
+```
+
+Validated script: `inst/examples/vnext_forecasting.R`
+
+### CatBoost Forecasting
+
+CatBoost forecasting uses the same `aq_forecast_spec()` contract with `engine = "catboost"`. Rodeo owns temporal transformation replay; AutoQuant owns model fitting, forecast artifacts, and assessment evidence.
+
+```r
+catboost_forecast_spec <- aq_forecast_spec(
+  target = "sales",
+  date = "ds",
+  frequency = "day",
+  horizon = 7,
+  engine = "catboost",
+  forecast_strategy = "direct",
+  future_known_variables = c("promotion", "holiday"),
+  engine_parameters = list(iterations = 25, depth = 3)
+)
+```
+
+### Panel Forecasting
+
+Use `aq_panel_forecast_spec()` when the same forecast target appears across multiple entities. The first vNext panel operator is a global CatBoost forecast with entity-aware evidence.
+
+```r
+panel_spec <- aq_panel_forecast_spec(
+  entity = "store",
+  target = "sales",
+  date = "ds",
+  frequency = "day",
+  horizon = 7,
+  engine_parameters = list(iterations = 25, depth = 3)
+)
+```
+
+Validated contract script: `inst/examples/vnext_panel_hierarchy_strategy.R`
+
+### Hierarchical Forecasting
+
+Use `aq_hierarchy_spec()` and `aq_reconcile_hierarchical_forecast()` when entity forecasts must reconcile to parent totals. Current vNext reconciliation is deterministic bottom-up.
+
+```r
+hierarchy_spec <- aq_hierarchy_spec(hierarchy_table)
+reconciled <- aq_reconcile_hierarchical_forecast(panel_forecast, hierarchy_spec)
+```
+
+### Panel Strategy Comparison
+
+Use `aq_panel_strategy_spec()` and `aq_evaluate_panel_strategies()` to compare independent, grouped, and global panel approaches. The recommendation is advisory evidence, not automatic production selection.
+
+```r
+strategy_spec <- aq_panel_strategy_spec(
+  entity = "store",
+  group = "region",
+  target = "sales",
+  date = "ds",
+  candidate_strategies = c("independent", "grouped", "global"),
+  horizon = 7
+)
+```
+
+### Intermittent-Demand Forecasting
+
+Intermittent demand is a problem family with classical and supervised operators:
+
+- Classical: `aq_croston_forecast_spec()`, `aq_sba_forecast_spec()`, `aq_tsb_forecast_spec()`
+- Supervised: `aq_hurdle_forecast_spec()`
+- Comparison: `aq_compare_intermittent_demand_methods()`
+
+```r
+diagnostics <- aq_intermittent_demand_diagnostics(history, target = "demand", date = "ds")
+
+croston <- aq_fit_croston_forecast(
+  aq_croston_forecast_spec(target = "demand", date = "ds", horizon = 7),
+  history
+)
+
+sba <- aq_fit_sba_forecast(
+  aq_sba_forecast_spec(target = "demand", date = "ds", horizon = 7),
+  history
+)
+
+tsb <- aq_fit_tsb_forecast(
+  aq_tsb_forecast_spec(target = "demand", date = "ds", horizon = 7, beta = 0.2),
+  history
+)
+
+comparison <- aq_compare_intermittent_demand_methods(
+  data = history,
+  target = "demand",
+  date = "ds",
+  horizon = 3,
+  include_hurdle = FALSE
+)
+```
+
+Validated script: `inst/examples/vnext_intermittent_demand.R`
+
+### Package QA
+
+Run the installed package QA entry point after installation or before integrating with AnalyticsShinyApp:
+
+```r
+qa <- AutoQuant::qa_autoquant_package()
+qa[, .N, by = status]
+qa[status != "pass"]
+```
+
+The vNext QA includes supervised learning, scoring, model bundles, artifact contracts, forecasting, panel forecasting, hierarchy reconciliation, panel strategy comparison, intermittent-demand operators, and README/example coverage.
+
+### Legacy API Status
+
+The legacy AutoQuant functions remain available for compatibility. vNext is the preferred path for new artifact-first work because it separates specifications, fitting, scoring, assessment, artifacts, and downstream evidence consumption. H2O remains historical/compatibility-oriented for vNext planning rather than the default redesign engine.
+
+### Detailed Architecture Documents
+
+- `docs/autoquant_vnext_archaeology_and_design.md`
+- `docs/vnext_catboost_regression.md`
+- `docs/canonical_analytical_artifacts.md`
+- `docs/vnext_forecasting_foundation.md`
+- `docs/vnext_panel_forecasting_foundation.md`
+- `docs/vnext_hierarchical_forecasting_foundation.md`
+- `docs/vnext_panel_strategy_selection.md`
+- `docs/vnext_intermittent_demand_forecasting.md`
 
 <br>
 

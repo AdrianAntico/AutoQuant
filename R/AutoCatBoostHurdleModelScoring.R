@@ -92,7 +92,7 @@
 #'   ArgsList = NULL,
 #'   Threshold = NULL)
 #' }
-#' @export
+#' @keywords internal
 AutoCatBoostHurdleModelScoring <- function(TestData = NULL,
                                            Path = NULL,
                                            ModelID = NULL,

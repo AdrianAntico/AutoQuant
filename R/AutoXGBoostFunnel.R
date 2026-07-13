@@ -178,7 +178,7 @@
 #'   MaxCohortPeriod = 15,
 #'   DebugMode = TRUE)
 #' }
-#' @export
+#' @keywords internal
 AutoXGBoostFunnelCARMA <- function(data,
                                    GroupVariables = NULL,
                                    BaseFunnelMeasure = NULL,
@@ -1032,7 +1032,7 @@ AutoXGBoostFunnelCARMA <- function(data,
 #'   DebugMode = TRUE)
 #' }
 #'
-#' @export
+#' @keywords internal
 AutoXGBoostFunnelCARMAScoring <- function(TrainData,
                                           ForwardLookingData = NULL,
                                           TrainEndDate = NULL,

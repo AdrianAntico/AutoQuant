@@ -56,6 +56,7 @@ aq_vnext_supported_engine_params <- function() {
     "thread_count",
     "verbose",
     "task_type",
+    "allow_writing_files",
     "l2_leaf_reg",
     "random_strength",
     "bootstrap_type"
@@ -79,7 +80,8 @@ aq_vnext_engine_params <- function(engine_params = list(), seed = 20260712L, tas
     random_seed = as.integer(seed),
     thread_count = max(1L, parallel::detectCores(logical = TRUE) - 1L),
     verbose = 0L,
-    task_type = "CPU"
+    task_type = "CPU",
+    allow_writing_files = FALSE
   )
   out <- utils::modifyList(defaults, engine_params)
   if (is.logical(out$verbose)) {
@@ -532,6 +534,20 @@ aq_vnext_drop_transformation <- function(spec) {
   prepared_spec
 }
 
+aq_vnext_rodeo_transformation_contract_available <- function() {
+  if (!requireNamespace("Rodeo", quietly = TRUE)) {
+    return(FALSE)
+  }
+  required <- c(
+    "rodeo_transformation_spec",
+    "rodeo_fit_transformation",
+    "rodeo_apply_transformation",
+    "rodeo_validate_transformation_schema",
+    "rodeo_transformation_metadata"
+  )
+  all(required %in% getNamespaceExports("Rodeo"))
+}
+
 aq_vnext_transformation_summary <- function(fitted, prepared_data = NULL) {
   if (is.null(fitted)) {
     return(list(
@@ -585,6 +601,9 @@ aq_vnext_fit_rodeo_transformation <- function(train_raw, validation_raw, spec) {
   if (!requireNamespace("Rodeo", quietly = TRUE)) {
     stop("Rodeo is required to fit transformation_spec.", call. = FALSE)
   }
+  if (!aq_vnext_rodeo_transformation_contract_available()) {
+    stop("Installed Rodeo does not expose the structured transformation contract required by AutoQuant vNext. Reinstall or update Rodeo from the current source before fitting transformation_spec.", call. = FALSE)
+  }
   fitted <- Rodeo::rodeo_fit_transformation(train_raw, spec$transformation_spec)
   train_prepared <- data.table::as.data.table(Rodeo::rodeo_apply_transformation(train_raw, fitted, copy_data = TRUE))
   validation_prepared <- data.table::as.data.table(Rodeo::rodeo_apply_transformation(validation_raw, fitted, copy_data = TRUE))
@@ -619,6 +638,9 @@ aq_vnext_replay_rodeo_transformation <- function(raw_data, fit, dataset_id = NUL
   }
   if (!requireNamespace("Rodeo", quietly = TRUE)) {
     stop("Rodeo is required to replay the fitted transformation.", call. = FALSE)
+  }
+  if (!aq_vnext_rodeo_transformation_contract_available()) {
+    stop("Installed Rodeo does not expose the structured transformation contract required by AutoQuant vNext. Reinstall or update Rodeo from the current source before replaying fitted transformations.", call. = FALSE)
   }
   fitted <- fit$fitted_transformation
   if (!inherits(fitted, "rodeo_fitted_transformation")) {
@@ -2710,6 +2732,10 @@ qa_vnext_rodeo_transformation_replay <- function() {
     add("rodeo_available", FALSE, "Rodeo is required for transformation replay QA.")
     return(data.table::rbindlist(rows, use.names = TRUE, fill = TRUE))
   }
+  if (!aq_vnext_rodeo_transformation_contract_available()) {
+    add("rodeo_transformation_contract", FALSE, "Installed Rodeo does not expose the structured transformation contract required by AutoQuant vNext.")
+    return(data.table::rbindlist(rows, use.names = TRUE, fill = TRUE))
+  }
 
   regression_dt <- aq_vnext_catboost_fixture()
   date_spec <- Rodeo::rodeo_transformation_spec(
@@ -2806,6 +2832,10 @@ qa_vnext_model_bundle <- function() {
   }
   if (!requireNamespace("Rodeo", quietly = TRUE)) {
     add("rodeo_available", FALSE, "Rodeo is required for model bundle QA.")
+    return(data.table::rbindlist(rows, use.names = TRUE, fill = TRUE))
+  }
+  if (!aq_vnext_rodeo_transformation_contract_available()) {
+    add("rodeo_transformation_contract", FALSE, "Installed Rodeo does not expose the structured transformation contract required by AutoQuant vNext.")
     return(data.table::rbindlist(rows, use.names = TRUE, fill = TRUE))
   }
 

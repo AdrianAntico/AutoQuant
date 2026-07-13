@@ -94,7 +94,7 @@
 #'   ArgsList = NULL,
 #'   Threshold = NULL)
 #' }
-#' @export
+#' @keywords internal
 AutoXGBoostHurdleModelScoring <- function(TestData = NULL,
                                           Path = NULL,
                                           ModelID = NULL,

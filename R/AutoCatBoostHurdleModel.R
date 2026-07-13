@@ -201,7 +201,7 @@
 #'   data.table::fwrite(CatBoost_QA, file = file.path(Path, "AutoCatBoostHurdleModel_QA.csv"))
 #' }
 #' }
-#' @export
+#' @keywords internal
 AutoCatBoostHurdleModel <- function(data = NULL,
                                     TrainOnFull = FALSE,
                                     ValidationData = NULL,

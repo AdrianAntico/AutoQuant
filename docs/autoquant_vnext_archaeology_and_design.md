@@ -1,6 +1,6 @@
 # AutoQuant vNext Archaeology And Design
 
-Status: Phase 1 architecture/design complete. Phase 2 implemented the first narrow vertical slice: CatBoost regression model specs, deterministic fit, prediction artifacts, regression assessment artifacts, and installed-package QA. Phase 3 extends the same contract to CatBoost binary classification with threshold policy, probability prediction, confusion matrix, binary metrics, calibration summaries, and installed-package QA. Phase 4 implements the canonical scoring lifecycle with `aq_scoring_spec()`, `aq_score_model()`, `aq_apply_threshold_policy()`, `aq_attach_outcomes()`, `aq_assess_scoring()`, and `aq_monitor_scoring()` for regression and binary CatBoost fit artifacts. Phase 5 integrates Rodeo fitted transformation replay so raw training and scoring data can share the same deterministic prepared-feature contract. Phase 6 adds portable model bundles through `aq_save_model_bundle()`, `aq_load_model_bundle()`, and `aq_validate_model_bundle()`. Phase 7 adds the canonical analytical artifact envelope, relationship extraction, supported-action inspection, and deterministic artifact validation through `aq_artifact_envelope()`, `aq_artifact_relationships()`, `aq_supported_actions()`, and `aq_validate_artifact()`. See `docs/vnext_catboost_regression.md` for the implemented API surface.
+Status: Phase 1 architecture/design complete. Phase 2 implemented the first narrow vertical slice: CatBoost regression model specs, deterministic fit, prediction artifacts, regression assessment artifacts, and installed-package QA. Phase 3 extends the same contract to CatBoost binary classification with threshold policy, probability prediction, confusion matrix, binary metrics, calibration summaries, and installed-package QA. Phase 4 implements the canonical scoring lifecycle with `aq_scoring_spec()`, `aq_score_model()`, `aq_apply_threshold_policy()`, `aq_attach_outcomes()`, `aq_assess_scoring()`, and `aq_monitor_scoring()` for regression and binary CatBoost fit artifacts. Phase 5 integrates Rodeo fitted transformation replay so raw training and scoring data can share the same deterministic prepared-feature contract. Phase 6 adds portable model bundles through `aq_save_model_bundle()`, `aq_load_model_bundle()`, and `aq_validate_model_bundle()`. Phase 7 adds the canonical analytical artifact envelope, relationship extraction, supported-action inspection, and deterministic artifact validation through `aq_artifact_envelope()`, `aq_artifact_relationships()`, `aq_supported_actions()`, and `aq_validate_artifact()`. Phase 8 adds the time-series forecasting foundation through `aq_forecast_spec()`, `aq_validate_forecast_spec()`, `aq_forecast_partition()`, `aq_fit_forecast()`, `aq_assess_forecast()`, and `aq_rolling_origin_forecast()`. Phase 9 adds ETS and ARIMA statistical forecasting engines through the same forecasting contract without introducing new artifact or assessment families. Phase 10 adds prediction interval evidence, interval assessment, and known-future-regressor validation/ARIMA xreg support to the same forecast artifact contract. Phase 11 adds CatBoost supervised forecasting with direct and recursive strategies, prepared feature lineage, feature manifests, known-future-regressor features, feature importance metadata, and challenger comparisons against naive, seasonal naive, ETS, and ARIMA where possible. See `docs/vnext_catboost_regression.md` and `docs/vnext_forecasting_foundation.md` for the implemented API surface.
 
 This document treats the restored supervised learning, scoring, panel forecasting, time-series forecasting, helper, report, and artifact code as historical evidence. It is not a specification for re-creating the old architecture.
 
@@ -62,6 +62,355 @@ Scope deliberately not delivered:
 - replacement of `generate_catboost_builder_artifacts()`
 
 The existing CatBoost Builder remains the transitional AnalyticsShinyApp-facing contract. The vNext functions sit beside it until downstream consumers are ready to migrate.
+
+## Phase 8 Forecasting Foundation Note
+
+The first implemented vNext forecasting path is intentionally limited to deterministic baseline forecasting:
+
+```text
+aq_forecast_spec()
+-> aq_validate_forecast_spec()
+-> aq_forecast_partition()
+-> aq_fit_forecast()
+-> aq_assess_forecast()
+-> aq_rolling_origin_forecast()
+```
+
+Scope delivered:
+
+- univariate time-series specification
+- date/frequency/horizon/origin concepts
+- future-known and future-unknown variable declarations
+- deterministic temporal validation
+- duplicate timestamp detection
+- missing timestamp warnings
+- frequency detection and override diagnostics
+- explicit forecast partitions
+- naive baseline forecast
+- seasonal naive baseline forecast
+- forecast artifacts with canonical analytical envelopes
+- forecast assessment artifacts
+- RMSE, MAE, MAPE, SMAPE, bias, and metrics by horizon
+- deterministic rolling-origin backtesting
+- comparison-ready forecast evidence
+- AnalyticsShinyApp-compatible list/table artifact shapes
+- `qa_vnext_forecasting_foundation()` integrated into `qa_autoquant_package()`
+
+Scope deliberately not delivered:
+
+- ARIMA
+- ETS
+- Prophet
+- CatBoost forecasting
+- GAM forecasting
+- panel forecasting
+- exogenous-variable modeling
+- automatic forecast optimization
+- probabilistic intervals
+- forecasting bundles
+- forecast deployment
+
+The point of Phase 8 is to make forecasting a first-class deterministic operator within the artifact ecosystem. Future engines should extend this contract rather than inventing separate forecast result shapes.
+
+## Phase 9 Statistical Forecasting Engine Note
+
+Phase 9 validates that the forecasting contract can support engine diversity without architectural divergence. ETS and ARIMA are implemented as operators inside `aq_fit_forecast()`:
+
+```text
+aq_forecast_spec(engine = "ets" | "arima")
+-> aq_validate_forecast_spec()
+-> aq_forecast_partition()
+-> aq_fit_forecast()
+-> aq_assess_forecast()
+-> aq_rolling_origin_forecast()
+```
+
+The forecasting architecture still owns specification, partitioning, artifacts, assessment, lineage, comparison readiness, and rolling-origin evaluation. Engines own only fitting, forecast generation, and diagnostics.
+
+Implemented:
+
+- ETS via base R `stats::HoltWinters()`
+- ARIMA via base R `stats::arima()`
+- deterministic engine parameter validation
+- engine diagnostics: model form/order, AIC, AICc, BIC, residual diagnostics, convergence, warnings, and training duration
+- baseline comparison against naive and seasonal naive where applicable
+- rolling-origin compatibility for all four engines
+
+Not implemented:
+
+- automatic ETS/ARIMA model search
+- automatic engine selection
+- prediction intervals
+- exogenous regressors
+- model bundles for forecasts
+- forecast deployment
+
+The important outcome is that `naive`, `seasonal_naive`, `ets`, and `arima` now feel like forecast operators, not separate systems.
+
+## Phase 10 Forecast Uncertainty and Future Regressor Note
+
+Phase 10 completes the core univariate forecasting evidence model by making uncertainty and known future information first-class.
+
+Implemented:
+
+- prediction interval request and confidence level fields on `aq_forecast_spec()`
+- interval availability, method, confidence level, lower/upper interval columns, and unsupported-interval reasons on forecast artifacts
+- deterministic interval assessment: coverage, average interval width, and interval counts
+- interval metrics by horizon
+- future-known-regressor validation for horizon length, schema, missing values, and numeric type compatibility
+- ARIMA xreg support using caller-supplied `future_known_variables`
+- rolling-origin compatibility for ARIMA with known future regressors
+
+Not implemented:
+
+- fabricated intervals for unsupported engines
+- interval optimization
+- probabilistic calibration
+- Bayesian forecasting
+- automatic future feature generation
+- panel, funnel, hurdle, or vector forecasting
+
+The important architectural outcome is that forecasts now communicate point expectations, uncertainty availability, uncertainty limitations, and future-information requirements through the same canonical artifact envelope.
+
+## Phase 11 CatBoost Forecasting Note
+
+Phase 11 adds CatBoost as a supervised forecasting engine inside the existing univariate forecast contract.
+
+Implemented:
+
+- `engine = "catboost"` on `aq_forecast_spec()`
+- explicit `forecast_strategy = "direct"` and `forecast_strategy = "recursive"`
+- deterministic target lag, rolling target mean, calendar/date, and known-future-regressor supervised features
+- prepared feature identity, Rodeo transformation identity, CatBoost model identity, and feature manifest metadata
+- feature importance metadata where CatBoost exposes it
+- unsupported interval metadata rather than fabricated CatBoost prediction intervals
+- challenger comparison against naive, seasonal naive when applicable, ETS, and ARIMA where possible
+- direct and recursive rolling-origin validation through the existing backtest path
+
+The ownership boundary is deliberately narrow. AutoQuant owns forecast orchestration, supervised framing, CatBoost fitting, assessment, artifacts, and comparison. Rodeo remains the owner of reusable deterministic temporal transformation contracts. The current implementation records Rodeo transformation identity and scope because the installed public Rodeo surface exposes legacy temporal helpers but not yet a complete structured temporal fit/apply contract for this forecasting use case.
+
+Not implemented:
+
+- multi-output CatBoost forecasting
+- tuning or AutoML
+- CatBoost prediction intervals
+- panel/global forecasting
+- deployment or monitoring
+
+The important architectural outcome is that supervised machine-learning forecasts now produce the same canonical evidence as statistical forecasts while preserving feature lineage and model identity.
+
+## Phase 12 Rodeo Temporal Transformation Note
+
+Phase 12 moves deterministic temporal feature preparation for supervised
+forecasting into Rodeo.
+
+Implemented:
+
+- Rodeo temporal transformation spec, fit, apply, schema validation, supervised
+  forecast frame preparation, recursive prediction rows, metadata, and QA
+- AutoQuant CatBoost forecasting now consumes Rodeo-prepared temporal frames
+  instead of constructing lags, rolling means, calendar features, and
+  future-known-variable alignment internally
+- CatBoost forecast artifacts now record temporal specification identity,
+  temporal transformation identity, prepared temporal dataset identity, replay
+  status, temporal diagnostics, and Rodeo feature manifests
+- direct and recursive CatBoost forecasting preserve the existing AutoQuant API
+  while delegating deterministic temporal preparation to Rodeo
+
+The ownership boundary is now:
+
+- Rodeo owns deterministic temporal preparation and replay.
+- AutoQuant owns forecasting orchestration, engine fitting, artifacts,
+  assessment, and rolling-origin validation.
+
+Not implemented:
+
+- panel forecasting
+- new forecast engines
+- tuning or AutoML
+- deployment
+- a separate forecast bundle subsystem
+
+The important architectural outcome is that temporal feature engineering is no
+longer duplicated in AutoQuant. Forecast engines consume prepared temporal data
+through a reusable fit/apply contract.
+
+## Phase 13 Global Panel Forecasting Note
+
+Phase 13 establishes global panel forecasting as a specialization of the shared
+forecasting architecture.
+
+Implemented:
+
+- `aq_panel_forecast_spec()`
+- `aq_validate_panel_forecast_spec()`
+- `aq_panel_forecast_partition()`
+- `aq_fit_panel_forecast()`
+- `aq_assess_panel_forecast()`
+- `aq_rolling_origin_panel_forecast()`
+- `qa_vnext_panel_forecasting_foundation()`
+- Rodeo entity-aware temporal replay enhancements for grouped labels, grouped
+  future-variable alignment, entity identity encoding, static entity features,
+  and multi-entity future prediction frames
+- global pooled CatBoost forecasting for direct and recursive strategies
+- panel forecast artifacts with entity identity, temporal transformation
+  identity, prepared temporal dataset identity, feature manifest, cold-start
+  diagnostics, feature importance, and campaign-compatible supported actions
+- panel assessment with aggregate metrics, metrics by entity, metrics by
+  horizon, metrics by entity/horizon, and entity summaries
+
+Historical capability archaeology:
+
+- Vector/CARMA forecasting encoded the idea that many related series can share
+  temporal features, xregs, rolling moments, and recursive updates.
+- Funnel forecasting encoded staged demand/supply or conversion-style outcome
+  thinking.
+- Hurdle forecasting encoded intermittent-demand and two-stage occurrence plus
+  magnitude ideas.
+- Hierarchical groups encoded aggregation and entity-context problems that
+  future reconciliation work can revisit.
+
+Modern placement:
+
+- Global panel forecasting is the shared architectural home.
+- Vector forecasting should become a multivariate/panel specialization.
+- Funnel forecasting should become a staged panel outcome specialization.
+- Intermittent-demand forecasting should be treated as a problem family.
+  Classical Croston and supervised Hurdle forecasting are sibling operators:
+  Croston estimates demand size and inter-demand interval directly, while
+  Hurdle decomposes occurrence probability and positive-demand magnitude.
+- Hierarchical forecasting should become a reconciliation layer above panel
+  forecasts, not a separate low-level feature-engineering system.
+
+Not implemented:
+
+- Vector forecasting
+- Funnel forecasting
+- SBA/TSB intermittent-demand variants were implemented in Phase 17 as
+  classical sibling operators to Croston, with method comparison evidence
+  across naive, seasonal naive, Croston, SBA, TSB, and optional supervised
+  Hurdle.
+- top-down, middle-out, and optimization-based reconciliation
+- per-series model loops
+- Prophet, tuning, AutoML, or deployment
+
+The important architectural outcome is that future forecasting families now
+have an obvious home: specializations of global panel forecasting that preserve
+the same artifact, assessment, Rodeo replay, and campaign evidence contracts.
+
+## Phase 14 Hierarchical Forecasting Note
+
+Phase 14 promotes hierarchy from a historical option inside older forecasting
+wrappers into an explicit deterministic forecasting operator above panel
+forecasting.
+
+Implemented:
+
+- `aq_hierarchy_spec()`
+- `aq_validate_hierarchy_spec()`
+- `aq_reconcile_hierarchical_forecast()`
+- `aq_assess_hierarchical_forecast()`
+- `aq_rolling_origin_hierarchical_forecast()`
+- `qa_vnext_hierarchical_forecasting_foundation()`
+- flat hierarchy node tables with entity id, parent id, level, root identity,
+  aggregation method, and hierarchy version
+- deterministic validation for duplicates, missing parents, multiple roots,
+  self-parent relationships, and cycles
+- conservative bottom-up reconciliation from panel leaf forecasts
+- hierarchy artifacts with parent identity, level identity, reconciliation
+  status, reconciliation diagnostics, and campaign-compatible supported actions
+- hierarchy assessment with aggregate metrics, metrics by entity, metrics by
+  level, metrics by horizon, and aggregate consistency summaries
+
+Historical capability archaeology:
+
+- `AutoCatBoostVectorCARMA()` and related CARMA code contained hierarchy/group
+  checks, hierarchical Fourier generation, and grouped recursive scoring
+  patterns. These are evidence that related series need explicit structure, but
+  they are not a stable modern API.
+- Funnel forecasting contained base-measure and conversion-measure ideas that
+  naturally depend on group, cohort, and aggregate constraints. Funnel should
+  later specialize the panel/hierarchy foundation rather than rebuild its own
+  grouping layer.
+- Hurdle forecasting contained intermittent-demand occurrence/magnitude logic.
+  Hurdle should later specialize the entity outcome process while still using
+  the same hierarchy and reconciliation evidence where aggregate constraints
+  matter.
+
+Modern placement:
+
+- Single-series forecasting owns specification, partitioning, engine fitting,
+  artifact lineage, assessment, and rolling-origin evaluation.
+- Panel forecasting adds entity-aware temporal preparation and pooled global
+  forecasting.
+- Hierarchical forecasting adds deterministic parent-child structure and
+  reconciliation above panel forecasts.
+- Vector, Funnel, and Hurdle forecasting should become future specialized
+  operators inside this structure, not separate structural frameworks.
+
+Not implemented:
+
+- Funnel forecasting
+- Hurdle forecasting
+- full Vector forecasting
+- top-down reconciliation
+- middle-out reconciliation
+- optimization-based reconciliation
+- Prophet, tuning, AutoML, or deployment
+
+## Phase 15 Panel Strategy Selection Note
+
+Phase 15 changes the interpretation of panel forecasting. Pooling is no longer
+treated as an architectural preference. It is an analytical hypothesis that
+must earn its place through deterministic comparison evidence.
+
+Implemented:
+
+- `aq_panel_strategy_spec()`
+- `aq_validate_panel_strategy_spec()`
+- `aq_evaluate_panel_strategies()`
+- `qa_vnext_panel_strategy_selection()`
+- independent strategy evaluation using existing single-series forecast
+  contracts
+- grouped strategy evaluation using explicit group columns and pooled panel
+  forecasts per group
+- global strategy evaluation using the existing pooled panel forecast contract
+- equal-entity strategy comparison
+- negative-transfer diagnostics against independent entity forecasts
+- advisory recommendations such as `independent_preferred`,
+  `grouped_preferred`, `global_preferred`, `hybrid_worth_investigating`, and
+  `evidence_insufficient`
+
+Historical capability archaeology:
+
+- Vector/CARMA forecasting assumed that many series could benefit from shared
+  temporal evidence. Phase 15 makes that assumption testable by comparing
+  independent, grouped, and global strategies.
+- Funnel forecasting often contains natural groups such as cohort, market,
+  product family, or channel. Future Funnel work should use explicit grouped
+  strategy diagnostics rather than hard-coding one pooled structure.
+- Hurdle forecasting may benefit from pooling occurrence behavior while keeping
+  some magnitude series separate. Phase 15 preserves this as future hybrid
+  evidence instead of forcing global or independent modeling.
+
+Modern placement:
+
+- Independent forecasts establish the no-pooling baseline.
+- Grouped forecasts test explicitly supplied business structure.
+- Global forecasts test full pooled learning.
+- Negative-transfer diagnostics identify entities where pooling appears to
+  hurt.
+- Recommendations remain advisory and do not automatically select a model.
+
+Not implemented:
+
+- automatic clustering
+- automatic strategy selection
+- Funnel forecasting
+- Hurdle forecasting
+- Vector forecasting
+- hierarchical optimization
+- AutoML or deployment
 
 ## Executive Summary
 

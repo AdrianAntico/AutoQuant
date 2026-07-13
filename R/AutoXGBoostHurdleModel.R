@@ -181,7 +181,7 @@
 #'   data.table::fwrite(XGBoost_QA, file = file.path(Path, "AutoXGBoostHurdleModel_QA.csv"))
 #' }
 #' }
-#' @export
+#' @keywords internal
 AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
                                    TrainOnFull = FALSE,
                                    PassInGrid = NULL,

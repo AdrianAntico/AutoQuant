@@ -326,7 +326,7 @@
 #'   MaxCohortPeriod = 15,
 #'   DebugMode = TRUE)
 #' }
-#' @export
+#' @keywords internal
 AutoLightGBMFunnelCARMA <- function(data,
                                     GroupVariables = NULL,
                                     BaseFunnelMeasure = NULL,
@@ -1478,7 +1478,7 @@ AutoLightGBMFunnelCARMA <- function(data,
 #'   DebugMode = TRUE)
 #' }
 #'
-#' @export
+#' @keywords internal
 AutoLightGBMFunnelCARMAScoring <- function(TrainData,
                                            ForwardLookingData = NULL,
                                            TrainEndDate = NULL,

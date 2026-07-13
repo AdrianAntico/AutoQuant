@@ -319,7 +319,7 @@
 #'   data.table::fwrite(LightGBM_QA, file = file.path(Path, "AutoLightGBMHurdleModel_QA.csv"))
 #' }
 #' }
-#' @export
+#' @keywords internal
 AutoLightGBMHurdleModel <- function(TrainOnFull = FALSE,
                                     PassInGrid = NULL,
                                     NThreads = max(1L, parallel::detectCores()-2L),

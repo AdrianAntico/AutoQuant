@@ -53,7 +53,7 @@
 #'   NumOfParDepPlots = 10L,
 #'   PassInGrid = NULL)
 #' }
-#' @export
+#' @keywords internal
 AutoH2oDRFHurdleModel <- function(data,
                                   TrainOnFull = FALSE,
                                   ValidationData = NULL,

@@ -33,7 +33,13 @@ qa_autoquant_package <- function() {
     vnext_rodeo_transformation_replay = qa_vnext_rodeo_transformation_replay(),
     vnext_model_bundle = qa_vnext_model_bundle(),
     vnext_artifact_framework = qa_vnext_artifact_framework(),
-    vnext_scoring_lifecycle = qa_vnext_scoring_lifecycle()
+    vnext_scoring_lifecycle = qa_vnext_scoring_lifecycle(),
+    vnext_forecasting_foundation = qa_vnext_forecasting_foundation(),
+    vnext_panel_forecasting_foundation = qa_vnext_panel_forecasting_foundation(),
+    vnext_hierarchical_forecasting_foundation = qa_vnext_hierarchical_forecasting_foundation(),
+    vnext_panel_strategy_selection = qa_vnext_panel_strategy_selection(),
+    vnext_hurdle_forecasting_foundation = qa_vnext_hurdle_forecasting_foundation(),
+    vnext_usage_documentation = qa_vnext_usage_documentation()
   )
 
   rows <- lapply(names(qa_results), function(name) {

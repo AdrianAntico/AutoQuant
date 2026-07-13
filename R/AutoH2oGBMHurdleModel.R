@@ -52,7 +52,7 @@
 #'   NumOfParDepPlots = 10L,
 #'   PassInGrid = NULL)
 #' }
-#' @export
+#' @keywords internal
 AutoH2oGBMHurdleModel <- function(data,
                                   ValidationData = NULL,
                                   TestData = NULL,
