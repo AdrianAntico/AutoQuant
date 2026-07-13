@@ -28,27 +28,47 @@ aq_variable_semantics(
 }
 \arguments{
 \item{variables}{Character vector of variable names.}
+
 \item{operational}{Operational semantic assignments.}
+
 \item{temporal}{Temporal semantic assignments.}
+
 \item{causal}{Causal semantic assignments.}
+
 \item{forecasting}{Forecasting semantic assignments.}
+
 \item{measurement}{Measurement semantic assignments.}
+
 \item{decision}{Decision semantic assignments.}
+
 \item{business_role}{Business-role semantic assignments.}
+
 \item{operational_eligibility}{Operational-eligibility semantic assignments.}
+
 \item{analytical_role}{Analytical-role semantic assignments.}
+
 \item{causal_role}{Context-relative causal-role semantic assignments.}
+
 \item{confidence}{Scalar, named vector, or named list of confidence values.}
-\item{evidence_source}{Scalar, named vector, or named list of evidence sources.}
+
+\item{evidence_source}{Scalar, named vector, or named list of evidence
+sources.}
+
 \item{human_annotations}{Optional human annotation list.}
+
 \item{llm_suggestions}{Optional LLM suggestion list.}
+
 \item{dataset_id}{Optional dataset id.}
-\item{business_context_refs}{Optional references to future business-intent artifacts. This phase records ids only; it does not define those schemas.}
+
+\item{business_context_refs}{Optional references to future business-intent
+artifacts. This phase records ids only; it does not define those schemas.}
+
 \item{semantics_id}{Optional semantic object id.}
+
 \item{supported_downstream_actions}{Supported downstream actions.}
 }
 \value{
-An \code{aq_variable_semantics} object.
+An `aq_variable_semantics` object.
 }
 \description{
 Creates a typed semantic object describing what variables mean across

@@ -12,7 +12,7 @@ aq_run_forecast_experiment_campaign(
 )
 }
 \arguments{
-\item{experiment_specs}{A list of \code{aq_forecast_experiment_spec} objects.}
+\item{experiment_specs}{A list of `aq_forecast_experiment_spec` objects.}
 
 \item{data}{Forecasting data.}
 
@@ -21,7 +21,7 @@ aq_run_forecast_experiment_campaign(
 \item{stop_on_failure}{Whether to stop after the first failed experiment.}
 }
 \value{
-An \code{aq_forecast_experiment_campaign_result}.
+An `aq_forecast_experiment_campaign_result`.
 }
 \description{
 Runs a bounded sequence of already-specified forecast experiments. The

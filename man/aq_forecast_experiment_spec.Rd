@@ -20,25 +20,31 @@ aq_forecast_experiment_spec(
   rejection_criteria = NULL,
   dataset_id = NULL,
   experiment_id = NULL,
-  supported_actions = c("execute", "compare", "report", "campaign_review", "knowledge_promotion")
+  supported_actions = c("execute", "compare", "report", "campaign_review",
+    "knowledge_promotion")
 )
 }
 \arguments{
-\item{planning_artifact}{Optional artifact from \code{aq_plan_forecasting_strategy()}.}
+\item{planning_artifact}{Optional artifact from
+`aq_plan_forecasting_strategy()`.}
 
-\item{planning_result}{Optional full result from \code{aq_plan_forecasting_strategy()}.}
+\item{planning_result}{Optional full result from
+`aq_plan_forecasting_strategy()`.}
 
-\item{experiment_type}{One of \code{"strategy"}, \code{"feature"}, or \code{"model"}.}
+\item{experiment_type}{One of `"strategy"`, `"feature"`, or `"model"`.}
 
 \item{baseline}{Baseline candidate id or list.}
 
 \item{challenger}{Challenger candidate id or list.}
 
-\item{target}{Forecast target. Defaults to the first target in the planning artifact lineage when available.}
+\item{target}{Forecast target. Defaults to the first target in the planning
+artifact lineage when available.}
 
-\item{date}{Forecast date column. Defaults to the planning artifact lineage when available.}
+\item{date}{Forecast date column. Defaults to the planning artifact lineage
+when available.}
 
-\item{horizon}{Forecast horizon. Defaults to the planning artifact lineage when available.}
+\item{horizon}{Forecast horizon. Defaults to the planning artifact lineage
+when available.}
 
 \item{forecast_origin}{Optional forecast origin.}
 
@@ -57,7 +63,7 @@ aq_forecast_experiment_spec(
 \item{supported_actions}{Supported downstream actions.}
 }
 \value{
-An \code{aq_forecast_experiment_spec}.
+An `aq_forecast_experiment_spec`.
 }
 \description{
 Creates one bounded, evidence-guided forecasting experiment. The

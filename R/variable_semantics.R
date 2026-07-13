@@ -265,6 +265,7 @@ aq_variable_semantics_make_mappings <- function(variables, dimensions, confidenc
 #'
 #' @description
 #' Creates a typed semantic object describing what variables mean across
+#' business-role, operational-eligibility, analytical-role, causal-role,
 #' operational, temporal, causal, forecasting, measurement, and decision
 #' dimensions. Variables may have multiple semantic assignments and uncertainty
 #' is represented through confidence and candidate/unknown semantic types.

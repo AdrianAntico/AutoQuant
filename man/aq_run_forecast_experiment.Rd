@@ -4,10 +4,15 @@
 \alias{aq_run_forecast_experiment}
 \title{Run One Governed Forecast Experiment}
 \usage{
-aq_run_forecast_experiment(spec, data, baseline_result = NULL, challenger_result = NULL)
+aq_run_forecast_experiment(
+  spec,
+  data,
+  baseline_result = NULL,
+  challenger_result = NULL
+)
 }
 \arguments{
-\item{spec}{An \code{aq_forecast_experiment_spec}.}
+\item{spec}{An `aq_forecast_experiment_spec`.}
 
 \item{data}{Forecasting data.}
 
@@ -16,7 +21,7 @@ aq_run_forecast_experiment(spec, data, baseline_result = NULL, challenger_result
 \item{challenger_result}{Optional precomputed challenger forecast.}
 }
 \value{
-An \code{aq_forecast_experiment_result}.
+An `aq_forecast_experiment_result`.
 }
 \description{
 Executes one deterministic challenger against a frozen baseline and returns

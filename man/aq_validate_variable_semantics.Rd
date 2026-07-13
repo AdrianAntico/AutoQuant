@@ -7,7 +7,7 @@
 aq_validate_variable_semantics(semantics)
 }
 \arguments{
-\item{semantics}{An \code{aq_variable_semantics} object.}
+\item{semantics}{An `aq_variable_semantics` object.}
 }
 \value{
 A data.table of validation diagnostics.

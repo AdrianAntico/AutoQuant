@@ -33,6 +33,9 @@ qa_vnext_usage_documentation <- function() {
     "Model Bundles",
     "Canonical Analytical Artifacts",
     "Canonical Variable Semantics",
+    "Business Intent and Lever Management",
+    "Decision Management",
+    "Decision Lifecycle and Organizational Memory",
     "Time-Series Forecasting",
     "CatBoost Forecasting",
     "Panel Forecasting",
@@ -65,6 +68,22 @@ qa_vnext_usage_documentation <- function() {
     "aq_variable_semantics",
     "aq_validate_variable_semantics",
     "aq_variable_semantics_artifact",
+    "aq_business_intent",
+    "aq_validate_business_intent",
+    "aq_assess_business_alignment",
+    "aq_assess_explore_exploit",
+    "aq_business_intent_artifact",
+    "aq_decision_context",
+    "aq_decision_alternative",
+    "aq_decision_optionality",
+    "aq_validate_decision_context",
+    "aq_assess_decision_alternatives",
+    "aq_assess_decision_optionality",
+    "aq_decision_context_artifact",
+    "aq_review_decision",
+    "aq_decision_timeline",
+    "aq_decision_learning_summary",
+    "aq_decision_memory_artifact",
     "aq_forecast_spec",
     "aq_fit_forecast",
     "aq_panel_forecast_spec",
@@ -90,6 +109,9 @@ qa_vnext_usage_documentation <- function() {
     "qa_vnext_forecasting_planning",
     "qa_vnext_forecasting_experiment_campaigns",
     "qa_variable_semantics_framework",
+    "qa_business_intent_framework",
+    "qa_decision_management_framework",
+    "qa_decision_lifecycle_framework",
     "qa_vnext_multitarget_supervised_forecasting"
   )
   for (fn in implemented_names) {
@@ -98,6 +120,10 @@ qa_vnext_usage_documentation <- function() {
 
   docs_to_check <- c(
     file.path("docs", "variable_semantics_framework.md"),
+    file.path("docs", "business_intent_framework.md"),
+    file.path("docs", "decision_management_framework.md"),
+    file.path("docs", "decision_management_philosophy.md"),
+    file.path("docs", "decision_lifecycle_and_memory.md"),
     file.path("docs", "vnext_forecasting_foundation.md"),
     file.path("docs", "vnext_intermittent_demand_forecasting.md"),
     file.path("docs", "vnext_funnel_forecasting_foundation.md"),
@@ -114,6 +140,12 @@ qa_vnext_usage_documentation <- function() {
   add("docs_mention_variable_semantics", grepl("aq_variable_semantics", docs_text, fixed = TRUE) && grepl("variable_semantics_artifact", docs_text, fixed = TRUE), "vNext docs mention canonical variable semantics.")
   add("docs_mention_business_intent_semantics", grepl("mission", docs_text, fixed = TRUE) && grepl("business objective", docs_text, fixed = TRUE) && grepl("strategy/tactic alignment", docs_text, fixed = TRUE), "vNext docs mention business-intent semantic alignment.")
   add("docs_mention_lever_risk_semantics", grepl("business_lever", docs_text, fixed = TRUE) && grepl("risk_indicator", docs_text, fixed = TRUE) && grepl("lever_id", docs_text, fixed = TRUE) && grepl("risk_id", docs_text, fixed = TRUE), "vNext docs mention future lever and risk semantic references.")
+  add("docs_mention_business_intent_framework", grepl("aq_business_intent", docs_text, fixed = TRUE) && grepl("business_intent_artifact", docs_text, fixed = TRUE) && grepl("Explore / Exploit", docs_text, fixed = TRUE), "vNext docs mention business-intent and lever-management contracts.")
+  add("docs_mention_decision_management", grepl("aq_decision_context", docs_text, fixed = TRUE) && grepl("decision_context_artifact", docs_text, fixed = TRUE) && grepl("alternative", docs_text, fixed = TRUE), "vNext docs mention decision contexts, alternatives, and decision artifacts.")
+  add("docs_mention_decision_lifecycle", grepl("aq_review_decision", docs_text, fixed = TRUE) && grepl("aq_decision_memory_artifact", docs_text, fixed = TRUE) && grepl("organizational memory", docs_text, fixed = TRUE), "vNext docs mention durable decision lifecycle and organizational memory.")
+  add("docs_mention_optionality", grepl("optionality", docs_text, fixed = TRUE) && grepl("explore/exploit", docs_text, fixed = TRUE), "vNext docs mention optionality and explore/exploit decision framing.")
+  add("docs_mention_decision_authority", grepl("authority", docs_text, fixed = TRUE) && grepl("coverage", docs_text, fixed = TRUE) && grepl("human judgment", docs_text, fixed = TRUE), "vNext docs mention authority, coverage, and human judgment.")
+  add("docs_mention_authority_coverage", grepl("Authority and Partial Coverage", docs_text, fixed = TRUE) && grepl("capability from permission", docs_text, fixed = TRUE), "vNext docs distinguish capability, authority, and partial coverage.")
   add("docs_mention_tsb", grepl("TSB", docs_text, fixed = TRUE), "vNext docs mention TSB intermittent-demand support.")
   add("docs_mention_method_comparison", grepl("aq_compare_intermittent_demand_methods", docs_text, fixed = TRUE), "vNext docs mention method comparison.")
   add("docs_mention_funnel_forecasting", grepl("aq_funnel_forecast_spec", docs_text, fixed = TRUE), "vNext docs mention funnel forecasting.")
@@ -127,6 +159,9 @@ qa_vnext_usage_documentation <- function() {
   example_names <- c(
     "artifact_schema_example.R",
     "variable_semantics_framework.R",
+    "business_intent_framework.R",
+    "decision_management_framework.R",
+    "decision_lifecycle_and_memory.R",
     "vnext_supervised_learning.R",
     "vnext_forecasting.R",
     "vnext_intermittent_demand.R",

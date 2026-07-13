@@ -7,11 +7,12 @@
 aq_variable_semantics_artifact(semantics, artifact_id = NULL)
 }
 \arguments{
-\item{semantics}{An \code{aq_variable_semantics} object.}
+\item{semantics}{An `aq_variable_semantics` object.}
+
 \item{artifact_id}{Optional artifact id.}
 }
 \value{
-A canonical \code{variable_semantics_artifact}.
+A canonical `variable_semantics_artifact`.
 }
 \description{
 Create a Variable Semantics Artifact

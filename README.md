@@ -36,6 +36,9 @@ Architecture + Redesign Notes
 - [AutoQuant vNext Multi-Target Forecasting Foundation](docs/vnext_multitarget_forecasting_foundation.md) documents multi-target specification, shared temporal preparation evidence, target-level forecasts, cross-target evidence, assessment, and strategy comparison.
 - [AutoQuant vNext Cross-Target Forecasting](docs/vnext_cross_target_forecasting.md) documents supervised CatBoost cross-target feature learning, Rodeo-owned leakage-safe feature preparation, negative-transfer evidence, and advisory strategy comparison.
 - [AutoQuant vNext Forecasting Capability Planning](docs/vnext_forecasting_planning.md) documents deterministic forecasting capability discovery, evidence-guided strategy planning, planning artifacts, and the historical CatBoost CARMA mechanism inventory for future feature-tuning experiments.
+- [Causal Intelligence Philosophy](docs/causal_intelligence_philosophy.md) explains why causal planning is separate from prediction, association, and effect estimation.
+- [Causal Intelligence Framework](docs/causal_intelligence_framework.md) documents Phase 1 causal questions, estimands, question-relative roles, graph diagnostics, adjustment guidance, identification planning, design eligibility, and causal planning artifacts.
+- [Causal Experiment Design Framework](docs/causal_experiment_design_framework.md) documents Phase 2 governed experiment questions, design specs, deterministic assignment proposals, balance diagnostics, power/timing/measurement plans, validity threats, approval gates, information value, and experiment plan artifacts.
 
 <br>
 
@@ -70,6 +73,68 @@ score <- aq_score_model(fit, dt[1:10], row_id_cols = "id", outcome_col = "revenu
 ```
 
 Validated script: `inst/examples/vnext_supervised_learning.R`
+
+### Causal Intelligence Planning
+
+Causal Intelligence Phase 1 is planning-only. It helps define the causal question, estimand, roles, graph assumptions, adjustment guidance, identification concerns, candidate designs, and a canonical planning artifact. It does not estimate treatment effects.
+
+```r
+question <- aq_causal_question(
+  question = list(
+    causal_question_id = "cq_tv_revenue",
+    decision_context_id = "decision_tv_budget",
+    exposure = "tv_spend",
+    outcome = "revenue",
+    population = "eligible markets",
+    unit_of_analysis = "market-week",
+    time_zero = "campaign start",
+    treatment_window = "next quarter",
+    outcome_window = "same quarter and four-week lag",
+    comparison_condition = "current weekly TV spend range",
+    intervention_definition = "increase weekly TV spend from current market range to proposed eligible-market range",
+    estimand = "ATE",
+    effect_scale = "incremental revenue difference",
+    target_population = "eligible markets"
+  )
+)
+```
+
+Validated script: `inst/examples/causal_intelligence_framework.R`
+
+### Causal Experiment Design Planning
+
+Causal Experiment Design Phase 2 extends causal planning into governed experiment-design artifacts. It does not execute treatment and does not estimate causal effects.
+
+```r
+experiment_question <- aq_experiment_question(list(
+  experiment_question_id = "eq_budget_test",
+  causal_question_id = "cq_budget_revenue",
+  decision_context_id = "decision_budget",
+  hypothesis = "Increasing budget raises revenue.",
+  null_claim = "No revenue lift.",
+  alternative_claim = "Revenue lift is positive.",
+  treatment = "approved budget increase",
+  comparison = "current budget",
+  estimand = "ATE",
+  assignment_population = "eligible markets",
+  expected_mechanism = "More qualified reach creates more revenue.",
+  primary_outcome = "revenue",
+  guardrails = "cpa,customer_quality",
+  decision_rule = "Approve rollout if lift exceeds cost and guardrails hold.",
+  authority = "marketing_approval",
+  coverage = "eligible_markets"
+), causal_context)
+
+design <- aq_experiment_design_spec(
+  experiment_question,
+  design_type = "stratified_randomized",
+  assignment_unit = "market",
+  analysis_unit = "market-week",
+  stratification_variables = "region"
+)
+```
+
+Validated script: `inst/examples/causal_experiment_design_framework.R`
 
 ### Supervised Learning
 
@@ -159,6 +224,252 @@ artifact <- aq_variable_semantics_artifact(semantics)
 ```
 
 Validated script: `inst/examples/variable_semantics_framework.R`
+
+### Business Intent and Lever Management
+
+Use `aq_business_intent()` to describe the organizational layer above
+variables: mission, objective, strategy, tactic, lever, KPI, guardrail,
+constraint, risk, assumption, recommendation, decision, authority, and
+coverage. This contract keeps organizational intent separate from variable
+semantics while linking them through deterministic relationships and
+variable-to-lever mappings.
+
+The framework can assess structural strategy/tactic/measurement alignment,
+classify levers and assumptions as explore/exploit candidates, distinguish
+capability from authority, and create a canonical `business_intent_artifact`.
+It does not implement optimization, causal estimation, MMM, reinforcement
+learning, or automatic strategy changes.
+
+```r
+semantics <- aq_variable_semantics(
+  variables = c("revenue", "paid_search_spend", "planned_paid_search_spend", "inventory_cap"),
+  business_role = list(
+    revenue = c("objective_metric", "measurement_kpi"),
+    paid_search_spend = c("tactic_lever", "business_lever", "cost"),
+    planned_paid_search_spend = c("tactic_lever", "business_lever"),
+    inventory_cap = c("constraint", "guardrail", "risk_indicator")
+  ),
+  operational_eligibility = list(
+    paid_search_spend = c("controllable", "optimization_eligible", "experiment_eligible"),
+    planned_paid_search_spend = c("controllable", "scenario_only"),
+    inventory_cap = "non_controllable"
+  ),
+  analytical_role = list(
+    revenue = "target",
+    paid_search_spend = "predictor",
+    planned_paid_search_spend = "known_future_regressor",
+    inventory_cap = "predictor"
+  ),
+  causal_role = list(
+    paid_search_spend = "exposure",
+    revenue = "outcome",
+    inventory_cap = "moderator"
+  ),
+  decision = list(
+    revenue = "primary_kpi",
+    paid_search_spend = "optimization_eligible",
+    inventory_cap = "guardrail"
+  )
+)
+
+intent <- aq_business_intent(
+  missions = list(
+    mission_id = "mission_growth",
+    title = "Sustainable Growth"
+  ),
+  objectives = list(
+    objective_id = "objective_revenue_growth",
+    mission_id = "mission_growth",
+    title = "Increase Revenue",
+    primary_kpis = list("kpi_revenue")
+  ),
+  strategies = list(
+    strategy_id = "strategy_qualified_demand",
+    objective_id = "objective_revenue_growth",
+    title = "Increase Qualified Demand",
+    intended_mechanism = "Increase awareness and intent among eligible prospects."
+  ),
+  tactics = list(
+    tactic_id = "tactic_paid_search",
+    strategy_id = "strategy_qualified_demand",
+    title = "Expand Paid Search Acquisition"
+  ),
+  levers = list(
+    lever_id = "lever_paid_search_budget",
+    tactic_id = "tactic_paid_search",
+    related_variables = list(c("paid_search_spend", "planned_paid_search_spend")),
+    evidence_strength = 0.82,
+    uncertainty = 0.25,
+    economic_importance = 0.9,
+    measurement_quality = 0.8,
+    reversibility = TRUE,
+    experiment_eligible = TRUE,
+    optimization_eligible = TRUE,
+    execution_eligible = FALSE,
+    approval_required = TRUE,
+    validated_range = "80000-120000"
+  ),
+  kpis = list(
+    kpi_id = "kpi_revenue",
+    objective_id = "objective_revenue_growth",
+    source_variable = "revenue",
+    role = "primary"
+  ),
+  guardrails = list(
+    guardrail_id = "guardrail_capacity",
+    tactic_id = "tactic_paid_search",
+    source_variable = "inventory_cap",
+    measured = TRUE
+  ),
+  constraints = list(
+    constraint_id = "constraint_budget",
+    lever_id = "lever_paid_search_budget",
+    lower_bound = 50000,
+    upper_bound = 150000
+  ),
+  assumptions = list(
+    assumption_id = "assumption_search_capacity",
+    strategy_id = "strategy_qualified_demand",
+    tactic_id = "tactic_paid_search",
+    lever_id = "lever_paid_search_budget",
+    statement = "Search capacity can absorb incremental qualified demand.",
+    evidence_status = "partial",
+    experiment_eligible = TRUE,
+    evidence_strength = 0.45,
+    unresolved_uncertainty = 0.65,
+    economic_importance = 0.85,
+    measurement_quality = 0.75
+  ),
+  authority = list(
+    authority_id = "authority_marketing_advisory",
+    authority_level = "recommend",
+    approval_required = TRUE,
+    required_approver = "CMO"
+  ),
+  coverage = list(
+    coverage_id = "coverage_marketing_only",
+    represented_domains = list("marketing"),
+    missing_domains = list(c("finance", "operations")),
+    limitation = "Marketing scope only; not an enterprise-wide allocation recommendation."
+  ),
+  variable_semantics = semantics
+)
+
+validation <- aq_validate_business_intent(intent)
+alignment <- aq_assess_business_alignment(intent)
+explore_exploit <- aq_assess_explore_exploit(intent)
+artifact <- aq_business_intent_artifact(intent)
+```
+
+Validated script: `inst/examples/business_intent_framework.R`
+
+Focused QA:
+
+```r
+qa_business_intent_framework()
+```
+
+### Decision Management
+
+Use `aq_decision_context()` when analysis needs to support a governed decision
+rather than merely describe model output. Decision contexts preserve the decision
+question, baseline/current-policy alternative, candidate alternatives, criteria,
+financial impact, uncertainty, optionality, recommendation, selected decision,
+and outcome follow-up.
+
+Use `aq_decision_alternative()` and `aq_decision_optionality()` directly when
+building those record tables before assembling the full context.
+
+The framework is deterministic and human-governed. It can assess alternatives,
+flag authority escalation, identify reducible uncertainty, and produce a
+canonical `decision_context_artifact`; it does not execute actions or optimize
+budgets automatically.
+
+```r
+decision <- aq_decision_context(
+  context = list(
+    decision_context_id = "decision_paid_search_budget",
+    decision_question = "Should paid-search budget remain flat, increase within the validated range, or be piloted above the validated range?",
+    related_objectives = list("objective_revenue_growth"),
+    related_tactics = list("tactic_paid_search"),
+    related_levers = list("lever_paid_search_budget"),
+    authority = "authority_marketing_advisory",
+    coverage = "coverage_marketing_only"
+  ),
+  alternatives = list(
+    list(alternative_id = "alt_baseline", name = "Keep current budget", alternative_type = "do_nothing", baseline = TRUE),
+    list(alternative_id = "alt_validated_increase", name = "Increase within validated range", alternative_type = "partial_implementation", authority_compatible = TRUE),
+    list(alternative_id = "alt_pilot", name = "Pilot above validated range", alternative_type = "pilot", authority_compatible = FALSE)
+  ),
+  financial_impacts = list(
+    list(financial_id = "fin_baseline", alternative_id = "alt_baseline", recurring_cost = 100000, expected_benefit = 110000),
+    list(financial_id = "fin_validated", alternative_id = "alt_validated_increase", recurring_cost = 115000, expected_benefit = 140000),
+    list(financial_id = "fin_pilot", alternative_id = "alt_pilot", recurring_cost = 140000, expected_benefit = 160000, downside_estimate = -35000)
+  ),
+  uncertainties = list(
+    list(uncertainty_id = "unc_pilot_transfer", alternative_id = "alt_pilot", reducibility = "reducible", decision_sensitivity = "high")
+  ),
+  optionality = list(
+    list(optionality_id = "opt_pilot_learning", alternative_id = "alt_pilot", option_type = "learn", future_decisions_enabled = list(c("expand", "abandon")), reversibility = TRUE)
+  ),
+  business_intent = intent,
+  variable_semantics = semantics
+)
+
+validation <- aq_validate_decision_context(decision)
+alternative_assessment <- aq_assess_decision_alternatives(decision)
+optionality_assessment <- aq_assess_decision_optionality(decision)
+artifact <- aq_decision_context_artifact(decision)
+```
+
+Validated script: `inst/examples/decision_management_framework.R`
+
+Focused QA:
+
+```r
+qa_decision_management_framework()
+```
+
+### Decision Lifecycle and Organizational Memory
+
+Use `aq_review_decision()` after a governed decision has an observable outcome.
+The review records expected outcome, realized outcome, actual value, variance,
+execution state, assumption status, lessons learned, strategy implications,
+lever implications, and future recommendations. This turns decisions into
+durable organizational memory instead of one-time recommendations.
+
+Use `aq_decision_timeline()` to reconstruct the deterministic lifecycle:
+context, alternatives, recommendations, selected decision, outcome follow-up,
+and learning review.
+
+Use `aq_decision_learning_summary()` to summarize whether outcome evidence
+validated the decision pattern, produced partial learning, or created negative
+evidence. Use `aq_decision_memory_artifact()` to package the timeline and
+learning summary as a canonical artifact for collectors, reports, GenAI bounded
+context, and future knowledge promotion.
+
+```r
+review <- aq_review_decision(
+  decision,
+  decision_id = "decision_budget_pending",
+  realized_outcome = "Validated response inside delegated range.",
+  actual_value = 36000,
+  lessons_learned = "Validated range remains reusable.",
+  assumption_status = "held"
+)
+
+timeline <- aq_decision_timeline(decision, review)
+learning <- aq_decision_learning_summary(decision, review)
+memory_artifact <- aq_decision_memory_artifact(decision, review)
+```
+
+Validated script: `inst/examples/decision_lifecycle_and_memory.R`
+
+Focused QA:
+
+```r
+qa_decision_lifecycle_framework()
+```
 
 ### Time-Series Forecasting
 
@@ -454,9 +765,12 @@ cross_target_qa <- AutoQuant::qa_vnext_multitarget_supervised_forecasting()
 planning_qa <- AutoQuant::qa_vnext_forecasting_planning()
 experiment_qa <- AutoQuant::qa_vnext_forecasting_experiment_campaigns()
 semantics_qa <- AutoQuant::qa_variable_semantics_framework()
+business_intent_qa <- AutoQuant::qa_business_intent_framework()
+decision_qa <- AutoQuant::qa_decision_management_framework()
+decision_lifecycle_qa <- AutoQuant::qa_decision_lifecycle_framework()
 ```
 
-The vNext QA includes supervised learning, scoring, model bundles, artifact contracts, canonical variable semantics, forecasting, panel forecasting, hierarchy reconciliation, panel strategy comparison, intermittent-demand operators, funnel forecasting, multi-target forecasting, cross-target feature forecasting, forecasting capability planning, governed forecasting experiment campaigns, and README/example coverage.
+The vNext QA includes supervised learning, scoring, model bundles, artifact contracts, canonical variable semantics, business intent, decision management, decision lifecycle memory, forecasting, panel forecasting, hierarchy reconciliation, panel strategy comparison, intermittent-demand operators, funnel forecasting, multi-target forecasting, cross-target feature forecasting, forecasting capability planning, governed forecasting experiment campaigns, and README/example coverage.
 
 ### Legacy API Status
 
@@ -468,6 +782,10 @@ The legacy AutoQuant functions remain available for compatibility. vNext is the 
 - `docs/vnext_catboost_regression.md`
 - `docs/canonical_analytical_artifacts.md`
 - `docs/variable_semantics_framework.md`
+- `docs/business_intent_framework.md`
+- `docs/decision_management_philosophy.md`
+- `docs/decision_management_framework.md`
+- `docs/decision_lifecycle_and_memory.md`
 - `docs/vnext_forecasting_foundation.md`
 - `docs/vnext_forecasting_planning.md`
 - `docs/vnext_forecasting_experiment_campaigns.md`
