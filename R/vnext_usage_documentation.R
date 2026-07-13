@@ -41,6 +41,7 @@ qa_vnext_usage_documentation <- function() {
     "Funnel Forecasting",
     "Multi-Target Forecasting",
     "Cross-Target Feature Forecasting",
+    "Forecasting Capability Planning",
     "Package QA",
     "Legacy API Status",
     "Detailed Architecture Documents"
@@ -76,6 +77,9 @@ qa_vnext_usage_documentation <- function() {
     "aq_fit_multitarget_forecast",
     "aq_assess_multitarget_forecast",
     "aq_compare_multitarget_strategies",
+    "aq_discover_forecasting_capabilities",
+    "aq_plan_forecasting_strategy",
+    "qa_vnext_forecasting_planning",
     "qa_vnext_multitarget_supervised_forecasting"
   )
   for (fn in implemented_names) {
@@ -88,6 +92,7 @@ qa_vnext_usage_documentation <- function() {
     file.path("docs", "vnext_funnel_forecasting_foundation.md"),
     file.path("docs", "vnext_multitarget_forecasting_foundation.md"),
     file.path("docs", "vnext_cross_target_forecasting.md"),
+    file.path("docs", "vnext_forecasting_planning.md"),
     file.path("docs", "autoquant_vnext_archaeology_and_design.md")
   )
   docs_text <- paste(vapply(docs_to_check[file.exists(docs_to_check)], function(path) {
@@ -99,6 +104,9 @@ qa_vnext_usage_documentation <- function() {
   add("docs_mention_funnel_forecasting", grepl("aq_funnel_forecast_spec", docs_text, fixed = TRUE), "vNext docs mention funnel forecasting.")
   add("docs_mention_multitarget_forecasting", grepl("aq_multitarget_forecast_spec", docs_text, fixed = TRUE), "vNext docs mention multi-target forecasting.")
   add("docs_mention_cross_target_forecasting", grepl("cross_target_features", docs_text, fixed = TRUE), "vNext docs mention cross-target feature forecasting.")
+  add("docs_mention_forecasting_planning", grepl("aq_plan_forecasting_strategy", docs_text, fixed = TRUE), "vNext docs mention forecasting planning.")
+  add("docs_mention_feature_tuning", grepl("feature_tuning", docs_text, fixed = TRUE), "vNext docs classify historical mechanisms as future feature tuning candidates.")
+  add("docs_mention_model_tuning_hypotheses", grepl("Evidence-Guided Model Tuning", docs_text, fixed = TRUE) && grepl("frozen-baseline evaluation", docs_text, fixed = TRUE), "vNext docs classify model tuning as evidence-guided challenger hypotheses.")
 
   example_names <- c(
     "artifact_schema_example.R",
@@ -108,7 +116,8 @@ qa_vnext_usage_documentation <- function() {
     "vnext_panel_hierarchy_strategy.R",
     "vnext_funnel_forecasting.R",
     "vnext_multitarget_forecasting.R",
-    "vnext_cross_target_forecasting.R"
+    "vnext_cross_target_forecasting.R",
+    "vnext_forecasting_planning.R"
   )
   source_dir <- file.path(root, "inst", "examples")
   package_dir <- system.file("examples", package = "AutoQuant")

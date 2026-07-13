@@ -42,6 +42,7 @@ qa_autoquant_package <- function() {
     vnext_funnel_forecasting_foundation = qa_vnext_funnel_forecasting_foundation(),
     vnext_multitarget_forecasting_foundation = qa_vnext_multitarget_forecasting_foundation(),
     vnext_multitarget_supervised_forecasting = qa_vnext_multitarget_supervised_forecasting(),
+    vnext_forecasting_planning = qa_vnext_forecasting_planning(),
     vnext_usage_documentation = qa_vnext_usage_documentation()
   )
 

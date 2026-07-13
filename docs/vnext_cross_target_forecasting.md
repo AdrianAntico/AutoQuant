@@ -1,6 +1,8 @@
 # AutoQuant vNext Cross-Target Forecasting
 
-Status: Phase 20 implemented.
+Status: Phase 20 implemented. Phase 21 adds deterministic forecasting
+capability planning that treats cross-target features as a feature-tuning
+hypothesis to test, not as an automatic strategy default.
 
 Cross-target forecasting extends the multi-target forecasting family with
 supervised CatBoost models that can use leakage-safe prior information from
@@ -153,8 +155,12 @@ relationship metadata, feature importance, and evidence tables.
 ## Historical Archaeology
 
 The historical Vector implementation suggested that AutoQuant should support
-multiple targets, shared regressors, and target-level forecast evidence. Phase
-20 preserves that analytical intent without preserving the historical API.
+multiple targets, shared regressors, target-level forecast evidence, and a
+large family of candidate feature mechanisms. Phase 20 preserves the
+cross-target analytical intent without preserving the historical API. Phase 21
+adds a mechanism inventory that classifies cross-target feature construction as
+future `feature_tuning`, because it is a competing feature hypothesis rather
+than a permanent forecasting operator.
 
 The modern contract differs in three ways:
 

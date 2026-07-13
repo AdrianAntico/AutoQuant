@@ -35,6 +35,7 @@ Architecture + Redesign Notes
 - [AutoQuant vNext Funnel Forecasting Foundation](docs/vnext_funnel_forecasting_foundation.md) documents funnel specification, explicit transitions, maturity evidence, stage forecasting, transition forecasting, assessment, and strategy comparison.
 - [AutoQuant vNext Multi-Target Forecasting Foundation](docs/vnext_multitarget_forecasting_foundation.md) documents multi-target specification, shared temporal preparation evidence, target-level forecasts, cross-target evidence, assessment, and strategy comparison.
 - [AutoQuant vNext Cross-Target Forecasting](docs/vnext_cross_target_forecasting.md) documents supervised CatBoost cross-target feature learning, Rodeo-owned leakage-safe feature preparation, negative-transfer evidence, and advisory strategy comparison.
+- [AutoQuant vNext Forecasting Capability Planning](docs/vnext_forecasting_planning.md) documents deterministic forecasting capability discovery, evidence-guided strategy planning, planning artifacts, and the historical CatBoost CARMA mechanism inventory for future feature-tuning experiments.
 
 <br>
 
@@ -334,6 +335,35 @@ comparison <- aq_compare_multitarget_strategies(cross_target_spec, multitarget_d
 
 Validated script: `inst/examples/vnext_cross_target_forecasting.R`
 
+### Forecasting Capability Planning
+
+Use `aq_discover_forecasting_capabilities()` and
+`aq_plan_forecasting_strategy()` before running broad forecasting experiments.
+The planner inspects schema, targets, date/entity structure, hierarchy, funnel
+shape, zero inflation, known-future variables, supported operators, missing
+evidence, and historical CARMA feature-tuning mechanisms. It returns a
+canonical `forecast_planning_artifact`; it does not execute models.
+
+```r
+discovery <- aq_discover_forecasting_capabilities(
+  multitarget_data,
+  target = c("leads", "applications", "enrollments"),
+  date = "date",
+  hierarchy = "region",
+  known_future_variables = "promo",
+  horizon = 3
+)
+
+plan <- aq_plan_forecasting_strategy(discovery)
+
+plan$recommendations
+plan$required_baselines
+plan$experiment_set
+plan$artifact$metadata$carma_mechanism_inventory
+```
+
+Validated script: `inst/examples/vnext_forecasting_planning.R`
+
 ### Package QA
 
 Run the installed package QA entry point after installation or before integrating with AnalyticsShinyApp:
@@ -344,9 +374,10 @@ qa[, .N, by = status]
 qa[status != "pass"]
 
 cross_target_qa <- AutoQuant::qa_vnext_multitarget_supervised_forecasting()
+planning_qa <- AutoQuant::qa_vnext_forecasting_planning()
 ```
 
-The vNext QA includes supervised learning, scoring, model bundles, artifact contracts, forecasting, panel forecasting, hierarchy reconciliation, panel strategy comparison, intermittent-demand operators, funnel forecasting, multi-target forecasting, cross-target feature forecasting, and README/example coverage.
+The vNext QA includes supervised learning, scoring, model bundles, artifact contracts, forecasting, panel forecasting, hierarchy reconciliation, panel strategy comparison, intermittent-demand operators, funnel forecasting, multi-target forecasting, cross-target feature forecasting, forecasting capability planning, and README/example coverage.
 
 ### Legacy API Status
 
@@ -358,6 +389,7 @@ The legacy AutoQuant functions remain available for compatibility. vNext is the 
 - `docs/vnext_catboost_regression.md`
 - `docs/canonical_analytical_artifacts.md`
 - `docs/vnext_forecasting_foundation.md`
+- `docs/vnext_forecasting_planning.md`
 - `docs/vnext_panel_forecasting_foundation.md`
 - `docs/vnext_hierarchical_forecasting_foundation.md`
 - `docs/vnext_panel_strategy_selection.md`

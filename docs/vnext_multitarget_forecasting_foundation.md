@@ -2,7 +2,9 @@
 
 Status: Phase 19 implemented. Phase 20 extends this family with supervised
 cross-target feature learning documented in
-`docs/vnext_cross_target_forecasting.md`.
+`docs/vnext_cross_target_forecasting.md`. Phase 21 adds deterministic
+forecasting capability planning documented in
+`docs/vnext_forecasting_planning.md`.
 
 Multi-target forecasting is now a first-class forecasting problem family in
 AutoQuant vNext. It extends the existing forecasting architecture rather than
@@ -227,6 +229,9 @@ Future phases may add:
 - joint residual analysis
 - VAR or state-space operators
 - target-aware campaign investigations
+- feature-tuning campaigns for historical Vector/CARMA mechanisms such as
+  differencing, trend handling, anomaly treatment, weighting, lag policies,
+  rolling windows, transformations, and cross-target feature policies
 
 Those future operators should inherit this specification, artifact, assessment,
 comparison, and evidence contract.

@@ -1762,3 +1762,169 @@ This phase intentionally does not implement VAR, VARMAX, multivariate
 state-space models, deep learning, target clustering, AutoML, deployment, or
 target causality. Cross-target learning remains another source of forecasting
 evidence, not a separate forecasting philosophy.
+
+## Phase 21 Forecasting Capability Planning Note
+
+Phase 21 adds deterministic forecasting capability discovery and
+evidence-guided strategy planning through:
+
+- `aq_discover_forecasting_capabilities()`
+- `aq_plan_forecasting_strategy()`
+- `qa_vnext_forecasting_planning()`
+
+The planner inspects data, targets, dates, entity/group structure, hierarchy
+metadata, funnel structure, known-future variables, zero inflation, missing
+evidence, and supported forecasting families. It returns a canonical
+`forecast_planning_artifact` with recommendations, mandatory baselines,
+smallest useful experiments, and supported downstream actions. It does not fit
+models, tune features, tune model parameters, execute AutoML, or select a
+production strategy.
+
+### CatBoost Vector/CARMA Mechanism Inventory
+
+The restored CatBoost CARMA family contains mechanisms that should not be lost:
+
+- `AutoCatBoostCARMA()`
+- `AutoCatBoostVectorCARMA()`
+- `AutoCatBoostHurdleCARMA()`
+- `AutoCatBoostFunnelCARMA()`
+- helper functions in `R/CARMA-HelperFunctions.R`
+
+The important discovery is that many historical CARMA parameters were not
+forecasting operators. They were feature hypotheses and evidence mechanisms
+bundled into monolithic wrappers. The modern architecture should therefore
+distinguish:
+
+```text
+strategy tuning
+-> independent vs grouped vs pooled vs hierarchy vs hurdle vs funnel
+
+feature tuning
+-> differencing
+-> trend representation
+-> anomaly treatment
+-> weighting
+-> lag structures
+-> rolling windows
+-> target transformations
+-> cross-target features
+-> regime indicators
+
+model tuning
+-> engine choice
+-> loss function
+-> complexity and regularization
+-> weighting behavior
+-> constraints
+-> calibration and threshold policy
+-> training window
+-> bounded hyperparameter changes
+-> bounded search budgets
+```
+
+Phase 21 preserves the analytical purpose of each mechanism but classifies most
+of them as future `feature_tuning` candidates rather than embedding them inside
+every forecasting operator.
+
+The same evidence-driven principle applies to model tuning. Historical grid
+search is treated as evidence of competing analytical hypotheses, not as a
+brute-force AutoML pattern to reproduce. Engine choices, loss functions,
+regularization, weighting behavior, constraints, calibration, threshold policy,
+training windows, and bounded hyperparameter changes should follow the same
+loop:
+
+```text
+evidence
+-> hypothesis
+-> deterministic challenger
+-> frozen-baseline evaluation
+-> learning assessment
+-> governed adoption or rejection
+```
+
+| Mechanism | Historical names | Original purpose | Leakage/replay risk | Modern owner | vNext status | Future placement |
+| --- | --- | --- | --- | --- | --- | --- |
+| Differencing | `Difference`, `CarmaDifferencing`, `antidiff` | Model change instead of level and reconstruct original-scale forecasts. | High: reintegration must not use future levels; cumulative error must be measured. | Rodeo + AutoQuant | partially represented | feature_tuning |
+| Trend handling | `TimeTrendVariable`, `TimeTrend` | Give tree models explicit elapsed-time structure. | Medium: trend extrapolation can fail under breaks/regime changes. | Rodeo | partially represented | feature_tuning |
+| Anomaly treatment | `AnomalyDetection`, `tstat_high`, `tstat_low` | Flag, replace, exclude, or down-weight exceptional observations. | High: thresholds must be training-only and events must not be silently removed. | Rodeo + assessment | missing | feature_tuning |
+| Observation weighting | `TimeWeights`, `Weights` | Emphasize recency, entity value, or business value. | Medium: weights must be known at training time and assessed against unweighted baselines. | AutoQuant + assessment | missing | feature_tuning |
+| Target transformations | `TargetTransformation`, `Methods`, `AutoTransformationCreate` | Stabilize variance and support positivity while reporting original-scale results. | Medium: transform fit/replay and inversion bias must be tracked. | Rodeo + AutoQuant | partially represented | feature_tuning |
+| Lag policies | `Lags`, `WindowingLag` | Add autoregressive memory. | High: lag windows must be strictly prior to the label row. | Rodeo | partially represented | feature_tuning |
+| Rolling windows | `MA_Periods`, `SD_Periods`, `Skew_Periods`, `Kurt_Periods`, `Quantile_Periods` | Add local mean, variance, shape, and tail evidence. | High: rolling windows must respect origin and entity boundaries. | Rodeo | partially represented | feature_tuning |
+| Calendar/holiday features | `CalendarVariables`, `HolidayVariable`, `HolidayLags`, `HolidayMovingAverages` | Encode known calendar and event timing effects. | Medium: event availability must be explicit. | Rodeo | partially represented | feature_tuning |
+| Fourier seasonality | `FourierTerms`, `CarmaFourier` | Compact periodic signal representation. | Low/medium: replay metadata and group-specific basis must be stable. | Rodeo | missing | feature_tuning |
+| Cross-target features | `AutoCatBoostVectorCARMA`, shared target histories | Test whether target histories help forecast other targets. | High: contemporaneous/future target leakage must be blocked. | Rodeo + AutoQuant | partially represented | feature_tuning |
+| Recursive state update | `CarmaScore`, `UpdateFeatures`, `CarmaRollingStatsUpdate` | Recompute future lags/rolling features from prior predictions. | High: recursive state must not use realized future values. | Rodeo + AutoQuant | partially represented | strategy_tuning |
+| Model search | `GridTune`, `PassInGrid`, `ModelCount`, `MaxRunsWithoutNewWinner` | Explore bounded model-choice, loss, complexity, regularization, and training-window hypotheses. | Medium: repeated validation must be observable. | AutoQuant campaign layer | partially represented | model_tuning |
+| Diagnostics/reporting | `EvalMetric`, importances, horizon/group metrics | Preserve evidence by horizon, group, target, and feature mechanism. | Low: transformed-scale-only diagnostics can mislead. | AutoQuant assessment | partially represented | assessment |
+
+### Gap Summary
+
+Already represented correctly:
+
+- explicit forecasting problem families
+- canonical forecast artifacts
+- panel, hierarchy, intermittent-demand, funnel, multi-target, and
+  cross-target strategy surfaces
+- Rodeo ownership of leakage-safe feature preparation
+- AutoQuant ownership of fitting, assessment, comparison, and planning
+- advisory recommendations rather than automatic production selection
+
+Represented only superficially:
+
+- differencing and forecast reintegration
+- trend and regime-break handling
+- target transformation and inversion bias evidence
+- recursive state replay diagnostics
+- feature usefulness by horizon and target
+
+Valuable mechanisms currently missing:
+
+- anomaly treatment policy experiments
+- observation weighting policy experiments
+- Fourier seasonality features
+- regime indicators
+- a formal Feature Tuning evidence contract
+
+Mechanisms that belong in Rodeo:
+
+- lag construction
+- rolling windows
+- differencing transforms and replay metadata
+- trend/calendar/holiday/Fourier feature construction
+- cross-target feature construction
+- leakage diagnostics for feature construction
+
+Mechanisms that belong in AutoQuant:
+
+- strategy planning
+- model fitting
+- strategy comparison
+- feature-tuning campaign evaluation
+- model-tuning campaign evaluation
+- assessment and artifact generation
+
+Mechanisms that should become planner recommendations:
+
+- test cross-target features only after independent and shared baselines exist
+- test differencing only where trend/nonstationarity evidence supports it
+- test anomaly/weighting/transform policies as explicit experiments
+- record missing Feature Tuning evidence instead of claiming the operator
+  landscape is complete
+
+Mechanisms that should be retired:
+
+- monolithic CARMA wrappers as the public API shape
+- direct file writing as a required side effect
+- hidden feature construction inside AutoQuant model functions
+- unbounded grid tuning
+- model tuning framed as brute-force AutoML rather than evidence-guided
+  challenger testing
+- automatic strategy selection without comparison evidence
+
+The core rule is:
+
+```text
+Preserve analytical purpose.
+Do not preserve accidental historical implementation shape.
+```
