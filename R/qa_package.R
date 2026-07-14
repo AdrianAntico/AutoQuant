@@ -41,6 +41,7 @@ qa_autoquant_package <- function() {
     causal_completed_experiment_framework = qa_causal_completed_experiment_framework(),
     causal_randomized_itt_framework = qa_causal_randomized_itt_framework(),
     causal_randomized_design_analysis_framework = qa_causal_randomized_design_analysis_framework(),
+    observational_causal_planning = qa_observational_causal_planning(),
     vnext_rodeo_transformation_replay = qa_vnext_rodeo_transformation_replay(),
     vnext_model_bundle = qa_vnext_model_bundle(),
     vnext_artifact_framework = qa_vnext_artifact_framework(),

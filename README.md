@@ -42,6 +42,7 @@ Architecture + Redesign Notes
 - [Causal Completed-Experiment Evidence Framework](docs/causal_completed_experiment_framework.md) documents Phase 3 completed-experiment evidence ingestion, assignment preservation, execution reconciliation, integrity/fidelity diagnostics, estimand preservation, and analysis-readiness classification without estimating effects.
 - [Causal Randomized ITT Estimation Framework](docs/causal_randomized_itt_framework.md) documents Phase 4 governed randomized intent-to-treat estimation, readiness gating, uncertainty, guardrails, materiality, sensitivity, effect artifacts, lifecycle review, and prohibited claims.
 - [Causal Randomized Design Analysis Framework](docs/causal_randomized_design_analysis_framework.md) documents Phase 5 randomized-analysis depth, governed variance reduction, design-aware method eligibility, outcome windows, carryover, multiplicity, guardrail decisions, robustness, and causal report contracts.
+- [Observational Causal Planning Framework](docs/observational_causal_planning_framework.md) documents observational study design, target-trial thinking, assignment-mechanism evidence, temporal eligibility, overlap, balance, selection, unmeasured-confounding risk, estimator-family readiness, and planning artifacts without estimating observational treatment effects.
 
 <br>
 
@@ -50,6 +51,8 @@ Architecture + Redesign Notes
 The vNext API is the artifact-first redesign path. It is additive and does not remove the legacy AutoQuant wrappers. The examples below are copy-paste oriented and correspond to validated scripts in `inst/examples/`.
 
 ### vNext Quick Start
+
+<details>Click to expand
 
 ```r
 library(data.table)
@@ -1031,6 +1034,8 @@ The legacy AutoQuant functions remain available for compatibility. vNext is the 
 - `docs/vnext_funnel_forecasting_foundation.md`
 - `docs/vnext_multitarget_forecasting_foundation.md`
 - `docs/vnext_cross_target_forecasting.md`
+
+</details>
 
 <br>
 
