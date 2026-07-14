@@ -36,6 +36,7 @@ qa_autoquant_package <- function() {
     decision_lifecycle_framework = qa_decision_lifecycle_framework(),
     decision_valuation_framework = qa_decision_valuation_framework(),
     decision_workflow_framework = qa_decision_workflow_framework(),
+    epistemic_integrity_contracts = qa_epistemic_integrity_contracts(),
     causal_intelligence_framework = qa_causal_intelligence_framework(),
     causal_experiment_design_framework = qa_causal_experiment_design_framework(),
     causal_completed_experiment_framework = qa_causal_completed_experiment_framework(),
