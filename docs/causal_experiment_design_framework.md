@@ -4,6 +4,8 @@ AutoQuant Causal Intelligence Phase 2 adds governed experiment-design planning.
 
 The framework is design-before-estimator. It creates experiment questions, design specifications, assignment proposals, measurement plans, validity-threat registers, approval gates, information-value assessments, and canonical plan artifacts. It does not execute treatments and does not estimate causal effects.
 
+Completed or in-progress experiment evidence is handled by Phase 3. See `docs/causal_completed_experiment_framework.md` for assignment preservation, execution reconciliation, treatment fidelity, estimand preservation, and analysis-readiness contracts.
+
 ## Lifecycle
 
 ```text

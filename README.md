@@ -39,6 +39,9 @@ Architecture + Redesign Notes
 - [Causal Intelligence Philosophy](docs/causal_intelligence_philosophy.md) explains why causal planning is separate from prediction, association, and effect estimation.
 - [Causal Intelligence Framework](docs/causal_intelligence_framework.md) documents Phase 1 causal questions, estimands, question-relative roles, graph diagnostics, adjustment guidance, identification planning, design eligibility, and causal planning artifacts.
 - [Causal Experiment Design Framework](docs/causal_experiment_design_framework.md) documents Phase 2 governed experiment questions, design specs, deterministic assignment proposals, balance diagnostics, power/timing/measurement plans, validity threats, approval gates, information value, and experiment plan artifacts.
+- [Causal Completed-Experiment Evidence Framework](docs/causal_completed_experiment_framework.md) documents Phase 3 completed-experiment evidence ingestion, assignment preservation, execution reconciliation, integrity/fidelity diagnostics, estimand preservation, and analysis-readiness classification without estimating effects.
+- [Causal Randomized ITT Estimation Framework](docs/causal_randomized_itt_framework.md) documents Phase 4 governed randomized intent-to-treat estimation, readiness gating, uncertainty, guardrails, materiality, sensitivity, effect artifacts, lifecycle review, and prohibited claims.
+- [Causal Randomized Design Analysis Framework](docs/causal_randomized_design_analysis_framework.md) documents Phase 5 randomized-analysis depth, governed variance reduction, design-aware method eligibility, outcome windows, carryover, multiplicity, guardrail decisions, robustness, and causal report contracts.
 
 <br>
 
@@ -101,6 +104,65 @@ question <- aq_causal_question(
 
 Validated script: `inst/examples/causal_intelligence_framework.R`
 
+### Causal Randomized ITT Estimation
+
+Causal Intelligence Phase 4 is the first estimator slice. It runs only randomized intent-to-treat analyses after completed-experiment evidence is classified as ITT-compatible. It does not estimate treatment-on-treated effects, observational effects, matching, IV, DiD, mediation, synthetic controls, causal forests, or optimization.
+
+```r
+spec <- aq_randomized_itt_spec(
+  completed_experiment_id = "ce_itt",
+  experiment_plan_artifact_id = "plan_itt",
+  causal_question_id = "cq_itt",
+  estimand_id = "estimand_itt",
+  treatment_arm = "treatment",
+  comparison_arm = "control",
+  outcome = "revenue",
+  outcome_type = "continuous",
+  baseline_covariates = "baseline_y",
+  minimum_meaningful_effect = 1
+)
+
+gate <- aq_validate_randomized_itt_readiness(
+  spec,
+  completed_evidence,
+  planned_analysis = planned_analysis_record,
+  baseline_data = baseline_data
+)
+
+result <- aq_estimate_randomized_itt(
+  spec,
+  completed_evidence,
+  baseline_data = baseline_data,
+  planned_analysis = planned_analysis_record
+)
+artifact <- aq_randomized_itt_effect_artifact(result)
+```
+
+Validated script: `inst/examples/causal_randomized_itt_framework.R`
+
+### Causal Randomized Design Analysis
+
+Causal Intelligence Phase 5 deepens randomized evidence after ITT estimation. It preserves the unadjusted assignment effect while adding design-aware analysis, governed ANCOVA, CUPED-style variance reduction, blocked/stratified evidence, cluster diagnostics, randomization inference, multiplicity, guardrail decisions, robustness, and a causal-effect report contract.
+
+```r
+design_spec <- aq_randomized_design_analysis_spec(
+  itt_analysis_id = result$spec$analysis_id,
+  design_type = "blocked_randomized",
+  analysis_modes = c("unadjusted", "ancova", "cuped", "blocked", "randomization_inference"),
+  block_fields = "block",
+  cluster_unit = "market",
+  pre_period_fields = "pre_revenue",
+  material_benefit = 1,
+  material_harm = -1,
+  multiplicity_policy = "holm"
+)
+
+depth <- aq_analyze_randomized_design_depth(result, design_spec)
+report <- aq_randomized_causal_effect_report(result, depth)
+```
+
+Validated script: `inst/examples/causal_randomized_design_analysis_framework.R`
+
 ### Causal Experiment Design Planning
 
 Causal Experiment Design Phase 2 extends causal planning into governed experiment-design artifacts. It does not execute treatment and does not estimate causal effects.
@@ -135,6 +197,48 @@ design <- aq_experiment_design_spec(
 ```
 
 Validated script: `inst/examples/causal_experiment_design_framework.R`
+
+### Causal Completed-Experiment Evidence
+
+Causal Intelligence Phase 3 ingests completed or in-progress experiment evidence and classifies analysis readiness. It preserves original assignment as the default ITT anchor, records treatment delivery, exposure, compliance, outcomes, guardrails, exclusions, and plan-versus-execution deviations, then creates a completed-experiment evidence artifact. It does not estimate treatment effects.
+
+```r
+completed <- aq_completed_experiment(list(
+  completed_experiment_id = "ce_budget_test",
+  experiment_plan_artifact_id = "aq_experiment_plan_budget_test",
+  decision_context_id = "decision_budget",
+  causal_question_id = "cq_budget_revenue",
+  estimand_id = "estimand_budget_itt",
+  design_version = "v1",
+  assignment_version = "v1",
+  experiment_status = "completed",
+  actual_start_date = "2026-01-01",
+  actual_end_date = "2026-02-01",
+  data_cutoff_date = "2026-02-15",
+  execution_owner = "analytics"
+))
+
+assignment <- aq_assignment_evidence(data.table::data.table(
+  unit_id = paste0("market_", 1:12),
+  planned_arm = rep(c("control", "treatment"), each = 6),
+  realized_assigned_arm = rep(c("control", "treatment"), each = 6)
+))
+
+outcomes <- aq_outcome_evidence(data.table::data.table(
+  unit_id = paste0("market_", 1:12),
+  outcome_id = "revenue",
+  value = seq(100, 155, by = 5),
+  outcome_role = "primary"
+))
+
+readiness <- aq_assess_experiment_analysis_readiness(
+  completed,
+  assignment_evidence = assignment,
+  outcome_evidence = outcomes
+)
+```
+
+Validated script: `inst/examples/causal_completed_experiment_framework.R`
 
 ### Supervised Learning
 
@@ -428,6 +532,137 @@ Focused QA:
 
 ```r
 qa_decision_management_framework()
+```
+
+### Decision Valuation Intelligence
+
+Use `aq_decision_valuation_context()` after alternatives have been authored and
+evidence exists that may change the economic interpretation of those
+alternatives. The valuation layer compares alternatives against a baseline,
+preserves whether inputs are observed, causal, predictive, forecast, assumed,
+imported, missing, or unsupported, and computes transparent economics such as
+net benefit, ROI, payback, NPV, incremental NPV, thresholds, and governed
+recommendation states.
+
+Decision valuation does not approve, optimize, allocate budget, or execute. It
+creates auditable valuation evidence.
+
+```r
+valuation <- aq_decision_valuation_context(
+  decision_context_id = "decision_paid_search_budget",
+  alternatives_included = c("alt_baseline", "alt_pilot"),
+  baseline_alternative = "alt_baseline",
+  objective_refs = "objective_revenue_growth",
+  strategy_refs = "strategy_qualified_demand",
+  tactic_refs = "tactic_paid_search",
+  lever_refs = "lever_paid_search_budget",
+  authority = "authority_marketing_advisory",
+  coverage = "coverage_marketing_only",
+  time_horizon_periods = 1,
+  discount_rate = 0.01
+)
+
+impact <- aq_evidence_impact_mapping(list(
+  list(
+    mapping_id = "itt_to_margin",
+    source_artifact_id = "randomized_itt_effect_artifact",
+    alternative_id = "alt_pilot",
+    evidence_type = "randomized_itt",
+    estimand_or_prediction = "ATE",
+    effect_value = 0.04,
+    affected_population = 50000,
+    duration_periods = 1,
+    unit_value = 8,
+    source_type = "causally_estimated"
+  )
+))
+
+economics <- aq_assess_alternative_economics(valuation, impact_mappings = impact)
+recommendation <- aq_governed_decision_valuation_recommendation(valuation, economics)
+artifact <- aq_decision_valuation_artifact(valuation, economics, recommendation)
+```
+
+Validated script: `inst/examples/decision_valuation_framework.R`
+
+Focused QA:
+
+```r
+qa_decision_valuation_framework()
+```
+
+### Decision Workflow Intelligence
+
+Use `aq_decision_workflow()` after valuation has produced a governed
+recommendation and the organization needs durable human review, approval,
+implementation tracking, monitoring, and realized-value follow-through.
+
+The workflow layer preserves that recommendation, decision, implementation, and
+outcome are separate facts. It can assess review readiness, freeze an evidence
+package, record reviews and approvals, attach conditions, reconcile realized
+implementation against an approved plan, compare expected and realized value,
+and generate follow-up decision candidates. It does not approve, execute, or
+replace organizational authority.
+
+```r
+workflow <- aq_decision_workflow(
+  workflow_id = "workflow_paid_search_pilot",
+  decision_context_id = "decision_paid_search_budget",
+  valuation_artifact_id = artifact$id,
+  recommendation_id = "recommendation_paid_search_pilot",
+  selected_alternative = "alt_pilot",
+  workflow_type = "pilot_approval",
+  authority_tier = "manager"
+)
+
+readiness <- aq_assess_decision_review_readiness(workflow)
+evidence_package <- aq_decision_evidence_package(
+  workflow,
+  evidence_refs = c(artifact$id, "randomized_itt_effect_artifact")
+)
+
+review <- aq_decision_review(list(
+  workflow_id = workflow$workflow_id,
+  reviewer = "Finance Owner",
+  role = "financial",
+  status = "endorse_with_conditions",
+  conditions = "Monitor weekly spend and guardrails."
+))
+
+approval <- aq_decision_approval(list(
+  workflow_id = workflow$workflow_id,
+  approver = "Budget Manager",
+  authority_basis = "marketing_budget_authority",
+  approved_alternative = "alt_pilot",
+  approved_budget = 100,
+  authority_magnitude = 200,
+  status = "conditionally_approved"
+))
+
+plan <- aq_decision_implementation_plan(list(
+  workflow_id = workflow$workflow_id,
+  implementation_id = "impl_paid_search_pilot",
+  selected_alternative = "alt_pilot",
+  approved_target_values = "paid_search_budget=110",
+  budget = 100
+))
+
+actual <- aq_record_decision_implementation(list(
+  workflow_id = workflow$workflow_id,
+  implementation_id = "impl_paid_search_pilot",
+  actual_cost = 105,
+  actual_lever_settings = "paid_search_budget=110"
+))
+
+reconciliation <- aq_reconcile_decision_implementation(plan, actual)
+quality <- aq_assess_decision_quality(workflow, readiness, review, approval, reconciliation)
+```
+
+Validated script: `inst/examples/decision_workflow_framework.R`
+
+Focused QA:
+
+```r
+qa_decision_workflow_framework()
 ```
 
 ### Decision Lifecycle and Organizational Memory

@@ -10,6 +10,10 @@ Phase 1 does not estimate effects. It creates the contracts needed to ask a caus
 
 Phase 2 keeps the same boundary and moves from causal question planning into governed experiment design. It creates experiment questions, design specifications, deterministic assignment proposals, measurement plans, validity-threat registers, approval gates, information-value assessments, and experiment plan artifacts. It still does not execute treatment and still does not estimate causal effects.
 
+Phase 3 consumes completed or in-progress experiment evidence after a governed plan exists. It records assignment logs, realized assignment, treatment delivery, exposure, compliance, outcomes, guardrails, exclusions, and execution deviations. It still does not estimate effects. Original assignment remains the default intent-to-treat anchor. Treatment-received evidence may support diagnostics or future explicitly-authored alternative estimands, but it must not silently redefine treatment.
+
+Phase 4 is the first estimation phase. It supports conservative randomized intent-to-treat estimation only, and only when Phase 3 evidence is ready for ITT. It estimates the effect of assignment to treatment versus assignment to comparison. It preserves uncertainty, missingness, guardrails, implementation fidelity, materiality thresholds, and prohibited claims. It does not estimate treatment-on-treated, observational, IV, matching, DiD, mediation, synthetic-control, causal-forest, or adaptive-experiment effects.
+
 ## Governing Rules
 
 1. Estimand before estimator.
@@ -19,6 +23,10 @@ Phase 2 keeps the same boundary and moves from causal question planning into gov
 5. Planning artifacts before effect claims.
 6. Experiment design before experiment execution.
 7. Authority, coverage, and measurement readiness before approval.
+8. Completed-experiment evidence before effect estimation.
+9. Original assignment before treatment-received reinterpretation.
+10. Materiality and guardrails before decision claims.
+11. Null or inconclusive evidence is still causal learning.
 
 ## Why Planning Comes First
 
@@ -99,3 +107,64 @@ Not supported:
 - autonomous experiment approval.
 
 The output of Phase 2 is a governed design artifact, not an experiment result.
+
+## Phase 4 Boundary
+
+Supported:
+
+- randomized ITT specifications,
+- completed-experiment readiness gates,
+- randomized analysis populations anchored on original assignment,
+- continuous and binary ITT estimates,
+- approved pre-treatment precision adjustment,
+- conservative uncertainty,
+- missing-outcome sensitivity,
+- guardrail and materiality evidence,
+- canonical effect artifacts,
+- governed review lifecycle.
+
+Not supported:
+
+- observational effect estimation,
+- treatment-on-treated or CACE/TOT estimation,
+- instrumental variables,
+- propensity scores,
+- matching,
+- difference-in-differences,
+- synthetic controls,
+- mediation,
+- causal forests,
+- adaptive experiments,
+- optimization or autonomous decisioning.
+
+The output of Phase 4 is governed decision evidence. It is not a launch command.
+
+## Phase 5 Boundary
+
+Supported:
+
+- design-aware randomized analysis specifications,
+- ANCOVA using approved pre-treatment precision variables,
+- CUPED-style variance reduction using approved pre-period metrics,
+- blocked and stratified randomized evidence summaries,
+- cluster and geographic assignment diagnostics,
+- conservative switchback and stepped-wedge foundations with explicit carryover evidence,
+- explicit factorial design foundations,
+- bounded randomization inference that respects the assignment mechanism,
+- row-level outcome-window classification,
+- multiplicity policy records,
+- guardrail decision logic,
+- materiality regions,
+- robustness matrices that preserve the primary analysis,
+- causal-effect report contracts.
+
+Not supported:
+
+- observational treatment-effect estimation,
+- treatment-on-treated or CACE/TOT estimation,
+- automatic subgroup discovery,
+- adaptive or sequential experimentation,
+- model search for favorable causal results,
+- autonomous decisioning.
+
+The output of Phase 5 is richer randomized evidence. It does not expand the estimand, replace assignment with exposure, or choose the most favorable robustness row.
