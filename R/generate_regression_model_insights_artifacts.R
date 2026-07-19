@@ -1057,20 +1057,36 @@ model_insights_build_regression_evaluation_artifacts <- function(inputs, SampleS
 
     if (!nrow(scored)) return(out)
 
-    scored_sample <- model_insights_sample_dt(scored, SampleSize)
+    scored_sample <- data.table::copy(model_insights_sample_dt(scored, SampleSize))
+    scored_sample[, Ideal := Actual]
 
-    out$actual_vs_predicted_scatter <- model_insights_try_plot(
-      AutoPlots::Scatter(
+    out$actual_vs_predicted_scatter <- model_insights_try_plot({
+      chart <- AutoPlots::Scatter(
         dt = scored_sample,
-        XVar = "Prediction",
-        YVar = "Actual",
-        title.text = paste0("Actual vs Predicted: ", split_label, " Data"),
-        xAxis.title = "Prediction",
-        yAxis.title = "Actual",
+        XVar = "Actual",
+        YVar = "Prediction",
+        title.text = paste0("Observed vs Predicted: ", split_label, " Data"),
+        xAxis.title = "Observed",
+        yAxis.title = "Predicted",
         Theme = Theme,
         legend.show = FALSE
       )
-    )
+      chart <- echarts4r::e_line(
+        chart,
+        Ideal,
+        symbol = "none",
+        name = "Ideal fit",
+        lineStyle = list(type = "dashed", width = 2)
+      )
+      AutoPlots::e_grid_full(
+        chart,
+        grid.left = "8%",
+        grid.right = "5%",
+        grid.top = "16%",
+        grid.bottom = "18%",
+        grid.containLabel = TRUE
+      )
+    })
 
     out$prediction_histogram <- model_insights_try_plot(
       AutoPlots::Histogram(
