@@ -1060,33 +1060,32 @@ model_insights_build_regression_evaluation_artifacts <- function(inputs, SampleS
     scored_sample <- data.table::copy(model_insights_sample_dt(scored, SampleSize))
     scored_sample[, Ideal := Actual]
 
-    out$actual_vs_predicted_scatter <- model_insights_try_plot({
-      chart <- AutoPlots::Scatter(
-        dt = scored_sample,
-        XVar = "Actual",
-        YVar = "Prediction",
-        title.text = paste0("Observed vs Predicted: ", split_label, " Data"),
-        xAxis.title = "Observed",
-        yAxis.title = "Predicted",
-        Theme = Theme,
-        legend.show = FALSE
-      )
-      chart <- echarts4r::e_line(
-        chart,
-        Ideal,
-        symbol = "none",
-        name = "Ideal fit",
-        lineStyle = list(type = "dashed", width = 2)
-      )
-      AutoPlots::e_grid_full(
-        chart,
-        grid.left = "8%",
-        grid.right = "5%",
-        grid.top = "16%",
-        grid.bottom = "18%",
-        grid.containLabel = TRUE
-      )
-    })
+    chart <- AutoPlots::Scatter(
+      dt = scored_sample,
+      XVar = "Actual",
+      YVar = "Prediction",
+      title.text = paste0("Observed vs Predicted: ", split_label, " Data"),
+      xAxis.title = "Observed",
+      yAxis.title = "Predicted",
+      Theme = Theme,
+      legend.show = FALSE
+    )
+    chart <- echarts4r::e_line(
+      chart,
+      Ideal,
+      symbol = "none",
+      name = "Ideal fit",
+      lineStyle = list(type = "dashed", width = 2)
+    )
+    out$actual_vs_predicted_scatter <- AutoPlots::e_grid_full(
+      chart,
+      grid.left = "8%",
+      grid.right = "5%",
+      grid.top = "16%",
+      grid.bottom = "18%",
+      grid.containLabel = TRUE
+    ) |>
+      echarts4r::e_color(background = "transparent")
 
     out$prediction_histogram <- model_insights_try_plot(
       AutoPlots::Histogram(
