@@ -791,6 +791,6 @@ qa_observational_causal_planning <- function() {
   add("readiness_gate", readiness$readiness_state[[1]] %in% aq_observational_readiness_states() && isTRUE(readiness$no_effect_estimated[[1]]), "Readiness gate returns a governed state and no effect estimate.")
   artifact <- aq_observational_causal_planning_artifact(study, plan, readiness)
   add("planning_artifact", inherits(artifact, "aq_artifact") && identical(artifact$metadata$artifact_type, "observational_causal_planning_artifact") && isTRUE(artifact$metadata$no_effect_estimated), "Canonical planning artifact preserves no-effect and no-ignorability claims.")
-  add("no_effect_estimator_exported", !exists("aq_estimate_observational_effect", mode = "function"), "No observational effect estimator was introduced.")
+  add("planning_still_no_effect", isTRUE(readiness$no_effect_estimated[[1]]) && isTRUE(artifact$metadata$no_effect_estimated), "Planning remains no-effect evidence even though Phase 2 estimation now exists.")
   data.table::rbindlist(checks, use.names = TRUE, fill = TRUE)
 }

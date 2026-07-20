@@ -42,7 +42,9 @@ Architecture + Redesign Notes
 - [Causal Completed-Experiment Evidence Framework](docs/causal_completed_experiment_framework.md) documents Phase 3 completed-experiment evidence ingestion, assignment preservation, execution reconciliation, integrity/fidelity diagnostics, estimand preservation, and analysis-readiness classification without estimating effects.
 - [Causal Randomized ITT Estimation Framework](docs/causal_randomized_itt_framework.md) documents Phase 4 governed randomized intent-to-treat estimation, readiness gating, uncertainty, guardrails, materiality, sensitivity, effect artifacts, lifecycle review, and prohibited claims.
 - [Causal Randomized Design Analysis Framework](docs/causal_randomized_design_analysis_framework.md) documents Phase 5 randomized-analysis depth, governed variance reduction, design-aware method eligibility, outcome windows, carryover, multiplicity, guardrail decisions, robustness, and causal report contracts.
-- [Observational Causal Planning Framework](docs/observational_causal_planning_framework.md) documents observational study design, target-trial thinking, assignment-mechanism evidence, temporal eligibility, overlap, balance, selection, unmeasured-confounding risk, estimator-family readiness, and planning artifacts without estimating observational treatment effects.
+- [Observational Causal Planning Framework](docs/observational_causal_planning_framework.md) documents observational study design, target-trial thinking, assignment-mechanism evidence, temporal eligibility, overlap, balance, selection, unmeasured-confounding risk, estimator-family readiness, and planning artifacts.
+- [Governed Observational Estimation Framework](docs/observational_causal_estimation_framework.md) implements the first conservative observational estimator slice: approved binary-treatment ATE/ATT analysis with logistic propensity models, nearest-neighbor matching diagnostics, deterministic weights, independent balance validation, AIPW estimation, sensitivity reminders, and claim governance.
+- [Governed Difference-in-Differences Framework](docs/observational_did_framework.md) implements the first time-based observational estimator slice: approved classic two-group DiD with frozen intervention timing, pre-period diagnostics, parallel-trends assessment, composition stability, sensitivity reminders, and claim governance.
 
 <br>
 
@@ -109,7 +111,7 @@ Validated script: `inst/examples/causal_intelligence_framework.R`
 
 ### Causal Randomized ITT Estimation
 
-Causal Intelligence Phase 4 is the first estimator slice. It runs only randomized intent-to-treat analyses after completed-experiment evidence is classified as ITT-compatible. It does not estimate treatment-on-treated effects, observational effects, matching, IV, DiD, mediation, synthetic controls, causal forests, or optimization.
+Causal Intelligence Phase 4 is the first randomized estimator slice. It runs only randomized intent-to-treat analyses after completed-experiment evidence is classified as ITT-compatible. The first observational adjustment estimator slice is deliberately narrow: it runs only after observational planning/readiness evidence is approved, supports binary-treatment ATE/ATT, and preserves matching, weighting, balance, AIPW, assumptions, sensitivity reminders, and prohibited claims. The first time-based observational slice supports only classic two-group Difference-in-Differences after both Phase 1 readiness and DiD-specific readiness pass. These slices do not estimate treatment-on-treated effects, IV, mediation, synthetic controls, causal forests, heterogeneity, survival/count outcomes, staggered DiD, event studies, generalized TWFE, or optimization.
 
 ```r
 spec <- aq_randomized_itt_spec(
