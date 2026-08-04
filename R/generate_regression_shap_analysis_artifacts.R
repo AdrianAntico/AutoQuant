@@ -1861,14 +1861,27 @@ generate_regression_shap_analysis_artifacts <- function(
 
   requested_DateVar <- DateVar
   DateVar <- aq_infer_date_col(data, DateVar)
-  if (!is.null(requested_DateVar) && !identical(requested_DateVar, DateVar)) {
-    if (is.null(DateVar)) {
-      warnings <- regression_shap_warn(warnings, paste("DateVar not found and time effects will be omitted:", requested_DateVar))
+  if (is.null(DateVar)) {
+    date_aggregation <- NULL
+  } else {
+    if (
+      is.null(date_aggregation) ||
+      length(date_aggregation) == 0L ||
+      is.na(date_aggregation[[1L]]) ||
+      !nzchar(as.character(date_aggregation[[1L]]))
+    ) {
+      date_aggregation <- "month"
     } else {
-      warnings <- regression_shap_warn(warnings, paste("DateVar", requested_DateVar, "was not found exactly; using", DateVar, "for time effects."))
+      date_aggregation <- tolower(as.character(date_aggregation[[1L]]))
+
+      if (!date_aggregation %in% c("day", "week", "month")) {
+        warnings <- regression_shap_warn(
+          warnings,
+          "date_aggregation must be day, week, or month; using month."
+        )
+        date_aggregation <- "month"
+      }
     }
-  } else if (is.null(requested_DateVar) && !is.null(DateVar)) {
-    warnings <- regression_shap_warn(warnings, paste("DateVar was inferred for time effects:", DateVar))
   }
 
   column_map <- aq_detect_shap_columns(data, shap_prefix = shap_prefix, feature_cols = feature_cols)
