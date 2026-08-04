@@ -240,8 +240,25 @@ aq_shap_period <- function(x, date_aggregation) {
   if (identical(date_aggregation, "day")) {
     return(parsed)
   }
+
   if (identical(date_aggregation, "week")) {
     return(parsed - as.integer(format(parsed, "%u")) + 1L)
+  }
+
+  if (identical(date_aggregation, "quarter")) {
+    year <- as.integer(format(parsed, "%Y"))
+    month <- as.integer(format(parsed, "%m"))
+    quarter_start_month <- ((month - 1L) %/% 3L) * 3L + 1L
+
+    return(as.Date(sprintf(
+      "%04d-%02d-01",
+      year,
+      quarter_start_month
+    )))
+  }
+
+  if (identical(date_aggregation, "year")) {
+    return(as.Date(format(parsed, "%Y-01-01")))
   }
 
   as.Date(format(parsed, "%Y-%m-01"))
@@ -1632,7 +1649,7 @@ aq_regression_shap_empty_result <- function(message, warnings = character(), dia
 #' @param model_name Optional model name for overview metadata.
 #' @param data_name Optional data name for overview metadata.
 #' @param DateVar Optional date column for time effects.
-#' @param date_aggregation One of `day`, `week`, or `month`.
+#' @param date_aggregation One of `day`, `week`, `month`, `quarter`, or `year`.
 #' @param ByVars Optional segment variables for segment effects.
 #' @param selected_features Optional feature list for effect/dependence/local views.
 #' @param local_row_ids Optional 1-based row indexes for local explanations.
