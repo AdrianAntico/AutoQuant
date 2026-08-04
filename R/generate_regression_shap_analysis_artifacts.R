@@ -176,27 +176,50 @@ aq_infer_prediction_col <- function(data, prediction_col = NULL) {
   NULL
 }
 
-aq_infer_date_col <- function(data, DateVar = NULL) {
-  if (!is.null(DateVar) && DateVar %in% names(data)) {
-    return(DateVar)
-  }
+aq_infer_date_col <- function(data, DateVar = NULL, infer_date = FALSE) {
+  if (is.null(DateVar) || length(DateVar) == 0L) {
+    if (!isTRUE(infer_date)) {
+      return(NULL)
+    }
+  } else {
+    DateVar <- as.character(DateVar[[1L]])
 
-  if (!is.null(DateVar)) {
+    if (DateVar %in% names(data)) {
+      return(DateVar)
+    }
+
     case_match <- names(data)[tolower(names(data)) == tolower(DateVar)]
     if (length(case_match)) {
       return(case_match[[1L]])
     }
+
+    return(NULL)
   }
 
-  typed <- names(data)[vapply(data, function(x) inherits(x, c("Date", "POSIXct", "POSIXlt")), logical(1L))]
+  typed <- names(data)[vapply(
+    data,
+    function(x) inherits(x, c("Date", "POSIXct", "POSIXlt")),
+    logical(1L)
+  )]
+
   if (length(typed)) {
     return(typed[[1L]])
   }
 
-  candidates <- grep("date|time|period", names(data), value = TRUE, ignore.case = TRUE)
+  candidates <- grep(
+    "date|time|period",
+    names(data),
+    value = TRUE,
+    ignore.case = TRUE
+  )
   candidates <- candidates[!startsWith(candidates, "Shap_")]
+
   for (candidate in candidates) {
-    parsed <- suppressWarnings(as.Date(data[[candidate]]))
+    parsed <- tryCatch(
+      suppressWarnings(as.Date(data[[candidate]])),
+      error = function(e) rep(as.Date(NA), nrow(data))
+    )
+
     if (sum(!is.na(parsed)) >= max(2L, ceiling(0.5 * nrow(data)))) {
       return(candidate)
     }
