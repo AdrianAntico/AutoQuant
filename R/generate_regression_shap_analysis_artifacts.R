@@ -1772,11 +1772,6 @@ generate_regression_shap_analysis_artifacts <- function(
     ))
   }
 
-  date_aggregation <- tolower(as.character(date_aggregation))
-  if (!date_aggregation %in% c("day", "week", "month")) {
-    warnings <- regression_shap_warn(warnings, "date_aggregation must be day, week, or month; using month.")
-    date_aggregation <- "month"
-  }
 
   effect_curve_backend <- match.arg(as.character(effect_curve_backend)[1L], c("none", "autonls"))
 
@@ -1997,7 +1992,7 @@ generate_regression_shap_analysis_artifacts <- function(
       regression_shap_null_coalesce(target_col, ""),
       regression_shap_null_coalesce(prediction_col, ""),
       regression_shap_null_coalesce(DateVar, ""),
-      date_aggregation,
+      regression_shap_null_coalesce(date_aggregation, ""),
       paste(ByVars, collapse = ", "), paste(id_cols, collapse = ", "),
       paste(selected_features, collapse = ", "), top_n,
       include_effect_curves, effect_curve_backend, paste(effect_curve_models, collapse = ", "),
@@ -2016,7 +2011,16 @@ generate_regression_shap_analysis_artifacts <- function(
     paste("Mapped source features:", nrow(column_map[included == TRUE & source_col_exists == TRUE])),
     paste("Target column:", regression_shap_null_coalesce(target_col, "not supplied")),
     paste("Prediction column:", regression_shap_null_coalesce(prediction_col, "not supplied")),
-    paste("DateVar/date aggregation:", paste(c(regression_shap_null_coalesce(DateVar, "not supplied"), date_aggregation), collapse = " / ")),
+    paste(
+      "DateVar/date aggregation:",
+      paste(
+        c(
+          regression_shap_null_coalesce(DateVar, "not supplied"),
+          regression_shap_null_coalesce(date_aggregation, "not applicable")
+        ),
+        collapse = " / "
+      )
+    ),
     paste("ByVars:", if (length(ByVars)) paste(ByVars, collapse = ", ") else "none"),
     paste("Prediction scale:", prediction_scale),
     paste("Top N:", top_n),
