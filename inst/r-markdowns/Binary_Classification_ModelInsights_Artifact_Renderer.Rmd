@@ -171,7 +171,9 @@ bc_panel("Feature Importance Proxy", bc_table(tables$feature_importance_proxy, d
 ```
 
 ```{r feature_effects, results='asis'}
-feature_effect_artifacts <- artifact_list[vapply(artifact_list, function(x) identical(x$section, "Feature Effects"), logical(1L))]
+feature_effect_artifacts <- artifact_list[vapply(artifact_list, function(x) {
+  identical(x$section, "Feature Effects") && identical(x$type, "plot")
+}, logical(1L))]
 htmltools::tagList(lapply(feature_effect_artifacts, function(artifact) {
   bc_panel(artifact$label, bc_plot(artifact$object))
 }))

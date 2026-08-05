@@ -1406,8 +1406,22 @@ qa_report_api_contracts <- function() {
         SelfContained = FALSE
       )
     }, error = function(e) e)
-    render_status <- if (inherits(render_attempt, "error")) "error" else "success"
-    render_message <- if (inherits(render_attempt, "error")) conditionMessage(render_attempt) else as.character(render_attempt)
+    binary_render_attempt <- tryCatch({
+      BinaryClassificationModelInsightsReport(
+        artifact_result = bin_mi_artifacts,
+        data = dt,
+        OutputPath = render_dir,
+        OutputFile = "binary_model_insights_report_api_qa.html",
+        Quiet = TRUE
+      )
+    }, error = function(e) e)
+    render_errors <- Filter(function(x) inherits(x, "error"), list(render_attempt, binary_render_attempt))
+    render_status <- if (length(render_errors)) "error" else "success"
+    render_message <- if (length(render_errors)) {
+      paste(vapply(render_errors, conditionMessage, character(1)), collapse = " | ")
+    } else {
+      paste(as.character(render_attempt), as.character(binary_render_attempt), sep = " | ")
+    }
   }
 
   contract_checks <- data.table::data.table(
