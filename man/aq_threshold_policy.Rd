@@ -8,6 +8,10 @@ aq_threshold_policy(
   threshold = 0.5,
   positive_class = NULL,
   negative_class = NULL,
+  false_positive_cost = 1,
+  false_negative_cost = 1,
+  prevalence_assumption = NULL,
+  constraints = list(),
   policy_id = NULL
 )
 }
@@ -17,6 +21,14 @@ aq_threshold_policy(
 \item{positive_class}{Optional positive class label.}
 
 \item{negative_class}{Optional negative class label.}
+
+\item{false_positive_cost}{Optional non-negative false-positive cost.}
+
+\item{false_negative_cost}{Optional non-negative false-negative cost.}
+
+\item{prevalence_assumption}{Optional governed prevalence assumption.}
+
+\item{constraints}{Optional named recall/precision or policy constraints.}
 
 \item{policy_id}{Optional threshold policy identifier.}
 }

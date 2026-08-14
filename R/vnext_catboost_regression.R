@@ -57,6 +57,9 @@ aq_vnext_supported_engine_params <- function() {
     "verbose",
     "task_type",
     "allow_writing_files",
+    "use_best_model",
+    "od_type",
+    "od_wait",
     "l2_leaf_reg",
     "random_strength",
     "bootstrap_type"
@@ -81,7 +84,10 @@ aq_vnext_engine_params <- function(engine_params = list(), seed = 20260712L, tas
     thread_count = max(1L, parallel::detectCores(logical = TRUE) - 1L),
     verbose = 0L,
     task_type = "CPU",
-    allow_writing_files = FALSE
+    allow_writing_files = FALSE,
+    use_best_model = TRUE,
+    od_type = "Iter",
+    od_wait = 20L
   )
   out <- utils::modifyList(defaults, engine_params)
   if (is.logical(out$verbose)) {
@@ -95,6 +101,10 @@ aq_vnext_engine_params <- function(engine_params = list(), seed = 20260712L, tas
 #' @param threshold Decision threshold for positive-class assignment.
 #' @param positive_class Optional positive class label.
 #' @param negative_class Optional negative class label.
+#' @param false_positive_cost Optional non-negative false-positive cost.
+#' @param false_negative_cost Optional non-negative false-negative cost.
+#' @param prevalence_assumption Optional governed prevalence assumption.
+#' @param constraints Optional named recall/precision or policy constraints.
 #' @param policy_id Optional threshold policy identifier.
 #'
 #' @return An `aq_threshold_policy` object.
@@ -103,6 +113,10 @@ aq_threshold_policy <- function(
   threshold = 0.5,
   positive_class = NULL,
   negative_class = NULL,
+  false_positive_cost = 1,
+  false_negative_cost = 1,
+  prevalence_assumption = NULL,
+  constraints = list(),
   policy_id = NULL
 ) {
   threshold <- as.numeric(threshold)[1L]
@@ -115,6 +129,12 @@ aq_threshold_policy <- function(
     threshold = threshold,
     positive_class = if (is.null(positive_class)) NULL else as.character(positive_class)[1L],
     negative_class = if (is.null(negative_class)) NULL else as.character(negative_class)[1L],
+    cost_policy = list(
+      false_positive = as.numeric(false_positive_cost)[1L],
+      false_negative = as.numeric(false_negative_cost)[1L],
+      prevalence_assumption = if (is.null(prevalence_assumption)) NULL else as.numeric(prevalence_assumption)[1L],
+      constraints = constraints
+    ),
     calibration_method = "none",
     created_at = aq_vnext_now()
   )
@@ -126,6 +146,18 @@ aq_validate_threshold_policy <- function(policy) {
   rows <- list()
   add <- function(check, status, message, severity = status) {
     rows[[length(rows) + 1L]] <<- aq_vnext_validation_table(check, status, message, severity)
+  }
+  costs <- unlist(policy$cost_policy[c("false_positive", "false_negative")], use.names = FALSE)
+  if (length(costs) != 2L || any(!is.finite(costs)) || any(costs < 0)) {
+    add("threshold_policy_costs", "fail", "false-positive and false-negative costs must be finite and non-negative.")
+  } else {
+    add("threshold_policy_costs", "pass", "decision costs are valid.", "info")
+  }
+  prevalence <- policy$cost_policy$prevalence_assumption
+  if (!is.null(prevalence) && (!is.finite(prevalence) || prevalence <= 0 || prevalence >= 1)) {
+    add("threshold_policy_prevalence", "fail", "prevalence_assumption must be in (0, 1) when supplied.")
+  } else {
+    add("threshold_policy_prevalence", "pass", "prevalence assumption is valid or absent.", "info")
   }
   if (!inherits(policy, "aq_threshold_policy")) {
     add("threshold_policy_class", "fail", "threshold_policy must be created by aq_threshold_policy().")
@@ -792,6 +824,13 @@ aq_vnext_fit_artifact <- function(fit) {
     ),
     training_metadata = fit$training_metadata,
     engine_params = fit$engine_params,
+    reference_contract = fit$reference_contract,
+    implementation_descriptor = fit$implementation_descriptor,
+    feature_contract = fit$feature_contract,
+    training_history = fit$training_history,
+    resource_evidence = fit$resource_evidence,
+    evidence_manifest = fit$evidence_manifest,
+    tuning_space = fit$tuning_space,
     warnings = fit$warnings,
     supported_downstream_actions = fit$spec$supported_downstream_actions,
     created_at = fit$created_at
@@ -869,6 +908,13 @@ aq_vnext_model_bundle_metadata <- function(bundle, bundle_path = NA_character_) 
     feature_schema = bundle$feature_schema,
     feature_levels = bundle$feature_levels,
     training_metadata = bundle$training_metadata,
+    reference_contract = bundle$reference_contract,
+    implementation_descriptor = bundle$implementation_descriptor,
+    feature_contract = bundle$feature_contract,
+    training_history = bundle$training_history,
+    resource_evidence = bundle$resource_evidence,
+    evidence_manifest = bundle$evidence_manifest,
+    tuning_space = bundle$tuning_space,
     supported_actions = bundle$supported_downstream_actions,
     bundle_path = bundle_path
   )
@@ -925,6 +971,14 @@ aq_vnext_create_model_bundle <- function(fit) {
   class(bundle) <- c("aq_model_bundle", "aq_fit_result", "list")
   bundle
 }
+
+#' Create a Durable vNext Model Bundle
+#'
+#' @param fit An `aq_fit_result`.
+#' @return An in-memory `aq_model_bundle` with training rows removed while
+#'   retaining fitted state and derivable evidence.
+#' @export
+aq_model_bundle <- function(fit) aq_vnext_create_model_bundle(fit)
 
 #' Save a vNext Model Bundle
 #'
@@ -1029,7 +1083,12 @@ aq_validate_model_bundle <- function(bundle) {
     return(data.table::rbindlist(rows, use.names = TRUE, fill = TRUE))
   }
   add("bundle_class", "pass", "bundle inherits from aq_model_bundle.", "info")
-  required <- c("bundle_id", "bundle_version", "spec", "model", "model_id", "fit_id", "feature_schema", "training_metadata", "fit_artifact")
+  required <- c(
+    "bundle_id", "bundle_version", "spec", "model", "model_id", "fit_id",
+    "feature_schema", "training_metadata", "fit_artifact", "reference_contract",
+    "implementation_descriptor", "feature_contract", "resource_evidence",
+    "evidence_manifest", "tuning_space"
+  )
   missing <- required[!vapply(required, function(field) !is.null(bundle[[field]]), logical(1L))]
   if (length(missing)) {
     add("required_fields", "fail", paste("Missing required bundle field(s):", paste(missing, collapse = ", ")))
@@ -1055,6 +1114,21 @@ aq_validate_model_bundle <- function(bundle) {
     add("engine_supported", "fail", "bundle engine is not supported.")
   } else {
     add("engine_supported", "pass", "CatBoost engine is supported.", "info")
+  }
+  if (!identical(bundle$reference_contract$contract_id, "autoquant.supervised.reference")) {
+    add("reference_contract", "fail", "bundle does not carry the canonical supervised reference contract.")
+  } else {
+    add("reference_contract", "pass", paste("contract version:", bundle$reference_contract$version), "info")
+  }
+  if (is.null(bundle$feature_contract$fingerprint) || !nzchar(bundle$feature_contract$fingerprint)) {
+    add("feature_contract", "fail", "bundle feature contract fingerprint is missing.")
+  } else {
+    add("feature_contract", "pass", "feature contract and fingerprint are present.", "info")
+  }
+  if (!identical(bundle$implementation_descriptor$fallback_policy, "no_h2o_fallback")) {
+    add("fallback_policy", "fail", "bundle does not preserve the no-H2O-fallback policy.")
+  } else {
+    add("fallback_policy", "pass", "no H2O fallback is declared.", "info")
   }
   if (is.null(bundle$model)) {
     add("model_available", "fail", "bundle model object is missing.")
@@ -1216,6 +1290,34 @@ aq_fit_model <- function(spec, data, validation_data = NULL) {
     warnings = transformation$warnings,
     created_at = end_time
   )
+  fit$reference_contract <- aq_supervised_reference_contract(spec$task)
+  fit$implementation_descriptor <- aq_catboost_implementation_descriptor(spec$task, params)
+  fit$tuning_space <- aq_catboost_tuning_space(spec$task)
+  fit$feature_contract <- list(
+    target = spec$target,
+    features = spec$features,
+    feature_order_authoritative = TRUE,
+    schema = fit$feature_schema,
+    categorical_features = fit$feature_schema[grepl("character|factor|ordered", class), feature],
+    categorical_levels = fit$feature_levels,
+    missingness = list(
+      native_numeric = TRUE,
+      categorical = "explicit categorical value representation",
+      upstream_transformation = fit$transformation_lineage
+    ),
+    weights = NULL,
+    ignored_fields = setdiff(names(dt), c(spec$target, spec$features)),
+    fingerprint = digest::digest(list(spec$target, spec$features, fit$feature_schema, fit$feature_levels), algo = "sha256")
+  )
+  fit$training_history <- aq_supervised_training_history(model)
+  fit$resource_evidence <- list(
+    thread_count = as.integer(params$thread_count), task_type = params$task_type,
+    parallelism = if (as.integer(params$thread_count) > 1L) "multithreaded" else "single_threaded",
+    train_rows = nrow(train_dt), validation_rows = nrow(validation_dt), feature_count = length(spec$features),
+    elapsed_seconds = fit$training_metadata$elapsed_seconds,
+    memory_model = "in_memory_catboost_pool_and_fitted_model"
+  )
+  fit$evidence_manifest <- aq_supervised_evidence_manifest(fit)
   fit$fit_artifact <- aq_vnext_fit_artifact(fit)
   class(fit) <- c("aq_fit_result", "list")
   fit
@@ -2294,10 +2396,19 @@ aq_assess_model <- function(fit = NULL, predictions, by = NULL) {
     warnings = character(),
     created_at = aq_vnext_now()
   )
+  result <- aq_supervised_complete_assessment(fit, predictions, result)
   class(result) <- c("aq_assessment_result", "list")
   result
 }
 
+#' Assess a vNext Binary Model
+#'
+#' @param fit Optional fitted AutoQuant model.
+#' @param predictions Binary prediction result.
+#' @param by Optional subgroup fields.
+#' @return An `aq_assessment_result` with probability, discrimination,
+#'   calibration, and decision-policy evidence.
+#' @export
 aq_assess_binary_model <- function(fit = NULL, predictions, by = NULL) {
   data <- data.table::as.data.table(data.table::copy(predictions$data))
   target_col <- predictions$target_col
@@ -2475,6 +2586,7 @@ aq_assess_binary_model <- function(fit = NULL, predictions, by = NULL) {
     warnings = character(),
     created_at = aq_vnext_now()
   )
+  result <- aq_supervised_complete_assessment(fit, predictions, result)
   class(result) <- c("aq_assessment_result", "list")
   result
 }
