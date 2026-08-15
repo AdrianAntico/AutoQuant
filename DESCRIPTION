@@ -16,13 +16,14 @@ Imports:
     AutoPlots,
     bit64,
     data.table,
+    digest,
     doParallel,
     echarts4r,
     foreach,
     lubridate,
     timeDate,
     Rodeo
-Suggests: knitr, rmarkdown, gridExtra, htmlwidgets, webshot2, chromote
+Suggests: knitr, rmarkdown, gridExtra, htmlwidgets, webshot2, chromote, forecast
 Remotes:
     AdrianAntico/AutoPlots,
     AdrianAntico/Rodeo

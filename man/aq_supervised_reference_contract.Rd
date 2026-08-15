@@ -2,7 +2,7 @@
 % Please edit documentation in R/supervised_reference_contract.R
 \name{aq_supervised_reference_contract}
 \alias{aq_supervised_reference_contract}
-\title{Supervised Reference Contract 1.0}
+\title{Supervised Reference Contract 1.1}
 \usage{
 aq_supervised_reference_contract(task = c("regression", "binary"))
 }
@@ -13,5 +13,5 @@ aq_supervised_reference_contract(task = c("regression", "binary"))
 A language-independent supervised capability contract.
 }
 \description{
-Supervised Reference Contract 1.0
+Supervised Reference Contract 1.1
 }

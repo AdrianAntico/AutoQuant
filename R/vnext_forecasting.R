@@ -5,7 +5,8 @@ aq_forecast_frequency_levels <- function() {
 }
 
 aq_forecast_engine_levels <- function() {
-  c("naive", "seasonal_naive", "ets", "arima", "catboost")
+  c("naive", "seasonal_naive", "ets", "arima", "tbats", "theta",
+    "arfima", "catboost")
 }
 
 aq_forecast_strategy_levels <- function() {
@@ -25,7 +26,7 @@ aq_forecast_future_regressor_policy_levels <- function() {
 }
 
 aq_forecast_engine_supports_intervals <- function(engine) {
-  engine %in% c("ets", "arima")
+  engine %in% c("ets", "arima", "tbats", "theta", "arfima")
 }
 
 aq_forecast_engine_supports_xreg <- function(engine) {
@@ -124,7 +125,7 @@ aq_forecast_expected_dates <- function(min_date, max_date, frequency) {
 #' @param future_known_variables Variables known at forecast time.
 #' @param future_unknown_variables Variables not known at forecast time.
 #' @param engine Forecast engine. Supports `"naive"`, `"seasonal_naive"`,
-#'   `"ets"`, `"arima"`, and `"catboost"`.
+#'   `"ets"`, `"arima"`, `"tbats"`, and `"catboost"`.
 #' @param forecast_strategy Forecast strategy for CatBoost. Supports `"direct"`
 #'   and `"recursive"`.
 #' @param metrics Forecast metrics.
@@ -360,6 +361,12 @@ aq_forecast_engine_min_history <- function(spec, frequency) {
     seasonal_order <- as.integer(aq_vnext_default(params$seasonal_order, c(0L, 0L, 0L)))
     return(max(10L, sum(order, seasonal_order, na.rm = TRUE) + 5L))
   }
+  if (identical(spec$engine, "tbats")) {
+    params <- aq_vnext_default(spec$engine_parameters, list())
+    periods <- as.numeric(aq_vnext_default(params$seasonal_periods,
+      aq_forecast_season_length(frequency, spec$season_length)))
+    return(max(20L, as.integer(2 * max(periods, na.rm = TRUE))))
+  }
   if (identical(spec$engine, "catboost")) {
     params <- aq_vnext_default(spec$engine_parameters, list())
     lag_periods <- as.integer(aq_vnext_default(params$lag_periods, c(1L, season_length)))
@@ -393,19 +400,34 @@ aq_forecast_engine_parameter_diagnostics <- function(spec, frequency) {
       add("ets_smoothing_parameters", "pass", "ETS smoothing parameters are compatible.", "info")
     }
   } else if (identical(spec$engine, "arima")) {
+    automatic <- isTRUE(aq_vnext_default(params$automatic, is.null(params$order)))
+    add("arima_selection", "pass", if (automatic) "automatic AICc order selection" else "explicit governed orders", "info")
     order <- aq_vnext_default(params$order, c(1L, 0L, 0L))
     seasonal_order <- aq_vnext_default(params$seasonal_order, c(0L, 0L, 0L))
     valid_order <- function(x) length(x) == 3L && all(is.finite(as.numeric(x))) && all(as.integer(x) >= 0)
-    if (!valid_order(order)) {
+    if (!automatic && !valid_order(order)) {
       add("arima_order", "fail", "ARIMA order must be a non-negative integer vector of length 3.")
     } else {
       add("arima_order", "pass", paste("ARIMA order:", paste(as.integer(order), collapse = ",")), "info")
     }
-    if (!valid_order(seasonal_order)) {
+    if (!automatic && !valid_order(seasonal_order)) {
       add("arima_seasonal_order", "fail", "ARIMA seasonal_order must be a non-negative integer vector of length 3.")
     } else {
       add("arima_seasonal_order", "pass", paste("ARIMA seasonal order:", paste(as.integer(seasonal_order), collapse = ",")), "info")
     }
+  } else if (identical(spec$engine, "tbats")) {
+    supported <- c("seasonal_periods", "use_box_cox", "use_trend",
+      "use_damped_trend", "use_arma_errors", "biasadj")
+    unknown <- setdiff(names(params), supported)
+    if (length(unknown)) add("tbats_parameters", "fail",
+      paste("unsupported TBATS parameter(s):", paste(unknown, collapse = ", ")))
+    else add("tbats_parameters", "pass", "TBATS parameters are recognized.", "info")
+    periods <- as.numeric(aq_vnext_default(params$seasonal_periods,
+      aq_forecast_season_length(frequency, spec$season_length)))
+    if (!length(periods) || any(!is.finite(periods) | periods <= 1))
+      add("tbats_seasonal_periods", "fail", "TBATS seasonal periods must be finite values greater than one.")
+    else add("tbats_seasonal_periods", "pass",
+      paste("TBATS seasonal periods:", paste(periods, collapse = ", ")), "info")
   } else if (identical(spec$engine, "catboost")) {
     supported <- c(
       "iterations", "depth", "learning_rate", "loss_function", "eval_metric",
@@ -1165,6 +1187,15 @@ aq_forecast_fit_engine <- function(train, spec, frequency, xreg = NULL) {
   if (identical(spec$engine, "arima")) {
     return(aq_forecast_fit_arima(train, spec, frequency, xreg = xreg))
   }
+  if (identical(spec$engine, "tbats")) {
+    return(aq_forecast_fit_tbats(train, spec, frequency, xreg = xreg))
+  }
+  if (identical(spec$engine, "theta")) {
+    return(aq_forecast_fit_theta(train, spec, frequency, xreg = xreg))
+  }
+  if (identical(spec$engine, "arfima")) {
+    return(aq_forecast_fit_arfima(train, spec, frequency, xreg = xreg))
+  }
   if (identical(spec$engine, "catboost")) {
     return(aq_forecast_fit_catboost(train, spec, frequency, xreg$partition, xreg$future_context))
   }
@@ -1265,7 +1296,8 @@ aq_fit_forecast <- function(spec, data, origin = NULL, future_data = NULL) {
     forecast_dt <- merge(forecast_dt[, !"actual"], actuals, by = "forecast_date", all.x = TRUE, sort = FALSE)
     data.table::setorder(forecast_dt, horizon)
   }
-  baseline_forecasts <- if (spec$engine %in% c("ets", "arima", "catboost")) {
+  baseline_forecasts <- if (spec$engine %in% c("ets", "arima", "tbats",
+      "theta", "arfima", "catboost")) {
     aq_forecast_baseline_tables(train, forecast_dt, spec, partition$frequency)
   } else {
     list()
@@ -1734,6 +1766,31 @@ qa_vnext_forecasting_foundation <- function() {
   add("arima_known_future_regressors", isTRUE(arima_forecast$future_regressor_metadata$xreg_used) && identical(arima_forecast$future_regressor_metadata$future_known_variables, "promo"))
   add("arima_prediction_intervals", isTRUE(arima_forecast$interval_available) && all(is.finite(arima_forecast$data$lower_interval)))
   add("arima_baseline_comparison", nrow(arima_assessment$baseline_metrics) > 0L && nrow(arima_assessment$baseline_comparison) > 0L)
+  auto_arima_spec <- aq_forecast_spec(
+    target = "demand", date = "date", frequency = "day", horizon = 7L,
+    engine = "arima", engine_parameters = list(automatic = TRUE,
+      stepwise = TRUE, approximation = FALSE), rolling_origins = 2L,
+    dataset_id = "qa_forecast_fixture"
+  )
+  auto_arima_forecast <- aq_fit_forecast(auto_arima_spec, dt)
+  add("auto_arima_aicc_selection", inherits(auto_arima_forecast,
+    "aq_forecast_result") && identical(
+      auto_arima_forecast$engine_diagnostics$selection, "auto_aicc") &&
+      all(is.finite(auto_arima_forecast$data$forecast)))
+  tbats_spec <- aq_forecast_spec(
+    target = "demand", date = "date", frequency = "day", horizon = 7L,
+    engine = "tbats", engine_parameters = list(seasonal_periods = c(7, 30.5),
+      use_arma_errors = FALSE), rolling_origins = 2L,
+    dataset_id = "qa_forecast_fixture"
+  )
+  tbats_forecast <- aq_fit_forecast(tbats_spec, dt)
+  add("tbats_multiple_seasonality", inherits(tbats_forecast,
+    "aq_forecast_result") && identical(
+      tbats_forecast$engine_diagnostics$seasonal_periods, c(7, 30.5)) &&
+      all(is.finite(tbats_forecast$data$forecast)))
+  add("tbats_native_evidence", all(c("box_cox_lambda", "trend",
+    "damped_trend", "arma_orders", "fourier_harmonics", "initial_state",
+    "residual_diagnostics") %in% names(tbats_forecast$engine_diagnostics)))
   arima_backtest <- aq_rolling_origin_forecast(arima_spec, dt, origin_count = 2L)
   add("statistical_rolling_origin_backtest", inherits(arima_backtest, "aq_forecast_backtest_result") && length(arima_backtest$forecasts) == 2L)
   future_missing <- tryCatch(aq_fit_forecast(arima_spec, dt, origin = max(dt$date), future_data = data.table::data.table(date = aq_forecast_next_dates(max(dt$date), "day", 7L))), error = function(e) e)

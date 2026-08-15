@@ -48,7 +48,7 @@ aq_forecast_spec(
 \item{future_unknown_variables}{Variables not known at forecast time.}
 
 \item{engine}{Forecast engine. Supports `"naive"`, `"seasonal_naive"`,
-`"ets"`, `"arima"`, and `"catboost"`.}
+`"ets"`, `"arima"`, `"tbats"`, and `"catboost"`.}
 
 \item{forecast_strategy}{Forecast strategy for CatBoost. Supports `"direct"`
 and `"recursive"`.}
