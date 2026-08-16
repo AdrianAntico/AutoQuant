@@ -433,7 +433,10 @@ aq_forecast_engine_parameter_diagnostics <- function(spec, frequency) {
       "iterations", "depth", "learning_rate", "loss_function", "eval_metric",
       "random_seed", "thread_count", "verbose", "task_type", "l2_leaf_reg",
       "random_strength", "bootstrap_type", "allow_writing_files", "lag_periods",
-      "rolling_windows", "date_features"
+      "seasonal_lag_periods", "rolling_windows", "rolling_stats",
+      "rolling_quantiles", "difference_orders", "seasonal_difference_periods",
+      "ewm_alphas", "expanding_stats", "fourier_periods", "fourier_pairs",
+      "date_features", "temporal_fit"
     )
     unknown <- setdiff(names(params), supported)
     if (length(unknown)) {
@@ -456,7 +459,12 @@ aq_forecast_engine_parameter_diagnostics <- function(spec, frequency) {
       add("catboost_rolling_windows", "pass", "CatBoost rolling windows are compatible.", "info")
     }
     date_features <- aq_vnext_unique_chr(aq_vnext_default(params$date_features, c("year", "month", "day", "dow", "day_index")))
-    bad_date_features <- setdiff(date_features, c("year", "month", "day", "dow", "week", "quarter", "is_weekend", "day_index"))
+    bad_date_features <- setdiff(date_features, c(
+      "year", "month", "day", "dow", "week", "quarter", "is_weekend",
+      "day_index", "day_of_year", "month_start", "month_end",
+      "quarter_start", "quarter_end", "year_start", "year_end",
+      "hour", "minute"
+    ))
     if (length(bad_date_features)) {
       add("catboost_date_features", "fail", paste("unsupported CatBoost date feature(s):", paste(bad_date_features, collapse = ", ")))
     } else {
@@ -837,7 +845,16 @@ aq_forecast_catboost_feature_settings <- function(spec, frequency) {
   date_features <- aq_vnext_unique_chr(aq_vnext_default(params$date_features, c("year", "month", "day", "dow", "day_index")))
   list(
     lag_periods = lag_periods,
+    seasonal_lag_periods = unique(as.integer(aq_vnext_default(params$seasonal_lag_periods, integer()))),
     rolling_windows = rolling_windows,
+    rolling_stats = aq_vnext_unique_chr(aq_vnext_default(params$rolling_stats, "mean")),
+    rolling_quantiles = as.numeric(aq_vnext_default(params$rolling_quantiles, c(0.25, 0.5, 0.75))),
+    difference_orders = unique(as.integer(aq_vnext_default(params$difference_orders, integer()))),
+    seasonal_difference_periods = unique(as.integer(aq_vnext_default(params$seasonal_difference_periods, integer()))),
+    ewm_alphas = as.numeric(aq_vnext_default(params$ewm_alphas, numeric())),
+    expanding_stats = aq_vnext_unique_chr(aq_vnext_default(params$expanding_stats, character())),
+    fourier_periods = unique(as.integer(aq_vnext_default(params$fourier_periods, integer()))),
+    fourier_pairs = as.integer(aq_vnext_default(params$fourier_pairs, 1L))[1L],
     date_features = date_features,
     season_length = season_length
   )
@@ -872,8 +889,16 @@ aq_forecast_rodeo_temporal_spec <- function(spec, frequency, settings) {
     frequency = frequency,
     calendar_features = settings$date_features,
     lag_periods = settings$lag_periods,
+    seasonal_lag_periods = settings$seasonal_lag_periods,
     rolling_windows = settings$rolling_windows,
-    rolling_stats = "mean",
+    rolling_stats = settings$rolling_stats,
+    rolling_quantiles = settings$rolling_quantiles,
+    difference_orders = settings$difference_orders,
+    seasonal_difference_periods = settings$seasonal_difference_periods,
+    ewm_alphas = settings$ewm_alphas,
+    expanding_stats = settings$expanding_stats,
+    fourier_periods = settings$fourier_periods,
+    fourier_pairs = settings$fourier_pairs,
     known_future_variables = spec$future_known_variables,
     forecast_horizon = spec$horizon,
     metadata = list(
@@ -1103,11 +1128,16 @@ aq_forecast_fit_catboost <- function(train, spec, frequency, partition, future_c
   aq_forecast_require_rodeo_temporal()
   settings <- aq_forecast_catboost_feature_settings(spec, frequency)
   temporal_spec <- aq_forecast_rodeo_temporal_spec(spec, frequency, settings)
-  temporal_fit <- Rodeo::rodeo_fit_temporal_transformation(
-    train,
-    temporal_spec,
-    forecast_origin = max(train$.aq_forecast_date, na.rm = TRUE)
-  )
+  temporal_fit <- aq_vnext_default(spec$engine_parameters$temporal_fit, NULL)
+  if (is.null(temporal_fit)) {
+    temporal_fit <- Rodeo::rodeo_fit_temporal_transformation(
+      train,
+      temporal_spec,
+      forecast_origin = max(train$.aq_forecast_date, na.rm = TRUE)
+    )
+  } else if (!inherits(temporal_fit, "rodeo_fitted_temporal_transformation")) {
+    stop("engine_parameters$temporal_fit must be a fitted Rodeo temporal transformation.", call. = FALSE)
+  }
   temporal_metadata <- Rodeo::rodeo_temporal_transformation_metadata(temporal_fit)
   future_data <- aq_forecast_rodeo_future_data(spec, partition, future_context)
   elapsed <- system.time({

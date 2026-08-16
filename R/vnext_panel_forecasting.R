@@ -286,14 +286,28 @@ aq_fit_panel_forecast <- function(spec, data, origin = NULL, future_data = NULL)
     frequency = partition$frequency,
     calendar_features = settings$date_features,
     lag_periods = settings$lag_periods,
+    seasonal_lag_periods = settings$seasonal_lag_periods,
     rolling_windows = settings$rolling_windows,
+    rolling_stats = settings$rolling_stats,
+    rolling_quantiles = settings$rolling_quantiles,
+    difference_orders = settings$difference_orders,
+    seasonal_difference_periods = settings$seasonal_difference_periods,
+    ewm_alphas = settings$ewm_alphas,
+    expanding_stats = settings$expanding_stats,
+    fourier_periods = settings$fourier_periods,
+    fourier_pairs = settings$fourier_pairs,
     known_future_variables = spec$future_known_variables,
     static_entity_features = spec$static_entity_features,
     entity_id = spec$entity,
     forecast_horizon = spec$horizon,
     metadata = list(producer = "AutoQuant", consumer = "aq_fit_panel_forecast", engine = "catboost")
   )
-  temporal_fit <- Rodeo::rodeo_fit_temporal_transformation(train, temporal_spec, forecast_origin = partition$forecast_origin)
+  temporal_fit <- aq_vnext_default(spec$engine_parameters$temporal_fit, NULL)
+  if (is.null(temporal_fit)) {
+    temporal_fit <- Rodeo::rodeo_fit_temporal_transformation(train, temporal_spec, forecast_origin = partition$forecast_origin)
+  } else if (!inherits(temporal_fit, "rodeo_fitted_temporal_transformation")) {
+    stop("engine_parameters$temporal_fit must be a fitted Rodeo temporal transformation.", call. = FALSE)
+  }
   temporal_metadata <- Rodeo::rodeo_temporal_transformation_metadata(temporal_fit)
   elapsed <- system.time({
     prepared <- if (identical(spec$forecast_strategy, "recursive")) {
