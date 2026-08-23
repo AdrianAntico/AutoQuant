@@ -978,21 +978,14 @@ aq_forecast_origin_feature_frame <- function(train, spec, settings) {
 
 aq_forecast_catboost_model_params <- function(spec) {
   params <- aq_vnext_default(spec$engine_parameters, list())
-  model_param_names <- c(
-    "iterations", "depth", "learning_rate", "loss_function", "eval_metric",
-    "random_seed", "thread_count", "verbose", "task_type", "l2_leaf_reg",
-    "random_strength", "bootstrap_type", "allow_writing_files"
+  orchestration_param_names <- c(
+    "lag_periods", "seasonal_lag_periods", "rolling_windows",
+    "rolling_stats", "rolling_quantiles", "difference_orders",
+    "seasonal_difference_periods", "ewm_alphas", "expanding_stats",
+    "fourier_periods", "fourier_pairs", "date_features",
+    "observation_weight_fit", "temporal_fit"
   )
-  model_params <- params[intersect(names(params), model_param_names)]
-  if (is.null(model_params$iterations)) {
-    model_params$iterations <- 30L
-  }
-  if (is.null(model_params$depth)) {
-    model_params$depth <- 4L
-  }
-  if (is.null(model_params$learning_rate)) {
-    model_params$learning_rate <- 0.1
-  }
+  model_params <- params[setdiff(names(params), orchestration_param_names)]
   aq_vnext_engine_params(model_params, seed = aq_vnext_default(model_params$random_seed, 20260712L), task = "regression")
 }
 

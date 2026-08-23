@@ -47,22 +47,30 @@ aq_vnext_validation_table <- function(check, status, message, severity = status)
 
 aq_vnext_supported_engine_params <- function() {
   c(
-    "iterations",
-    "depth",
-    "learning_rate",
-    "loss_function",
-    "eval_metric",
-    "random_seed",
-    "thread_count",
-    "verbose",
-    "task_type",
-    "allow_writing_files",
-    "use_best_model",
-    "od_type",
-    "od_wait",
-    "l2_leaf_reg",
-    "random_strength",
-    "bootstrap_type"
+    "loss_function", "custom_metric", "eval_metric",
+    "iterations", "learning_rate", "random_seed",
+    "l2_leaf_reg", "bootstrap_type", "bagging_temperature", "subsample",
+    "sampling_frequency", "sampling_unit", "mvs_reg", "random_strength",
+    "use_best_model", "best_model_min_trees", "depth", "grow_policy",
+    "min_data_in_leaf", "max_leaves", "ignored_features",
+    "one_hot_max_size", "has_time", "rsm", "nan_mode",
+    "fold_permutation_block", "leaf_estimation_method",
+    "leaf_estimation_iterations", "leaf_estimation_backtracking",
+    "fold_len_multiplier", "approx_on_full_history", "boosting_type",
+    "boost_from_average", "langevin", "diffusion_temperature",
+    "allow_const_label", "score_function", "monotone_constraints",
+    "feature_weights", "first_feature_use_penalties",
+    "penalties_coefficient", "per_object_feature_penalties",
+    "model_shrink_rate", "model_shrink_mode", "early_stopping_rounds",
+    "od_type", "od_pval", "od_wait", "border_count",
+    "feature_border_type", "per_float_feature_quantization",
+    "thread_count", "task_type", "devices", "logging_level",
+    "metric_period", "verbose", "train_dir", "model_size_reg",
+    "allow_writing_files", "save_snapshot", "snapshot_file",
+    "snapshot_interval", "simple_ctr", "combinations_ctr",
+    "ctr_target_border_count", "counter_calc_method", "max_ctr_complexity",
+    "ctr_leaf_count_limit", "store_all_simple_ctr",
+    "final_ctr_computation_mode"
   )
 }
 
@@ -75,9 +83,8 @@ aq_vnext_engine_params <- function(engine_params = list(), seed = 20260712L, tas
     stop("Unsupported CatBoost engine parameter(s): ", paste(unknown, collapse = ", "), call. = FALSE)
   }
   defaults <- list(
-    iterations = 100L,
+    iterations = 1000L,
     depth = 6L,
-    learning_rate = 0.05,
     loss_function = if (identical(task, "binary")) "Logloss" else "RMSE",
     eval_metric = if (identical(task, "binary")) "AUC" else "RMSE",
     random_seed = as.integer(seed),
@@ -85,9 +92,7 @@ aq_vnext_engine_params <- function(engine_params = list(), seed = 20260712L, tas
     verbose = 0L,
     task_type = "CPU",
     allow_writing_files = FALSE,
-    use_best_model = TRUE,
-    od_type = "Iter",
-    od_wait = 20L
+    use_best_model = FALSE
   )
   out <- utils::modifyList(defaults, engine_params)
   if (is.logical(out$verbose)) {
