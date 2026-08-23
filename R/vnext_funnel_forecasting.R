@@ -59,6 +59,8 @@ aq_funnel_forecast_spec <- function(
   forecast_origin = NULL,
   strategy = "stage",
   known_future_variables = character(),
+  engine = "catboost",
+  engine_parameters = list(),
   forecast_spec_id = NULL,
   dataset_id = NULL,
   supported_downstream_actions = c("forecast", "assess", "compare", "report", "campaign_review")
@@ -86,6 +88,8 @@ aq_funnel_forecast_spec <- function(
     strategy = strategy,
     transitions = aq_funnel_make_transitions(stages),
     known_future_variables = aq_vnext_unique_chr(known_future_variables),
+    engine = as.character(engine)[1L],
+    engine_parameters = if (is.null(engine_parameters)) list() else engine_parameters,
     dataset_id = aq_vnext_default(dataset_id, NA_character_),
     supported_downstream_actions = aq_vnext_unique_chr(supported_downstream_actions),
     created_at = aq_vnext_now()

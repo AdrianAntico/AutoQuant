@@ -36,6 +36,7 @@ qa_forecast_catboost_controls <- function() {
   out <- data.table::rbindlist(list(
     add("production_tree_budget", identical(base$iterations, 1000L) &&
       identical(base$depth, 6L) && is.null(base$learning_rate)),
+    add("has_time_default_true", isTRUE(base$has_time)),
     add("temporal_controls", identical(passed$has_time, TRUE) &&
       identical(passed$boosting_type, "Ordered")),
     add("probabilistic_objective", identical(passed$loss_function,

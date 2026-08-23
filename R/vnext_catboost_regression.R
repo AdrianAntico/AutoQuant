@@ -74,6 +74,61 @@ aq_vnext_supported_engine_params <- function() {
   )
 }
 
+aq_vnext_supported_lightgbm_params <- function() {
+  c("objective", "metric", "num_iterations", "num_leaves", "max_depth",
+    "learning_rate", "min_data_in_leaf", "lambda_l1", "lambda_l2",
+    "feature_fraction", "bagging_fraction", "bagging_freq",
+    "monotone_constraints", "monotone_constraints_method",
+    "linear_tree", "extra_trees", "device_type", "num_threads",
+    "seed", "verbosity", "force_col_wise", "force_row_wise",
+    "cat_smooth", "cat_l2", "max_bin", "use_missing")
+}
+
+aq_vnext_supported_xgboost_params <- function() {
+  c("objective", "eval_metric", "nrounds", "max_depth", "eta",
+    "gamma", "min_child_weight", "subsample", "colsample_bytree",
+    "colsample_bylevel", "colsample_bynode", "lambda", "alpha",
+    "tree_method", "device", "grow_policy", "max_leaves",
+    "monotone_constraints", "interaction_constraints",
+    "sampling_method", "nthread", "seed", "verbosity",
+    "quantile_alpha", "tweedie_variance_power")
+}
+
+aq_vnext_lightgbm_params <- function(engine_params = list(), seed = 20260712L) {
+  unknown <- setdiff(names(engine_params), aq_vnext_supported_lightgbm_params())
+  if (length(unknown)) {
+    stop("Unsupported LightGBM engine parameter(s): ",
+      paste(unknown, collapse = ", "), call. = FALSE)
+  }
+  defaults <- list(
+    objective = "regression",
+    num_iterations = 500L,
+    num_leaves = 31L,
+    learning_rate = 0.05,
+    seed = as.integer(seed),
+    verbosity = -1L
+  )
+  utils::modifyList(defaults, if (is.null(engine_params)) list() else engine_params)
+}
+
+aq_vnext_xgboost_params <- function(engine_params = list(), seed = 20260712L) {
+  unknown <- setdiff(names(engine_params), aq_vnext_supported_xgboost_params())
+  if (length(unknown)) {
+    stop("Unsupported XGBoost engine parameter(s): ",
+      paste(unknown, collapse = ", "), call. = FALSE)
+  }
+  defaults <- list(
+    objective = "reg:squarederror",
+    nrounds = 500L,
+    max_depth = 6L,
+    eta = 0.05,
+    tree_method = "hist",
+    seed = as.integer(seed),
+    verbosity = 0L
+  )
+  utils::modifyList(defaults, if (is.null(engine_params)) list() else engine_params)
+}
+
 aq_vnext_engine_params <- function(engine_params = list(), seed = 20260712L, task = "regression") {
   if (is.null(engine_params)) {
     engine_params <- list()
@@ -92,7 +147,8 @@ aq_vnext_engine_params <- function(engine_params = list(), seed = 20260712L, tas
     verbose = 0L,
     task_type = "CPU",
     allow_writing_files = FALSE,
-    use_best_model = FALSE
+    use_best_model = FALSE,
+    has_time = isTRUE(aq_vnext_default(engine_params$has_time, TRUE))
   )
   out <- utils::modifyList(defaults, engine_params)
   if (is.logical(out$verbose)) {

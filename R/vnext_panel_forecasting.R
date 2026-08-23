@@ -11,10 +11,11 @@
 #' @param forecast_origin Optional common forecast origin.
 #' @param future_known_variables Variables known at forecast time.
 #' @param static_entity_features Entity-level static features.
-#' @param engine Forecast engine. Phase 13 supports `"catboost"`.
+#' @param engine Forecast engine. Supports `"catboost"`, `"lightgbm"`, and
+#'   `"xgboost"`.
 #' @param forecast_strategy Forecast strategy. Supports `"direct"` and
 #'   `"recursive"`.
-#' @param engine_parameters Optional CatBoost and temporal feature parameters.
+#' @param engine_parameters Optional native GBDT and temporal feature parameters.
 #' @param minimum_history Minimum non-missing target rows required per entity.
 #' @param prediction_intervals Whether to request prediction intervals. CatBoost
 #'   panel forecasts record unsupported interval diagnostics.
@@ -49,7 +50,7 @@ aq_panel_forecast_spec <- function(
   supported_downstream_actions = c("forecast", "assess", "compare", "report", "campaign_review")
 ) {
   frequency <- match.arg(tolower(frequency), aq_forecast_frequency_levels())
-  engine <- match.arg(tolower(engine), "catboost")
+  engine <- match.arg(tolower(engine), aq_forecast_gbdt_engines())
   forecast_strategy <- match.arg(tolower(forecast_strategy), aq_forecast_strategy_levels())
   horizon <- as.integer(horizon)[1L]
   minimum_history <- as.integer(minimum_history)[1L]
@@ -102,7 +103,12 @@ aq_validate_panel_forecast_spec <- function(spec, data = NULL, future_data = NUL
   }
   add("panel_forecast_spec_class", "pass", "panel forecast specification is typed.", "info")
   if (!is.finite(spec$horizon) || spec$horizon < 1L) add("horizon", "fail", "forecast horizon must be positive.") else add("horizon", "pass", paste("horizon:", spec$horizon), "info")
-  if (!identical(spec$engine, "catboost")) add("engine_supported", "fail", "Phase 13 panel forecasting supports engine = 'catboost'.") else add("engine_supported", "pass", "engine: catboost", "info")
+  if (!spec$engine %in% aq_forecast_gbdt_engines()) {
+    add("engine_supported", "fail",
+      "Panel forecasting supports engine in {catboost, lightgbm, xgboost}.")
+  } else {
+    add("engine_supported", "pass", paste("engine:", spec$engine), "info")
+  }
   if (!spec$forecast_strategy %in% aq_forecast_strategy_levels()) add("forecast_strategy", "fail", "unsupported forecast strategy.") else add("forecast_strategy", "pass", paste("strategy:", spec$forecast_strategy), "info")
   if (is.null(data)) return(data.table::rbindlist(rows, use.names = TRUE, fill = TRUE))
 
@@ -209,7 +215,8 @@ aq_fit_panel_catboost_direct <- function(train, spec, partition, future_context,
     feature_cols <- frames$feature_columns_by_horizon[[as.character(h)]]
     trained <- aq_forecast_catboost_train_one(frame, ".rodeo_label", feature_cols, spec)
     pred_frame <- frames$prediction_frames[[as.character(h)]]
-    pred <- as.numeric(catboost::catboost.predict(trained$model, pool = catboost::catboost.load_pool(data = aq_forecast_numeric_matrix(pred_frame, feature_cols)), prediction_type = "RawFormulaVal"))
+    pred <- aq_forecast_gbdt_predict_vec(trained$model, pred_frame, feature_cols,
+      engine = aq_vnext_default(spec$engine, "catboost"))
     predictions[[h]] <- data.table::data.table(
       entity = as.character(pred_frame[[spec$entity]]),
       forecast_date = as.Date(pred_frame$.rodeo_future_date),
@@ -245,7 +252,8 @@ aq_fit_panel_catboost_recursive <- function(train, spec, partition, future_conte
       row
     })
     pred_frame <- data.table::rbindlist(rows, use.names = TRUE, fill = TRUE)
-    pred <- as.numeric(catboost::catboost.predict(trained$model, pool = catboost::catboost.load_pool(data = aq_forecast_numeric_matrix(pred_frame, frames$feature_columns)), prediction_type = "RawFormulaVal"))
+    pred <- aq_forecast_gbdt_predict_vec(trained$model, pred_frame, frames$feature_columns,
+      engine = aq_vnext_default(spec$engine, "catboost"))
     out <- data.table::data.table(entity = pred_frame[[spec$entity]], forecast_date = as.Date(pred_frame$.rodeo_future_date), horizon = h, forecast = pred)
     data.table::setnames(out, "entity", spec$entity)
     predictions[[h]] <- out
@@ -268,7 +276,7 @@ aq_fit_panel_catboost_recursive <- function(train, spec, partition, future_conte
 #' @export
 aq_fit_panel_forecast <- function(spec, data, origin = NULL, future_data = NULL) {
   if (!inherits(spec, "aq_panel_forecast_spec")) stop("spec must be an aq_panel_forecast_spec.", call. = FALSE)
-  if (!requireNamespace("catboost", quietly = TRUE)) stop("The catboost package is required for aq_fit_panel_forecast().", call. = FALSE)
+  aq_forecast_require_gbdt_engine(spec$engine)
   aq_forecast_require_rodeo_temporal()
   validation <- aq_validate_panel_forecast_spec(spec, data, future_data = future_data)
   if (aq_vnext_has_validation_error(validation)) stop(paste(validation[status %in% c("fail", "error"), message], collapse = " "), call. = FALSE)
@@ -300,7 +308,7 @@ aq_fit_panel_forecast <- function(spec, data, origin = NULL, future_data = NULL)
     static_entity_features = spec$static_entity_features,
     entity_id = spec$entity,
     forecast_horizon = spec$horizon,
-    metadata = list(producer = "AutoQuant", consumer = "aq_fit_panel_forecast", engine = "catboost")
+    metadata = list(producer = "AutoQuant", consumer = "aq_fit_panel_forecast", engine = spec$engine)
   )
   temporal_fit <- aq_vnext_default(spec$engine_parameters$temporal_fit, NULL)
   if (is.null(temporal_fit)) {

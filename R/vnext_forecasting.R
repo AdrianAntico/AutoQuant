@@ -6,7 +6,7 @@ aq_forecast_frequency_levels <- function() {
 
 aq_forecast_engine_levels <- function() {
   c("naive", "seasonal_naive", "ets", "arima", "tbats", "theta",
-    "arfima", "catboost")
+    "arfima", "catboost", "lightgbm", "xgboost")
 }
 
 aq_forecast_strategy_levels <- function() {
@@ -30,7 +30,21 @@ aq_forecast_engine_supports_intervals <- function(engine) {
 }
 
 aq_forecast_engine_supports_xreg <- function(engine) {
-  engine %in% c("arima", "catboost")
+  engine %in% c("arima", "catboost", "lightgbm", "xgboost")
+}
+
+aq_forecast_gbdt_engines <- function() {
+  c("catboost", "lightgbm", "xgboost")
+}
+
+aq_forecast_orchestration_param_names <- function() {
+  c(
+    "lag_periods", "seasonal_lag_periods", "rolling_windows",
+    "rolling_stats", "rolling_quantiles", "difference_orders",
+    "seasonal_difference_periods", "ewm_alphas", "expanding_stats",
+    "fourier_periods", "fourier_pairs", "date_features",
+    "observation_weight_fit", "temporal_fit"
+  )
 }
 
 aq_forecast_detect_frequency <- function(dates) {
@@ -428,21 +442,22 @@ aq_forecast_engine_parameter_diagnostics <- function(spec, frequency) {
       add("tbats_seasonal_periods", "fail", "TBATS seasonal periods must be finite values greater than one.")
     else add("tbats_seasonal_periods", "pass",
       paste("TBATS seasonal periods:", paste(periods, collapse = ", ")), "info")
-  } else if (identical(spec$engine, "catboost")) {
-    supported <- c(
-      "iterations", "depth", "learning_rate", "loss_function", "eval_metric",
-      "random_seed", "thread_count", "verbose", "task_type", "l2_leaf_reg",
-      "random_strength", "bootstrap_type", "allow_writing_files", "lag_periods",
-      "seasonal_lag_periods", "rolling_windows", "rolling_stats",
-      "rolling_quantiles", "difference_orders", "seasonal_difference_periods",
-      "ewm_alphas", "expanding_stats", "fourier_periods", "fourier_pairs",
-      "date_features", "temporal_fit"
-    )
-    unknown <- setdiff(names(params), supported)
-    if (length(unknown)) {
-      add("catboost_parameters", "fail", paste("unsupported CatBoost forecast parameter(s):", paste(unknown, collapse = ", ")))
+  } else if (spec$engine %in% aq_forecast_gbdt_engines()) {
+    model_params <- params[setdiff(names(params), aq_forecast_orchestration_param_names())]
+    supported <- if (identical(spec$engine, "catboost")) {
+      aq_vnext_supported_engine_params()
+    } else if (identical(spec$engine, "lightgbm")) {
+      aq_vnext_supported_lightgbm_params()
     } else {
-      add("catboost_parameters", "pass", "CatBoost forecast parameters are recognized.", "info")
+      aq_vnext_supported_xgboost_params()
+    }
+    unknown <- setdiff(names(model_params), supported)
+    if (length(unknown)) {
+      add("gbdt_parameters", "fail", paste("unsupported", spec$engine,
+        "forecast parameter(s):", paste(unknown, collapse = ", ")))
+    } else {
+      add("gbdt_parameters", "pass", paste(spec$engine,
+        "uses the native engine control surface."), "info")
     }
     positive_integer_param <- function(name) {
       value <- params[[name]]
@@ -978,15 +993,24 @@ aq_forecast_origin_feature_frame <- function(train, spec, settings) {
 
 aq_forecast_catboost_model_params <- function(spec) {
   params <- aq_vnext_default(spec$engine_parameters, list())
-  orchestration_param_names <- c(
-    "lag_periods", "seasonal_lag_periods", "rolling_windows",
-    "rolling_stats", "rolling_quantiles", "difference_orders",
-    "seasonal_difference_periods", "ewm_alphas", "expanding_stats",
-    "fourier_periods", "fourier_pairs", "date_features",
-    "observation_weight_fit", "temporal_fit"
-  )
-  model_params <- params[setdiff(names(params), orchestration_param_names)]
+  model_params <- params[setdiff(names(params), aq_forecast_orchestration_param_names())]
+  if (is.null(model_params$has_time)) model_params$has_time <- TRUE
   aq_vnext_engine_params(model_params, seed = aq_vnext_default(model_params$random_seed, 20260712L), task = "regression")
+}
+
+aq_forecast_gbdt_model_params <- function(spec) {
+  engine <- spec$engine
+  params <- aq_vnext_default(spec$engine_parameters, list())
+  model_params <- params[setdiff(names(params), aq_forecast_orchestration_param_names())]
+  if (identical(engine, "lightgbm")) {
+    return(aq_vnext_lightgbm_params(model_params,
+      seed = aq_vnext_default(model_params$seed, 20260712L)))
+  }
+  if (identical(engine, "xgboost")) {
+    return(aq_vnext_xgboost_params(model_params,
+      seed = aq_vnext_default(model_params$seed, 20260712L)))
+  }
+  aq_forecast_catboost_model_params(spec)
 }
 
 aq_forecast_numeric_matrix <- function(frame, feature_cols) {
@@ -1005,19 +1029,54 @@ aq_forecast_catboost_train_one <- function(train_frame, label_col, feature_cols,
   }
   x <- aq_forecast_numeric_matrix(train_frame, feature_cols)
   label <- as.numeric(train_frame[[label_col]])
-  pool <- catboost::catboost.load_pool(data = x, label = label)
-  params <- aq_forecast_catboost_model_params(spec)
+  engine <- aq_vnext_default(spec$engine, "catboost")
+  pool <- NULL
   elapsed <- system.time({
-    model <- catboost::catboost.train(learn_pool = pool, test_pool = NULL, params = params)
+    if (identical(engine, "lightgbm")) {
+      if (!requireNamespace("lightgbm", quietly = TRUE)) {
+        stop("The lightgbm package is required for engine = 'lightgbm'.", call. = FALSE)
+      }
+      params <- aq_forecast_gbdt_model_params(spec)
+      nrounds <- as.integer(aq_vnext_default(params$num_iterations, 500L))
+      params$num_iterations <- NULL
+      dtrain <- lightgbm::lgb.Dataset(data = x, label = label)
+      model <- lightgbm::lgb.train(params = params, data = dtrain, nrounds = nrounds,
+        verbose = -1L)
+    } else if (identical(engine, "xgboost")) {
+      if (!requireNamespace("xgboost", quietly = TRUE)) {
+        stop("The xgboost package is required for engine = 'xgboost'.", call. = FALSE)
+      }
+      params <- aq_forecast_gbdt_model_params(spec)
+      nrounds <- as.integer(aq_vnext_default(params$nrounds, 500L))
+      params$nrounds <- NULL
+      dtrain <- xgboost::xgb.DMatrix(data = x, label = label)
+      model <- xgboost::xgb.train(params = params, data = dtrain, nrounds = nrounds,
+        verbose = 0L)
+    } else {
+      pool <- catboost::catboost.load_pool(data = x, label = label)
+      params <- aq_forecast_catboost_model_params(spec)
+      model <- catboost::catboost.train(learn_pool = pool, test_pool = NULL, params = params)
+    }
   })
   feature_importance <- tryCatch({
-    importance <- as.numeric(catboost::catboost.get_feature_importance(model, pool = pool))
-    data.table::data.table(feature = feature_cols, importance = importance)
+    if (identical(engine, "lightgbm")) {
+      imp <- lightgbm::lgb.importance(model)
+      data.table::data.table(feature = feature_cols,
+        importance = as.numeric(imp$Gain[match(feature_cols, imp$Feature)]))
+    } else if (identical(engine, "xgboost")) {
+      imp <- xgboost::xgb.importance(model = model, feature_names = feature_cols)
+      data.table::data.table(feature = feature_cols,
+        importance = as.numeric(imp$Gain[match(feature_cols, imp$Feature)]))
+    } else {
+      importance <- as.numeric(catboost::catboost.get_feature_importance(model, pool = pool))
+      data.table::data.table(feature = feature_cols, importance = importance)
+    }
   }, error = function(e) {
     data.table::data.table(feature = feature_cols, importance = NA_real_, error = conditionMessage(e))
   })
   list(
     model = model,
+    engine = engine,
     pool = pool,
     feature_importance = feature_importance,
     rows = nrow(train_frame),
@@ -1026,9 +1085,37 @@ aq_forecast_catboost_train_one <- function(train_frame, label_col, feature_cols,
   )
 }
 
-aq_forecast_catboost_predict_one <- function(model, feature_row, feature_cols) {
-  pool <- catboost::catboost.load_pool(data = aq_forecast_numeric_matrix(feature_row, feature_cols))
-  as.numeric(catboost::catboost.predict(model, pool = pool, prediction_type = "RawFormulaVal"))[1L]
+aq_forecast_require_gbdt_engine <- function(engine) {
+  engine <- as.character(engine)[1L]
+  pkg <- switch(engine,
+    catboost = "catboost",
+    lightgbm = "lightgbm",
+    xgboost = "xgboost",
+    stop("unsupported GBDT forecast engine: ", engine, call. = FALSE))
+  if (!requireNamespace(pkg, quietly = TRUE)) {
+    stop("The ", pkg, " package is required for engine = '", engine, "'.",
+      call. = FALSE)
+  }
+  invisible(engine)
+}
+
+aq_forecast_gbdt_predict_vec <- function(model, frame, feature_cols,
+    engine = "catboost") {
+  x <- aq_forecast_numeric_matrix(frame, feature_cols)
+  if (identical(engine, "lightgbm")) {
+    return(as.numeric(predict(model, x)))
+  }
+  if (identical(engine, "xgboost")) {
+    return(as.numeric(predict(model, xgboost::xgb.DMatrix(data = x))))
+  }
+  pool <- catboost::catboost.load_pool(data = x)
+  as.numeric(catboost::catboost.predict(model, pool = pool,
+    prediction_type = "RawFormulaVal"))
+}
+
+aq_forecast_catboost_predict_one <- function(model, feature_row, feature_cols,
+    engine = "catboost") {
+  aq_forecast_gbdt_predict_vec(model, feature_row, feature_cols, engine = engine)[1L]
 }
 
 aq_forecast_catboost_direct <- function(train, spec, partition, future_context, temporal_fit, future_data) {
@@ -1048,7 +1135,8 @@ aq_forecast_catboost_direct <- function(train, spec, partition, future_context, 
     feature_cols <- frames$feature_columns_by_horizon[[as.character(h)]]
     trained <- aq_forecast_catboost_train_one(frame, ".rodeo_label", feature_cols, spec)
     pred_row <- frames$prediction_frames[[as.character(h)]]
-    predictions[h] <- aq_forecast_catboost_predict_one(trained$model, pred_row, feature_cols)
+    predictions[h] <- aq_forecast_catboost_predict_one(trained$model, pred_row, feature_cols,
+      engine = aq_vnext_default(spec$engine, "catboost"))
     models[[h]] <- trained$model
     feature_importance[[h]] <- data.table::copy(trained$feature_importance)[, horizon := h]
     feature_cols_by_horizon[[h]] <- feature_cols
@@ -1079,7 +1167,8 @@ aq_forecast_catboost_recursive <- function(train, spec, partition, future_contex
   predictions <- numeric(spec$horizon)
   for (h in seq_len(spec$horizon)) {
     row <- Rodeo::rodeo_temporal_prediction_frame(temporal_fit, future_data[h], history_values = history)
-    predictions[h] <- aq_forecast_catboost_predict_one(trained$model, row, feature_cols)
+    predictions[h] <- aq_forecast_catboost_predict_one(trained$model, row, feature_cols,
+      engine = aq_vnext_default(spec$engine, "catboost"))
     history <- c(history, predictions[h])
   }
   list(
@@ -1115,8 +1204,15 @@ aq_forecast_catboost_lineage <- function(spec, settings, prepared, temporal_fit,
 }
 
 aq_forecast_fit_catboost <- function(train, spec, frequency, partition, future_context) {
-  if (!requireNamespace("catboost", quietly = TRUE)) {
-    stop("The catboost package is required for aq_fit_forecast() with engine = 'catboost'.", call. = FALSE)
+  engine <- aq_vnext_default(spec$engine, "catboost")
+  if (identical(engine, "catboost") && !requireNamespace("catboost", quietly = TRUE)) {
+    stop("The catboost package is required for engine = 'catboost'.", call. = FALSE)
+  }
+  if (identical(engine, "lightgbm") && !requireNamespace("lightgbm", quietly = TRUE)) {
+    stop("The lightgbm package is required for engine = 'lightgbm'.", call. = FALSE)
+  }
+  if (identical(engine, "xgboost") && !requireNamespace("xgboost", quietly = TRUE)) {
+    stop("The xgboost package is required for engine = 'xgboost'.", call. = FALSE)
   }
   aq_forecast_require_rodeo_temporal()
   settings <- aq_forecast_catboost_feature_settings(spec, frequency)
@@ -1219,7 +1315,7 @@ aq_forecast_fit_engine <- function(train, spec, frequency, xreg = NULL) {
   if (identical(spec$engine, "arfima")) {
     return(aq_forecast_fit_arfima(train, spec, frequency, xreg = xreg))
   }
-  if (identical(spec$engine, "catboost")) {
+  if (spec$engine %in% aq_forecast_gbdt_engines()) {
     return(aq_forecast_fit_catboost(train, spec, frequency, xreg$partition, xreg$future_context))
   }
   stop(paste("unsupported forecast engine:", spec$engine), call. = FALSE)

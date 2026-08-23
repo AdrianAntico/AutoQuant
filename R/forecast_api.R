@@ -104,7 +104,9 @@ forecast_fit <- function(
     args <- list(stages = stages, value = target, date = date,
       frequency = frequency, horizon = horizon, forecast_origin = origin,
       strategy = strategy %||% "stage",
-      known_future_variables = future_known_variables)
+      known_future_variables = future_known_variables,
+      engine = engine %||% "catboost",
+      engine_parameters = engine_parameters)
     spec <- aq_forecast_api_call(aq_funnel_forecast_spec, args, extra)
     return(aq_fit_funnel_forecast(spec, data, origin = origin))
   }
@@ -132,6 +134,20 @@ forecast_backtest <- function(spec, data, origins = NULL, origin_count = NULL) {
     return(aq_rolling_origin_panel_forecast(spec, data, origins, origin_count))
   if (inherits(spec, "aq_hurdle_forecast_spec"))
     return(aq_rolling_origin_hurdle_forecast(spec, data, origins, origin_count))
+  if (inherits(spec, "aq_multitarget_forecast_spec")) {
+    if (!exists("aq_rolling_origin_multitarget_forecast", mode = "function", inherits = TRUE)) {
+      stop("No public rolling-origin implementation exists for multi-target specifications.",
+        call. = FALSE)
+    }
+    return(aq_rolling_origin_multitarget_forecast(spec, data, origins, origin_count))
+  }
+  if (inherits(spec, "aq_funnel_forecast_spec")) {
+    if (!exists("aq_rolling_origin_funnel_forecast", mode = "function", inherits = TRUE)) {
+      stop("No public rolling-origin implementation exists for funnel specifications.",
+        call. = FALSE)
+    }
+    return(aq_rolling_origin_funnel_forecast(spec, data, origins, origin_count))
+  }
   if (inherits(spec, "aq_croston_forecast_spec"))
     return(aq_rolling_origin_croston_forecast(spec, data, origins, origin_count))
   if (inherits(spec, "aq_sba_forecast_spec"))
@@ -204,8 +220,41 @@ qa_forecast_public_api <- function() {
       "engine_parameters", "prediction_intervals", "confidence_level") %in%
       names(formals(forecast_fit)))),
     add("advanced_reconciliation_reachable", identical(
-      eval(formals(forecast_reconcile)$method)[1L], "mint"))
+      eval(formals(forecast_reconcile)$method)[1L], "mint")),
+    add("native_gbdt_engines", all(c("catboost", "lightgbm", "xgboost") %in%
+      aq_forecast_engine_levels())),
+    add("funnel_forwards_engine_parameters",
+      all(c("engine", "engine_parameters") %in% names(formals(aq_funnel_forecast_spec)))),
+    add("catboost_has_time_default", {
+      spec <- aq_forecast_spec("value", "date", engine = "catboost",
+        engine_parameters = list(boosting_type = "Ordered",
+          monotone_constraints = c(1, 0, -1), langevin = TRUE))
+      val <- aq_validate_forecast_spec(spec)
+      !any(val$status %in% c("fail", "error")) &&
+        isTRUE(aq_forecast_catboost_model_params(spec)$has_time)
+    }),
+    add("forecast_engine_control_exported",
+      is.function(forecast_engine_control) &&
+        identical(eval(formals(forecast_engine_control)$engine)[1L], "catboost"))
   ))
   attr(out, "passed") <- all(out$passed)
   out
+}
+
+#' Native GBDT forecast engine controls
+#'
+#' Flat, documented production defaults for CatBoost, LightGBM, and XGBoost.
+#' Unknown names fail closed. Temporal CatBoost defaults preserve row order.
+#'
+#' @param engine `"catboost"`, `"lightgbm"`, or `"xgboost"`.
+#' @param ... Native engine parameters from the corresponding allowlist.
+#' @return A named list for `engine_parameters` in [forecast_fit()].
+#' @export
+forecast_engine_control <- function(engine = c("catboost", "lightgbm", "xgboost"),
+    ...) {
+  engine <- match.arg(engine)
+  supplied <- list(...)
+  if (identical(engine, "lightgbm")) return(aq_vnext_lightgbm_params(supplied))
+  if (identical(engine, "xgboost")) return(aq_vnext_xgboost_params(supplied))
+  aq_vnext_engine_params(supplied, task = "regression")
 }
