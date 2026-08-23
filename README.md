@@ -713,7 +713,44 @@ qa_decision_lifecycle_framework()
 
 ### Time-Series Forecasting
 
-Use `aq_forecast_spec()` and `aq_fit_forecast()` for deterministic single-series forecasting. Current engines include `naive`, `seasonal_naive`, `ets`, `arima`, and `catboost`.
+Use `forecast_fit()` as the preferred expert entry point. The `method` selects
+ordinary, panel, multi-target, hurdle, funnel, Croston, SBA, or TSB forecasting;
+important engine and strategy controls remain explicit. The existing `aq_*`
+specification functions remain available for compatibility and specialized
+programmatic construction.
+
+```r
+demand_history <- data.table::data.table(
+  date = as.Date("2024-01-01") + 0:179,
+  demand = 20 + 0.05 * (0:179) + 4 * sin(2 * pi * (0:179) / 7)
+)
+
+forecast <- forecast_fit(
+  data = demand_history,
+  target = "demand",
+  date = "date",
+  method = "ordinary",
+  engine = "catboost",
+  strategy = "direct",
+  horizon = 14,
+  engine_parameters = list(
+    iterations = 1000L,
+    depth = 6L,
+    loss_function = "RMSE",
+    has_time = TRUE
+  ),
+  prediction_intervals = TRUE,
+  confidence_level = 0.90
+)
+
+diagnostics <- forecast_diagnose(forecast)
+```
+
+For leakage-safe validation, retain the native specification stored on the
+result and call `forecast_backtest()`. Use `forecast_reconcile()` for OLS, WLS,
+or MinT hierarchical reconciliation.
+
+The lower-level construction workflow remains valid:
 
 ```r
 forecast_spec <- aq_forecast_spec(
