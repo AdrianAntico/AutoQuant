@@ -1,5 +1,9 @@
 # AutoQuant vNext Forecasting Foundation
 
+CARMA vNext architecture and its bounded temporal-representation foundation are
+documented in `docs/carma_vnext_1_0_architecture_2026-08-15.md`. The additive
+CARMA contracts compose this lifecycle; legacy CARMA remains unchanged.
+
 Status: Phase 22 implemented for deterministic forecasting foundations with single-series naive, seasonal naive, ETS, ARIMA, CatBoost supervised forecasting, Rodeo-owned temporal transformation replay, global CatBoost panel forecasting, deterministic hierarchical reconciliation, panel strategy selection, negative-transfer diagnostics, expanded intermittent-demand forecasting, funnel forecasting, multi-target forecasting, supervised cross-target feature forecasting, prediction interval evidence, known-future-regressor validation, challenger-baseline comparison, forecasting capability planning, and governed forecasting experiment campaigns.
 
 This document establishes the shared forecasting language that future forecasting engines should inherit. ETS, ARIMA, CatBoost, global CatBoost panel forecasting, deterministic hierarchy reconciliation, panel strategy comparison, Croston/SBA/TSB intermittent-demand forecasting, supervised Hurdle intermittent-demand forecasting, intermittent-demand method comparison, deterministic funnel forecasting, deterministic multi-target forecasting, supervised cross-target feature forecasting, deterministic forecasting strategy planning, and governed forecasting experiments are implemented inside shared specification, artifact, assessment, comparison, planning, or campaign contracts. Prediction intervals and known future regressors are first-class forecast evidence. This phase does not implement Prophet, GAM forecasting, VAR, VARMAX, multivariate state-space models, inventory optimization, optimization-based reconciliation, automatic feature tuning, automatic model tuning, deployment, or AutoML.
@@ -563,6 +567,36 @@ Future Rodeo work should expose a structured temporal fit/apply contract for lag
 
 Forecast artifacts serialize cleanly and use the canonical artifact envelope. CatBoost forecast model objects remain inside the forecast result for immediate use, while durable portable forecast bundles remain future work. Future forecasting bundles should use the same envelope and lineage principles as vNext model bundles.
 
+## CARMA vNext Hurdle 1.0
+
+The governed two-stage successor is documented in
+`docs/carma_hurdle_intermittent_ml_forecasting_1_0_2026-08-15.md`. It adds
+independent occurrence and positive-magnitude Model Revisions, fitted magnitude
+target representation, explicit expected-value composition, stage-specific
+evidence, shared temporal cache lineage, and restart/no-refit application. The
+earlier `aq_hurdle_forecast_*` API remains a foundation comparison path.
+
+## CARMA vNext Vector / Multi-Target Forecasting 1.0
+
+The qualified multi-target successor is documented in
+`docs/carma_vector_multitarget_forecasting_1_0_2026-08-15.md`. It adds
+explicit independent, shared-representation, and selected cross-target modes;
+direct and recursive strategies; target-specific engines and fitted target
+representations; leakage-safe broad vector features; bounded relationship
+evidence; panel forecasting; shared materialization; and exact restart/no-refit
+reconstruction. Joint multi-output remains explicitly unavailable until an
+engine has a qualified durable fitted-state contract.
+
+## CARMA vNext Funnel Forecasting 1.0
+
+The governed ordered-stage successor is documented in
+`docs/carma_funnel_forecasting_1_0_2026-08-15.md`. It adds explicit per-stage
+level, conversion, and Hurdle modeling; separate calendar and cohort clocks;
+structural maturity states; origin-safe cross-stage evidence; raw and coherent
+forecast provenance; bounded stage-specific configurations; panel entities;
+stage/funnel evidence; and exact restart/no-refit replay. The earlier
+`aq_funnel_forecast_*` API remains a deterministic foundation comparison path.
+
 ## Known Limitations
 
 Not implemented:
@@ -572,9 +606,7 @@ Not implemented:
 - top-down reconciliation
 - middle-out reconciliation
 - optimization-based reconciliation
-- full Vector forecasting
-- Funnel forecasting
-- Hurdle forecasting
+- composite predictive intervals for Hurdle forecasting
 - advanced exogenous-variable modeling beyond ARIMA known-future regressors
 - automatic future regressor generation
 - automatic feature engineering

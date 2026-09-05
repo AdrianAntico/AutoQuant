@@ -6,7 +6,7 @@ aq_forecast_frequency_levels <- function() {
 
 aq_forecast_engine_levels <- function() {
   c("naive", "seasonal_naive", "ets", "arima", "tbats", "theta",
-    "arfima", "catboost")
+    "arfima", "linear", "catboost")
 }
 
 aq_forecast_strategy_levels <- function() {
@@ -30,7 +30,7 @@ aq_forecast_engine_supports_intervals <- function(engine) {
 }
 
 aq_forecast_engine_supports_xreg <- function(engine) {
-  engine %in% c("arima", "catboost")
+  engine %in% c("arima", "linear", "catboost")
 }
 
 aq_forecast_detect_frequency <- function(dates) {
@@ -244,7 +244,7 @@ aq_validate_forecast_spec <- function(spec, data = NULL) {
   }
   if (!spec$forecast_strategy %in% aq_forecast_strategy_levels()) {
     add("forecast_strategy", "fail", paste("unsupported forecast strategy:", spec$forecast_strategy))
-  } else if (identical(spec$engine, "catboost")) {
+  } else if (spec$engine %in% c("linear", "catboost")) {
     add("forecast_strategy", "pass", paste("CatBoost forecast strategy:", spec$forecast_strategy), "info")
   } else {
     add("forecast_strategy", "pass", "forecast strategy is recorded for compatibility.", "info")
@@ -462,8 +462,7 @@ aq_forecast_engine_parameter_diagnostics <- function(spec, frequency) {
     bad_date_features <- setdiff(date_features, c(
       "year", "month", "day", "dow", "week", "quarter", "is_weekend",
       "day_index", "day_of_year", "month_start", "month_end",
-      "quarter_start", "quarter_end", "year_start", "year_end",
-      "hour", "minute"
+      "quarter_start", "quarter_end", "year_start", "year_end"
     ))
     if (length(bad_date_features)) {
       add("catboost_date_features", "fail", paste("unsupported CatBoost date feature(s):", paste(bad_date_features, collapse = ", ")))
@@ -904,7 +903,7 @@ aq_forecast_rodeo_temporal_spec <- function(spec, frequency, settings) {
     metadata = list(
       producer = "AutoQuant",
       consumer = "aq_fit_forecast",
-      engine = "catboost",
+      engine = spec$engine,
       forecast_strategy = spec$forecast_strategy
     )
   )
@@ -1004,38 +1003,164 @@ aq_forecast_numeric_matrix <- function(frame, feature_cols) {
   as.matrix(x)
 }
 
-aq_forecast_catboost_train_one <- function(train_frame, label_col, feature_cols, spec) {
-  keep <- stats::complete.cases(train_frame[, c(label_col, feature_cols), with = FALSE])
-  train_frame <- train_frame[keep]
-  if (nrow(train_frame) < 10L) {
-    stop("CatBoost forecast training frame has insufficient complete rows after supervised feature preparation.", call. = FALSE)
+aq_forecast_catboost_select_features <- function(frame, feature_cols) {
+  feature_cols <- intersect(feature_cols, names(frame))
+  drop <- character()
+  if ("rel_cat_composite" %in% names(frame)) drop <- c(drop, "rel_cat_composite_code")
+  if ("rel_cat_interaction" %in% names(frame)) drop <- c(drop, "rel_cat_interaction_code")
+  if ("rel_cat_panel_identity" %in% names(frame)) drop <- c(drop, "rel_cat_panel_identity_code")
+  pair_str <- grep("^rel_cat_pair_[0-9]+$", names(frame), value = TRUE)
+  if (length(pair_str)) drop <- c(drop, paste0(pair_str, "_code"))
+  if (any(grepl("^rel_cat_level_", names(frame)))) {
+    drop <- c(drop, grep("^rel_cat_code_", feature_cols, value = TRUE))
   }
-  x <- aq_forecast_numeric_matrix(train_frame, feature_cols)
-  label <- as.numeric(train_frame[[label_col]])
-  pool <- catboost::catboost.load_pool(data = x, label = label)
-  params <- aq_forecast_catboost_model_params(spec)
-  elapsed <- system.time({
-    model <- catboost::catboost.train(learn_pool = pool, test_pool = NULL, params = params)
-  })
-  feature_importance <- tryCatch({
-    importance <- as.numeric(catboost::catboost.get_feature_importance(model, pool = pool))
-    data.table::data.table(feature = feature_cols, importance = importance)
-  }, error = function(e) {
-    data.table::data.table(feature = feature_cols, importance = NA_real_, error = conditionMessage(e))
-  })
+  unique(setdiff(feature_cols, drop))
+}
+
+aq_forecast_is_catboost_categorical <- function(x, name) {
+  is.character(x) || is.factor(x) ||
+    grepl("^rel_cat_(level_|composite$|interaction$|pair_[0-9]+$|panel_identity$)", name)
+}
+
+aq_forecast_align_observation_weights <- function(frame, weight_fit) {
+  if (is.null(weight_fit) || !inherits(weight_fit, "aq_carma_observation_weight_fit")) {
+    return(NULL)
+  }
+  work <- data.table::as.data.table(frame)
+  if (".rodeo_temporal_date" %in% names(work)) {
+    work[, .w_date := as.Date(.rodeo_temporal_date)]
+  } else if (weight_fit$date_col %in% names(work)) {
+    work[, .w_date := as.Date(work[[weight_fit$date_col]])]
+  } else {
+    return(NULL)
+  }
+  wtab <- data.table::copy(weight_fit$weights)
+  ent_col <- if (length(weight_fit$entity)) as.character(weight_fit$entity[1L]) else NA_character_
+  if (!is.na(ent_col) && nzchar(ent_col) && "entity" %in% names(wtab) && ent_col %in% names(work)) {
+    work[, .w_ent := as.character(work[[ent_col]])]
+    wtab[, entity := as.character(entity)]
+    aligned <- wtab[work, on = c("date" = ".w_date", "entity" = ".w_ent"), weight]
+  } else {
+    wuniq <- unique(wtab[, .(date, weight)], by = "date")
+    aligned <- wuniq[work, on = c("date" = ".w_date"), weight]
+  }
+  aligned
+}
+
+aq_forecast_catboost_feature_frame <- function(frame, feature_cols, cat_state = NULL) {
+  feature_cols <- aq_forecast_catboost_select_features(frame, feature_cols)
+  cat_cols <- feature_cols[vapply(feature_cols, function(nm) {
+    aq_forecast_is_catboost_categorical(frame[[nm]], nm)
+  }, logical(1L))]
+  num_cols <- setdiff(feature_cols, cat_cols)
+  out <- data.table::copy(frame[, feature_cols, with = FALSE])
+  for (nm in num_cols) out[[nm]] <- as.numeric(out[[nm]])
+  unseen <- if (!is.null(cat_state) && !is.null(cat_state$unseen_level)) cat_state$unseen_level else "__unseen__"
+  missing <- if (!is.null(cat_state) && !is.null(cat_state$missing_level)) cat_state$missing_level else "__missing__"
+  for (nm in cat_cols) {
+    vals <- as.character(out[[nm]])
+    vals[is.na(vals) | !nzchar(vals)] <- missing
+    if (!is.null(cat_state) && is.list(cat_state$levels) && nm %in% names(cat_state$levels)) {
+      known <- cat_state$levels[[nm]]
+      vals[!vals %in% known] <- unseen
+      lvl <- unique(c(known, unseen, missing))
+    } else {
+      lvl <- sort(unique(c(vals, unseen, missing)))
+    }
+    out[[nm]] <- factor(vals, levels = lvl)
+  }
+  df <- as.data.frame(out, stringsAsFactors = FALSE)
+  for (nm in cat_cols) {
+    if (is.factor(out[[nm]])) df[[nm]] <- out[[nm]]
+  }
   list(
-    model = model,
-    pool = pool,
-    feature_importance = feature_importance,
-    rows = nrow(train_frame),
-    params = params,
-    elapsed = unname(elapsed[["elapsed"]])
+    data = df,
+    feature_cols = feature_cols,
+    cat_cols = cat_cols,
+    num_cols = num_cols
   )
 }
 
-aq_forecast_catboost_predict_one <- function(model, feature_row, feature_cols) {
-  pool <- catboost::catboost.load_pool(data = aq_forecast_numeric_matrix(feature_row, feature_cols))
-  as.numeric(catboost::catboost.predict(model, pool = pool, prediction_type = "RawFormulaVal"))[1L]
+aq_forecast_catboost_load_pool <- function(frame, feature_cols, label = NULL, weight = NULL, cat_state = NULL) {
+  prepared <- aq_forecast_catboost_feature_frame(frame, feature_cols, cat_state)
+  cat_idx <- match(prepared$cat_cols, prepared$feature_cols) - 1L
+  cat_idx <- cat_idx[is.finite(cat_idx)]
+  args <- list(data = prepared$data)
+  if (!is.null(label)) args$label <- as.numeric(label)
+  factor_cats <- length(prepared$cat_cols) > 0L &&
+    all(vapply(prepared$data[prepared$cat_cols], is.factor, logical(1L)))
+  if (length(cat_idx) && !factor_cats) args$cat_features <- as.integer(cat_idx)
+  if (!is.null(weight)) {
+    weight <- as.numeric(weight)
+    if (length(weight) != nrow(prepared$data)) {
+      stop("Observation weights must align 1:1 with the CatBoost training/prediction frame.", call. = FALSE)
+    }
+    args$weight <- weight
+  }
+  pool <- do.call(catboost::catboost.load_pool, args)
+  list(pool = pool, prepared = prepared)
+}
+
+aq_forecast_catboost_train_one <- function(train_frame, label_col, feature_cols, spec) {
+  feature_cols <- aq_forecast_catboost_select_features(train_frame, feature_cols)
+  weight_fit <- spec$engine_parameters$observation_weight_fit
+  weights_all <- aq_forecast_align_observation_weights(train_frame, weight_fit)
+  num_for_cc <- feature_cols[vapply(feature_cols, function(nm) {
+    !aq_forecast_is_catboost_categorical(train_frame[[nm]], nm)
+  }, logical(1L))]
+  keep <- stats::complete.cases(train_frame[, c(label_col, num_for_cc), with = FALSE])
+  train_frame <- train_frame[keep]
+  if (!is.null(weights_all)) weights_all <- weights_all[keep]
+  if (nrow(train_frame) < 10L) {
+    stop("CatBoost forecast training frame has insufficient complete rows after supervised feature preparation.", call. = FALSE)
+  }
+  loaded <- aq_forecast_catboost_load_pool(train_frame, feature_cols,
+    label = train_frame[[label_col]], weight = weights_all)
+  params <- aq_forecast_catboost_model_params(spec)
+  elapsed <- system.time({
+    model <- catboost::catboost.train(learn_pool = loaded$pool, test_pool = NULL, params = params)
+  })
+  cat_levels <- lapply(loaded$prepared$cat_cols, function(nm) {
+    x <- loaded$prepared$data[[nm]]
+    if (is.factor(x)) levels(x) else sort(unique(as.character(x)))
+  })
+  names(cat_levels) <- loaded$prepared$cat_cols
+  cat_state <- list(
+    columns = loaded$prepared$cat_cols,
+    levels = cat_levels,
+    unseen_level = "__unseen__",
+    missing_level = "__missing__",
+    consumed_as = "catboost_native_categorical"
+  )
+  feature_importance <- tryCatch({
+    importance <- as.numeric(catboost::catboost.get_feature_importance(model, pool = loaded$pool))
+    data.table::data.table(feature = loaded$prepared$feature_cols, importance = importance)
+  }, error = function(e) {
+    data.table::data.table(feature = loaded$prepared$feature_cols, importance = NA_real_, error = conditionMessage(e))
+  })
+  list(
+    model = model,
+    pool = loaded$pool,
+    feature_importance = feature_importance,
+    rows = nrow(train_frame),
+    params = params,
+    elapsed = unname(elapsed[["elapsed"]]),
+    categorical_state = cat_state,
+    feature_cols = loaded$prepared$feature_cols,
+    observation_weights = if (is.null(weights_all)) NULL else list(
+      consumed = TRUE,
+      n = length(weights_all),
+      ess = if (sum(weights_all) > 0) (sum(weights_all)^2) / sum(weights_all^2) else 0,
+      min = min(weights_all, na.rm = TRUE),
+      max = max(weights_all, na.rm = TRUE),
+      fingerprint = if (!is.null(weight_fit)) weight_fit$fingerprint else NA_character_
+    )
+  )
+}
+
+aq_forecast_catboost_predict_one <- function(model, feature_row, feature_cols, cat_state = NULL) {
+  loaded <- aq_forecast_catboost_load_pool(feature_row, feature_cols, cat_state = cat_state)
+  as.numeric(catboost::catboost.predict(model, pool = loaded$pool, prediction_type = "RawFormulaVal"))[1L]
 }
 
 aq_forecast_catboost_direct <- function(train, spec, partition, future_context, temporal_fit, future_data) {
@@ -1055,8 +1180,9 @@ aq_forecast_catboost_direct <- function(train, spec, partition, future_context, 
     feature_cols <- frames$feature_columns_by_horizon[[as.character(h)]]
     trained <- aq_forecast_catboost_train_one(frame, ".rodeo_label", feature_cols, spec)
     pred_row <- frames$prediction_frames[[as.character(h)]]
-    predictions[h] <- aq_forecast_catboost_predict_one(trained$model, pred_row, feature_cols)
-    models[[h]] <- trained$model
+    predictions[h] <- aq_forecast_catboost_predict_one(trained$model, pred_row,
+      trained$feature_cols, trained$categorical_state)
+    models[[h]] <- trained
     feature_importance[[h]] <- data.table::copy(trained$feature_importance)[, horizon := h]
     feature_cols_by_horizon[[h]] <- feature_cols
     feature_rows[[h]] <- trained$rows
@@ -1086,12 +1212,13 @@ aq_forecast_catboost_recursive <- function(train, spec, partition, future_contex
   predictions <- numeric(spec$horizon)
   for (h in seq_len(spec$horizon)) {
     row <- Rodeo::rodeo_temporal_prediction_frame(temporal_fit, future_data[h], history_values = history)
-    predictions[h] <- aq_forecast_catboost_predict_one(trained$model, row, feature_cols)
+    predictions[h] <- aq_forecast_catboost_predict_one(trained$model, row,
+      trained$feature_cols, trained$categorical_state)
     history <- c(history, predictions[h])
   }
   list(
     prediction = predictions,
-    model = list(strategy = "recursive", model = trained$model),
+    model = list(strategy = "recursive", model = trained),
     feature_importance = trained$feature_importance,
     feature_cols_by_horizon = list(recursive = feature_cols),
     training_rows_by_horizon = trained$rows,
@@ -1127,9 +1254,9 @@ aq_forecast_fit_catboost <- function(train, spec, frequency, partition, future_c
   }
   aq_forecast_require_rodeo_temporal()
   settings <- aq_forecast_catboost_feature_settings(spec, frequency)
-  temporal_spec <- aq_forecast_rodeo_temporal_spec(spec, frequency, settings)
   temporal_fit <- aq_vnext_default(spec$engine_parameters$temporal_fit, NULL)
   if (is.null(temporal_fit)) {
+    temporal_spec <- aq_forecast_rodeo_temporal_spec(spec, frequency, settings)
     temporal_fit <- Rodeo::rodeo_fit_temporal_transformation(
       train,
       temporal_spec,
@@ -1229,6 +1356,9 @@ aq_forecast_fit_engine <- function(train, spec, frequency, xreg = NULL) {
   if (identical(spec$engine, "catboost")) {
     return(aq_forecast_fit_catboost(train, spec, frequency, xreg$partition, xreg$future_context))
   }
+  if (identical(spec$engine, "linear")) {
+    return(aq_forecast_fit_linear(train, spec, frequency, xreg$partition, xreg$future_context))
+  }
   stop(paste("unsupported forecast engine:", spec$engine), call. = FALSE)
 }
 
@@ -1237,7 +1367,7 @@ aq_forecast_baseline_tables <- function(train, forecast_dt, spec, frequency) {
   if (identical(frequency, "year")) {
     engines <- "naive"
   }
-  if (identical(spec$engine, "catboost")) {
+  if (spec$engine %in% c("linear", "catboost")) {
     engines <- unique(c(engines, "ets", "arima"))
   }
   out <- lapply(engines, function(engine) {
@@ -1327,7 +1457,7 @@ aq_fit_forecast <- function(spec, data, origin = NULL, future_data = NULL) {
     data.table::setorder(forecast_dt, horizon)
   }
   baseline_forecasts <- if (spec$engine %in% c("ets", "arima", "tbats",
-      "theta", "arfima", "catboost")) {
+      "theta", "arfima", "linear", "catboost")) {
     aq_forecast_baseline_tables(train, forecast_dt, spec, partition$frequency)
   } else {
     list()

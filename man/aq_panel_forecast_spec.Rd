@@ -34,8 +34,10 @@ aq_panel_forecast_spec(
 
 \item{date}{Date/time column.}
 
-\item{frequency}{Panel frequency. Supports `"auto"`, `"day"`, `"week"`,
-`"month"`, `"quarter"`, and `"year"`.}
+\item{frequency}{Panel frequency. Delegates to Rodeo: \code{"auto"} plus
+\code{1min}, \code{5min}, \code{10min}, \code{15min}, \code{30min},
+\code{hour}, \code{day}, \code{week}, \code{month}, \code{quarter}, and
+\code{year}.}
 
 \item{horizon}{Forecast horizon in periods per entity.}
 

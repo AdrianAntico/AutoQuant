@@ -616,7 +616,7 @@ aq_hurdle_forecast_spec <- function(
   dataset_id = NULL,
   supported_downstream_actions = c("forecast", "assess", "compare", "report", "campaign_review")
 ) {
-  frequency <- match.arg(tolower(frequency), aq_forecast_frequency_levels())
+  frequency <- aq_rodeo_normalize_frequency(frequency)
   engine <- match.arg(tolower(engine), "catboost")
   forecast_strategy <- match.arg(tolower(forecast_strategy), "direct")
   if (is.null(hurdle_spec_id)) {
@@ -631,7 +631,7 @@ aq_hurdle_forecast_spec <- function(
     group = if (is.null(group)) NA_character_ else as.character(group)[1L],
     frequency = frequency,
     horizon = as.integer(horizon)[1L],
-    forecast_origin = if (is.null(forecast_origin)) NULL else as.Date(forecast_origin)[1L],
+    forecast_origin = if (is.null(forecast_origin)) NULL else forecast_origin[1L],
     occurrence_threshold = as.numeric(occurrence_threshold)[1L],
     forecast_strategy = forecast_strategy,
     future_known_variables = aq_vnext_unique_chr(future_known_variables),
@@ -795,7 +795,7 @@ aq_hurdle_baseline_vector <- function(y, horizon, engine, season_length = 1L, th
 aq_hurdle_baseline_tables <- function(spec, ctx, forecast_dt) {
   engines <- c("naive", "seasonal_naive", "croston", "sba", "tsb")
   season_length <- aq_hurdle_season_length(spec, ctx$partition$frequency)
-  future_dates <- sort(unique(as.Date(forecast_dt$forecast_date)))
+  future_dates <- sort(unique(forecast_dt$forecast_date))
   horizon <- length(future_dates)
   build_one <- function(engine) {
     if (!is.na(spec$entity)) {
@@ -821,9 +821,51 @@ aq_hurdle_baseline_tables <- function(spec, ctx, forecast_dt) {
   stats::setNames(lapply(engines, build_one), engines)
 }
 
+aq_hurdle_series_partition <- function(spec, dt, origin = NULL) {
+  frequency <- aq_rodeo_resolve_frequency(spec$frequency, dt[[spec$date]])
+  origin <- if (is.null(origin)) spec$forecast_origin else origin[1L]
+  if (is.null(origin)) {
+    unique_dates <- sort(unique(dt$.aq_forecast_date))
+    origin <- unique_dates[max(1L, length(unique_dates) - spec$horizon)]
+  }
+  origin <- aq_rodeo_coerce_index(origin, frequency)
+  future_dates <- aq_rodeo_next_index(origin, frequency, spec$horizon)
+  train_index <- which(dt$.aq_forecast_date <= origin)
+  eval_index <- which(dt$.aq_forecast_date %in% future_dates)
+  partition <- list(
+    partition_id = aq_vnext_id(paste0("hurdle_series_partition_", spec$hurdle_spec_id)),
+    schema_version = "aq_hurdle_series_partition_v1",
+    forecast_origin = origin,
+    horizon = spec$horizon,
+    frequency = frequency,
+    future_dates = future_dates,
+    train_index = train_index,
+    evaluation_index = eval_index
+  )
+  class(partition) <- c("aq_forecast_partition", "list")
+  partition
+}
+
+aq_hurdle_series_future_context <- function(spec, train, eval, partition, future_data = NULL) {
+  future <- if (!is.null(future_data)) data.table::as.data.table(data.table::copy(future_data)) else data.table::copy(eval)
+  if (!nrow(future)) {
+    future <- data.table::data.table(placeholder = partition$future_dates)
+    data.table::setnames(future, "placeholder", spec$date)
+  }
+  if (!spec$date %in% names(future)) future[[spec$date]] <- future$.aq_forecast_date
+  future[, .aq_forecast_date := aq_rodeo_coerce_index(get(spec$date), partition$frequency)]
+  data.table::setorder(future, .aq_forecast_date)
+  list(
+    data = future,
+    diagnostics = data.table::data.table(),
+    metadata = list(future_rows = nrow(future), future_data_source = if (is.null(future_data)) "evaluation_or_generated" else "future_data")
+  )
+}
+
 aq_hurdle_partition_context <- function(spec, data, origin = NULL, future_data = NULL) {
   dt <- data.table::as.data.table(data.table::copy(data))
-  dt[, .aq_forecast_date := as.Date(get(spec$date))]
+  frequency <- aq_rodeo_resolve_frequency(spec$frequency, dt[[spec$date]])
+  dt[, .aq_forecast_date := aq_rodeo_coerce_index(get(spec$date), frequency)]
   if (!is.na(spec$entity)) {
     pspec <- aq_panel_forecast_spec(
       entity = spec$entity, target = spec$target, date = spec$date, frequency = spec$frequency, horizon = spec$horizon,
@@ -836,15 +878,10 @@ aq_hurdle_partition_context <- function(spec, data, origin = NULL, future_data =
     eval <- dt[partition$evaluation_index]
     future_context <- aq_panel_future_data_context(pspec, train, eval, partition, future_data = future_data)
   } else {
-    fspec <- aq_forecast_spec(
-      target = spec$target, date = spec$date, frequency = spec$frequency, horizon = spec$horizon, forecast_origin = spec$forecast_origin,
-      future_known_variables = spec$future_known_variables, engine = "catboost", forecast_strategy = "direct", engine_parameters = spec$engine_parameters,
-      prediction_intervals = FALSE, forecast_spec_id = aq_vnext_id(paste0(spec$hurdle_spec_id, "_series_context")), dataset_id = spec$dataset_id
-    )
-    partition <- aq_forecast_partition(fspec, dt, origin = origin)
+    partition <- aq_hurdle_series_partition(spec, dt, origin = origin)
     train <- dt[partition$train_index]
     eval <- dt[partition$evaluation_index]
-    future_context <- aq_forecast_future_data_context(fspec, train, eval, partition, future_data = future_data)
+    future_context <- aq_hurdle_series_future_context(spec, train, eval, partition, future_data = future_data)
   }
   list(dt = dt, partition = partition, train = train, eval = eval, future_context = future_context)
 }

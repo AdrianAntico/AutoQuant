@@ -5,8 +5,9 @@
 #' @param entity Entity identifier column.
 #' @param target Target value column.
 #' @param date Date/time column.
-#' @param frequency Panel frequency. Supports `"auto"`, `"day"`, `"week"`,
-#'   `"month"`, `"quarter"`, and `"year"`.
+#' @param frequency Panel frequency. Delegates to Rodeo: `"auto"` plus
+#'   `1min`, `5min`, `10min`, `15min`, `30min`, `hour`, `day`, `week`,
+#'   `month`, `quarter`, and `year`.
 #' @param horizon Forecast horizon in periods per entity.
 #' @param forecast_origin Optional common forecast origin.
 #' @param future_known_variables Variables known at forecast time.
@@ -48,7 +49,7 @@ aq_panel_forecast_spec <- function(
   dataset_id = NULL,
   supported_downstream_actions = c("forecast", "assess", "compare", "report", "campaign_review")
 ) {
-  frequency <- match.arg(tolower(frequency), aq_forecast_frequency_levels())
+  frequency <- aq_rodeo_normalize_frequency(frequency)
   engine <- match.arg(tolower(engine), "catboost")
   forecast_strategy <- match.arg(tolower(forecast_strategy), aq_forecast_strategy_levels())
   horizon <- as.integer(horizon)[1L]
@@ -64,7 +65,7 @@ aq_panel_forecast_spec <- function(
     date = as.character(date)[1L],
     frequency = frequency,
     horizon = horizon,
-    forecast_origin = if (is.null(forecast_origin)) NULL else as.Date(forecast_origin)[1L],
+    forecast_origin = if (is.null(forecast_origin)) NULL else forecast_origin[1L],
     future_known_variables = aq_vnext_unique_chr(future_known_variables),
     static_entity_features = aq_vnext_unique_chr(static_entity_features),
     engine = engine,
@@ -115,9 +116,12 @@ aq_validate_panel_forecast_spec <- function(spec, data = NULL, future_data = NUL
   }
   add("required_columns", "pass", "required columns are present.", "info")
   if (!is.numeric(dt[[spec$target]])) add("target_type", "fail", "target must be numeric.") else add("target_type", "pass", "target is numeric.", "info")
-  dates <- as.Date(dt[[spec$date]])
-  if (all(is.na(dates))) {
-    add("date_type", "fail", "date column cannot be converted to Date.")
+  dates <- tryCatch(
+    aq_rodeo_coerce_index(dt[[spec$date]], aq_rodeo_resolve_frequency(spec$frequency, dt[[spec$date]])),
+    error = function(e) as.POSIXct(character())
+  )
+  if (!length(dates) || all(is.na(dates))) {
+    add("date_type", "fail", "date column cannot be coerced through Rodeo's temporal index.")
     return(data.table::rbindlist(rows, use.names = TRUE, fill = TRUE))
   }
   duplicate_count <- nrow(dt[, .N, by = c(spec$entity, spec$date)][N > 1L])
@@ -149,17 +153,18 @@ aq_validate_panel_forecast_spec <- function(spec, data = NULL, future_data = NUL
 #' @export
 aq_panel_forecast_partition <- function(spec, data, origin = NULL) {
   if (!inherits(spec, "aq_panel_forecast_spec")) stop("spec must be an aq_panel_forecast_spec.", call. = FALSE)
+  aq_rodeo_require_temporal_authority()
   dt <- data.table::as.data.table(data)
-  dt[, .aq_forecast_date := as.Date(get(spec$date))]
+  frequency <- aq_rodeo_resolve_frequency(spec$frequency, dt[[spec$date]])
+  dt[, .aq_forecast_date := aq_rodeo_coerce_index(get(spec$date), frequency)]
   data.table::setorderv(dt, c(spec$entity, ".aq_forecast_date"))
-  frequency <- aq_forecast_resolved_frequency(list(frequency = spec$frequency, date = spec$date), dt)
-  origin <- if (is.null(origin)) spec$forecast_origin else as.Date(origin)[1L]
+  origin <- if (is.null(origin)) spec$forecast_origin else origin[1L]
   if (is.null(origin)) {
     unique_dates <- sort(unique(dt$.aq_forecast_date))
     origin <- unique_dates[max(1L, length(unique_dates) - spec$horizon)]
   }
-  origin <- as.Date(origin)
-  future_dates <- aq_forecast_next_dates(origin, frequency, spec$horizon)
+  origin <- aq_rodeo_coerce_index(origin, frequency)
+  future_dates <- aq_rodeo_next_index(origin, frequency, spec$horizon)
   train_index <- which(dt$.aq_forecast_date <= origin)
   eval_index <- which(dt$.aq_forecast_date %in% future_dates)
   partition <- list(
@@ -187,11 +192,15 @@ aq_panel_forecast_partition <- function(spec, data, origin = NULL) {
 aq_panel_future_data_context <- function(spec, train, eval, partition, future_data = NULL) {
   future <- if (!is.null(future_data)) data.table::as.data.table(data.table::copy(future_data)) else data.table::copy(eval)
   if (!nrow(future)) {
-    future <- data.table::CJ(.entity_tmp = partition$entities, .date_tmp = partition$future_dates)
-    data.table::setnames(future, c(".entity_tmp", ".date_tmp"), c(spec$entity, spec$date))
+    future <- data.table::rbindlist(lapply(partition$entities, function(ent) {
+      row <- data.table::data.table(placeholder = partition$future_dates)
+      row[[spec$entity]] <- ent
+      data.table::setnames(row, "placeholder", spec$date)
+      row
+    }), use.names = TRUE)
   }
   if (!spec$date %in% names(future)) future[[spec$date]] <- future$.aq_forecast_date
-  future[, .aq_forecast_date := as.Date(get(spec$date))]
+  future[, .aq_forecast_date := aq_rodeo_coerce_index(get(spec$date), partition$frequency)]
   data.table::setorderv(future, c(spec$entity, ".aq_forecast_date"))
   future[, .rodeo_panel_horizon := seq_len(.N), by = c(spec$entity)]
   validation <- aq_validate_panel_forecast_spec(spec, train, future_data = future)
@@ -209,15 +218,17 @@ aq_fit_panel_catboost_direct <- function(train, spec, partition, future_context,
     feature_cols <- frames$feature_columns_by_horizon[[as.character(h)]]
     trained <- aq_forecast_catboost_train_one(frame, ".rodeo_label", feature_cols, spec)
     pred_frame <- frames$prediction_frames[[as.character(h)]]
-    pred <- as.numeric(catboost::catboost.predict(trained$model, pool = catboost::catboost.load_pool(data = aq_forecast_numeric_matrix(pred_frame, feature_cols)), prediction_type = "RawFormulaVal"))
+    loaded <- aq_forecast_catboost_load_pool(pred_frame, trained$feature_cols,
+      cat_state = trained$categorical_state)
+    pred <- as.numeric(catboost::catboost.predict(trained$model, pool = loaded$pool, prediction_type = "RawFormulaVal"))
     predictions[[h]] <- data.table::data.table(
       entity = as.character(pred_frame[[spec$entity]]),
-      forecast_date = as.Date(pred_frame$.rodeo_future_date),
+      forecast_date = pred_frame$.rodeo_future_date,
       horizon = h,
       forecast = pred
     )
     data.table::setnames(predictions[[h]], "entity", spec$entity)
-    models[[h]] <- trained$model
+    models[[h]] <- trained
     feature_importance[[h]] <- data.table::copy(trained$feature_importance)[, horizon := h]
     rows_by_horizon[[h]] <- trained$rows
   }
@@ -245,8 +256,10 @@ aq_fit_panel_catboost_recursive <- function(train, spec, partition, future_conte
       row
     })
     pred_frame <- data.table::rbindlist(rows, use.names = TRUE, fill = TRUE)
-    pred <- as.numeric(catboost::catboost.predict(trained$model, pool = catboost::catboost.load_pool(data = aq_forecast_numeric_matrix(pred_frame, frames$feature_columns)), prediction_type = "RawFormulaVal"))
-    out <- data.table::data.table(entity = pred_frame[[spec$entity]], forecast_date = as.Date(pred_frame$.rodeo_future_date), horizon = h, forecast = pred)
+    loaded <- aq_forecast_catboost_load_pool(pred_frame, trained$feature_cols,
+      cat_state = trained$categorical_state)
+    pred <- as.numeric(catboost::catboost.predict(trained$model, pool = loaded$pool, prediction_type = "RawFormulaVal"))
+    out <- data.table::data.table(entity = pred_frame[[spec$entity]], forecast_date = pred_frame$.rodeo_future_date, horizon = h, forecast = pred)
     data.table::setnames(out, "entity", spec$entity)
     predictions[[h]] <- out
     for (i in seq_along(pred)) {
@@ -256,7 +269,7 @@ aq_fit_panel_catboost_recursive <- function(train, spec, partition, future_conte
   }
   list(
     prediction = data.table::rbindlist(predictions, use.names = TRUE, fill = TRUE),
-    model = list(strategy = "recursive", model = trained$model),
+    model = list(strategy = "recursive", model = trained),
     feature_importance = trained$feature_importance,
     training_rows_by_horizon = trained$rows,
     feature_manifest = frames$feature_manifest
@@ -273,7 +286,8 @@ aq_fit_panel_forecast <- function(spec, data, origin = NULL, future_data = NULL)
   validation <- aq_validate_panel_forecast_spec(spec, data, future_data = future_data)
   if (aq_vnext_has_validation_error(validation)) stop(paste(validation[status %in% c("fail", "error"), message], collapse = " "), call. = FALSE)
   dt <- data.table::as.data.table(data.table::copy(data))
-  dt[, .aq_forecast_date := as.Date(get(spec$date))]
+  frequency <- aq_rodeo_resolve_frequency(spec$frequency, dt[[spec$date]])
+  dt[, .aq_forecast_date := aq_rodeo_coerce_index(get(spec$date), frequency)]
   partition <- aq_panel_forecast_partition(spec, dt, origin = origin)
   train <- dt[partition$train_index]
   eval <- dt[partition$evaluation_index]
@@ -488,20 +502,23 @@ aq_assess_panel_forecast <- function(forecast) {
 aq_rolling_origin_panel_forecast <- function(spec, data, origins = NULL, origin_count = NULL) {
   if (!inherits(spec, "aq_panel_forecast_spec")) stop("spec must be an aq_panel_forecast_spec.", call. = FALSE)
   dt <- data.table::as.data.table(data.table::copy(data))
-  dt[, .aq_forecast_date := as.Date(get(spec$date))]
+  frequency <- aq_rodeo_resolve_frequency(spec$frequency, dt[[spec$date]])
+  dt[, .aq_forecast_date := aq_rodeo_coerce_index(get(spec$date), frequency)]
   unique_dates <- sort(unique(dt$.aq_forecast_date))
   if (is.null(origins)) {
     origin_count <- as.integer(aq_vnext_default(origin_count, spec$rolling_origins))[1L]
     possible <- unique_dates[seq_len(max(0L, length(unique_dates) - spec$horizon))]
     origins <- utils::tail(possible, origin_count)
+  } else {
+    origins <- aq_rodeo_coerce_index(origins, frequency)
   }
-  forecasts <- lapply(as.Date(origins), function(origin) aq_fit_panel_forecast(spec, dt, origin = origin))
+  forecasts <- lapply(origins, function(origin) aq_fit_panel_forecast(spec, dt, origin = origin))
   assessments <- lapply(forecasts, aq_assess_panel_forecast)
   result <- list(
     backtest_id = aq_vnext_id("panel_forecast_backtest"),
     schema_version = "aq_panel_forecast_backtest_result_v1",
     forecast_spec_id = spec$forecast_spec_id,
-    origins = as.Date(origins),
+    origins = origins,
     forecasts = forecasts,
     assessments = assessments,
     metrics = data.table::rbindlist(lapply(seq_along(assessments), function(i) data.table::copy(assessments[[i]]$metrics)[, forecast_origin := forecasts[[i]]$forecast_origin]), use.names = TRUE, fill = TRUE),

@@ -1,5 +1,9 @@
 # AutoQuant vNext Forecasting Capability Planning
 
+The CARMA vNext sequence is maintained in
+`docs/capability_expansion_master_plan.md`; its live legacy parameter matrix is
+returned by `aq_carma_legacy_parameter_map()`.
+
 Status: Phase 22 implemented. Phase 21 introduced deterministic capability
 planning. Phase 22 adds the governed experiment campaign handoff through
 `aq_forecast_experiment_spec()`, `aq_run_forecast_experiment()`, and
