@@ -1177,12 +1177,13 @@ install.packages("https://github.com/AdrianAntico/AutoQuant/archive/refs/tags/<v
 
 # Code Examples
 
-## EDA <img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/EDA.png" align="right" width="80" />
+## EDA
 
-<details><summary>Expand to view content</summary>
+<img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/EDA.png" alt="EDA" width="96">
+
+<details>
+<summary>Show the EDA example</summary>
 <p>
-
-<br>
 
 ```r
 # ============================================================
@@ -1430,14 +1431,13 @@ EDAReport(
 </p>
 </details>
 
-<br>
+## Model Readiness
 
-## Model Readiness <img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/Model Readiness Logo.png" align="right" width="80" />
+<img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/Model Readiness Logo.png" alt="Model readiness" width="96">
 
-<details><summary>Expand to view content</summary>
+<details>
+<summary>Show the model-readiness example</summary>
 <p>
-
-<br>
 
 ```r
 # ============================================================
@@ -1681,15 +1681,13 @@ TargetAnalysisReport(
 </p>
 </details>
 
-<br>
+## Supervised Learning
 
+<img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/SupervisedLearningImage.png" alt="Supervised learning" width="96">
 
-## Supervised Learning <img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/SupervisedLearningImage.png" align="right" width="80" />
-
-<details><summary>Expand to view content</summary>
+<details>
+<summary>Show the supervised-learning example</summary>
 <p>
-
-<br>
 
 ### CatBoost Builder Artifact Generator
 
@@ -3847,15 +3845,12 @@ TestModel <- AutoQuant::AutoH2oGAMMultiClass(
 </p>
 </details>
 
+## Model Scoring
 
+<img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/ModelScoringImage.png" alt="Model scoring" width="96">
 
-</p>
-</details>
-
-<br>
-
-## Model Scoring <img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/ModelScoringImage.png" align="right" width="80" />
-<details><summary>Expand to view content</summary>
+<details>
+<summary>Show the scoring example</summary>
 <p>
 
 
@@ -5201,10 +5196,12 @@ Preds <- AutoQuant::AutoXGBoostScoring(
 </p>
 </details>
 
-<br>
+## Model Evaluation
 
-## Model Evaluation <img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/ModelEvaluationImage.png" align="right" width="80" />
-<details><summary>Expand to view content</summary>
+<img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/ModelEvaluationImage.png" alt="Model evaluation" width="96">
+
+<details>
+<summary>Show the evaluation example</summary>
 <p>
 
 `ModelInsightsReport()` is a legacy compatibility wrapper for older supervised-learning examples. New regression workflows should use `generate_regression_model_insights_artifacts()` plus `RegressionModelInsightsReport()`. New binary classification workflows should use `generate_binary_classification_model_insights_artifacts()` plus `BinaryClassificationModelInsightsReport()`. Multiclass remains on the legacy wrapper until a multiclass artifact generator/report pair exists.
@@ -6108,10 +6105,12 @@ AutoQuant::ModelInsightsReport(
 </p>
 </details>
 
-<br>
+## Panel Data Forecasting
 
-## Panel Data Forecasting <img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/AutoCARMA2.png" align="right" width="80" />
-<details><summary>Expand to view content</summary>
+<img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/AutoCARMA2.png" alt="Panel data forecasting" width="96">
+
+<details>
+<summary>Show the panel-forecasting example</summary>
 <p>
 
 
@@ -6804,10 +6803,12 @@ Results <- AutoQuant::AutoH2OCARMA(
 </p>
 </details>
 
-<br>
+## Time Series Forecasting
 
-## Time Series Forecasting <img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/TimeSeriesImage2.png" align="right" width="80" />
-<details><summary>Expand to view content</summary>
+<img src="https://raw.githubusercontent.com/AdrianAntico/AutoQuant/master/Images/TimeSeriesImage2.png" alt="Time series forecasting" width="96">
+
+<details>
+<summary>Show the time-series example</summary>
 <p>
 
 
@@ -6995,14 +6996,6 @@ Output <- AutoQuant::AutoArfima(
 Output$Forecast
 Output$PerformanceGrid
 ```
-
-</p>
-</details>
-
-
-</p>
-</details>
-
 
 </p>
 </details>
